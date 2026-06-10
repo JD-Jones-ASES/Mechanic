@@ -89,7 +89,12 @@ sources:
    trig systems; if you can't write the closed form, write a `solve_hint` (substitution recipe) or mark the
    target `solve1d` with a bracket.
 4. Every derivation step must reduce to an identity under the verified solutions.
-5. Every LaTeX string must render in KaTeX.
+5. Every LaTeX string must render in KaTeX — including MDX prose math. Display math in
+   `overview.mdx`/`failure.mdx` must be single-line (`$$ ... $$`) or a bare-`$$` fence; a block
+   that opens with content on the `$$` line and closes on a later line misparses and KaTeX
+   swallows the rest of the file into one red error block (four pages shipped that way once).
+   `check-mdx-math.mjs` fails the build on the structural form; `throwOnError` in
+   `astro.config.mjs` fails it on bad TeX.
 6. Material-bound variables can never appear in `inputs` or as solution targets.
 7. Every relation and every validity envelope carries a citation that resolves in `sources`.
 8. Every `display_units` entry (and the bare `si_unit` when `display_units` is empty) must resolve in

@@ -10,10 +10,11 @@
   "scripts": {
     "gen": "uv run --directory ../pipeline compile-things && uv run --directory ../pipeline ingest-materials",
     "check:katex": "node scripts/check-katex.mjs",
+    "check:mdx": "node scripts/check-mdx-math.mjs",
     "check:parity": "node scripts/check-parity.mjs",
     "check:units": "node scripts/check-units.mjs",
+    "build": "pnpm run gen && pnpm run check:katex && pnpm run check:mdx && pnpm run check:parity && pnpm run check:units && astro build && pagefind --site dist",
     "dev": "astro dev",
-    "build": "pnpm run gen && pnpm run check:katex && pnpm run check:parity && pnpm run check:units && astro build && pagefind --site dist",
     "preview": "astro preview",
     "test:unit": "node --test \"tests/**/*.test.mjs\"",
     "test:e2e": "playwright test"
