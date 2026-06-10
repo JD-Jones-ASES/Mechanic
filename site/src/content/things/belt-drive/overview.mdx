@@ -1,0 +1,32 @@
+Before gears were cheap, factories ran on leather: one steam engine, one spinning lineshaft, and
+belts flapping down to every machine on the floor. Belts still drive your car's alternator, your
+shop's bandsaw, and every conveyor you've ever stood next to — and the same physics, run as a
+rope on a drum, is how a sailor holds a docking ship with one hand. The governing fact is an
+exponential:
+
+$$\frac{T_1 - T_c}{T_2 - T_c} = e^{\mu\theta} \qquad P = (T_1 - T_2)\,v \qquad T_c = m'v^2$$
+
+Three things to notice, one per formula:
+
+- **Friction compounds.** Each element of wrap multiplies the tension ratio by a little more
+  than its neighbor did, because friction grows with the tension that friction has already
+  built — the compound-interest condition, integrated into $e^{\mu\theta}$. The numbers get
+  silly fast: at $\mu = 0.3$, one turn holds 6.6×, two turns 44×, four turns ~1900×. A capstan
+  is a force amplifier with no moving parts, and the *wrap angle knob* in the widget is the
+  whole machine.
+- **Power is sold by the tension *drop*.** The belt pulls with $T_1 - T_2$, not with $T_1$ —
+  the slack side rides along at $T_2$ ≥ its centrifugal floor, un-droppable. More wrap lets the
+  drive convert more of its headroom ($1 - e^{-\mu\theta}$ of it); past a couple of radians the
+  returns diminish to nothing, which is why idler pulleys that add wrap help small drives and
+  bore big ones.
+- **Speed gives, then takes away.** At fixed tension the power rises with $v$ — until the
+  centrifugal slice $T_c = m'v^2$, which presses the belt onto nothing and transmits nothing,
+  eats the headroom. The peak sits at $v^* = \sqrt{T_1/3m'}$ (exactly one-third of the
+  allowable tension doing centripetal duty), and past the ceiling $T_c \to T_1$ the widget
+  *refuses*: the belt is spending all of itself staying on its own circle. Every number on this
+  page is finite there — only the validity envelope knows the state is nonsense, which is the
+  point.
+
+The *deliver* configuration runs it backwards: name the power and the speed, and the widget
+reports the tension the belt must survive — then $v^*$ tells you whether you're climbing the
+power curve or sliding down its far side.

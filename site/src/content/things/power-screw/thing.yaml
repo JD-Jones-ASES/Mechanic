@@ -1,0 +1,221 @@
+id: power-screw
+title: Power Screw (Square Thread)
+summary: >-
+  An inclined plane wrapped around a cylinder: torque in, brute linear force out. Friction is an
+  honest knob here — it decides the torque, eats the efficiency, and (the good part) decides
+  whether the load politely stays put or back-drives the screw when you let go.
+facets: [torque-power]
+
+variables:
+  - symbol: F
+    name: Axial load
+    latex: F
+    unit: N
+    quantity_kind: force
+    default: 5000
+    bounds: [50, 200000]
+    positive: true
+    display_units: [kN, N]
+  - symbol: d_m
+    name: Mean thread diameter
+    latex: d_m
+    unit: m
+    quantity_kind: length
+    default: 0.028
+    bounds: [0.005, 0.15]
+    positive: true
+    display_units: [mm, m]
+  - symbol: l
+    name: Lead (advance per turn)
+    latex: l
+    unit: m
+    quantity_kind: length
+    default: 0.005
+    bounds: [0.001, 0.05]
+    positive: true
+    display_units: [mm, m]
+  - symbol: f
+    name: Thread friction coefficient
+    latex: f
+    unit: '1'
+    quantity_kind: friction_coefficient
+    default: 0.08
+    bounds: [0.005, 0.5]
+    positive: true
+  - symbol: lam
+    name: Lead angle
+    latex: '\lambda'
+    unit: rad
+    quantity_kind: angle
+    default: 0.0568
+    bounds: [0, 1.0]
+    positive: true
+    role: derived
+    display_units: [deg, rad]
+  - symbol: T_R
+    name: Torque to raise
+    latex: T_R
+    unit: N*m
+    quantity_kind: torque
+    default: 9.6
+    bounds: [0, 5000]
+    positive: true
+    display_units: ["N*m"]
+  - symbol: T_L
+    name: Torque to lower (hold back)
+    latex: T_L
+    unit: N*m
+    quantity_kind: torque
+    default: 4.2
+    bounds: [-5000, 5000]
+    role: derived
+    display_units: ["N*m"]
+  - symbol: eff
+    name: Raising efficiency
+    latex: e
+    unit: '1'
+    quantity_kind: efficiency
+    default: 0.41
+    bounds: [0, 1]
+    positive: true
+    role: derived
+
+relations:
+  - id: lead-angle
+    group: torque-power
+    latex: '\tan\lambda = \frac{l}{\pi d_m}'
+    residual: tan(lam)*pi*d_m - l
+    assumptions:
+      - unwrap one turn of thread at the mean diameter — the thread IS an inclined plane of
+        rise l and run πd_m
+      - single-start thread (for multi-start screws, l is the lead, not the pitch)
+    citation: shigley
+  - id: raise-torque
+    group: torque-power
+    latex: 'T_R = \frac{F d_m}{2}\left(\frac{l + \pi f d_m}{\pi d_m - f l}\right)'
+    residual: T_R*(pi*d_m - f*l) - F*(d_m/2)*(l + pi*f*d_m)
+    assumptions:
+      - square thread — the normal force is not tilted by a thread half-angle (Acme threads
+        divide the friction terms by cos 14.5°)
+      - thrust-collar friction neglected (rolling-element collar) — a plain collar can add more
+        torque than the thread itself
+      - steady, slow raising — friction fully developed, no dynamics
+    citation: shigley
+    validity:
+      - condition: pi*d_m > f*l
+        severity: invalid
+        message: >-
+          The wedge jams: f·tan λ ≥ 1, so the harder you twist, the harder the thread presses
+          itself into the nut — no finite torque raises the load. A thread this steep and
+          grippy is not a power screw; back off the lead or the friction.
+        citation: shigley
+  - id: lower-torque
+    group: torque-power
+    latex: 'T_L = \frac{F d_m}{2}\left(\frac{\pi f d_m - l}{\pi d_m + f l}\right)'
+    residual: T_L*(pi*d_m + f*l) - F*(d_m/2)*(pi*f*d_m - l)
+    assumptions:
+      - same square-thread, no-collar model with the load now helping the motion — positive T_L
+        is torque you must apply to let the load DOWN under control
+    citation: shigley
+    validity:
+      - condition: pi*f*d_m > l
+        severity: warn
+        message: >-
+          Not self-locking — T_L has gone negative: the load can spin the screw and lower itself
+          the moment the drive lets go (f < tan λ). Fine for a lead screw you back-drive on
+          purpose; alarming for a jack. Hold it with a brake or pick a finer lead.
+        citation: shigley
+  - id: efficiency
+    group: torque-power
+    latex: 'e = \frac{F\,l}{2\pi\,T_R}'
+    residual: eff*2*pi*T_R - F*l
+    assumptions:
+      - useful work per turn (F·l) over input work per turn (2π·T_R); the frictionless screw
+        (f = 0) would need T_0 = F·l/2π, so e = T_0/T_R
+    citation: shigley
+
+configurations:
+  - id: analyze
+    label: Load and geometry in — torques, efficiency, self-locking out
+    constraints: {}
+    inputs: [F, d_m, l, f]
+    solutions:
+      lam: atan(l/(pi*d_m))
+      T_R: F*(d_m/2)*(l + pi*f*d_m)/(pi*d_m - f*l)
+      T_L: F*(d_m/2)*(pi*f*d_m - l)/(pi*d_m + f*l)
+      eff: F*l/(2*pi*T_R)
+  - id: capacity
+    label: Torque budget in — the load this screw can raise
+    constraints: {}
+    inputs: [T_R, d_m, l, f]
+    solutions:
+      lam: atan(l/(pi*d_m))
+      F: 2*T_R*(pi*d_m - f*l)/(d_m*(l + pi*f*d_m))
+      T_L: F*(d_m/2)*(pi*f*d_m - l)/(pi*d_m + f*l)
+      eff: F*l/(2*pi*T_R)
+
+derivation:
+  verifies_configuration: analyze
+  locals:
+    - symbol: P_R
+      unit: N
+      positive: true
+      define: F*(l + pi*f*d_m)/(pi*d_m - f*l)
+  steps:
+    - expr: Eq(tan(lam), l/(pi*d_m))
+      prose: >-
+        The modeling step: cut the thread along the mean diameter and unroll one full turn onto
+        the page. What was a helix becomes an inclined plane — base πd_m (one circumference),
+        rise l (one lead). Raising the load is pushing a block up this plane; the lead angle λ
+        is the plane's slope. Everything below is freshman statics on that block.
+      rule: 'unwrap the helix: thread = inclined plane'
+      check: definition
+    - expr: Eq(P_R*(cos(lam) - f*sin(lam)), F*(sin(lam) + f*cos(lam)))
+      prose: >-
+        Equilibrium of the block sliding up the plane: a horizontal push P_R, the weight F, and
+        a fully-developed friction force f·N pointing down-slope. Summing forces along and
+        across the plane and eliminating N gives P_R = F(sin λ + f cos λ)/(cos λ − f sin λ).
+        (The build verifies this line is exactly equivalent to the closed form authored for
+        T_R; the test pipeline re-derives it from the two equilibrium equations with N kept
+        explicit.)
+      rule: 'statics: block on the plane, eliminate N'
+    - expr: Eq(T_R, P_R*d_m/2)
+      prose: >-
+        The horizontal push acts at the thread's mean radius, so the torque is P_R·d_m/2.
+        Dividing the equilibrium result through by cos λ and substituting tan λ = l/(πd_m)
+        turns the trigonometry into hardware numbers: T_R = (F d_m/2)·(l + πf d_m)/(πd_m − f l).
+      rule: torque = push × mean radius
+    - expr: Eq(T_L*(pi*d_m + f*l), F*(d_m/2)*(pi*f*d_m - l))
+      prose: >-
+        Run the same block DOWN the plane: gravity now helps and friction switches sides. The
+        numerator πf d_m − l is the whole self-locking story in one subtraction — while friction
+        outweighs the lead, T_L is positive (you must push to lower the load); the moment the
+        lead wins, T_L flips sign and the load drives the screw. Set f to zero in the widget
+        and watch a jack become a fan.
+      rule: 'statics: same block, descending'
+    - expr: Eq(eff*2*pi*T_R, F*l)
+      prose: >-
+        One turn of the screw does 2πT_R of work at the handle and lifts the load by exactly
+        one lead, F·l of useful work. The ratio is the efficiency — and because the frictionless
+        torque is T_0 = Fl/2π, this is also T_0/T_R. Square-thread jacks routinely run 30–50 %:
+        the rest of your effort is heating the nut. A self-locking screw is provably under 50 %
+        — locking is purchased with friction, and friction is purchased with work.
+      rule: work out / work in
+sim:
+  engine: statics-cascade
+  config:
+    draw: power-screw
+
+sources:
+  - id: shigley
+    citation: >-
+      Budynas, R. G., & Nisbett, J. K., Shigley's Mechanical Engineering Design, 10th ed.,
+      McGraw-Hill, 2015 — §8-2 "The Mechanics of Power Screws": Fig. 8-6 (unrolled-thread
+      free bodies), eq. (8-1) torque to raise, eq. (8-2) torque to lower, eq. (8-3)
+      self-locking condition πf d_m > l ⇔ f > tan λ, eq. (8-4) efficiency e = Fl/(2πT_R).
+    verification: >-
+      Equation and figure numbers pinned against the publisher's official ch. 8 lecture-slide
+      deck (Istanbul Technical University mirror), 2026-06-10, including the intermediate
+      free-body equations (a)–(g) this page's derivation follows. The raise/lower closed forms
+      are independently re-derived from two-equation block equilibrium (N kept explicit) in
+      pipeline/tests/test_powerscrew_physics.py.

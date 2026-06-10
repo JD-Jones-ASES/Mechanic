@@ -1,0 +1,235 @@
+id: belt-drive
+title: Belt Drive (Flat Belt / Capstan)
+summary: >-
+  Friction compounding like interest: every degree of wrap multiplies the tension a belt can
+  hold, e^μθ in total — the same exponential that lets a sailor check a ship with two turns of
+  rope. At speed, centrifugal relief steals tension back, so every belt has a power ceiling.
+facets: [torque-power]
+
+variables:
+  - symbol: T_1
+    name: Tight-side tension (allowable)
+    latex: T_1
+    unit: N
+    quantity_kind: force
+    default: 400
+    bounds: [10, 20000]
+    positive: true
+    display_units: [N, kN]
+  - symbol: mu
+    name: Belt–pulley friction coefficient
+    latex: '\mu'
+    unit: '1'
+    quantity_kind: friction_coefficient
+    default: 0.3
+    bounds: [0.05, 0.9]
+    positive: true
+  - symbol: theta_w
+    name: Wrap (contact) angle
+    latex: '\theta'
+    unit: rad
+    quantity_kind: angle
+    default: 3.1416
+    bounds: [0.35, 25]
+    positive: true
+    display_units: [deg, rad]
+  - symbol: v
+    name: Belt speed
+    latex: v
+    unit: m/s
+    quantity_kind: velocity
+    default: 15
+    bounds: [0.1, 80]
+    positive: true
+    display_units: ["m/s"]
+  - symbol: m_l
+    name: Belt mass per length
+    latex: "m'"
+    unit: kg/m
+    quantity_kind: linear_density
+    default: 0.25
+    bounds: [0.02, 5]
+    positive: true
+    display_units: ["kg/m"]
+  - symbol: T_c
+    name: Centrifugal tension
+    latex: T_c
+    unit: N
+    quantity_kind: force
+    default: 56.3
+    bounds: [0, 32000]
+    positive: true
+    role: derived
+    display_units: [N, kN]
+  - symbol: T_2
+    name: Slack-side tension
+    latex: T_2
+    unit: N
+    quantity_kind: force
+    default: 190
+    bounds: [0, 20000]
+    positive: true
+    role: derived
+    display_units: [N, kN]
+  - symbol: P_t
+    name: Transmitted power
+    latex: P
+    unit: W
+    quantity_kind: power
+    default: 3147
+    bounds: [0, 1.0e6]
+    display_units: [kW, W]
+  - symbol: v_star
+    name: Max-power belt speed
+    latex: 'v^{*}'
+    unit: m/s
+    quantity_kind: velocity
+    default: 23.1
+    bounds: [0.1, 600]
+    positive: true
+    role: derived
+    display_units: ["m/s"]
+
+relations:
+  - id: centrifugal-tension
+    group: torque-power
+    latex: "T_c = m'\\,v^2"
+    residual: T_c - m_l*v**2
+    assumptions:
+      - each belt element on the arc needs centripetal force m'v²·dφ, and the tension supplies
+        it — a slice T_c of the tension does centripetal duty and never presses belt to pulley
+      - belt speed well below the wave speed in the belt (no flutter dynamics)
+    citation: shigley
+  - id: capstan
+    group: torque-power
+    latex: '\frac{T_1 - T_c}{T_2 - T_c} = e^{\mu\theta}'
+    residual: (T_1 - T_c) - (T_2 - T_c)*exp(mu*theta_w)
+    assumptions:
+      - belt on the verge of gross slip everywhere on the arc — this is the LIMIT a belt can
+        exploit; a belt transmitting less sits inside it (Shigley writes the same equation
+        as e^{fφ})
+      - flat belt or rope on a drum — V-belts wedge and earn a larger effective μ
+      - belt perfectly flexible, bending stiffness ignored
+    citation: shigley
+    validity:
+      - condition: T_c < T_1
+        severity: invalid
+        message: >-
+          Centrifugal tension has consumed the entire allowable tight-side tension — at this
+          speed the belt is spending all of itself staying on its circle and can transmit
+          nothing. This is the belt's hard speed ceiling; slow down, lighten the belt, or
+          raise the allowable tension.
+        citation: khurmi
+  - id: power
+    group: torque-power
+    latex: 'P = (T_1 - T_2)\,v'
+    residual: P_t - (T_1 - T_2)*v
+    assumptions:
+      - steady transmission — the pulling force is the tension difference and it moves at belt
+        speed
+    citation: shigley
+  - id: optimal-speed
+    group: torque-power
+    latex: "v^{*} = \\sqrt{\\frac{T_1}{3\\,m'}} \\quad (T_c = T_1/3)"
+    residual: 3*m_l*v_star**2 - T_1
+    assumptions:
+      - the stationary point of P(v) at fixed T_1, μ, θ — maximum power is transmitted when
+        exactly one-third of the allowable tension is doing centripetal duty
+    citation: khurmi
+    validity:
+      - condition: v <= v_star
+        severity: warn
+        message: >-
+          Past the power peak — above v* the centrifugal term steals tension faster than the
+          speed adds power, so spinning this drive faster now delivers LESS power. You are on
+          the wrong side of the hill.
+        citation: khurmi
+
+configurations:
+  - id: analyze
+    label: Belt and speed in — tensions, power, and the peak out
+    constraints: {}
+    inputs: [T_1, mu, theta_w, v, m_l]
+    solutions:
+      T_c: m_l*v**2
+      T_2: T_c + (T_1 - T_c)*exp(-mu*theta_w)
+      P_t: (T_1 - T_2)*v
+      v_star: sqrt(T_1/(3*m_l))
+  - id: deliver
+    label: Power demanded in — the tension the belt must carry
+    constraints: {}
+    inputs: [P_t, mu, theta_w, v, m_l]
+    solutions:
+      T_c: m_l*v**2
+      T_1: T_c + P_t/(v*(1 - exp(-mu*theta_w)))
+      T_2: T_1 - P_t/v
+      v_star: sqrt(T_1/(3*m_l))
+
+derivation:
+  verifies_configuration: analyze
+  steps:
+    - expr: Eq(T_c, m_l*v**2)
+      prose: >-
+        The modeling step, normal direction: an element of belt subtending dφ rides a circle at
+        speed v, so it needs centripetal force m'v²·dφ pointing inward. The two tension ends of
+        the element supply T·dφ of inward pull, and only the surplus N = (T − m'v²)·dφ actually
+        presses the belt onto the pulley. A constant slice T_c = m'v² of the tension is
+        therefore spoken for — it rides the belt and contributes nothing to grip.
+      rule: 'element equilibrium: normal direction'
+      check: definition
+    - expr: Eq(T_1 - T_c, (T_2 - T_c)*exp(mu*theta_w))
+      prose: >-
+        The modeling step, tangential direction: on the verge of slip, each element adds
+        friction dT = μ·dN = μ(T − m'v²)·dφ. The growth of tension is proportional to the
+        tension excess itself — the compound-interest condition — and integrating from the
+        slack side (T_2 at φ = 0) to the tight side (T_1 at φ = θ) gives exponential growth
+        of the excess: T_1 − T_c = (T_2 − T_c)·e^{μθ}. Euler wrote this for ships' ropes in
+        1762. (The build cannot integrate; the test pipeline solves the same ODE with a
+        computer algebra system as the independent check.)
+      rule: 'element equilibrium: tangential direction, integrated'
+      check: definition
+    - expr: Eq(P_t, (T_1 - T_c)*(1 - exp(-mu*theta_w))*v)
+      prose: >-
+        Power is the tension difference times the belt speed. Eliminating T_2 shows the
+        structure: of the allowable tension T_1, the centrifugal slice T_c is lost off the top,
+        and the wrap can only convert the fraction (1 − e^{−μθ}) of what remains into pull.
+        More wrap asymptotically captures all of it — θ has diminishing returns — while T_c
+        grows with v² without limit.
+      rule: eliminate the slack side
+    - expr: Eq(3*m_l*v_star**2, T_1)
+      prose: >-
+        P(v) = (T_1 − m'v²)(1 − e^{−μθ})·v climbs linearly at low speed, but the centrifugal
+        theft grows cubically; the peak sits where dP/dv = (T_1 − 3m'v²)(1 − e^{−μθ}) = 0,
+        i.e. v* = √(T_1/3m') — maximum power when exactly one-third of the allowable tension
+        is doing centripetal duty. Every belt drive has such a ceiling; high-speed flat belts
+        are thin and light precisely to push v* up. (The calculus is re-done symbolically in
+        the test pipeline.)
+      rule: stationary point of P(v)
+sim:
+  engine: statics-cascade
+  config:
+    draw: belt-drive
+
+sources:
+  - id: shigley
+    citation: >-
+      Budynas, R. G., & Nisbett, J. K., Shigley's Mechanical Engineering Design, 10th ed.,
+      McGraw-Hill, 2015 — §17-2 "Flat- and Round-Belt Drives": the belting equation
+      (F_1 − F_c)/(F_2 − F_c) = e^{fφ} (eq. 17-7), centrifugal tension F_c = (w/g)V²
+      (lettered eq. (e), p. 877), transmitted power H = (F_1 − F_2)V.
+    verification: >-
+      Eq. (17-7) and the lettered F_c equation (e) p. 877 pinned against the 10th-edition
+      ch. 17 solutions manual (Oakland University mirror), which cites both by number in
+      problems 17-1/17-2, 2026-06-10; forms cross-checked against 10th-edition course notes
+      (Hashemite University). The capstan ODE is independently solved (sympy dsolve) in
+      pipeline/tests/test_belt_physics.py.
+  - id: khurmi
+    citation: >-
+      Khurmi, R. S., & Gupta, J. K., Theory of Machines, rev. ed., S. Chand — ch. 11 (Belt,
+      Rope and Chain Drives), art. "Condition for the Transmission of Maximum Power":
+      P is maximum when T_c = T/3, i.e. v* = √(T/3m).
+    verification: >-
+      Article title and the T_c = T/3 result confirmed against indexed course reproductions
+      of ch. 11, 2026-06-10 (not page-pinned to a specific printing); the result itself is
+      independently re-derived by calculus (sp.diff, sp.solve on the cubic) in
+      pipeline/tests/test_belt_physics.py.

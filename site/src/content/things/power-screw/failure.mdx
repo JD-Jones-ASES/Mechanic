@@ -1,0 +1,28 @@
+The widget models torque equilibrium on a perfect square thread. Real power screws fail around
+the edges of that model:
+
+- **Nut wear is the design driver.** The thread is a bearing that slides under full load every
+  stroke; the classic pairing (steel screw, bronze nut) sacrifices the cheap nut deliberately.
+  Wear is governed by bearing pressure $F/(\pi d_m h \cdot n_t)$ and sliding speed — the
+  $pV$ limit — which is why jack threads are fat and slow. A worn nut doesn't just rattle: lost
+  flank contact concentrates load on fewer threads and accelerates the end.
+- **The first thread carries the load.** In any screw–nut pair the load does not share equally;
+  elastic mismatch piles a third or more of the total onto the first engaged thread. Thread
+  stripping starts there, and adding more engagement length past ~3 threads buys surprisingly
+  little.
+- **Heat.** A 35 %-efficient screw turns two-thirds of the input work into heat at the thread
+  interface. Long strokes or rapid cycling cook the grease out, friction climbs, torque climbs,
+  galling begins — a feedback loop that seizes screws mid-stroke. Acme jacks are rated by duty
+  cycle for this reason.
+- **Self-locking is not a brake.** The static condition $\pi f d_m > l$ holds only while the
+  friction is the static, greasy value you assumed. Vibration is the classic thief: each shake
+  momentarily unloads the thread, the effective $f$ falls toward its (smaller) kinetic value,
+  and the load ratchets down. A vibrating self-locking jack *creeps*. Anything carrying people
+  gets a positive mechanical lock, not a friction promise.
+- **The screw is also a column.** A long screw raising a load is a slender column under
+  compression ([Euler's problem](../euler-column/)) — jack screws are short and fat as much for
+  buckling as for wear. And the body of the screw still carries torsion plus direct compression:
+  the combined stress state, not the thread torque, sizes the core diameter.
+- **Backlash and elasticity.** Thread clearance plus wind-up of a long screw under torque makes
+  positioning hysteresis — a lead screw under reversing load takes up its backlash with a clunk.
+  Machine tools either preload split nuts or switch to ball screws and accept needing a brake.

@@ -1,0 +1,30 @@
+The widget's margin is first yield in shear at the inner fiber, under a static load. Springs in
+the wild die in more interesting ways:
+
+- **Fatigue at the inner fiber.** A valve spring sees ~10⁸ cycles a year; almost all real spring
+  failures are fatigue cracks starting exactly where the Wahl factor says the stress peaks — the
+  inside of the coil, often at a surface seam or inclusion in the wire. Shot peening (residual
+  compression at the surface) and ground-out surface defects are the spring industry's whole
+  fatigue playbook. The static margin shown here says nothing about cyclic life.
+- **Set — yield as a feature and a failure.** Past τ = σ_y/2 the spring takes permanent set and
+  comes back shorter. Manufacturers do this *deliberately* once (set removal: wind long, compress
+  solid, let it yield into favorable residual stress); in service the same physics is a failed
+  spring that no longer holds its preload. A relaxed valve spring floats the valve; a relaxed
+  relief-valve spring quietly changes the set pressure.
+- **Coil bind as the overload fuse.** At solid height the rate jumps from k to effectively the
+  stiffness of stacked wire — orders of magnitude higher. Whatever drove the spring there now
+  feels a near-rigid stop: cam followers hammer, brackets crack, and the spring's own coils dent
+  each other. Design practice keeps a clash allowance — working deflection comfortably short of
+  δ_solid (the widget's *invalid* banner is that allowance hitting zero).
+- **Buckling.** A slender spring (large L₀/D) bows sideways under compression exactly like a
+  column, then scrubs against whatever guides it. The absolute-stability limit in the widget
+  depends on E and G — and an unguided spring past it doesn't fail loudly; it wears, sings, and
+  fails by fatigue at the rub.
+- **Surge.** A spring is a distributed mass-stiffness system with its own longitudinal wave speed.
+  Drive it near its natural frequency (engine valve trains do, constantly) and a compression wave
+  travels coil-to-coil — individual coils momentarily slam to bind and stress far past the static
+  formula. Variable-pitch and nested springs exist mostly to detune this.
+- **Environment.** Springs are thin, highly stressed, and often hidden: corrosion pits become
+  fatigue initiators almost immediately, and high-strength wire is notably sensitive to hydrogen
+  embrittlement from plating. A stress-corrosion-cracked spring fails at a stress the widget
+  calls comfortable.

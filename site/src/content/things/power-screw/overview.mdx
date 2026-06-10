@@ -1,0 +1,30 @@
+Car jacks, bench vises, lathe lead screws, linear actuators, clamping fixtures, piano stools —
+whenever a machine needs to turn modest torque into crushing linear force *and hold it there with
+the power off*, it reaches for a power screw. The whole device is one idea: an inclined plane
+wrapped around a cylinder. Unroll one turn of thread and you are pushing a block up a ramp of
+rise $l$ and run $\pi d_m$:
+
+$$T_R = \frac{F d_m}{2}\!\left(\frac{l + \pi f d_m}{\pi d_m - f l}\right) \qquad
+T_L = \frac{F d_m}{2}\!\left(\frac{\pi f d_m - l}{\pi d_m + f l}\right) \qquad
+e = \frac{F\,l}{2\pi T_R}$$
+
+Three things to notice, one per formula:
+
+- **Friction is a knob here, not a nuisance.** Unlike every elastic THING in this catalog, the
+  governing input is a *surface* property — and an honest model treats it as the uncertain dial
+  it is (dry steel-on-steel, greased, bronze nut: roughly 0.06 to 0.25, and it changes as the
+  grease ages). Drag $f$ through that range in the widget and watch the torque double. This is
+  why real actuators are sized with friction margins, not friction estimates.
+- **Self-locking is a sign change you can read.** While $\pi f d_m > l$, the lowering torque
+  $T_L$ is *positive*: the load stays put and you must actively screw it down — a jack. The
+  moment the lead outgrows friction, $T_L$ flips negative and the load will happily spin the
+  screw on its own — a back-drivable lead screw (this is how some "self-feeding" drills and
+  yo-yo-like ball screws behave on purpose). One subtraction in the numerator, two completely
+  different machines.
+- **Locking is purchased with efficiency.** At the self-locking boundary $f = \tan\lambda$ the
+  efficiency is already below 50 %, and a comfortably locking jack runs ~30–40 %: most of your
+  cranking becomes heat in the nut. Ball screws exist precisely to refuse this bargain — ~90 %
+  efficient, and they need a brake for exactly the reason a jack doesn't.
+
+The *capacity* configuration runs the relations backwards: give it your motor's torque budget and
+it reports the load the screw can raise — then $T_L$ tells you whether that load stays raised.
