@@ -65,7 +65,7 @@ export function FourbarSim({ values }: { values: VarRecord }) {
       </svg>
       <figcaption>
         {assembled
-          ? "Drawn to scale from the verified closed-form angles — switch the circuit selector to see the second assembly."
+          ? "Amber crank, blue coupler, green rocker — drawn to scale from the verified closed-form angles. Switch the circuit selector to see the second assembly."
           : "The coupler and rocker cannot reach the crank pin at this angle: no assembly exists (only the crank is drawn)."}
       </figcaption>
     </figure>

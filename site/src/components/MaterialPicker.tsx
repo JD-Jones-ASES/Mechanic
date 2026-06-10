@@ -55,10 +55,15 @@ export function MaterialPicker({ materials, selectedId, binding, onSelect }: Pro
       >
         {materials.map((m) => (
           <option value={m.id} key={m.id}>
-            {m.name} ({m.condition})
+            {m.name}
           </option>
         ))}
       </select>
+      {selected ? (
+        <p class="material-condition" title={selected.condition}>
+          {selected.condition}
+        </p>
+      ) : null}
       {selected ? (
         <table class="material-props">
           <caption class="sr-only">Bound properties of {selected.name}</caption>

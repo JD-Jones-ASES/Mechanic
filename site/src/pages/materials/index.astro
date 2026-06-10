@@ -44,6 +44,42 @@ const xTicks = [100, 300, 1000, 3000, 10000, 30000];
 const yTicks = [0.1, 1, 10, 100, 1000];
 const fmtE = (pa: number) => (pa / 1e9 >= 10 ? (pa / 1e9).toFixed(0) : (pa / 1e9).toPrecision(2));
 const classes = [...new Set(points.map((p) => p.m.class))];
+
+// short chart labels (full name + numbers live in the hover title and table);
+// the dense metal cluster (~200 GPa, ~7800 kg/m³) is unreadable with full names
+const SHORT_LABEL: Record<string, string> = {
+  "al-2024-t3": "2024-T3", "al-6061-t6": "6061-T6", "al-7075-t6": "7075-T6",
+  "brass-c26000": "Brass 70/30", "concrete-normal": "Concrete",
+  "iron-gray-class30": "Gray iron", "nylon-66": "Nylon 6/6", "ss-304": "304 SS",
+  "steel-1045": "1045", "steel-4340": "4340", "steel-a36": "A36",
+  "ti-6al-4v": "Ti-6Al-4V", "wood-douglas-fir": "Douglas-fir",
+};
+
+// greedy label placement: right of the point by default; on collision try the
+// left side, then push down a row — build-time, deterministic, 13 points
+interface Lbl { px: number; py: number; text: string; anchor: "start" | "end"; ly: number; point: (typeof points)[number]; }
+const labels: Lbl[] = [];
+for (const p of [...points].sort((a, b) => y(a.E / 1e9) - y(b.E / 1e9))) {
+  const px = x(p.rho);
+  const py = y(p.E / 1e9);
+  let anchor: "start" | "end" = "start";
+  let ly = py - 8;
+  for (let guard = 0; guard < 8; guard++) {
+    const hit = labels.some(
+      (o) =>
+        Math.abs(o.ly - ly) < 12 &&
+        (o.anchor === anchor ? Math.abs(o.px - px) < 110 : Math.abs(o.px - px) < 12),
+    );
+    if (!hit) break;
+    if (anchor === "start") {
+      anchor = "end"; // try the left side of the point
+    } else {
+      anchor = "start"; // back to the right, one row lower
+      ly += 12;
+    }
+  }
+  labels.push({ px, py, text: SHORT_LABEL[p.m.id] ?? p.m.name, anchor, ly, point: p });
+}
 ---
 
 <Base title="Materials">
@@ -59,22 +95,32 @@ const classes = [...new Set(points.map((p) => p.m.class))];
     <desc>Scatter of the materials database; classes share colors. Stiff-and-light is up and left.</desc>
     {xTicks.map((t) => (
       <>
-        <line x1={x(t)} y1={PAD.t} x2={x(t)} y2={H - PAD.b} stroke="#e2e8f0" />
+        <line x1={x(t)} y1={PAD.t} x2={x(t)} y2={H - PAD.b} stroke="var(--line)" />
         <text x={x(t)} y={H - PAD.b + 18} text-anchor="middle" font-size="11" fill="currentColor">{t.toLocaleString()}</text>
       </>
     ))}
     {yTicks.map((t) => (
       <>
-        <line x1={PAD.l} y1={y(t)} x2={W - PAD.r} y2={y(t)} stroke="#e2e8f0" />
+        <line x1={PAD.l} y1={y(t)} x2={W - PAD.r} y2={y(t)} stroke="var(--line)" />
         <text x={PAD.l - 8} y={y(t) + 4} text-anchor="end" font-size="11" fill="currentColor">{t}</text>
       </>
     ))}
     <text x={(W + PAD.l) / 2} y={H - 8} text-anchor="middle" font-size="12" fill="currentColor">density ρ (kg/m³)</text>
     <text x={16} y={(H - PAD.b + PAD.t) / 2} text-anchor="middle" font-size="12" fill="currentColor" transform={`rotate(-90 16 ${(H - PAD.b + PAD.t) / 2})`}>Young's modulus E (GPa)</text>
-    {points.map((p) => (
+    {labels.map((l) => (
       <g>
-        <circle cx={x(p.rho)} cy={y(p.E / 1e9)} r="6" fill={CLASS_COLOR[p.m.class] ?? "#64748b"} stroke="white" />
-        <text x={x(p.rho) + 8} y={y(p.E / 1e9) - 6} font-size="10" fill="currentColor">{p.m.name}</text>
+        <circle cx={l.px} cy={l.py} r="6" fill={CLASS_COLOR[l.point.m.class] ?? "#64748b"} stroke="var(--paper)">
+          <title>{l.point.m.name} — E = {fmtE(l.point.E)} GPa, ρ = {Math.round(l.point.rho)} kg/m³ ({l.point.m.condition})</title>
+        </circle>
+        <text
+          x={l.anchor === "start" ? l.px + 9 : l.px - 9}
+          y={l.ly}
+          text-anchor={l.anchor}
+          font-size="10"
+          fill="currentColor"
+        >
+          {l.text}
+        </text>
       </g>
     ))}
   </svg>
@@ -85,6 +131,7 @@ const classes = [...new Set(points.map((p) => p.m.class))];
   </p>
 
   <h2>The database</h2>
+  <div class="table-scroll">
   <table class="material-props">
     <thead>
       <tr>
@@ -109,6 +156,7 @@ const classes = [...new Set(points.map((p) => p.m.class))];
       )}
     </tbody>
   </table>
+  </div>
   <p class="citation">
     Strength values shown in GPa where applicable read as fractions (e.g. 0.25 GPa = 250 MPa).
     Full citations on the <a href={withBase("about/#attributions")}>attributions page</a>.

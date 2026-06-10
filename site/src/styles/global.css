@@ -84,8 +84,15 @@ a { color: var(--accent); }
 /* material table */
 .material-props { font-size: 0.85rem; border-collapse: collapse; margin: 0.5rem 0; }
 .material-props td, .material-props th { padding: 0.15rem 0.6rem 0.15rem 0; text-align: left; }
-.basis { font-size: 0.75rem; border-radius: 999px; padding: 0 0.45rem; border: 1px solid var(--line); }
+.basis { font-size: 0.75rem; border-radius: 999px; padding: 0 0.45rem; border: 1px solid var(--line); white-space: nowrap; display: inline-block; }
 .material-source { color: var(--muted); }
+.material-picker select { max-width: 100%; }
+.material-condition {
+  font-size: 0.78rem; color: var(--muted); margin: 0.3rem 0 0;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.table-scroll { overflow-x: auto; }
+.config-select, .branch-select { display: inline-block; margin: 0 1.25rem 0.75rem 0; }
 
 /* sims */
 .sim { margin: 1rem 0 0; }
@@ -104,6 +111,13 @@ a { color: var(--accent); }
 .load-arrow { stroke: var(--ink); stroke-width: 2; }
 .load-arrow-head { fill: var(--ink); }
 .sim-label { font-size: 12px; fill: var(--ink); }
+/* four-bar linkage: one color per link so the prose can say "the amber crank" */
+.link-crank { stroke: #f59e0b; stroke-width: 5; stroke-linecap: round; }
+.link-coupler { stroke: var(--accent); stroke-width: 5; stroke-linecap: round; }
+.link-rocker { stroke: #10b981; stroke-width: 5; stroke-linecap: round; }
+.link-pivot { fill: var(--ink); }
+.link-pin { fill: var(--paper); stroke: var(--ink); stroke-width: 2; }
+.shaft-body { stroke: var(--accent); stroke-width: 3; }
 
 /* derivation + equations */
 .derivation { border-left: 3px solid var(--line); padding-left: 1rem; }
