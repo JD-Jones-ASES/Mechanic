@@ -1,0 +1,69 @@
+id: concrete-normal
+name: Normal-weight concrete, f'c = 4000 psi class
+class: concrete
+condition: Normal-weight (plain), specified 28-day cylinder compressive strength f'c = 4000 psi, moist-cured per
+  standard practice
+cost_class: low
+cost_rationale: Not a USGS metal commodity; no price source loaded this session (honesty note). Ready-mix normal-weight
+  concrete (~$150-200/yd3, ~$0.04-0.05/lb) is the cheapest material in this set per pound — the floor of the relative
+  scale.
+properties:
+- key: density
+  value: 145
+  unit: lb/ft**3
+  basis: typical
+  source_id: uofm-civl1101
+  citation: 'University of Memphis CIVL 1101/1112 course notes, ''Properties of Concrete'' (Concrete Material Properties
+    slides, p. 6/10): reinforced concrete with normal aggregates is about 150 lb/ft3 (pcf); if 5 pcf is allowed
+    for steel, plain concrete w = 145 pcf'
+  verified_at: http://www.ce.memphis.edu/1112/notes/project_2/beam/CIVL1101_concrete_intro.pdf
+  cross_check: Penn State AE thesis design tables (engr.psu.edu/ae/thesis/portfolios/2010/glc111/midterm/lw_conc_properties.pdf)
+    lists '145 pcf (normal-weight)' explicitly; loaded and confirmed
+  notes: 145 pcf is plain normal-weight concrete; 150 pcf is the standard design value for REINFORCED concrete (ASCE
+    7 convention). Pipeline should treat 145 pcf as the plain-material density. WSDOT uses higher agency values
+    (see discrepancies). [unit spelling normalized from 'pcf']
+- key: compressive_strength
+  value: 4000
+  unit: psi
+  basis: spec_minimum
+  source_id: uofm-civl1101
+  citation: 'f''c = specified 28-day cylinder compressive strength per ACI 318 class designation (ACI 318 is paywalled;
+    not fetched). University of Memphis CIVL 1101/1112 notes p. 5/10: ''Most structural concrete have f''c values
+    in the 3,000 to 5,000 psi range''; compressive strength defined as measured maximum resistance at age 28 days'
+  verified_at: http://www.ce.memphis.edu/1112/notes/project_2/beam/CIVL1101_concrete_intro.pdf
+  cross_check: 'ConcreteNetwork ''What is Concrete PSI?'' (concretenetwork.com/concrete/compressive-strength-psi.html):
+    cylinders tested 28 days after casting; 3000-4000 psi typical for slabs/driveways, 4000 psi mixes discussed;
+    loaded and confirmed'
+  notes: This is the class-defining specified strength, not a measured typical. ACI 318 requires the actual mix
+    to be proportioned so average strength exceeds f'c; individual test acceptance criteria are in ACI 318 Ch. 26.
+- key: youngs_modulus
+  value: 3605000
+  unit: psi
+  basis: typical
+  source_id: aci-318-formula
+  citation: ACI 318 elastic modulus formula for normal-weight concrete, Ec = 57,000*sqrt(f'c) psi (ACI 318-08 Sec.
+    8.5.1; ACI 318-19 Eq. 19.2.2.1.b), as quoted with worked example by CivilEngPro, 'Modulus of Elasticity of Concrete';
+    ACI 318 itself is paywalled and was not fetched
+  verified_at: https://civilengpro.com/modulus-of-elasticity-of-concrete/
+  cross_check: U. of Memphis CIVL 1101 notes p. 6/10 derive E = 57,000*sqrt(f'c) from E = 33*w^1.5*sqrt(f'c) at
+    w = 145 pcf (ce.memphis.edu PDF, loaded); Penn State table (engr.psu.edu PDF, loaded) gives Ec = 3644 ksi at
+    f'c = 4000 psi using the full ACI 33*wc^1.5*sqrt(f'c) formula at 145 pcf, within ~1% of 3605 ksi
+  notes: 'Computed from the ACI 318 formula Ec = 57,000*sqrt(f''c) with f''c = 4000 psi: exact arithmetic gives
+    3,604,997 psi, conventionally rounded to 3,605,000 psi (3,605 ksi, ~3.6 Msi). This is a code estimate of the
+    secant modulus, not a specified minimum; measured values vary with aggregate stiffness.'
+- key: poisson_ratio
+  value: 0.2
+  unit: '1'
+  basis: typical
+  source_id: gilson-c469
+  citation: 'Gilson Company blog, ''Modulus of Elasticity & Poisson''s Ratio of Concrete: Beyond Compressive Strength''
+    (re ASTM C469 testing): ''typical ranges of Poisson''s ratio values for concrete are 0.15 to 0.20 for normal
+    weight concrete'''
+  verified_at: https://www.globalgilson.com/blog/modulus-of-elasticity-poissons-ratio-of-concrete-beyond-compressive-strength
+  cross_check: 'CivilEngPro modulus-of-elasticity page (civilengpro.com, loaded): ''for concrete under small stresses,
+    Poisson''s ratio ranges approximately 0.15 to 0.20'''
+  notes: Published as a typical RANGE 0.15-0.20 for normal-weight concrete; 0.20 recorded here as the commonly assumed
+    design value (e.g., AASHTO LRFD uses 0.2). Use the range, not a hard single value, in educational display. [unit
+    spelling normalized from 'dimensionless'] Conventional design value from the published 0.15-0.20 range; display
+    as a range.
+errata: []

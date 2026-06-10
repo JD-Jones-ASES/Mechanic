@@ -379,7 +379,7 @@ def compile_all(things_dir: Path, out_dir: Path) -> list[str]:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
-    repo = Path(__file__).resolve().parents[3].parent
+    repo = Path(__file__).resolve().parents[3]  # pipeline/src/mech_pipeline -> repo root
     ap.add_argument("--things", type=Path, default=repo / "site" / "src" / "content" / "things")
     ap.add_argument("--out", type=Path, default=repo / "site" / "src" / "generated" / "things")
     args = ap.parse_args()

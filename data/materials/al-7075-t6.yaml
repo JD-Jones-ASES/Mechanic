@@ -1,0 +1,110 @@
+id: al-7075-t6
+name: 7075-T6 aluminum
+class: aluminum
+condition: T6 temper; design-minimum entries are bare sheet per QQ-A-250/12 (0.040-0.249 in, MIL-HDBK-5 lineage);
+  typical entries are T6/T651 nominal values
+cost_class: medium
+cost_rationale: Same 180 cents/lb 2025e USGS ingot anchor; 7075 aerospace sheet/plate carries a meaningful conversion
+  premium over 6061 (top of the medium band, knowledge-based premium).
+properties:
+- key: density
+  value: 0.101
+  unit: lb/inch**3
+  basis: typical
+  source_id: nasa-cr-123773
+  citation: 'NASA CR-123773, Materials Data Handbook: Aluminum Alloy 7075 (2nd Ed., April 1972), Sec. 9.1: density
+    0.101 lb/in3 at 68 F (Sec. 9.11 gives specific gravity 2.80 g/cm3 at 20 C). This is the MIL-HDBK-5 lineage value;
+    MIL-HDBK-5J Table 3.7.6.0(b1) lists the same omega = 0.101 lb/in3.'
+  verified_at: https://ntrs.nasa.gov/api/citations/19720022809/downloads/19720022809.pdf
+  cross_check: Gabrian 7075 datasheet and Wikipedia both list 2.81 g/cm3 = 0.102 lb/in3 (rounding-level difference,
+    see discrepancies)
+  notes: MIL-HDBK-5J itself could not be fetched (68.7 MB > fetch limit); the 0.101 lb/in3 value was verified in
+    NASA CR-123773, which republishes MIL-HDBK-5 data. Nominal physical property, no statistical basis. [unit spelling
+    normalized from 'lb/in3']
+- key: youngs_modulus
+  value: 10.3
+  unit: Msi
+  basis: typical
+  source_id: nasa-cr-123773
+  citation: 'NASA CR-123773, Sec. 7.221: ''Design value of E. All products and tempers: E = 10.3 x 10^3 ksi'', citing
+    Ref. 7.5 = MIL-HDBK-5A (Feb 1966, change order Jan 1970). MIL-HDBK-5J Sec. 3.7.6 lists the identical E = 10.3
+    x 10^3 ksi for 7075-T6 sheet.'
+  verified_at: https://ntrs.nasa.gov/api/citations/19720022809/downloads/19720022809.pdf
+  cross_check: 'Gabrian 7075 datasheet and Wikipedia: typical E = 10,400 ksi (71.7 GPa) - agrees within 1% (typical
+    vs design value)'
+  notes: Handbook design (room-temperature tension) value, not a statistical A/B minimum; design_minimum is the
+    closest basis category. NASA Sec. 7.231 also gives compression modulus Ec = 10.5 x 10^3 ksi. [unit spelling
+    normalized from '10^3 ksi']
+- key: poisson_ratio
+  value: 0.33
+  unit: '1'
+  basis: typical
+  source_id: nasa-cr-123773
+  citation: 'NASA CR-123773, Sec. 7.21: ''Poisson''s ratio, 0.33'', citing Metals Handbook Vol. 1, 8th Ed., ASM
+    1961. Same mu = 0.33 is listed in MIL-HDBK-5J Table 3.7.6.0(b1).'
+  verified_at: https://ntrs.nasa.gov/api/citations/19720022809/downloads/19720022809.pdf
+  cross_check: 'Wikipedia ''7075 aluminium alloy'' properties table: Poisson''s ratio 0.33'
+  notes: '[unit spelling normalized from ''dimensionless'']'
+- key: shear_modulus
+  value: 3.9
+  unit: Msi
+  basis: typical
+  source_id: nasa-cr-123773
+  citation: 'NASA CR-123773, Sec. 7.241: ''Design value of G. 3.9 x 10^3 ksi'', citing Ref. 7.5 = MIL-HDBK-5A. MIL-HDBK-5J
+    Table 3.7.6.0(b1) lists the same G = 3.9 x 10^3 ksi for 7075-T6 sheet.'
+  verified_at: https://ntrs.nasa.gov/api/citations/19720022809/downloads/19720022809.pdf
+  cross_check: none found online beyond consistency with widely quoted typical 26.9 GPa (~3.9 Msi); also consistent
+    with E=10.3 Msi and mu=0.33 via G=E/2(1+mu)=3.87 Msi
+  notes: Handbook design value (modulus of rigidity), not statistical. [unit spelling normalized from '10^3 ksi']
+- key: yield_strength
+  value: 67
+  unit: ksi
+  basis: design_minimum
+  source_id: nasa-cr-123773
+  citation: 'NASA CR-123773, Table 7.4112 ''Design Tensile Properties for T6 and T651 Sheet and Plate'', QQ-A-250/12
+    (7075), T6 bare sheet 0.040-0.249 in, A basis, L direction: Fty = 67 ksi (LT = 66 ksi; B basis L = 70 ksi).
+    Republished from MIL-HDBK-5A (Ref. 7.5).'
+  verified_at: https://ntrs.nasa.gov/api/citations/19720022809/downloads/19720022809.pdf
+  cross_check: 'Aero Metals Alliance QQ-A-250/12 T6 sheet datasheet: spec minimum proof strength 469 MPa (= 68 ksi)
+    for 1.0-3.17 mm (0.040-0.125 in), LT; Alcoa 7075 datasheet: T6 sheet LT yield min 63-69 ksi (434-476 MPa) over
+    0.008-0.249 in'
+  notes: 'A-basis statistical minimum. Assignment preferred MIL-HDBK-5J Table 3.7.6.0(b1) sheet values, but the
+    5J PDF (68.7 MB) exceeded fetch limits; the verified MIL-HDBK-5A vintage A value is reported instead and the
+    current spec minimum (68 ksi LT for 0.040-0.125 in) is given as cross-check. CAUTION (cross-check): MIL-HDBK-5A
+    vintage (NASA CR-123773); current 5J/MMPDS and AMS-QQ-A-250/12 sheet minimums are ~68-69 ksi.'
+- key: ultimate_strength
+  value: 77
+  unit: ksi
+  basis: design_minimum
+  source_id: nasa-cr-123773
+  citation: 'NASA CR-123773, Table 7.4112, QQ-A-250/12 (7075), T6 bare sheet 0.040-0.249 in, A basis, L direction:
+    Ftu = 77 ksi (LT = 77 ksi; B basis = 79 ksi). Republished from MIL-HDBK-5A (Ref. 7.5).'
+  verified_at: https://ntrs.nasa.gov/api/citations/19720022809/downloads/19720022809.pdf
+  cross_check: 'Alcoa 7075 datasheet (hosted by CALM Aluminium): T6 sheet 0.008-0.249 in tensile min 74-78 ksi (510-538
+    MPa) LT; Aero Metals Alliance QQ-A-250/12: 538 MPa (= 78 ksi) min for 1.0-6.3 mm'
+  notes: 'A-basis statistical minimum, 5A vintage. Current AMS-QQ-A-250/12 spec minimum for 0.040-0.125 in sheet
+    is 78 ksi LT (see discrepancies). CAUTION (cross-check): MIL-HDBK-5A vintage; current 5J/AMS-QQ-A-250/12 sheet
+    minimum is 78 ksi.'
+- key: yield_strength
+  value: 73000
+  unit: psi
+  basis: typical
+  source_id: gabrian-7075
+  citation: 'Gabrian International, ''7075 Aluminum Alloy: Properties'' datasheet, Mechanical Properties table,
+    7075-T6/-T651: Yield Strength 503 MPa | 73000 psi.'
+  verified_at: https://www.gabrian.com/wp-content/uploads/2018/09/7075-Aluminum-Alloy-Properties.pdf
+  cross_check: 'NASA CR-123773 Tabular Abstract: typical Fty (T6, T651) = 73.0 ksi; consistent with MatWeb-style
+    typicals as quoted by third parties (503 MPa)'
+  notes: Typical/nominal value, no statistical significance.
+- key: ultimate_strength
+  value: 83000
+  unit: psi
+  basis: typical
+  source_id: gabrian-7075
+  citation: 'Gabrian International, ''7075 Aluminum Alloy: Properties'' datasheet, Mechanical Properties table,
+    7075-T6/-T651: Tensile Strength 572 MPa | 83000 psi.'
+  verified_at: https://www.gabrian.com/wp-content/uploads/2018/09/7075-Aluminum-Alloy-Properties.pdf
+  cross_check: 'NASA CR-123773 Tabular Abstract: typical Ftu (T6, T651) = 83.0 ksi; Wikipedia: tensile strength
+    572 MPa (83.0 ksi)'
+  notes: Typical/nominal value, no statistical significance.
+errata: []

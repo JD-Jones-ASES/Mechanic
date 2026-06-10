@@ -1,0 +1,75 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../layouts/Base.astro";
+
+const materials = (await getCollection("materials")).map((m) => m.data);
+const things = await getCollection("things");
+
+// attributions: every source cited anywhere, deduplicated
+const sourceMap = new Map<string, string>();
+for (const t of things) for (const s of t.data.sources) sourceMap.set(s.id, s.citation);
+for (const m of materials) for (const p of m.properties) {
+  if (!sourceMap.has(p.source_id)) sourceMap.set(p.source_id, p.citation);
+}
+const errata = materials.flatMap((m) => m.errata.map((e) => ({ material: m.name, ...e })));
+---
+
+<Base title="About">
+  <h1>About this site</h1>
+
+  <h2 id="disclaimer">Educational use only</h2>
+  <p>
+    Everything here exists to teach. <strong>Nothing on this site may be used for real engineering
+    design.</strong> Material values are nominal published figures of mixed statistical bases
+    (labeled per value); relations carry idealizing assumptions (labeled per relation); no
+    professional review applies. For real design work, use current controlled sources (MMPDS,
+    ASTM/ASME standards, supplier certifications) under qualified engineering judgment.
+  </p>
+
+  <h2 id="how">How the numbers are made trustworthy (for learning)</h2>
+  <ul>
+    <li>Every relation is dimensionally checked and carries a citation and validity envelope.</li>
+    <li>Every derivation line is verified by a computer algebra system at build time — lines where
+      physics enters (free-body statements, boundary conditions) are explicitly marked as modeling
+      steps and human-reviewed.</li>
+    <li>Every widget value is computed by code generated from the same verified math, and checked
+      against high-precision reference values before deploy.</li>
+    <li>Every material value records its source, exact locator, original units, and basis
+      (specified minimum / design minimum / typical).</li>
+  </ul>
+
+  <h2 id="attributions">Source attributions</h2>
+  <ul>
+    {[...sourceMap.entries()].map(([id, citation]) => (
+      <li class="citation"><strong>{id}</strong> — {citation}</li>
+    ))}
+  </ul>
+  <p class="citation">
+    Values are compiled as individual facts with citation (see
+    <code>docs/data-provenance.md</code> in the repository). No source PDFs are redistributed and no
+    source's table layout is reproduced. MIL-HDBK-5J is cited as a publicly released government
+    handbook; it is <em>not</em> claimed to be public domain.
+  </p>
+
+  <h2 id="errata">Errata log</h2>
+  {
+    errata.length ? (
+      <ul>
+        {errata.map((e) => (
+          <li>
+            <strong>{e.date}</strong> ({e.material}): {e.note}
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p>No corrections yet. When a published value is corrected, the change is dated and logged
+        here — never silently edited.</p>
+    )
+  }
+
+  <h2 id="licenses">Licenses</h2>
+  <p>
+    Code: MIT. Prose, derivations, figures, and the curated dataset: CC BY 4.0 — reuse with
+    attribution welcome, especially by other educators.
+  </p>
+</Base>

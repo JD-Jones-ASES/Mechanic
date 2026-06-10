@@ -1,0 +1,86 @@
+id: brass-c26000
+name: C26000 Cartridge Brass (70/30)
+class: copper-alloy
+condition: H02 (half-hard) temper, flat products (sheet/strip), 0.040 in section, typical values at 68°F (20°C).
+  Elastic constants and density are temper-independent CDA values.
+cost_class: high
+cost_rationale: 'USGS MCS 2026 (loaded): COMEX copper averaged a record-high $4.80/lb 2025e (US producer cathode
+  $4.90/lb) — ~2.7x aluminum ingot and >10x steel; C26000 is ~70% Cu and brass mill strip prices sit above the copper
+  content, clearly above the aluminum/stainless tier but below titanium.'
+properties:
+- key: density
+  value: 0.308
+  unit: lb/inch**3
+  basis: typical
+  source_id: cda-c26000
+  citation: 'Copper Development Association, C26000 Alloy datasheet (alloys.copper.org), Physical Properties: density
+    0.308 lb/cu in. at 68°F (specific gravity 8.53)'
+  verified_at: https://alloys.copper.org/alloy/C26000
+  cross_check: 'Wieland Concast C26000 datasheet PDF (concast.com/files/C26000.pdf, ''Physical properties provided
+    by CDA''): 0.308 lb/in3 at 68°F / 8.53 gm/cm3 at 20°C; also AZoM article 6341: 0.308 lb/in3 (8.53 g/cm3)'
+  notes: Density is temper-independent. MakeItFrom lists a rounded 8.2 g/cm3 — see discrepancies. [unit spelling
+    normalized from 'lb/in3']
+- key: youngs_modulus
+  value: 16000
+  unit: ksi
+  basis: typical
+  source_id: cda-c26000
+  citation: 'Copper Development Association, C26000 Alloy datasheet (alloys.copper.org), Mechanical Properties:
+    Modulus of Elasticity in Tension 16000 ksi'
+  verified_at: https://alloys.copper.org/alloy/C26000
+  cross_check: 'Wieland Concast C26000 datasheet PDF (quoting CDA): 16000 ksi (110317 MPa); MakeItFrom H02 C26000
+    page: 110 GPa (16 x 10^6 psi)'
+  notes: Temper-independent. AZoM lists 117 GPa (16969 ksi), an outlier vs CDA/Concast/MakeItFrom — flagged in discrepancies.
+- key: shear_modulus
+  value: 6000
+  unit: ksi
+  basis: typical
+  source_id: cda-c26000
+  citation: 'Copper Development Association, C26000 Alloy datasheet (alloys.copper.org), Mechanical Properties:
+    Modulus of Rigidity 6000 ksi'
+  verified_at: https://alloys.copper.org/alloy/C26000
+  cross_check: 'Wieland Concast C26000 datasheet PDF (quoting CDA): 6000 ksi (41369 MPa); MakeItFrom H02 C26000
+    page: 41 GPa (5.9 x 10^6 psi)'
+  notes: CDA calls this 'Modulus of Rigidity'. Temper-independent.
+- key: poisson_ratio
+  value: 0.34
+  unit: '1'
+  basis: typical
+  source_id: azom-6341
+  citation: 'AZoM, ''Cartridge Brass UNS C26000'', Article ID 6341 (azom.com): Poisson''s ratio 0.34'
+  verified_at: https://www.azom.com/article.aspx?ArticleID=6341
+  cross_check: 'No exact second-source agreement found: MakeItFrom H02 C26000 page lists 0.31; CDA''s published
+    E=16000 ksi and G=6000 ksi imply nu = E/(2G)-1 = 0.33'
+  notes: 'CDA does not publish Poisson''s ratio directly. Sources disagree (0.31-0.34); shear_modulus is the better-verified
+    elastic constant and is also provided. Treat 0.33-0.34 as typical. [unit spelling normalized from ''dimensionless'']
+    Cross-check: no exact second source; CDA''s own E/G imply 0.33, MakeItFrom gives 0.31. Treat as the 0.31-0.34
+    band.'
+- key: yield_strength
+  value: 52
+  unit: ksi
+  basis: typical
+  source_id: cda-c26000
+  citation: 'Copper Development Association, C26000 Alloy datasheet (alloys.copper.org), Mechanical Properties,
+    Flat Products, H02 (1/2 Hard) temper, 0.040 in section: yield strength at 0.5% extension under load, 52 ksi
+    Typ'
+  verified_at: https://www.makeitfrom.com/material-properties/Half-Hard-H02-C26000-Brass
+  cross_check: Copper and Brass Sales (materialsplus.com) C26000 H02 sheet product listings state TS 62 ksi / YS
+    52 ksi (confirmed via search results; direct page load returned 403)
+  notes: Yield basis is 0.5% extension under load, not 0.2% offset. The CDA page was loaded but its H02 table row
+    rendered with the yield cell dropped by the HTML-to-text conversion (remaining cells 62/25/70/65/40/18 match
+    TS/El/HRB/HR30T/shear/fatigue only with YS=52); the 52 ksi value was directly seen on MakeItFrom as 360 MPa
+    (52 x 10^3 psi). For comparison, ASTM B927/B927M-23 spec MINIMUM for H02 rod under 1/2 in dia is 35 ksi (Wieland
+    Concast datasheet) — different product form and basis.
+- key: ultimate_strength
+  value: 62
+  unit: ksi
+  basis: typical
+  source_id: cda-c26000
+  citation: 'Copper Development Association, C26000 Alloy datasheet (alloys.copper.org), Mechanical Properties,
+    Flat Products, H02 (1/2 Hard) temper, 0.040 in section: tensile strength 62 ksi Typ'
+  verified_at: https://alloys.copper.org/alloy/C26000
+  cross_check: 'Copper and Brass Sales (materialsplus.com) C26000 H02 sheet listings: 62 ksi tensile (via search
+    results); MakeItFrom H02 page: 420 MPa (61 x 10^3 psi)'
+  notes: Typical, not a spec minimum. ASTM B927/B927M-23 spec MINIMUM for H02 rod under 1/2 in dia is 57 ksi (Wieland
+    Concast datasheet) — different product form.
+errata: []

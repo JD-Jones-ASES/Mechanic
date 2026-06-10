@@ -1,0 +1,37 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../layouts/Base.astro";
+
+const things = await getCollection("things");
+const base = import.meta.env.BASE_URL;
+---
+
+<Base title="Home">
+  <h1>A reference of mechanical <em>things</em></h1>
+  <p>
+    Each entry declares its variables and governing relations, derives them step by step
+    (machine-verified), and lets you turn the knobs — including the material — to see the physics
+    respond. Built for engineering undergraduates.
+  </p>
+  <ul class="card-grid">
+    {
+      things.map((t) => (
+        <li class="card">
+          <h3>
+            <a href={`${base}things/${t.id}/`}>{t.data.title}</a>
+          </h3>
+          <p>{t.data.summary}</p>
+          <p>
+            {t.data.facets.map((f) => (
+              <span class="facet">{f}</span>
+            ))}
+          </p>
+        </li>
+      ))
+    }
+  </ul>
+  <p>
+    Browse the <a href={`${base}materials/`}>materials database &amp; Ashby chart</a> — every value
+    carries its citation and basis.
+  </p>
+</Base>

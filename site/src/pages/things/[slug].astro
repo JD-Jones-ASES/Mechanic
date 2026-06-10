@@ -1,0 +1,103 @@
+---
+/**
+ * The THING template page — every THING renders through this one component
+ * (the factory's output side). Static math is KaTeX-rendered at build time;
+ * only the widget island ships JS.
+ */
+import { getCollection, getEntry, render } from "astro:content";
+import katex from "katex";
+import ThingWidget from "../../components/ThingWidget";
+import Base from "../../layouts/Base.astro";
+
+export async function getStaticPaths() {
+  const things = await getCollection("things");
+  return things.map((t) => ({ params: { slug: t.id } }));
+}
+
+const { slug } = Astro.params;
+const thing = await getEntry("things", slug);
+const compiled = await getEntry("compiled", slug);
+if (!thing || !compiled) {
+  throw new Error(`THING '${slug}' missing authored or compiled entry — run 'pnpm run gen'`);
+}
+
+const overviewEntry = await getEntry("prose", `${slug}/overview`);
+const failureEntry = await getEntry("prose", `${slug}/failure`);
+const Overview = overviewEntry ? (await render(overviewEntry)).Content : null;
+const Failure = failureEntry ? (await render(failureEntry)).Content : null;
+
+const needsMaterials = compiled.data.material_binding != null;
+const materials = needsMaterials ? (await getCollection("materials")).map((m) => m.data) : [];
+
+const tex = (s: string) => katex.renderToString(s, { displayMode: true, throwOnError: true });
+const a = compiled.data;
+---
+
+<Base title={thing.data.title} description={thing.data.summary}>
+  <article>
+    <h1>{thing.data.title}</h1>
+    <p>{thing.data.facets.map((f) => <span class="facet">{f}</span>)}</p>
+
+    {Overview ? <Overview /> : null}
+
+    <h2>Try it</h2>
+    <div data-pagefind-ignore>
+      <ThingWidget client:load artifact={a} materials={materials} sim={a.sim} />
+    </div>
+
+    <h2>Governing relations</h2>
+    {
+      a.relations.map((rel) => (
+        <div class="relation-block">
+          <Fragment set:html={tex(rel.latex)} />
+          <p class="assumptions">
+            <strong>Assumes:</strong> {rel.assumptions.join("; ") || "—"}
+            {rel.validity.length > 0 && (
+              <>
+                {" "}
+                · <strong>Valid while:</strong> {rel.validity.map((v) => v.message).join(" ")}
+              </>
+            )}
+          </p>
+          <p class="citation">
+            Source: {a.sources.find((s) => s.id === rel.citation)?.citation ?? rel.citation}
+          </p>
+        </div>
+      ))
+    }
+
+    <h2>Derivation</h2>
+    <p class="citation">
+      Steps marked <span class="step-definition">modeling step</span> are where the physics enters
+      (human-reviewed); all other lines are machine-verified identities under this THING's relations.
+    </p>
+    <div class="derivation">
+      {
+        a.derivation.map((step, i) => (
+          <div class="derivation-step">
+            <Fragment set:html={tex(step.latex)} />
+            <p>
+              <strong>{i + 1}.</strong> {step.prose}
+              {step.rule ? <span class="rule"> — {step.rule}</span> : null}
+              {step.check === "definition" ? <span class="step-definition"> modeling step</span> : null}
+            </p>
+          </div>
+        ))
+      }
+    </div>
+
+    <h2>How it fails</h2>
+    {Failure ? <Failure /> : <p>Failure notes pending.</p>}
+
+    <h2>Sources</h2>
+    <ul>
+      {
+        a.sources.map((s) => (
+          <li class="citation">
+            {s.url ? <a href={s.url}>{s.citation}</a> : s.citation}
+          </li>
+        ))
+      }
+    </ul>
+  </article>
+</Base>

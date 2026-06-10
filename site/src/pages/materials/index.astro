@@ -1,0 +1,115 @@
+---
+/**
+ * Materials database + Ashby-style chart (invariant 3): log-log stiffness vs
+ * density, rendered as pure build-time SVG — ties per-THING material dropdowns
+ * back to material-class space. Every plotted point cites its sources below.
+ */
+import { getCollection } from "astro:content";
+import Base from "../../layouts/Base.astro";
+
+const rows = (await getCollection("materials")).map((m) => m.data);
+
+const pick = (m: (typeof rows)[number], key: string) => {
+  for (const basis of ["typical", "design_minimum", "spec_minimum"]) {
+    const p = m.properties.find((p) => p.key === key && p.basis === basis);
+    if (p) return p;
+  }
+  return undefined;
+};
+
+const points = rows
+  .map((m) => {
+    const E = pick(m, "youngs_modulus");
+    const rho = pick(m, "density");
+    return E && rho ? { m, E: E.value_si, rho: rho.value_si } : null;
+  })
+  .filter((p) => p != null);
+
+// log-log frame: rho 100..30000 kg/m^3, E 0.1..1000 GPa
+const W = 640;
+const H = 460;
+const PAD = { l: 64, r: 16, t: 16, b: 48 };
+const x = (rho: number) =>
+  PAD.l + ((Math.log10(rho) - 2) / (Math.log10(30000) - 2)) * (W - PAD.l - PAD.r);
+const y = (E_GPa: number) =>
+  H - PAD.b - ((Math.log10(E_GPa) - -1) / (3 - -1)) * (H - PAD.t - PAD.b);
+
+const CLASS_COLOR: Record<string, string> = {
+  steel: "#475569", stainless: "#0e7490", aluminum: "#2563eb", titanium: "#7c3aed",
+  "cast-iron": "#1f2937", "copper-alloy": "#b45309", polymer: "#dc2626",
+  wood: "#65a30d", concrete: "#a8a29e",
+};
+const xTicks = [100, 300, 1000, 3000, 10000, 30000];
+const yTicks = [0.1, 1, 10, 100, 1000];
+const fmtE = (pa: number) => (pa / 1e9 >= 10 ? (pa / 1e9).toFixed(0) : (pa / 1e9).toPrecision(2));
+const classes = [...new Set(points.map((p) => p.m.class))];
+---
+
+<Base title="Materials">
+  <h1>Materials</h1>
+  <p>
+    Stiffness is independent of strength — that's why a "stronger" alloy can deflect <em>more</em>.
+    This chart plots Young's modulus against density (both log scales, Ashby-style); the table below
+    carries every value's source, basis, and original published units.
+  </p>
+
+  <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Ashby chart: Young's modulus vs density, log-log" style="max-width:100%">
+    <title>Young's modulus vs density (log–log)</title>
+    <desc>Scatter of the materials database; classes share colors. Stiff-and-light is up and left.</desc>
+    {xTicks.map((t) => (
+      <>
+        <line x1={x(t)} y1={PAD.t} x2={x(t)} y2={H - PAD.b} stroke="#e2e8f0" />
+        <text x={x(t)} y={H - PAD.b + 18} text-anchor="middle" font-size="11" fill="currentColor">{t.toLocaleString()}</text>
+      </>
+    ))}
+    {yTicks.map((t) => (
+      <>
+        <line x1={PAD.l} y1={y(t)} x2={W - PAD.r} y2={y(t)} stroke="#e2e8f0" />
+        <text x={PAD.l - 8} y={y(t) + 4} text-anchor="end" font-size="11" fill="currentColor">{t}</text>
+      </>
+    ))}
+    <text x={(W + PAD.l) / 2} y={H - 8} text-anchor="middle" font-size="12" fill="currentColor">density ρ (kg/m³)</text>
+    <text x={16} y={(H - PAD.b + PAD.t) / 2} text-anchor="middle" font-size="12" fill="currentColor" transform={`rotate(-90 16 ${(H - PAD.b + PAD.t) / 2})`}>Young's modulus E (GPa)</text>
+    {points.map((p) => (
+      <g>
+        <circle cx={x(p.rho)} cy={y(p.E / 1e9)} r="6" fill={CLASS_COLOR[p.m.class] ?? "#64748b"} stroke="white" />
+        <text x={x(p.rho) + 8} y={y(p.E / 1e9) - 6} font-size="10" fill="currentColor">{p.m.name}</text>
+      </g>
+    ))}
+  </svg>
+  <p>
+    {classes.map((c) => (
+      <span class="facet" style={`border-color:${CLASS_COLOR[c]}`}>{c}</span>
+    ))}
+  </p>
+
+  <h2>The database</h2>
+  <table class="material-props">
+    <thead>
+      <tr>
+        <th scope="col">Material</th><th scope="col">Condition</th><th scope="col">Property</th>
+        <th scope="col">Published value</th><th scope="col">SI</th><th scope="col">Basis</th>
+        <th scope="col">Source</th>
+      </tr>
+    </thead>
+    <tbody>
+      {rows.flatMap((m) =>
+        m.properties.map((p, i) => (
+          <tr>
+            {i === 0 ? <th scope="rowgroup" rowspan={m.properties.length}>{m.name}</th> : null}
+            {i === 0 ? <td rowspan={m.properties.length}>{m.condition}</td> : null}
+            <td>{p.key.replaceAll("_", " ")}</td>
+            <td>{p.value_published} {p.unit_published}</td>
+            <td>{p.key === "density" ? `${Math.round(p.value_si)} kg/m³` : p.key === "poisson_ratio" ? p.value_si : `${fmtE(p.value_si)} GPa`}</td>
+            <td><span class={`basis basis-${p.basis}`}>{p.basis.replace("_", " ")}</span></td>
+            <td class="material-source" title={p.citation}>{p.source_id}</td>
+          </tr>
+        )),
+      )}
+    </tbody>
+  </table>
+  <p class="citation">
+    Strength values shown in GPa where applicable read as fractions (e.g. 0.25 GPa = 250 MPa).
+    Full citations on the <a href={`${import.meta.env.BASE_URL}about/#attributions`}>attributions page</a>.
+  </p>
+</Base>

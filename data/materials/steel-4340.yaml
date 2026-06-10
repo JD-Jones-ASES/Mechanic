@@ -1,0 +1,95 @@
+id: steel-4340
+name: AISI 4340 low-alloy steel (Ni-Cr-Mo)
+class: steel
+condition: 'Quenched and tempered to Ftu = 260 ksi level per MIL-HDBK-5J Table 2.3.1.0(f1) (AMS 6414, consumable-electrode
+  vacuum-melted; bar, forging, tubing; thickness limits per table footnote: <=1.70 in. martempered / <=2.50 in.
+  oil quench / <=3.50 in. water quench, 200 ft/min flow). Elastic and physical properties are the single nominal
+  values MIL-HDBK-5J lists for all Section 2.3 low-alloy steels (4130/4140/4340/8630 group).'
+cost_class: medium
+cost_rationale: Ni-Cr-Mo alloying plus aerospace-quality consumable-electrode vacuum melting (AMS 6414) typically
+  multiplies price several-fold over commodity carbon steel (knowledge-based premium on the verified USGS low-cost
+  steel anchor); still far below titanium. Commodity-grade 4340 sits at the bottom of medium; CEVM/VAR aerospace
+  stock trends toward high.
+properties:
+- key: density
+  value: 0.283
+  unit: lb/inch**3
+  basis: typical
+  source_id: mil-hdbk-5j
+  citation: MIL-HDBK-5J, Metallic Materials and Elements for Aerospace Vehicle Structures, 31 January 2003, Table
+    2.3.1.0(f1), p. 2-22 (omega, lb/in.^3 = 0.283); same value in Tables 2.3.1.0(c1) p. 2-17, (c2) p. 2-18, (g1)
+    p. 2-24, (g2) p. 2-25 for all low-alloy steels
+  verified_at: https://ia800103.us.archive.org/BookReader/BookReaderImages.php?id=milhdbk-5-j&itemPath=/10/items/milhdbk-5-j&server=ia800103.us.archive.org&page=leaf75&scale=2&rotate=0
+  cross_check: Independently hosted MIL-HDBK-5J chapter 2 excerpt (files.engineering.com, 4130Pages_from_MILHBK5J-2.pdf,
+    pp. 2-17/2-18/2-24) shows omega = 0.283 lb/in.^3 for the low-alloy steel group
+  notes: Handbook lists density as a nominal physical property, not a statistical minimum. Typical commercial datasheets
+    give 7.85 g/cm^3 = 0.284 lb/in^3 (quickparts.com MatWeb-derived sheet; AZoM) - see discrepancies. Page image
+    loaded from the archive.org scan of MIL-HDBK-5J (item milhdbk-5-j, leaf 75 = printed page 2-22). [unit spelling
+    normalized from 'lb/in.^3']
+- key: youngs_modulus
+  value: 29
+  unit: Msi
+  basis: typical
+  source_id: mil-hdbk-5j
+  citation: 'MIL-HDBK-5J, 31 January 2003, Table 2.3.1.0(f1), p. 2-22: E, 10^3 ksi = 29.0 (tension); Ec, 10^3 ksi
+    = 29.0 (compression); identical in Tables 2.3.1.0(c1), (c2), (g1), (g2)'
+  verified_at: https://ia800103.us.archive.org/BookReader/BookReaderImages.php?id=milhdbk-5-j&itemPath=/10/items/milhdbk-5-j&server=ia800103.us.archive.org&page=leaf75&scale=2&rotate=0
+  cross_check: 'files.engineering.com MIL-HDBK-5J excerpt (Tables 2.3.1.0(c1)/(c2), pp. 2-17/2-18): E = 29.0 x 10^3
+    ksi; also quickparts.com MatWeb-derived normalized 4340 datasheet: 29,000 ksi (200 GPa)'
+  notes: Published as 29.0 in units of 10^3 ksi (do not double-convert). Moduli in MIL-HDBK-5 tables are nominal/average
+    values, not statistical minimums. [unit spelling normalized from '10^3 ksi']
+- key: poisson_ratio
+  value: 0.32
+  unit: '1'
+  basis: typical
+  source_id: mil-hdbk-5j
+  citation: 'MIL-HDBK-5J, 31 January 2003, Table 2.3.1.0(f1), p. 2-22: mu = 0.32; identical in Tables 2.3.1.0(c1),
+    (c2), (g1), (g2) for all low-alloy steels'
+  verified_at: https://ia800103.us.archive.org/BookReader/BookReaderImages.php?id=milhdbk-5-j&itemPath=/10/items/milhdbk-5-j&server=ia800103.us.archive.org&page=leaf75&scale=2&rotate=0
+  cross_check: 'files.engineering.com MIL-HDBK-5J excerpt (pp. 2-17/2-18/2-24): mu = 0.32'
+  notes: 'Note: MIL-HDBK-5J''s 0.32 disagrees with common typical datasheets (0.29 on the MatWeb-derived quickparts
+    sheet; 0.27-0.30 per AZoM). 0.32 is also slightly inconsistent with the handbook''s own E = 29.0 and G = 11.0
+    Msi (isotropic relation gives mu ~ 0.318). Flagged in discrepancies. [unit spelling normalized from ''dimensionless'']'
+- key: shear_modulus
+  value: 11
+  unit: Msi
+  basis: typical
+  source_id: mil-hdbk-5j
+  citation: 'MIL-HDBK-5J, 31 January 2003, Table 2.3.1.0(f1), p. 2-22: G, 10^3 ksi = 11.0; identical in Tables 2.3.1.0(c1),
+    (c2), (g1), (g2)'
+  verified_at: https://ia800103.us.archive.org/BookReader/BookReaderImages.php?id=milhdbk-5-j&itemPath=/10/items/milhdbk-5-j&server=ia800103.us.archive.org&page=leaf75&scale=2&rotate=0
+  cross_check: 'files.engineering.com MIL-HDBK-5J excerpt (pp. 2-17/2-18/2-24): G = 11.0 x 10^3 ksi'
+  notes: MatWeb-derived typical sheet gives 78.0 GPa (11,300 ksi); AZoM gives 80 GPa 'typical for steel'. See discrepancies.
+    [unit spelling normalized from '10^3 ksi']
+- key: yield_strength
+  value: 217
+  unit: ksi
+  basis: spec_minimum
+  source_id: mil-hdbk-5j
+  citation: 'MIL-HDBK-5J, 31 January 2003, Table 2.3.1.0(f1) ''Design Mechanical and Physical Properties of Low-Alloy
+    Steels'', p. 2-22: AISI 4340 (AMS 6414, consumable-electrode vacuum-melted), bar/forging/tubing, quenched and
+    tempered, Basis S: Fty = 217 ksi at the Ftu = 260 ksi level (Fcy = 235 ksi, Fsu = 156 ksi, e(L) = 10%)'
+  verified_at: https://ia800103.us.archive.org/BookReader/BookReaderImages.php?id=milhdbk-5-j&itemPath=/10/items/milhdbk-5-j&server=ia800103.us.archive.org&page=leaf75&scale=2&rotate=0
+  cross_check: Third-party reproduction of MIL-HDBK-5J Table 2.3.1.0(f) seen in search-result listing (Chegg homework
+    excerpt, gated site not fetched) quotes the same Ftu 260 ksi / Fty 217 ksi pair for AISI 4340
+  notes: 'S basis = minimum per the applicable material specification; table footnote b: ''Design values are applicable
+    only to parts for which the indicated Ftu has been substantiated by adequate quality control testing.'' Lower
+    Q&T levels (Ftu 125/140/150/160/180/200 ksi with Fty 100/120/132/142/163/176 ksi) appear in Table 2.3.1.0(g2),
+    p. 2-25 (verified at leaf 78 of the same archive.org scan), but per that table''s footnote d they carry no statistical
+    (T99/T90) or specification (S) basis.'
+- key: ultimate_strength
+  value: 260
+  unit: ksi
+  basis: spec_minimum
+  source_id: mil-hdbk-5j
+  citation: 'MIL-HDBK-5J, 31 January 2003, Table 2.3.1.0(f1), p. 2-22: AISI 4340 (AMS 6414, consumable-electrode
+    vacuum-melted), bar/forging/tubing, quenched and tempered, Basis S: Ftu = 260 ksi'
+  verified_at: https://ia800103.us.archive.org/BookReader/BookReaderImages.php?id=milhdbk-5-j&itemPath=/10/items/milhdbk-5-j&server=ia800103.us.archive.org&page=leaf75&scale=2&rotate=0
+  cross_check: Chegg search-result listing of MIL-HDBK-5J Table 2.3.1.0(f) quotes Ftu 260 ksi for AISI 4340 (gated
+    site, snippet only); for the normalized condition a MatWeb-derived datasheet (quickparts.com) gives typical
+    UTS 1282 MPa (185,900 psi)
+  notes: '260 ksi is the classic aerospace heat-treat level for consumable-electrode vacuum-melted 4340 (AMS 6414).
+    Strength is entirely heat-treat dependent; see discrepancies for other levels and typical normalized values.
+    MIL-HDBK-5J page images loaded from the archive.org scan (item milhdbk-5-j): leaf 75 = p. 2-22 (Table 2.3.1.0(f1)),
+    leaf 78 = p. 2-25 (Table 2.3.1.0(g2)).'
+errata: []

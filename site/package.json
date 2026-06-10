@@ -1,0 +1,34 @@
+{
+  "name": "mechanic-site",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "gen": "uv run --directory ../pipeline compile-things && uv run --directory ../pipeline ingest-materials",
+    "check:katex": "node scripts/check-katex.mjs",
+    "check:parity": "node scripts/check-parity.mjs",
+    "dev": "astro dev",
+    "build": "pnpm run gen && pnpm run check:katex && pnpm run check:parity && astro build && pagefind --site dist",
+    "preview": "astro preview",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "^6.0.2",
+    "@astrojs/preact": "^5.1.5",
+    "@preact/signals": "^2.9.1",
+    "astro": "^6.4.4",
+    "katex": "^0.17.0",
+    "pagefind": "^1.5.2",
+    "preact": "^10.29.2",
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.11.3",
+    "@playwright/test": "^1.60.0",
+    "typescript": "^6.0.3"
+  }
+}

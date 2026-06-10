@@ -1,0 +1,97 @@
+id: al-6061-t6
+name: 6061-T6 aluminum
+class: aluminum
+condition: T6 (and T62), sheet 0.010-0.249 in per AMS 4025/AMS 4027/AMS-QQ-A-250/11 for MIL-HDBK-5J design values;
+  typical entries are generic T6 wrought-product values
+cost_class: medium
+cost_rationale: 'USGS MCS 2026 (loaded): primary aluminum ingot average US market price 180 cents/lb 2025e (+39%
+  YoY) — roughly 4x carbon steel per pound; 6061 is the commodity wrought alloy with the smallest alloy premium.'
+properties:
+- key: density
+  value: 0.098
+  unit: lb/inch**3
+  basis: typical
+  source_id: mil-hdbk-5j
+  citation: MIL-HDBK-5J (31 Jan 2003), Table 3.6.2.0(b1), Design Mechanical and Physical Properties of 6061 Aluminum
+    Alloy Sheet, p. 3-264 (omega, lb/in.3)
+  verified_at: https://ia800103.us.archive.org/BookReader/BookReaderImages.php?zip=/10/items/milhdbk-5-j/MILHDBK5J_jp2.zip&file=MILHDBK5J_jp2/MILHDBK5J_0565.jp2&id=milhdbk-5-j&scale=2
+  cross_check: 'Wikipedia ''6061 aluminium alloy'' properties table: 2.70 g/cm3 (consistent)'
+  notes: Read directly from the archive.org page scan of MIL-HDBK-5J (leaf 565 = handbook page 3-264). Physical
+    property, nominal (no statistical basis assigned in 5J). [unit spelling normalized from 'lb/in3']
+- key: youngs_modulus
+  value: 9.9
+  unit: Msi
+  basis: typical
+  source_id: mil-hdbk-5j
+  citation: 'MIL-HDBK-5J (31 Jan 2003), Table 3.6.2.0(b1), p. 3-264: E, 10^3 ksi = 9.9 (tension); Ec = 10.1 (compression)'
+  verified_at: https://ia800103.us.archive.org/BookReader/BookReaderImages.php?zip=/10/items/milhdbk-5-j/MILHDBK5J_jp2.zip&file=MILHDBK5J_jp2/MILHDBK5J_0565.jp2&id=milhdbk-5-j&scale=2
+  cross_check: 'Wikipedia 6061 properties table: 68 GPa (9,900 ksi); jeelix.com: 68.9 GPa'
+  notes: Tensile modulus. Compressive modulus Ec = 10.1 x 10^3 ksi in same table. Elastic constants in 5J are average
+    (typical) values, not statistical minima. Wikipedia prose rounds to 69 GPa (10,000 ksi). [unit spelling normalized
+    from '10^3 ksi']
+- key: poisson_ratio
+  value: 0.33
+  unit: '1'
+  basis: typical
+  source_id: mil-hdbk-5j
+  citation: 'MIL-HDBK-5J (31 Jan 2003), Table 3.6.2.0(b1), p. 3-264: mu = 0.33'
+  verified_at: https://ia800103.us.archive.org/BookReader/BookReaderImages.php?zip=/10/items/milhdbk-5-j/MILHDBK5J_jp2.zip&file=MILHDBK5J_jp2/MILHDBK5J_0565.jp2&id=milhdbk-5-j&scale=2
+  cross_check: 'Wikipedia 6061 properties table: 0.33; jeelix.com FEA section: 0.33; modulusmetal.com range 0.325-0.335'
+  notes: Average elastic constant, no statistical basis in 5J. [unit spelling normalized from 'dimensionless']
+- key: shear_modulus
+  value: 3.8
+  unit: Msi
+  basis: typical
+  source_id: mil-hdbk-5j
+  citation: 'MIL-HDBK-5J (31 Jan 2003), Table 3.6.2.0(b1), p. 3-264: G, 10^3 ksi = 3.8'
+  verified_at: https://ia800103.us.archive.org/BookReader/BookReaderImages.php?zip=/10/items/milhdbk-5-j/MILHDBK5J_jp2.zip&file=MILHDBK5J_jp2/MILHDBK5J_0565.jp2&id=milhdbk-5-j&scale=2
+  cross_check: 'modulusmetal.com (EN AW-6061 T6): shear modulus 25.6-26.9 GPa, consistent with 3.8 x 10^3 ksi'
+  notes: Included alongside Poisson ratio for completeness; average elastic constant. [unit spelling normalized
+    from '10^3 ksi']
+- key: yield_strength
+  value: 36
+  unit: ksi
+  basis: design_minimum
+  source_id: mil-hdbk-5j
+  citation: 'MIL-HDBK-5J (31 Jan 2003), Table 3.6.2.0(b1), p. 3-264: Fty, A basis, L direction, T6/T62 sheet 0.010-0.249
+    in'
+  verified_at: https://ia800103.us.archive.org/BookReader/BookReaderImages.php?zip=/10/items/milhdbk-5-j/MILHDBK5J_jp2.zip&file=MILHDBK5J_jp2/MILHDBK5J_0565.jp2&id=milhdbk-5-j&scale=2
+  cross_check: ASTM B209 specified minimum yield 35 ksi (240 MPa) as quoted by Wikipedia '6061 aluminium alloy';
+    matches the table's LT A-basis value of 35 ksi
+  notes: 'A-basis (99% exceedance, 95% confidence) design minimum. Direction-dependent: L = 36 ksi, LT = 35 ksi
+    (A basis); B basis L = 38, LT = 37 ksi. Read directly from archive.org scan of the 5J table.'
+- key: yield_strength
+  value: 276
+  unit: MPa
+  basis: typical
+  source_id: jeelix-6061
+  citation: 'Jeelix, ''6061-T6 Aluminum Yield Strength'' engineering guide: typical design value 276 MPa (40 ksi);
+    consistent with ASM-handbook-derived typical values widely quoted (and consistent with MatWeb)'
+  verified_at: https://www.jeelix.com/6061-t6-aluminum-yield-strength/
+  cross_check: 'machinemfg.com and hardwarecustom.com guides (via search snippets): 276 MPa (40,000 psi) at 0.2%
+    offset; Wikipedia gives typical 270 MPa (39 ksi) - see discrepancies'
+  notes: Typical (average) value, not a guaranteed minimum. Same page states the ASTM guaranteed minimum as 240
+    MPa (35 ksi).
+- key: ultimate_strength
+  value: 42
+  unit: ksi
+  basis: design_minimum
+  source_id: mil-hdbk-5j
+  citation: 'MIL-HDBK-5J (31 Jan 2003), Table 3.6.2.0(b1), p. 3-264: Ftu, A basis, L and LT directions, T6/T62 sheet
+    0.010-0.249 in'
+  verified_at: https://ia800103.us.archive.org/BookReader/BookReaderImages.php?zip=/10/items/milhdbk-5-j/MILHDBK5J_jp2.zip&file=MILHDBK5J_jp2/MILHDBK5J_0565.jp2&id=milhdbk-5-j&scale=2
+  cross_check: ASTM B209 specified minimum tensile strength 42 ksi (290 MPa) as quoted by Wikipedia '6061 aluminium
+    alloy'
+  notes: A-basis design minimum; 42 ksi in both L and LT directions (B basis = 43 ksi). Read directly from archive.org
+    scan of the 5J table.
+- key: ultimate_strength
+  value: 310
+  unit: MPa
+  basis: typical
+  source_id: jeelix-6061
+  citation: 'Jeelix, ''6061-T6 Aluminum Yield Strength'' engineering guide, Section 5.2: typical ultimate tensile
+    strength 310 MPa; consistent with ASM-handbook-derived typical values (and consistent with MatWeb)'
+  verified_at: https://www.jeelix.com/6061-t6-aluminum-yield-strength/
+  cross_check: 'Wikipedia ''6061 aluminium alloy'': ''more typical values are 310 MPa (45 ksi)'''
+  notes: Typical (average) value; ASTM B209 / 5J spec-level minimum is 42 ksi (290 MPa).
+errata: []

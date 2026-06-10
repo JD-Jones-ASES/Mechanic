@@ -1,0 +1,46 @@
+---
+import "katex/dist/katex.min.css";
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+const { title, description = "Citation-backed reference of mechanical components for engineering undergraduates." } = Astro.props;
+const base = import.meta.env.BASE_URL;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <title>{title} · Mechanic</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <nav aria-label="Site">
+        <a class="brand" href={base}>Mechanic</a>
+        <a href={`${base}things/`}>Things</a>
+        <a href={`${base}materials/`}>Materials</a>
+        <a href={`${base}about/`}>About</a>
+      </nav>
+      <p class="edu-banner" role="note">
+        Educational material — <strong>not for design use</strong>. Every number cites its source;
+        see <a href={`${base}about/`}>provenance &amp; disclaimers</a>.
+      </p>
+    </header>
+    <main id="main" data-pagefind-body>
+      <slot />
+    </main>
+    <footer class="site-footer" data-pagefind-ignore>
+      <p>
+        Code MIT · content &amp; dataset CC BY 4.0 ·
+        <a href={`${base}about/#attributions`}>source attributions</a> ·
+        <a href={`${base}about/#errata`}>errata log</a>
+      </p>
+    </footer>
+  </body>
+</html>

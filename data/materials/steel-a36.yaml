@@ -1,0 +1,84 @@
+id: steel-a36
+name: ASTM A36 structural steel (hot-rolled)
+class: steel
+condition: Hot-rolled, as-rolled; strength minimums apply to plates/shapes/bars up to 8 in. thick (plates over 8
+  in. drop to 32 ksi yield)
+cost_class: low
+cost_rationale: 'Commodity carbon structural steel — the cheapest structural metal. USGS MCS 2026 (Feb 2026, loaded):
+  iron described as ''the least expensive and most widely used metal''; 2025e US raw steel 82 Mt with ~$149B sales
+  value across mill products; HRC/structural shapes trade around $0.35-0.50/lb, roughly 1/4 the price of aluminum
+  ingot.'
+properties:
+- key: yield_strength
+  value: 36
+  unit: ksi
+  basis: spec_minimum
+  source_id: astm-a36
+  citation: ASTM A36/A36M, Standard Specification for Carbon Structural Steel — specified minimum yield strength
+    (thickness <= 8 in.). Verified via SSAB ASTM A36 mill datasheet quoting the spec minimum.
+  verified_at: https://www.ssab.com/en-us/brands-and-products/commercial-steel/structural-steel/astm-a36
+  cross_check: 'Wikipedia ''A36 steel'' (citing AISC Steel Construction Manual, 8th ed.): minimum yield 36 ksi (250
+    MPa); also NCEES FE Reference Handbook 9.2, Mechanics of Materials Table 2 (Hibbeler 4th ed.), Structural A36
+    row: 36 ksi'
+  notes: ASTM spec itself is paywalled; number verified via mill datasheet and two secondary sources quoting the
+    spec minimum. For plates > 8 in. thick the spec minimum is 32 ksi.
+- key: ultimate_strength
+  value: 58
+  unit: ksi
+  basis: spec_minimum
+  source_id: astm-a36
+  citation: ASTM A36/A36M — specified tensile strength range 58-80 ksi; 58 ksi recorded as the specified minimum.
+    Verified via SSAB ASTM A36 mill datasheet (tensile strength 58-80 ksi).
+  verified_at: https://www.ssab.com/en-us/brands-and-products/commercial-steel/structural-steel/astm-a36
+  cross_check: 'Wikipedia ''A36 steel'': 58-80 ksi (400-550 MPa); NCEES FE Reference Handbook 9.2 Table 2 (Hibbeler),
+    Structural A36 row: ultimate 58 ksi'
+  notes: Spec gives a 58-80 ksi range, not a single value; 58 ksi minimum recorded per task instructions. Mill certs
+    commonly exceed minimums.
+- key: density
+  value: 0.282
+  unit: lb/inch**3
+  basis: typical
+  source_id: fe-handbook-9-2
+  citation: 'NCEES FE Reference Handbook 9.2, Mechanics of Materials, ''Table 1 - Typical Material Properties'',
+    p. 80: Steel density 0.282 lb/in3 (7.8 Mg/m3)'
+  verified_at: https://sites.lafayette.edu/raicha/files/2015/02/Mechanics-CBT-FE-Manual-9.2-pgs-76-8215315515865-67.pdf
+  cross_check: 'Same handbook Table 2 (Hibbeler, Mechanics of Materials 4th ed.), Structural A36 row: specific weight
+    0.284 lb/in3; Wikipedia ''A36 steel'': 0.28 lb/in3 (7.8 g/cm3), there cited to MatWeb (third-party quote); steelcalculator.app
+    A36 reference: 490 lb/ft3 (7,850 kg/m3)'
+  notes: Generic typical steel value, not an A36 spec quantity (ASTM A36 does not specify density). PDF read directly
+    (pages 76-81 of the handbook's Mechanics of Materials section). [unit spelling normalized from 'lb/in3']
+- key: youngs_modulus
+  value: 29
+  unit: Msi
+  basis: typical
+  source_id: fe-handbook-9-2
+  citation: 'NCEES FE Reference Handbook 9.2, Mechanics of Materials, ''Table 1 - Typical Material Properties'',
+    p. 80: Steel modulus of elasticity E = 29.0 Mpsi (200.0 GPa)'
+  verified_at: https://sites.lafayette.edu/raicha/files/2015/02/Mechanics-CBT-FE-Manual-9.2-pgs-76-8215315515865-67.pdf
+  cross_check: 'Wikipedia ''A36 steel'': 29,000 ksi (200 GPa); steelcalculator.app A36 reference: 29,000 ksi (200,000
+    MPa); same handbook Table 2 (Hibbeler) A36 row: E = 29.0 x 10^3 ksi'
+  notes: Unit recorded exactly as published in Table 1 ('Mpsi', i.e. 10^6 psi). Typical value for all structural
+    steel grades, not an A36 spec quantity. [unit spelling normalized from 'Mpsi']
+- key: poisson_ratio
+  value: 0.3
+  unit: '1'
+  basis: typical
+  source_id: fe-handbook-9-2
+  citation: 'NCEES FE Reference Handbook 9.2, Mechanics of Materials, ''Table 1 - Typical Material Properties'',
+    p. 80: Steel Poisson''s ratio v = 0.30'
+  verified_at: https://sites.lafayette.edu/raicha/files/2015/02/Mechanics-CBT-FE-Manual-9.2-pgs-76-8215315515865-67.pdf
+  cross_check: 'steelcalculator.app A36 reference page: Poisson''s ratio 0.30'
+  notes: Sources disagree on this one — see discrepancies. 0.30 recorded per FE Reference Handbook Table 1 as instructed.
+    [unit spelling normalized from 'dimensionless']
+- key: shear_modulus
+  value: 11.5
+  unit: Msi
+  basis: typical
+  source_id: fe-handbook-9-2
+  citation: 'NCEES FE Reference Handbook 9.2, Mechanics of Materials, ''Table 1 - Typical Material Properties'',
+    p. 80: Steel modulus of rigidity G = 11.5 Mpsi (80.0 GPa)'
+  verified_at: https://sites.lafayette.edu/raicha/files/2015/02/Mechanics-CBT-FE-Manual-9.2-pgs-76-8215315515865-67.pdf
+  cross_check: 'Wikipedia ''A36 steel'': shear modulus 11,500 ksi (79.3 GPa)'
+  notes: Included as a bonus alongside Poisson's ratio. Note AISC-aligned sources use G = 11,200 ksi (see discrepancies).
+    [unit spelling normalized from 'Mpsi']
+errata: []

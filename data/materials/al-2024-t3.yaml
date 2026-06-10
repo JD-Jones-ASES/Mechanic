@@ -1,0 +1,95 @@
+id: al-2024-t3
+name: 2024-T3 aluminum sheet (bare)
+class: aluminum
+condition: T3, bare flat sheet 0.010-0.128 in. thick, AMS 4037 / AMS-QQ-A-250/4 (MIL-HDBK-5J Table 3.2.3.0(b1),
+  p. 3-71)
+cost_class: medium
+cost_rationale: Same USGS aluminum anchor (180 cents/lb ingot 2025e); 2024-T3 aerospace-spec sheet premium comparable
+  to 7075 — top of medium.
+properties:
+- key: density
+  value: 0.1
+  unit: lb/inch**3
+  basis: typical
+  source_id: mil-hdbk-5j
+  citation: MIL-HDBK-5J (31 Jan 2003), Table 3.2.3.0(b1), Design Mechanical and Physical Properties of 2024 Aluminum
+    Alloy Sheet and Plate, p. 3-71 (omega, lb/in.3 = 0.100)
+  verified_at: https://ia800103.us.archive.org/BookReader/BookReaderImages.php?zip=/10/items/milhdbk-5-j/MILHDBK5J_jp2.zip&file=MILHDBK5J_jp2/MILHDBK5J_0372.jp2&id=milhdbk-5-j&scale=1&rotate=0
+  cross_check: Wikipedia '2024 aluminium alloy' gives 2.78 g/cm3 (0.1 lb/in3); Juvinall Appendix F reprint of Table
+    3.2.3.0(b1) also shows 0.100 lb/in3
+  notes: Physical properties in MIL-HDBK-5 are average (nominal) values, not statistical minima. Verified by reading
+    the actual handbook page image from the archive.org scan of MIL-HDBK-5J (item milhdbk-5-j, leaf 372 = handbook
+    page 3-71). [unit spelling normalized from 'lb/in3']
+- key: youngs_modulus
+  value: 10.5
+  unit: Msi
+  basis: typical
+  source_id: mil-hdbk-5j
+  citation: 'MIL-HDBK-5J (31 Jan 2003), Table 3.2.3.0(b1), p. 3-71: E, 10^3 ksi = 10.5 for T3 sheet (Ec = 10.7 in
+    compression)'
+  verified_at: https://ia800103.us.archive.org/BookReader/BookReaderImages.php?zip=/10/items/milhdbk-5-j/MILHDBK5J_jp2.zip&file=MILHDBK5J_jp2/MILHDBK5J_0372.jp2&id=milhdbk-5-j&scale=1&rotate=0
+  cross_check: 'Wikipedia ''2024 aluminium alloy'': Young''s modulus 73 GPa (10.6 Msi) typical across tempers'
+  notes: Tension modulus for the sheet columns of the table; compression modulus Ec = 10.7 x 10^3 ksi. The T351
+    plate columns of the same table list E = 10.7 / Ec = 10.9. Moduli in MIL-HDBK-5 are average values, not A/B-basis
+    minima. [unit spelling normalized from '10^3 ksi']
+- key: poisson_ratio
+  value: 0.33
+  unit: '1'
+  basis: typical
+  source_id: mil-hdbk-5j
+  citation: 'MIL-HDBK-5J (31 Jan 2003), Table 3.2.3.0(b1), p. 3-71: mu = 0.33'
+  verified_at: https://ia800103.us.archive.org/BookReader/BookReaderImages.php?zip=/10/items/milhdbk-5-j/MILHDBK5J_jp2.zip&file=MILHDBK5J_jp2/MILHDBK5J_0372.jp2&id=milhdbk-5-j&scale=1&rotate=0
+  cross_check: 'Juvinall & Marshek, Fundamentals of Machine Component Design, Appendix F (reprint of MIL-HDBK-5J
+    Table 3.2.3.0(b1)): mu = 0.33 (verified at https://www.cittastudi.it/repository/3281/Juvinall%20%20Appendice%20F_Metalic%20Materials%20and%20Elements%20for%20Aerospace%20Vehicle%20Structures.pdf)'
+  notes: Average value; applies to all sheet and plate columns of Table 3.2.3.0(b1). [unit spelling normalized from
+    'dimensionless']
+- key: shear_modulus
+  value: 4
+  unit: Msi
+  basis: typical
+  source_id: mil-hdbk-5j
+  citation: 'MIL-HDBK-5J (31 Jan 2003), Table 3.2.3.0(b1), p. 3-71: G, 10^3 ksi = 4.0'
+  verified_at: https://ia800103.us.archive.org/BookReader/BookReaderImages.php?zip=/10/items/milhdbk-5-j/MILHDBK5J_jp2.zip&file=MILHDBK5J_jp2/MILHDBK5J_0372.jp2&id=milhdbk-5-j&scale=1&rotate=0
+  cross_check: 'Juvinall Appendix F reprint of MIL-HDBK-5J Table 3.2.3.0(b1): G = 4.0 x 10^3 ksi'
+  notes: Average value. Provided in addition to Poisson's ratio; consistent with E/(2(1+mu)) using E = 10.5-10.7
+    Msi. [unit spelling normalized from '10^3 ksi']
+- key: yield_strength
+  value: 47
+  unit: ksi
+  basis: design_minimum
+  source_id: mil-hdbk-5j
+  citation: 'MIL-HDBK-5J (31 Jan 2003), Table 3.2.3.0(b1), p. 3-71: Fty (tension yield), A basis, L direction =
+    47 ksi for T3 sheet 0.010-0.128 in. (LT = 42 ksi; B basis: L = 48, LT = 43)'
+  verified_at: https://ia800103.us.archive.org/BookReader/BookReaderImages.php?zip=/10/items/milhdbk-5-j/MILHDBK5J_jp2.zip&file=MILHDBK5J_jp2/MILHDBK5J_0372.jp2&id=milhdbk-5-j&scale=1&rotate=0
+  cross_check: 'stressebook.com (quoting MMPDS Table 3.2.4.0(b1), same data lineage, AMS 4037 sheet 0.010-0.128):
+    Fty = 42 ksi (LT, A-basis) - matches the LT entry of this column (https://www.stressebook.com/angle-bracket-sizing-stress-analysis/)'
+  notes: 'A-basis (99% exceedance, 95% confidence) statistical design minimum, longitudinal (L) grain direction.
+    Grain-direction dependent: LT A-basis = 42 ksi. Typical (average) yield is ~50 ksi per United Aluminum datasheet.
+    Educational reference only, not for design.'
+- key: ultimate_strength
+  value: 64
+  unit: ksi
+  basis: design_minimum
+  source_id: mil-hdbk-5j
+  citation: 'MIL-HDBK-5J (31 Jan 2003), Table 3.2.3.0(b1), p. 3-71: Ftu (tension ultimate), A basis, L direction
+    = 64 ksi for T3 sheet 0.010-0.128 in. (LT = 63 ksi; B basis: L = 65, LT = 64)'
+  verified_at: https://ia800103.us.archive.org/BookReader/BookReaderImages.php?zip=/10/items/milhdbk-5-j/MILHDBK5J_jp2.zip&file=MILHDBK5J_jp2/MILHDBK5J_0372.jp2&id=milhdbk-5-j&scale=1&rotate=0
+  cross_check: 'stressebook.com (quoting MMPDS Table 3.2.4.0(b1), AMS 4037 sheet 0.010-0.128): Ftu = 63 ksi (LT,
+    lowest grain direction, A-basis) - matches the LT entry of this column (https://www.stressebook.com/angle-bracket-sizing-stress-analysis/)'
+  notes: A-basis statistical design minimum, longitudinal (L) grain direction; LT A-basis = 63 ksi. Typical (average)
+    UTS is ~70 ksi per United Aluminum datasheet (https://unitedaluminum.com/2024-aluminum-alloy/). Educational
+    reference only, not for design.
+- key: ultimate_strength
+  value: 70
+  unit: ksi
+  basis: typical
+  source_id: united-aluminum-2024
+  citation: 'United Aluminum, ''2024 Aluminum Alloy'' datasheet, typical mechanical properties for T3 temper: Tensile
+    Strength 70 ksi, Yield 50 ksi, Elongation 16% (averages, explicitly ''not guaranteed'' and ''should not be used
+    for design purposes'')'
+  verified_at: https://unitedaluminum.com/2024-aluminum-alloy/
+  cross_check: Consistent with the typical 2024-T3 values widely attributed to ASM/MatWeb by third parties (UTS
+    483 MPa / 70 ksi, YS 345 MPa / 50 ksi); MatWeb itself not accessed per EULA
+  notes: Typical (average) cross-check row, included alongside the MIL-HDBK-5J A-basis design minimum to show the
+    spread between typical and statistical-minimum values.
+errata: []

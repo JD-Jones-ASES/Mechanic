@@ -1,0 +1,28 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../../layouts/Base.astro";
+
+const things = await getCollection("things");
+const base = import.meta.env.BASE_URL;
+---
+
+<Base title="Things">
+  <h1>Things</h1>
+  <ul class="card-grid">
+    {
+      things.map((t) => (
+        <li class="card">
+          <h3>
+            <a href={`${base}things/${t.id}/`}>{t.data.title}</a>
+          </h3>
+          <p>{t.data.summary}</p>
+          <p>
+            {t.data.facets.map((f) => (
+              <span class="facet">{f}</span>
+            ))}
+          </p>
+        </li>
+      ))
+    }
+  </ul>
+</Base>

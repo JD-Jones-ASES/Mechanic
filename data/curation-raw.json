@@ -1,0 +1,1705 @@
+{
+  "summary": "Curate provenanced property values for 13 engineering materials from accessible public sources",
+  "agentCount": 14,
+  "logs": [
+    "13/13 materials curated"
+  ],
+  "result": {
+    "rows": [
+      {
+        "material_id": "steel-a36",
+        "name": "ASTM A36 structural steel (hot-rolled)",
+        "material_class": "steel",
+        "condition": "Hot-rolled, as-rolled; strength minimums apply to plates/shapes/bars up to 8 in. thick (plates over 8 in. drop to 32 ksi yield)",
+        "properties": [
+          {
+            "key": "yield_strength",
+            "value": 36,
+            "unit": "ksi",
+            "basis": "spec_minimum",
+            "source_id": "astm-a36",
+            "source_citation": "ASTM A36/A36M, Standard Specification for Carbon Structural Steel — specified minimum yield strength (thickness <= 8 in.). Verified via SSAB ASTM A36 mill datasheet quoting the spec minimum.",
+            "verified_at_url": "https://www.ssab.com/en-us/brands-and-products/commercial-steel/structural-steel/astm-a36",
+            "cross_check": "Wikipedia 'A36 steel' (citing AISC Steel Construction Manual, 8th ed.): minimum yield 36 ksi (250 MPa); also NCEES FE Reference Handbook 9.2, Mechanics of Materials Table 2 (Hibbeler 4th ed.), Structural A36 row: 36 ksi",
+            "notes": "ASTM spec itself is paywalled; number verified via mill datasheet and two secondary sources quoting the spec minimum. For plates > 8 in. thick the spec minimum is 32 ksi."
+          },
+          {
+            "key": "ultimate_strength",
+            "value": 58,
+            "unit": "ksi",
+            "basis": "spec_minimum",
+            "source_id": "astm-a36",
+            "source_citation": "ASTM A36/A36M — specified tensile strength range 58-80 ksi; 58 ksi recorded as the specified minimum. Verified via SSAB ASTM A36 mill datasheet (tensile strength 58-80 ksi).",
+            "verified_at_url": "https://www.ssab.com/en-us/brands-and-products/commercial-steel/structural-steel/astm-a36",
+            "cross_check": "Wikipedia 'A36 steel': 58-80 ksi (400-550 MPa); NCEES FE Reference Handbook 9.2 Table 2 (Hibbeler), Structural A36 row: ultimate 58 ksi",
+            "notes": "Spec gives a 58-80 ksi range, not a single value; 58 ksi minimum recorded per task instructions. Mill certs commonly exceed minimums."
+          },
+          {
+            "key": "density",
+            "value": 0.282,
+            "unit": "lb/in3",
+            "basis": "typical",
+            "source_id": "fe-handbook-9-2",
+            "source_citation": "NCEES FE Reference Handbook 9.2, Mechanics of Materials, 'Table 1 - Typical Material Properties', p. 80: Steel density 0.282 lb/in3 (7.8 Mg/m3)",
+            "verified_at_url": "https://sites.lafayette.edu/raicha/files/2015/02/Mechanics-CBT-FE-Manual-9.2-pgs-76-8215315515865-67.pdf",
+            "cross_check": "Same handbook Table 2 (Hibbeler, Mechanics of Materials 4th ed.), Structural A36 row: specific weight 0.284 lb/in3; Wikipedia 'A36 steel': 0.28 lb/in3 (7.8 g/cm3), there cited to MatWeb (third-party quote); steelcalculator.app A36 reference: 490 lb/ft3 (7,850 kg/m3)",
+            "notes": "Generic typical steel value, not an A36 spec quantity (ASTM A36 does not specify density). PDF read directly (pages 76-81 of the handbook's Mechanics of Materials section)."
+          },
+          {
+            "key": "youngs_modulus",
+            "value": 29,
+            "unit": "Mpsi",
+            "basis": "typical",
+            "source_id": "fe-handbook-9-2",
+            "source_citation": "NCEES FE Reference Handbook 9.2, Mechanics of Materials, 'Table 1 - Typical Material Properties', p. 80: Steel modulus of elasticity E = 29.0 Mpsi (200.0 GPa)",
+            "verified_at_url": "https://sites.lafayette.edu/raicha/files/2015/02/Mechanics-CBT-FE-Manual-9.2-pgs-76-8215315515865-67.pdf",
+            "cross_check": "Wikipedia 'A36 steel': 29,000 ksi (200 GPa); steelcalculator.app A36 reference: 29,000 ksi (200,000 MPa); same handbook Table 2 (Hibbeler) A36 row: E = 29.0 x 10^3 ksi",
+            "notes": "Unit recorded exactly as published in Table 1 ('Mpsi', i.e. 10^6 psi). Typical value for all structural steel grades, not an A36 spec quantity."
+          },
+          {
+            "key": "poisson_ratio",
+            "value": 0.3,
+            "unit": "dimensionless",
+            "basis": "typical",
+            "source_id": "fe-handbook-9-2",
+            "source_citation": "NCEES FE Reference Handbook 9.2, Mechanics of Materials, 'Table 1 - Typical Material Properties', p. 80: Steel Poisson's ratio v = 0.30",
+            "verified_at_url": "https://sites.lafayette.edu/raicha/files/2015/02/Mechanics-CBT-FE-Manual-9.2-pgs-76-8215315515865-67.pdf",
+            "cross_check": "steelcalculator.app A36 reference page: Poisson's ratio 0.30",
+            "notes": "Sources disagree on this one — see discrepancies. 0.30 recorded per FE Reference Handbook Table 1 as instructed."
+          },
+          {
+            "key": "shear_modulus",
+            "value": 11.5,
+            "unit": "Mpsi",
+            "basis": "typical",
+            "source_id": "fe-handbook-9-2",
+            "source_citation": "NCEES FE Reference Handbook 9.2, Mechanics of Materials, 'Table 1 - Typical Material Properties', p. 80: Steel modulus of rigidity G = 11.5 Mpsi (80.0 GPa)",
+            "verified_at_url": "https://sites.lafayette.edu/raicha/files/2015/02/Mechanics-CBT-FE-Manual-9.2-pgs-76-8215315515865-67.pdf",
+            "cross_check": "Wikipedia 'A36 steel': shear modulus 11,500 ksi (79.3 GPa)",
+            "notes": "Included as a bonus alongside Poisson's ratio. Note AISC-aligned sources use G = 11,200 ksi (see discrepancies)."
+          }
+        ],
+        "discrepancies": [
+          "Poisson's ratio varies by source: 0.30 (FE Reference Handbook 9.2 Table 1, typical steel; also steelcalculator.app), 0.32 (FE Handbook Table 2 / Hibbeler Mechanics of Materials 4th ed., Structural A36 row), 0.26 (Wikipedia A36 article, uncited for this value). 0.30 recorded as the primary value per assignment.",
+          "Shear modulus: FE Handbook Table 1 gives 11.5 Mpsi (80.0 GPa) and Wikipedia gives 11,500 ksi, but AISC-style references (steelcalculator.app) use G = 11,200 ksi (77 GPa), and FE Handbook Table 2 (Hibbeler) lists 11.0 x 10^3 ksi for A36.",
+          "Density spread is small but real: 0.282 lb/in3 (FE Table 1, generic steel) vs 0.284 lb/in3 (Hibbeler A36 specific weight, FE Table 2) vs 0.28 lb/in3 (Wikipedia, consistent with MatWeb as quoted there) vs 490 lb/ft3 ~ 0.2836 lb/in3 (steelcalculator.app).",
+          "Ultimate strength: ASTM spec is a 58-80 ksi range; FE Handbook Table 2 (Hibbeler) lists a single 58 ksi value. Recorded 58 ksi as the spec minimum per instructions.",
+          "Yield minimum is thickness-dependent: 36 ksi applies up to 8 in.; plates over 8 in. thick are 32 ksi min (Wikipedia, citing AISC Steel Construction Manual 8th ed.)."
+        ]
+      },
+      {
+        "material_id": "steel-1045",
+        "name": "AISI 1045 medium-carbon steel",
+        "material_class": "steel",
+        "condition": "Normalized bar (normalised per AS 1442 grade 1045, AISI 1045 equivalent; typical normalizing 840-920 C per supplier datasheets). ALL VALUES TYPICAL, not spec minimums — weakest-citation row. Elastic/physical properties are condition-independent typicals.",
+        "properties": [
+          {
+            "key": "density",
+            "value": 7.87,
+            "unit": "g/cc",
+            "basis": "typical",
+            "source_id": "azom-6130",
+            "source_citation": "AZoM, 'AISI 1045 Medium Carbon Steel', Article ID 6130, Physical Properties table: 7.87 g/cc (0.284 lb/in3)",
+            "verified_at_url": "https://www.azom.com/article.aspx?ArticleID=6130",
+            "cross_check": "MW Components (Elgin) 'Carbon Steel Grade 1045 Fact Sheet' PDF: identical English value 0.284 lb/in3 (metric printed as 7.85 g/cc); Amardeep Steel blog: 7.86 g/cm3",
+            "notes": "Condition-independent typical. Metric value varies 7.85-7.87 g/cc across sources while the English 0.284 lb/in3 is identical; recorded as published by AZoM. AZoM table content is consistent with values third parties attribute to MatWeb (MatWeb itself not accessed)."
+          },
+          {
+            "key": "youngs_modulus",
+            "value": 200,
+            "unit": "GPa",
+            "basis": "typical",
+            "source_id": "azom-6130",
+            "source_citation": "AZoM, 'AISI 1045 Medium Carbon Steel', Article ID 6130, Mechanical Properties table: Modulus of Elasticity 200 GPa (29000 ksi)",
+            "verified_at_url": "https://www.azom.com/article.aspx?ArticleID=6130",
+            "cross_check": "Leoscor Alloys, 'AISI 1045 Carbon Steel Round Bar Specifications' PDF, physical properties table: Modulus of Elasticity 29x10^6 psi (= 29,000 ksi, exact match in English units)",
+            "notes": "Condition-independent typical. MW Components/Elgin sheet gives 206 GPa (29,900 ksi) and Amardeep Steel 209,000 MPa - normal source spread for plain carbon steel; 200 GPa / 29 Msi is the standard handbook typical. See discrepancies."
+          },
+          {
+            "key": "poisson_ratio",
+            "value": 0.29,
+            "unit": "dimensionless",
+            "basis": "typical",
+            "source_id": "azom-6130",
+            "source_citation": "AZoM, 'AISI 1045 Medium Carbon Steel', Article ID 6130, Mechanical Properties table: Poisson's Ratio 0.290",
+            "verified_at_url": "https://www.azom.com/article.aspx?ArticleID=6130",
+            "cross_check": "MW Components (Elgin) 'Carbon Steel Grade 1045 Fact Sheet' PDF: Poissons Ratio 0.29, annotated 'Typical for steel'",
+            "notes": "Published as 0.290 by AZoM. One outlier source (Amardeep Steel blog) gives 0.269; not used. Condition-independent."
+          },
+          {
+            "key": "shear_modulus",
+            "value": 80,
+            "unit": "GPa",
+            "basis": "typical",
+            "source_id": "azom-6130",
+            "source_citation": "AZoM, 'AISI 1045 Medium Carbon Steel', Article ID 6130, Mechanical Properties table: Shear Modulus 80 GPa (11600 ksi)",
+            "verified_at_url": "https://www.azom.com/article.aspx?ArticleID=6130",
+            "cross_check": "MW Components (Elgin) 'Carbon Steel Grade 1045 Fact Sheet' PDF: Shear Modulus 80.0 GPa (11600 ksi), annotated 'Estimated from elastic'",
+            "notes": "Supplementary to Poisson's ratio. Self-consistent with E=200 GPa and nu=0.29 within rounding (E/2(1+nu) = 77.5 GPa)."
+          },
+          {
+            "key": "yield_strength",
+            "value": 410,
+            "unit": "MPa",
+            "basis": "typical",
+            "source_id": "interlloy-1045",
+            "source_citation": "Interlloy Pty Ltd, '1045 Medium Tensile Carbon Steel Bar' datasheet, 'Typical Mechanical Properties - Normalised Condition' table (grade per AS 1442-1992 1045): Yield Strength 410 MPa, Elongation in 50mm 22%, Impact Izod 54 J, Hardness 187 HB / Rc 10",
+            "verified_at_url": "https://www.interlloy.com.au/our-products/carbon-steels/1045-medium-tensile-carbon-steel-bar/",
+            "cross_check": "Sciencing.com, 'Properties of 1045 Steel': normalized condition yield strength 410 MPa, with matching elongation 22%, Izod 54, 187 HB (independent reproduction of the same dataset)",
+            "notes": "TYPICAL value for normalized condition, explicitly NOT a guaranteed/spec minimum (Interlloy supplies 1045 to chemistry only). For contrast, ASTM A29-family hot-rolled 1045 estimated minimum yield is 45,000 psi (SAE J1397, verified in Pivot Point reproduction)."
+          },
+          {
+            "key": "ultimate_strength",
+            "value": 640,
+            "unit": "MPa",
+            "basis": "typical",
+            "source_id": "interlloy-1045",
+            "source_citation": "Interlloy Pty Ltd, '1045 Medium Tensile Carbon Steel Bar' datasheet, 'Typical Mechanical Properties - Normalised Condition' table (grade per AS 1442-1992 1045): Tensile Strength 640 MPa",
+            "verified_at_url": "https://www.interlloy.com.au/our-products/carbon-steels/1045-medium-tensile-carbon-steel-bar/",
+            "cross_check": "No second source with the exact 640 MPa found. Consistency checks: AZoM/Kloeckner/Leoscor all quote 570-700 MPa typical tensile range for hot-rolled-or-normalised 1045 (640 falls inside); value is consistent with the accompanying 187 HB (~3.4xHB ~ 645 MPa). Sciencing reproduction of the same table prints 540 MPa - suspected transcription typo (see discrepancies).",
+            "notes": "TYPICAL value for normalized condition, not a spec minimum. Weakest-citation value in this row: single primary supplier datasheet, with third-party reproduction agreeing on every accompanying value except tensile."
+          }
+        ],
+        "discrepancies": [
+          "Normalized UTS: Interlloy datasheet prints 640 MPa, but third-party reproductions (Sciencing.com; Katalor per search snippet) print 540 MPa with every other value identical (YS 410 MPa, 22% elongation, Izod 54 J, 187 HB). 540 falls outside the 570-700 MPa typical normalized/hot-rolled range quoted by AZoM/Kloeckner/Leoscor and is inconsistent with 187 HB; treated as a propagated 6-to-5 typo and 640 MPa adopted.",
+          "The frequently quoted pair 'UTS 625 MPa / YS 530 MPa' for 1045 is the COLD DRAWN 19-32 mm dataset (MW Components/Elgin fact sheet, consistent with values attributed to MatWeb), NOT normalized - easily confused with the normalized row because the UTS happens to be similar.",
+          "AZoM's strength table (UTS 565 MPa / YS 310 MPa / 163 HB / 16% elong.) is described as applying to 'black hot-rolled or normalized' supply, but it matches the SAE J1397 hot-rolled estimated values for 1045 (82,000 / 45,000 psi, 163 HB - verified in Pivot Point's reproduction of SAE J1397 Rev. May 1992), i.e. effectively hot-rolled data; therefore not used for normalized strengths.",
+          "tubingchina.com's 'Normalized (1650 F): 85,500 / 54,250 psi, 170 HB' appears near a 1045 header but is actually the grade 1040 row - grade 1045 is absent from that table entirely (confirmed by re-fetch). Do not use for 1045.",
+          "The ASM-Handbook-style '1045 normalized at 900 C: TS 625 MPa / YS 374 MPa' dataset could not be verified at any legitimately accessible URL during this research (efunda returned HTTP 500; theworldmaterial.com, machinemfg.com, qilusteelgroup.com returned 403; ASTM/ASM are paywalled; MatWeb off-limits per EULA). Not used; honesty over completeness.",
+          "Elastic modulus spread across sources: 200 GPa / 29,000 ksi (AZoM, matching Leoscor 29x10^6 psi) vs 206 GPa / 29,900 ksi (MW Components/Elgin) vs 209,000 MPa (Amardeep). 200 GPa adopted as the standard typical.",
+          "Poisson's ratio: 0.290 (AZoM, MW Components) vs 0.269 (Amardeep Steel blog, outlier - rejected).",
+          "Density: 7.85 vs 7.86 vs 7.87 g/cc across sources; all agree on 0.284 lb/in3 in English units."
+        ]
+      },
+      {
+        "material_id": "steel-4340",
+        "name": "AISI 4340 low-alloy steel (Ni-Cr-Mo)",
+        "material_class": "steel",
+        "condition": "Quenched and tempered to Ftu = 260 ksi level per MIL-HDBK-5J Table 2.3.1.0(f1) (AMS 6414, consumable-electrode vacuum-melted; bar, forging, tubing; thickness limits per table footnote: <=1.70 in. martempered / <=2.50 in. oil quench / <=3.50 in. water quench, 200 ft/min flow). Elastic and physical properties are the single nominal values MIL-HDBK-5J lists for all Section 2.3 low-alloy steels (4130/4140/4340/8630 group).",
+        "properties": [
+          {
+            "key": "density",
+            "value": 0.283,
+            "unit": "lb/in.^3",
+            "basis": "typical",
+            "source_id": "mil-hdbk-5j",
+            "source_citation": "MIL-HDBK-5J, Metallic Materials and Elements for Aerospace Vehicle Structures, 31 January 2003, Table 2.3.1.0(f1), p. 2-22 (omega, lb/in.^3 = 0.283); same value in Tables 2.3.1.0(c1) p. 2-17, (c2) p. 2-18, (g1) p. 2-24, (g2) p. 2-25 for all low-alloy steels",
+            "verified_at_url": "https://ia800103.us.archive.org/BookReader/BookReaderImages.php?id=milhdbk-5-j&itemPath=/10/items/milhdbk-5-j&server=ia800103.us.archive.org&page=leaf75&scale=2&rotate=0",
+            "cross_check": "Independently hosted MIL-HDBK-5J chapter 2 excerpt (files.engineering.com, 4130Pages_from_MILHBK5J-2.pdf, pp. 2-17/2-18/2-24) shows omega = 0.283 lb/in.^3 for the low-alloy steel group",
+            "notes": "Handbook lists density as a nominal physical property, not a statistical minimum. Typical commercial datasheets give 7.85 g/cm^3 = 0.284 lb/in^3 (quickparts.com MatWeb-derived sheet; AZoM) - see discrepancies. Page image loaded from the archive.org scan of MIL-HDBK-5J (item milhdbk-5-j, leaf 75 = printed page 2-22)."
+          },
+          {
+            "key": "youngs_modulus",
+            "value": 29,
+            "unit": "10^3 ksi",
+            "basis": "typical",
+            "source_id": "mil-hdbk-5j",
+            "source_citation": "MIL-HDBK-5J, 31 January 2003, Table 2.3.1.0(f1), p. 2-22: E, 10^3 ksi = 29.0 (tension); Ec, 10^3 ksi = 29.0 (compression); identical in Tables 2.3.1.0(c1), (c2), (g1), (g2)",
+            "verified_at_url": "https://ia800103.us.archive.org/BookReader/BookReaderImages.php?id=milhdbk-5-j&itemPath=/10/items/milhdbk-5-j&server=ia800103.us.archive.org&page=leaf75&scale=2&rotate=0",
+            "cross_check": "files.engineering.com MIL-HDBK-5J excerpt (Tables 2.3.1.0(c1)/(c2), pp. 2-17/2-18): E = 29.0 x 10^3 ksi; also quickparts.com MatWeb-derived normalized 4340 datasheet: 29,000 ksi (200 GPa)",
+            "notes": "Published as 29.0 in units of 10^3 ksi (do not double-convert). Moduli in MIL-HDBK-5 tables are nominal/average values, not statistical minimums."
+          },
+          {
+            "key": "poisson_ratio",
+            "value": 0.32,
+            "unit": "dimensionless",
+            "basis": "typical",
+            "source_id": "mil-hdbk-5j",
+            "source_citation": "MIL-HDBK-5J, 31 January 2003, Table 2.3.1.0(f1), p. 2-22: mu = 0.32; identical in Tables 2.3.1.0(c1), (c2), (g1), (g2) for all low-alloy steels",
+            "verified_at_url": "https://ia800103.us.archive.org/BookReader/BookReaderImages.php?id=milhdbk-5-j&itemPath=/10/items/milhdbk-5-j&server=ia800103.us.archive.org&page=leaf75&scale=2&rotate=0",
+            "cross_check": "files.engineering.com MIL-HDBK-5J excerpt (pp. 2-17/2-18/2-24): mu = 0.32",
+            "notes": "Note: MIL-HDBK-5J's 0.32 disagrees with common typical datasheets (0.29 on the MatWeb-derived quickparts sheet; 0.27-0.30 per AZoM). 0.32 is also slightly inconsistent with the handbook's own E = 29.0 and G = 11.0 Msi (isotropic relation gives mu ~ 0.318). Flagged in discrepancies."
+          },
+          {
+            "key": "shear_modulus",
+            "value": 11,
+            "unit": "10^3 ksi",
+            "basis": "typical",
+            "source_id": "mil-hdbk-5j",
+            "source_citation": "MIL-HDBK-5J, 31 January 2003, Table 2.3.1.0(f1), p. 2-22: G, 10^3 ksi = 11.0; identical in Tables 2.3.1.0(c1), (c2), (g1), (g2)",
+            "verified_at_url": "https://ia800103.us.archive.org/BookReader/BookReaderImages.php?id=milhdbk-5-j&itemPath=/10/items/milhdbk-5-j&server=ia800103.us.archive.org&page=leaf75&scale=2&rotate=0",
+            "cross_check": "files.engineering.com MIL-HDBK-5J excerpt (pp. 2-17/2-18/2-24): G = 11.0 x 10^3 ksi",
+            "notes": "MatWeb-derived typical sheet gives 78.0 GPa (11,300 ksi); AZoM gives 80 GPa 'typical for steel'. See discrepancies."
+          },
+          {
+            "key": "yield_strength",
+            "value": 217,
+            "unit": "ksi",
+            "basis": "spec_minimum",
+            "source_id": "mil-hdbk-5j",
+            "source_citation": "MIL-HDBK-5J, 31 January 2003, Table 2.3.1.0(f1) 'Design Mechanical and Physical Properties of Low-Alloy Steels', p. 2-22: AISI 4340 (AMS 6414, consumable-electrode vacuum-melted), bar/forging/tubing, quenched and tempered, Basis S: Fty = 217 ksi at the Ftu = 260 ksi level (Fcy = 235 ksi, Fsu = 156 ksi, e(L) = 10%)",
+            "verified_at_url": "https://ia800103.us.archive.org/BookReader/BookReaderImages.php?id=milhdbk-5-j&itemPath=/10/items/milhdbk-5-j&server=ia800103.us.archive.org&page=leaf75&scale=2&rotate=0",
+            "cross_check": "Third-party reproduction of MIL-HDBK-5J Table 2.3.1.0(f) seen in search-result listing (Chegg homework excerpt, gated site not fetched) quotes the same Ftu 260 ksi / Fty 217 ksi pair for AISI 4340",
+            "notes": "S basis = minimum per the applicable material specification; table footnote b: 'Design values are applicable only to parts for which the indicated Ftu has been substantiated by adequate quality control testing.' Lower Q&T levels (Ftu 125/140/150/160/180/200 ksi with Fty 100/120/132/142/163/176 ksi) appear in Table 2.3.1.0(g2), p. 2-25 (verified at leaf 78 of the same archive.org scan), but per that table's footnote d they carry no statistical (T99/T90) or specification (S) basis."
+          },
+          {
+            "key": "ultimate_strength",
+            "value": 260,
+            "unit": "ksi",
+            "basis": "spec_minimum",
+            "source_id": "mil-hdbk-5j",
+            "source_citation": "MIL-HDBK-5J, 31 January 2003, Table 2.3.1.0(f1), p. 2-22: AISI 4340 (AMS 6414, consumable-electrode vacuum-melted), bar/forging/tubing, quenched and tempered, Basis S: Ftu = 260 ksi",
+            "verified_at_url": "https://ia800103.us.archive.org/BookReader/BookReaderImages.php?id=milhdbk-5-j&itemPath=/10/items/milhdbk-5-j&server=ia800103.us.archive.org&page=leaf75&scale=2&rotate=0",
+            "cross_check": "Chegg search-result listing of MIL-HDBK-5J Table 2.3.1.0(f) quotes Ftu 260 ksi for AISI 4340 (gated site, snippet only); for the normalized condition a MatWeb-derived datasheet (quickparts.com) gives typical UTS 1282 MPa (185,900 psi)",
+            "notes": "260 ksi is the classic aerospace heat-treat level for consumable-electrode vacuum-melted 4340 (AMS 6414). Strength is entirely heat-treat dependent; see discrepancies for other levels and typical normalized values. MIL-HDBK-5J page images loaded from the archive.org scan (item milhdbk-5-j): leaf 75 = p. 2-22 (Table 2.3.1.0(f1)), leaf 78 = p. 2-25 (Table 2.3.1.0(g2))."
+          }
+        ],
+        "discrepancies": [
+          "Poisson's ratio: MIL-HDBK-5J lists mu = 0.32 for all Section 2.3 low-alloy steels, while typical secondary datasheets list 0.29 (MatWeb-derived normalized 4340 sheet hosted at quickparts.com) and AZoM lists 0.27-0.30. 0.32 is also internally inconsistent with the handbook's own E = 29.0 Msi / G = 11.0 Msi (isotropic relation implies ~0.318; with G = 11.3 Msi it implies ~0.28).",
+          "Density: MIL-HDBK-5J gives omega = 0.283 lb/in.^3; typical commercial datasheets give 7.85 g/cm^3 = 0.284 lb/in^3 (quickparts/MatWeb-derived, AZoM). Difference is rounding-level (~0.4%).",
+          "Shear modulus: MIL-HDBK-5J G = 11.0 x 10^3 ksi vs 78.0 GPa (11,300 ksi) on the MatWeb-derived sheet and 80 GPa (AZoM, 'typical for steel').",
+          "Strength values are heat-treat-level dependent and bases differ: the reported Ftu 260 / Fty 217 ksi are S-basis for consumable-electrode vacuum-melted 4340 per AMS 6414 (Table 2.3.1.0(f1), p. 2-22). The general Q&T capability table 2.3.1.0(g2) (p. 2-25, verified) lists Ftu 125/140/150/160/180/200 ksi with Fty 100/120/132/142/163/176 ksi, but its footnote d states there is no statistical (T99/T90) or specification (S) basis for those values. For the normalized condition, a MatWeb-derived typical datasheet (quickparts.com, 25 mm round) gives UTS 1282 MPa (185,900 psi) and YS 862 MPa (125,000 psi) - typical, not minima. AZoM annealed typicals are much lower: 745 MPa UTS / 470 MPa YS.",
+          "MIL-HDBK-5J (2003) was cancelled in 2004 and superseded by MMPDS (paywalled); 5J values are quoted here from a freely hosted archive.org scan and an independently hosted chapter-2 excerpt, both loaded and read directly."
+        ]
+      },
+      {
+        "material_id": "al-6061-t6",
+        "name": "6061-T6 aluminum",
+        "material_class": "aluminum",
+        "condition": "T6 (and T62), sheet 0.010-0.249 in per AMS 4025/AMS 4027/AMS-QQ-A-250/11 for MIL-HDBK-5J design values; typical entries are generic T6 wrought-product values",
+        "properties": [
+          {
+            "key": "density",
+            "value": 0.098,
+            "unit": "lb/in3",
+            "basis": "typical",
+            "source_id": "mil-hdbk-5j",
+            "source_citation": "MIL-HDBK-5J (31 Jan 2003), Table 3.6.2.0(b1), Design Mechanical and Physical Properties of 6061 Aluminum Alloy Sheet, p. 3-264 (omega, lb/in.3)",
+            "verified_at_url": "https://ia800103.us.archive.org/BookReader/BookReaderImages.php?zip=/10/items/milhdbk-5-j/MILHDBK5J_jp2.zip&file=MILHDBK5J_jp2/MILHDBK5J_0565.jp2&id=milhdbk-5-j&scale=2",
+            "cross_check": "Wikipedia '6061 aluminium alloy' properties table: 2.70 g/cm3 (consistent)",
+            "notes": "Read directly from the archive.org page scan of MIL-HDBK-5J (leaf 565 = handbook page 3-264). Physical property, nominal (no statistical basis assigned in 5J)."
+          },
+          {
+            "key": "youngs_modulus",
+            "value": 9.9,
+            "unit": "10^3 ksi",
+            "basis": "typical",
+            "source_id": "mil-hdbk-5j",
+            "source_citation": "MIL-HDBK-5J (31 Jan 2003), Table 3.6.2.0(b1), p. 3-264: E, 10^3 ksi = 9.9 (tension); Ec = 10.1 (compression)",
+            "verified_at_url": "https://ia800103.us.archive.org/BookReader/BookReaderImages.php?zip=/10/items/milhdbk-5-j/MILHDBK5J_jp2.zip&file=MILHDBK5J_jp2/MILHDBK5J_0565.jp2&id=milhdbk-5-j&scale=2",
+            "cross_check": "Wikipedia 6061 properties table: 68 GPa (9,900 ksi); jeelix.com: 68.9 GPa",
+            "notes": "Tensile modulus. Compressive modulus Ec = 10.1 x 10^3 ksi in same table. Elastic constants in 5J are average (typical) values, not statistical minima. Wikipedia prose rounds to 69 GPa (10,000 ksi)."
+          },
+          {
+            "key": "poisson_ratio",
+            "value": 0.33,
+            "unit": "dimensionless",
+            "basis": "typical",
+            "source_id": "mil-hdbk-5j",
+            "source_citation": "MIL-HDBK-5J (31 Jan 2003), Table 3.6.2.0(b1), p. 3-264: mu = 0.33",
+            "verified_at_url": "https://ia800103.us.archive.org/BookReader/BookReaderImages.php?zip=/10/items/milhdbk-5-j/MILHDBK5J_jp2.zip&file=MILHDBK5J_jp2/MILHDBK5J_0565.jp2&id=milhdbk-5-j&scale=2",
+            "cross_check": "Wikipedia 6061 properties table: 0.33; jeelix.com FEA section: 0.33; modulusmetal.com range 0.325-0.335",
+            "notes": "Average elastic constant, no statistical basis in 5J."
+          },
+          {
+            "key": "shear_modulus",
+            "value": 3.8,
+            "unit": "10^3 ksi",
+            "basis": "typical",
+            "source_id": "mil-hdbk-5j",
+            "source_citation": "MIL-HDBK-5J (31 Jan 2003), Table 3.6.2.0(b1), p. 3-264: G, 10^3 ksi = 3.8",
+            "verified_at_url": "https://ia800103.us.archive.org/BookReader/BookReaderImages.php?zip=/10/items/milhdbk-5-j/MILHDBK5J_jp2.zip&file=MILHDBK5J_jp2/MILHDBK5J_0565.jp2&id=milhdbk-5-j&scale=2",
+            "cross_check": "modulusmetal.com (EN AW-6061 T6): shear modulus 25.6-26.9 GPa, consistent with 3.8 x 10^3 ksi",
+            "notes": "Included alongside Poisson ratio for completeness; average elastic constant."
+          },
+          {
+            "key": "yield_strength",
+            "value": 36,
+            "unit": "ksi",
+            "basis": "design_minimum",
+            "source_id": "mil-hdbk-5j",
+            "source_citation": "MIL-HDBK-5J (31 Jan 2003), Table 3.6.2.0(b1), p. 3-264: Fty, A basis, L direction, T6/T62 sheet 0.010-0.249 in",
+            "verified_at_url": "https://ia800103.us.archive.org/BookReader/BookReaderImages.php?zip=/10/items/milhdbk-5-j/MILHDBK5J_jp2.zip&file=MILHDBK5J_jp2/MILHDBK5J_0565.jp2&id=milhdbk-5-j&scale=2",
+            "cross_check": "ASTM B209 specified minimum yield 35 ksi (240 MPa) as quoted by Wikipedia '6061 aluminium alloy'; matches the table's LT A-basis value of 35 ksi",
+            "notes": "A-basis (99% exceedance, 95% confidence) design minimum. Direction-dependent: L = 36 ksi, LT = 35 ksi (A basis); B basis L = 38, LT = 37 ksi. Read directly from archive.org scan of the 5J table."
+          },
+          {
+            "key": "yield_strength",
+            "value": 276,
+            "unit": "MPa",
+            "basis": "typical",
+            "source_id": "jeelix-6061",
+            "source_citation": "Jeelix, '6061-T6 Aluminum Yield Strength' engineering guide: typical design value 276 MPa (40 ksi); consistent with ASM-handbook-derived typical values widely quoted (and consistent with MatWeb)",
+            "verified_at_url": "https://www.jeelix.com/6061-t6-aluminum-yield-strength/",
+            "cross_check": "machinemfg.com and hardwarecustom.com guides (via search snippets): 276 MPa (40,000 psi) at 0.2% offset; Wikipedia gives typical 270 MPa (39 ksi) - see discrepancies",
+            "notes": "Typical (average) value, not a guaranteed minimum. Same page states the ASTM guaranteed minimum as 240 MPa (35 ksi)."
+          },
+          {
+            "key": "ultimate_strength",
+            "value": 42,
+            "unit": "ksi",
+            "basis": "design_minimum",
+            "source_id": "mil-hdbk-5j",
+            "source_citation": "MIL-HDBK-5J (31 Jan 2003), Table 3.6.2.0(b1), p. 3-264: Ftu, A basis, L and LT directions, T6/T62 sheet 0.010-0.249 in",
+            "verified_at_url": "https://ia800103.us.archive.org/BookReader/BookReaderImages.php?zip=/10/items/milhdbk-5-j/MILHDBK5J_jp2.zip&file=MILHDBK5J_jp2/MILHDBK5J_0565.jp2&id=milhdbk-5-j&scale=2",
+            "cross_check": "ASTM B209 specified minimum tensile strength 42 ksi (290 MPa) as quoted by Wikipedia '6061 aluminium alloy'",
+            "notes": "A-basis design minimum; 42 ksi in both L and LT directions (B basis = 43 ksi). Read directly from archive.org scan of the 5J table."
+          },
+          {
+            "key": "ultimate_strength",
+            "value": 310,
+            "unit": "MPa",
+            "basis": "typical",
+            "source_id": "jeelix-6061",
+            "source_citation": "Jeelix, '6061-T6 Aluminum Yield Strength' engineering guide, Section 5.2: typical ultimate tensile strength 310 MPa; consistent with ASM-handbook-derived typical values (and consistent with MatWeb)",
+            "verified_at_url": "https://www.jeelix.com/6061-t6-aluminum-yield-strength/",
+            "cross_check": "Wikipedia '6061 aluminium alloy': 'more typical values are 310 MPa (45 ksi)'",
+            "notes": "Typical (average) value; ASTM B209 / 5J spec-level minimum is 42 ksi (290 MPa)."
+          }
+        ],
+        "discrepancies": [
+          "Typical yield strength: most ASM-derived sources give 276 MPa (40 ksi), but Wikipedia's prose gives 270 MPa (39 ksi) citing MakeItFrom; both are 'typical' with no statistical basis - we recorded 276 MPa per the assignment, flagging the 270 MPa variant.",
+          "Young's modulus: Wikipedia prose says 69 GPa (10,000 ksi) 'regardless of temper', while its own table and MIL-HDBK-5J give 68 GPa / 9.9 x 10^3 ksi (tension); 5J lists compression modulus separately as 10.1 x 10^3 ksi.",
+          "MIL-HDBK-5J A-basis Fty is direction-dependent for T6 sheet: 36 ksi (L) vs 35 ksi (LT); the LT value coincides with the ASTM B209 spec minimum of 35 ksi. We recorded the L value (36 ksi) with the LT value noted.",
+          "MatWeb was not accessed per EULA restriction; 'consistent with MatWeb' noted only via third-party quotations of the same ASM typical values."
+        ]
+      },
+      {
+        "material_id": "al-7075-t6",
+        "name": "7075-T6 aluminum",
+        "material_class": "aluminum",
+        "condition": "T6 temper; design-minimum entries are bare sheet per QQ-A-250/12 (0.040-0.249 in, MIL-HDBK-5 lineage); typical entries are T6/T651 nominal values",
+        "properties": [
+          {
+            "key": "density",
+            "value": 0.101,
+            "unit": "lb/in3",
+            "basis": "typical",
+            "source_id": "nasa-cr-123773",
+            "source_citation": "NASA CR-123773, Materials Data Handbook: Aluminum Alloy 7075 (2nd Ed., April 1972), Sec. 9.1: density 0.101 lb/in3 at 68 F (Sec. 9.11 gives specific gravity 2.80 g/cm3 at 20 C). This is the MIL-HDBK-5 lineage value; MIL-HDBK-5J Table 3.7.6.0(b1) lists the same omega = 0.101 lb/in3.",
+            "verified_at_url": "https://ntrs.nasa.gov/api/citations/19720022809/downloads/19720022809.pdf",
+            "cross_check": "Gabrian 7075 datasheet and Wikipedia both list 2.81 g/cm3 = 0.102 lb/in3 (rounding-level difference, see discrepancies)",
+            "notes": "MIL-HDBK-5J itself could not be fetched (68.7 MB > fetch limit); the 0.101 lb/in3 value was verified in NASA CR-123773, which republishes MIL-HDBK-5 data. Nominal physical property, no statistical basis."
+          },
+          {
+            "key": "youngs_modulus",
+            "value": 10.3,
+            "unit": "10^3 ksi",
+            "basis": "design_minimum",
+            "source_id": "nasa-cr-123773",
+            "source_citation": "NASA CR-123773, Sec. 7.221: 'Design value of E. All products and tempers: E = 10.3 x 10^3 ksi', citing Ref. 7.5 = MIL-HDBK-5A (Feb 1966, change order Jan 1970). MIL-HDBK-5J Sec. 3.7.6 lists the identical E = 10.3 x 10^3 ksi for 7075-T6 sheet.",
+            "verified_at_url": "https://ntrs.nasa.gov/api/citations/19720022809/downloads/19720022809.pdf",
+            "cross_check": "Gabrian 7075 datasheet and Wikipedia: typical E = 10,400 ksi (71.7 GPa) - agrees within 1% (typical vs design value)",
+            "notes": "Handbook design (room-temperature tension) value, not a statistical A/B minimum; design_minimum is the closest basis category. NASA Sec. 7.231 also gives compression modulus Ec = 10.5 x 10^3 ksi."
+          },
+          {
+            "key": "poisson_ratio",
+            "value": 0.33,
+            "unit": "dimensionless",
+            "basis": "typical",
+            "source_id": "nasa-cr-123773",
+            "source_citation": "NASA CR-123773, Sec. 7.21: 'Poisson's ratio, 0.33', citing Metals Handbook Vol. 1, 8th Ed., ASM 1961. Same mu = 0.33 is listed in MIL-HDBK-5J Table 3.7.6.0(b1).",
+            "verified_at_url": "https://ntrs.nasa.gov/api/citations/19720022809/downloads/19720022809.pdf",
+            "cross_check": "Wikipedia '7075 aluminium alloy' properties table: Poisson's ratio 0.33"
+          },
+          {
+            "key": "shear_modulus",
+            "value": 3.9,
+            "unit": "10^3 ksi",
+            "basis": "design_minimum",
+            "source_id": "nasa-cr-123773",
+            "source_citation": "NASA CR-123773, Sec. 7.241: 'Design value of G. 3.9 x 10^3 ksi', citing Ref. 7.5 = MIL-HDBK-5A. MIL-HDBK-5J Table 3.7.6.0(b1) lists the same G = 3.9 x 10^3 ksi for 7075-T6 sheet.",
+            "verified_at_url": "https://ntrs.nasa.gov/api/citations/19720022809/downloads/19720022809.pdf",
+            "cross_check": "none found online beyond consistency with widely quoted typical 26.9 GPa (~3.9 Msi); also consistent with E=10.3 Msi and mu=0.33 via G=E/2(1+mu)=3.87 Msi",
+            "notes": "Handbook design value (modulus of rigidity), not statistical."
+          },
+          {
+            "key": "yield_strength",
+            "value": 67,
+            "unit": "ksi",
+            "basis": "design_minimum",
+            "source_id": "nasa-cr-123773",
+            "source_citation": "NASA CR-123773, Table 7.4112 'Design Tensile Properties for T6 and T651 Sheet and Plate', QQ-A-250/12 (7075), T6 bare sheet 0.040-0.249 in, A basis, L direction: Fty = 67 ksi (LT = 66 ksi; B basis L = 70 ksi). Republished from MIL-HDBK-5A (Ref. 7.5).",
+            "verified_at_url": "https://ntrs.nasa.gov/api/citations/19720022809/downloads/19720022809.pdf",
+            "cross_check": "Aero Metals Alliance QQ-A-250/12 T6 sheet datasheet: spec minimum proof strength 469 MPa (= 68 ksi) for 1.0-3.17 mm (0.040-0.125 in), LT; Alcoa 7075 datasheet: T6 sheet LT yield min 63-69 ksi (434-476 MPa) over 0.008-0.249 in",
+            "notes": "A-basis statistical minimum. Assignment preferred MIL-HDBK-5J Table 3.7.6.0(b1) sheet values, but the 5J PDF (68.7 MB) exceeded fetch limits; the verified MIL-HDBK-5A vintage A value is reported instead and the current spec minimum (68 ksi LT for 0.040-0.125 in) is given as cross-check."
+          },
+          {
+            "key": "ultimate_strength",
+            "value": 77,
+            "unit": "ksi",
+            "basis": "design_minimum",
+            "source_id": "nasa-cr-123773",
+            "source_citation": "NASA CR-123773, Table 7.4112, QQ-A-250/12 (7075), T6 bare sheet 0.040-0.249 in, A basis, L direction: Ftu = 77 ksi (LT = 77 ksi; B basis = 79 ksi). Republished from MIL-HDBK-5A (Ref. 7.5).",
+            "verified_at_url": "https://ntrs.nasa.gov/api/citations/19720022809/downloads/19720022809.pdf",
+            "cross_check": "Alcoa 7075 datasheet (hosted by CALM Aluminium): T6 sheet 0.008-0.249 in tensile min 74-78 ksi (510-538 MPa) LT; Aero Metals Alliance QQ-A-250/12: 538 MPa (= 78 ksi) min for 1.0-6.3 mm",
+            "notes": "A-basis statistical minimum, 5A vintage. Current AMS-QQ-A-250/12 spec minimum for 0.040-0.125 in sheet is 78 ksi LT (see discrepancies)."
+          },
+          {
+            "key": "yield_strength",
+            "value": 73000,
+            "unit": "psi",
+            "basis": "typical",
+            "source_id": "gabrian-7075",
+            "source_citation": "Gabrian International, '7075 Aluminum Alloy: Properties' datasheet, Mechanical Properties table, 7075-T6/-T651: Yield Strength 503 MPa | 73000 psi.",
+            "verified_at_url": "https://www.gabrian.com/wp-content/uploads/2018/09/7075-Aluminum-Alloy-Properties.pdf",
+            "cross_check": "NASA CR-123773 Tabular Abstract: typical Fty (T6, T651) = 73.0 ksi; consistent with MatWeb-style typicals as quoted by third parties (503 MPa)",
+            "notes": "Typical/nominal value, no statistical significance."
+          },
+          {
+            "key": "ultimate_strength",
+            "value": 83000,
+            "unit": "psi",
+            "basis": "typical",
+            "source_id": "gabrian-7075",
+            "source_citation": "Gabrian International, '7075 Aluminum Alloy: Properties' datasheet, Mechanical Properties table, 7075-T6/-T651: Tensile Strength 572 MPa | 83000 psi.",
+            "verified_at_url": "https://www.gabrian.com/wp-content/uploads/2018/09/7075-Aluminum-Alloy-Properties.pdf",
+            "cross_check": "NASA CR-123773 Tabular Abstract: typical Ftu (T6, T651) = 83.0 ksi; Wikipedia: tensile strength 572 MPa (83.0 ksi)",
+            "notes": "Typical/nominal value, no statistical significance."
+          }
+        ],
+        "discrepancies": [
+          "MIL-HDBK-5J Table 3.7.6.0(b1) could not be verified directly: the only accessible copies (Abbott Aerospace, archive.org, everyspec) are single ~67-70 MB PDFs exceeding the 10 MB fetch limit, archive.org search-inside returned 'No hOCR or Abbyy file present', and the Purdue excerpt returned HTTP 401. Design values reported are the MIL-HDBK-5A vintage republished verbatim in NASA CR-123773 (Ref. 7.5 confirmed as MIL-HDBK-5A); the elastic/physical constants (E 10.3 Msi, G 3.9 Msi, mu 0.33, omega 0.101 lb/in3) are unchanged in 5J, but 5J restructures sheet thickness ranges and its A-basis tensile values for 0.040-0.125 in bare sheet are slightly higher than the 5A values reported here.",
+          "Ultimate/yield design minimums: 5A-era A-basis Ftu = 77 ksi (0.040-0.249 in) vs current AMS-QQ-A-250/12 spec minimum Ftu = 78 ksi LT and Fty = 68 ksi LT for 0.040-0.125 in (verified via Alcoa 74-78/63-69 ksi ranges and Aero Metals Alliance 538/469 MPa). About a 1 ksi generation gap.",
+          "Density: MIL-HDBK-5 lineage gives 0.101 lb/in3 / 2.80 g/cm3 (NASA CR-123773), while Aluminum Association/ASM-style typicals (Gabrian, Wikipedia) give 2.81 g/cm3 / 0.102 lb/in3 - ~1% rounding-level disagreement; pipeline should pick one convention.",
+          "Young's modulus: design value 10.3 x 10^3 ksi vs typical 10.4 x 10^3 ksi (71.7 GPa) - basis difference (design vs typical), not a true conflict.",
+          "Aero Metals Alliance datasheet lists density 2.71 g/cm3, clearly erroneous vs the 2.80-2.81 g/cm3 consensus; its strength minimums nevertheless match QQ-A-250/12 and were used only for strength cross-checks.",
+          "MatWeb was not accessed per EULA restriction; 'consistent with MatWeb' noted only where third parties quote the same 572/503 MPa typicals."
+        ]
+      },
+      {
+        "material_id": "al-2024-t3",
+        "name": "2024-T3 aluminum sheet (bare)",
+        "material_class": "aluminum",
+        "condition": "T3, bare flat sheet 0.010-0.128 in. thick, AMS 4037 / AMS-QQ-A-250/4 (MIL-HDBK-5J Table 3.2.3.0(b1), p. 3-71)",
+        "properties": [
+          {
+            "key": "density",
+            "value": 0.1,
+            "unit": "lb/in3",
+            "basis": "typical",
+            "source_id": "mil-hdbk-5j",
+            "source_citation": "MIL-HDBK-5J (31 Jan 2003), Table 3.2.3.0(b1), Design Mechanical and Physical Properties of 2024 Aluminum Alloy Sheet and Plate, p. 3-71 (omega, lb/in.3 = 0.100)",
+            "verified_at_url": "https://ia800103.us.archive.org/BookReader/BookReaderImages.php?zip=/10/items/milhdbk-5-j/MILHDBK5J_jp2.zip&file=MILHDBK5J_jp2/MILHDBK5J_0372.jp2&id=milhdbk-5-j&scale=1&rotate=0",
+            "cross_check": "Wikipedia '2024 aluminium alloy' gives 2.78 g/cm3 (0.1 lb/in3); Juvinall Appendix F reprint of Table 3.2.3.0(b1) also shows 0.100 lb/in3",
+            "notes": "Physical properties in MIL-HDBK-5 are average (nominal) values, not statistical minima. Verified by reading the actual handbook page image from the archive.org scan of MIL-HDBK-5J (item milhdbk-5-j, leaf 372 = handbook page 3-71)."
+          },
+          {
+            "key": "youngs_modulus",
+            "value": 10.5,
+            "unit": "10^3 ksi",
+            "basis": "typical",
+            "source_id": "mil-hdbk-5j",
+            "source_citation": "MIL-HDBK-5J (31 Jan 2003), Table 3.2.3.0(b1), p. 3-71: E, 10^3 ksi = 10.5 for T3 sheet (Ec = 10.7 in compression)",
+            "verified_at_url": "https://ia800103.us.archive.org/BookReader/BookReaderImages.php?zip=/10/items/milhdbk-5-j/MILHDBK5J_jp2.zip&file=MILHDBK5J_jp2/MILHDBK5J_0372.jp2&id=milhdbk-5-j&scale=1&rotate=0",
+            "cross_check": "Wikipedia '2024 aluminium alloy': Young's modulus 73 GPa (10.6 Msi) typical across tempers",
+            "notes": "Tension modulus for the sheet columns of the table; compression modulus Ec = 10.7 x 10^3 ksi. The T351 plate columns of the same table list E = 10.7 / Ec = 10.9. Moduli in MIL-HDBK-5 are average values, not A/B-basis minima."
+          },
+          {
+            "key": "poisson_ratio",
+            "value": 0.33,
+            "unit": "dimensionless",
+            "basis": "typical",
+            "source_id": "mil-hdbk-5j",
+            "source_citation": "MIL-HDBK-5J (31 Jan 2003), Table 3.2.3.0(b1), p. 3-71: mu = 0.33",
+            "verified_at_url": "https://ia800103.us.archive.org/BookReader/BookReaderImages.php?zip=/10/items/milhdbk-5-j/MILHDBK5J_jp2.zip&file=MILHDBK5J_jp2/MILHDBK5J_0372.jp2&id=milhdbk-5-j&scale=1&rotate=0",
+            "cross_check": "Juvinall & Marshek, Fundamentals of Machine Component Design, Appendix F (reprint of MIL-HDBK-5J Table 3.2.3.0(b1)): mu = 0.33 (verified at https://www.cittastudi.it/repository/3281/Juvinall%20%20Appendice%20F_Metalic%20Materials%20and%20Elements%20for%20Aerospace%20Vehicle%20Structures.pdf)",
+            "notes": "Average value; applies to all sheet and plate columns of Table 3.2.3.0(b1)."
+          },
+          {
+            "key": "shear_modulus",
+            "value": 4,
+            "unit": "10^3 ksi",
+            "basis": "typical",
+            "source_id": "mil-hdbk-5j",
+            "source_citation": "MIL-HDBK-5J (31 Jan 2003), Table 3.2.3.0(b1), p. 3-71: G, 10^3 ksi = 4.0",
+            "verified_at_url": "https://ia800103.us.archive.org/BookReader/BookReaderImages.php?zip=/10/items/milhdbk-5-j/MILHDBK5J_jp2.zip&file=MILHDBK5J_jp2/MILHDBK5J_0372.jp2&id=milhdbk-5-j&scale=1&rotate=0",
+            "cross_check": "Juvinall Appendix F reprint of MIL-HDBK-5J Table 3.2.3.0(b1): G = 4.0 x 10^3 ksi",
+            "notes": "Average value. Provided in addition to Poisson's ratio; consistent with E/(2(1+mu)) using E = 10.5-10.7 Msi."
+          },
+          {
+            "key": "yield_strength",
+            "value": 47,
+            "unit": "ksi",
+            "basis": "design_minimum",
+            "source_id": "mil-hdbk-5j",
+            "source_citation": "MIL-HDBK-5J (31 Jan 2003), Table 3.2.3.0(b1), p. 3-71: Fty (tension yield), A basis, L direction = 47 ksi for T3 sheet 0.010-0.128 in. (LT = 42 ksi; B basis: L = 48, LT = 43)",
+            "verified_at_url": "https://ia800103.us.archive.org/BookReader/BookReaderImages.php?zip=/10/items/milhdbk-5-j/MILHDBK5J_jp2.zip&file=MILHDBK5J_jp2/MILHDBK5J_0372.jp2&id=milhdbk-5-j&scale=1&rotate=0",
+            "cross_check": "stressebook.com (quoting MMPDS Table 3.2.4.0(b1), same data lineage, AMS 4037 sheet 0.010-0.128): Fty = 42 ksi (LT, A-basis) - matches the LT entry of this column (https://www.stressebook.com/angle-bracket-sizing-stress-analysis/)",
+            "notes": "A-basis (99% exceedance, 95% confidence) statistical design minimum, longitudinal (L) grain direction. Grain-direction dependent: LT A-basis = 42 ksi. Typical (average) yield is ~50 ksi per United Aluminum datasheet. Educational reference only, not for design."
+          },
+          {
+            "key": "ultimate_strength",
+            "value": 64,
+            "unit": "ksi",
+            "basis": "design_minimum",
+            "source_id": "mil-hdbk-5j",
+            "source_citation": "MIL-HDBK-5J (31 Jan 2003), Table 3.2.3.0(b1), p. 3-71: Ftu (tension ultimate), A basis, L direction = 64 ksi for T3 sheet 0.010-0.128 in. (LT = 63 ksi; B basis: L = 65, LT = 64)",
+            "verified_at_url": "https://ia800103.us.archive.org/BookReader/BookReaderImages.php?zip=/10/items/milhdbk-5-j/MILHDBK5J_jp2.zip&file=MILHDBK5J_jp2/MILHDBK5J_0372.jp2&id=milhdbk-5-j&scale=1&rotate=0",
+            "cross_check": "stressebook.com (quoting MMPDS Table 3.2.4.0(b1), AMS 4037 sheet 0.010-0.128): Ftu = 63 ksi (LT, lowest grain direction, A-basis) - matches the LT entry of this column (https://www.stressebook.com/angle-bracket-sizing-stress-analysis/)",
+            "notes": "A-basis statistical design minimum, longitudinal (L) grain direction; LT A-basis = 63 ksi. Typical (average) UTS is ~70 ksi per United Aluminum datasheet (https://unitedaluminum.com/2024-aluminum-alloy/). Educational reference only, not for design."
+          },
+          {
+            "key": "ultimate_strength",
+            "value": 70,
+            "unit": "ksi",
+            "basis": "typical",
+            "source_id": "united-aluminum-2024",
+            "source_citation": "United Aluminum, '2024 Aluminum Alloy' datasheet, typical mechanical properties for T3 temper: Tensile Strength 70 ksi, Yield 50 ksi, Elongation 16% (averages, explicitly 'not guaranteed' and 'should not be used for design purposes')",
+            "verified_at_url": "https://unitedaluminum.com/2024-aluminum-alloy/",
+            "cross_check": "Consistent with the typical 2024-T3 values widely attributed to ASM/MatWeb by third parties (UTS 483 MPa / 70 ksi, YS 345 MPa / 50 ksi); MatWeb itself not accessed per EULA",
+            "notes": "Typical (average) cross-check row, included alongside the MIL-HDBK-5J A-basis design minimum to show the spread between typical and statistical-minimum values."
+          }
+        ],
+        "discrepancies": [
+          "Wikipedia's 2024-T3 'typical' strengths (UTS 400-430 MPa / 58-62 ksi, yield 270-280 MPa / 39-40 ksi) are well below both the MIL-HDBK-5J A-basis minima (Ftu 63-64 ksi, Fty 42-47 ksi) and United Aluminum's typical values (70 ksi / 50 ksi); they appear to be Alclad (clad) thin-sheet specification minimums mislabeled as typical T3 values. The handbook and supplier values were preferred.",
+          "Tension modulus differs slightly by source/product form: MIL-HDBK-5J lists E = 10.5 x 10^3 ksi for T3 sheet (Ec = 10.7) but E = 10.7 x 10^3 ksi for T351 plate in the same table; the commonly quoted typical value is 10.6 Msi (73 GPa, Wikipedia). Recorded the sheet-column value 10.5.",
+          "Newer MMPDS editions renumber the 2024 table to 3.2.4.0(b1) (MIL-HDBK-5J uses 3.2.3.0(b1)); the values quoted from MMPDS by stressebook.com (Ftu 63 ksi LT, Fty 42 ksi LT, A-basis) match the 5J table exactly.",
+          "Yield and ultimate strengths are strongly grain-direction dependent (L vs LT differ by 1-5 ksi); the single recorded value is the L direction with LT noted in the property notes."
+        ]
+      },
+      {
+        "material_id": "ti-6al-4v",
+        "name": "Ti-6Al-4V",
+        "material_class": "titanium",
+        "condition": "Annealed; primary strength values are A-basis for sheet <= 0.1875 in per AMS 4911 / AMS-T-9046 Comp. AB-1 (MIL-HDBK-5J Table 5.4.1.0(b)); elastic/physical values from same table (sheet, strip, and plate)",
+        "properties": [
+          {
+            "key": "density",
+            "value": 0.16,
+            "unit": "lb/in3",
+            "basis": "typical",
+            "source_id": "mil-hdbk-5j",
+            "source_citation": "MIL-HDBK-5J, Metallic Materials and Elements for Aerospace Vehicle Structures, 31 Jan 2003, Table 5.4.1.0(b), p. 5-53 (omega, lb/in.^3) — read from Internet Archive scan (item milhdbk-5-j, leaf 944)",
+            "verified_at_url": "https://ia800103.us.archive.org/view_archive.php?archive=/10/items/milhdbk-5-j/MILHDBK5J_jp2.zip&file=MILHDBK5J_jp2%2FMILHDBK5J_0944.jp2&ext=jpg",
+            "cross_check": "Rolled Alloys 6Al-4V Data Sheet (Bulletin 1052USe): Density 0.160 lb/inch3; also United Performance Metals datasheet: 0.16 lb/in3",
+            "notes": "Published without statistical basis (nominal physical property). Stable citation page: https://archive.org/details/milhdbk-5-j. Wikipedia gives 4.429-4.512 g/cm3 (0.160-0.163 lb/cu in), consistent."
+          },
+          {
+            "key": "youngs_modulus",
+            "value": 16,
+            "unit": "10^3 ksi",
+            "basis": "typical",
+            "source_id": "mil-hdbk-5j",
+            "source_citation": "MIL-HDBK-5J, 31 Jan 2003, Table 5.4.1.0(b), p. 5-53: E, 10^3 ksi = 16.0 (annealed Ti-6Al-4V sheet, strip, and plate; tension) — read from Internet Archive scan (item milhdbk-5-j, leaf 944)",
+            "verified_at_url": "https://ia800103.us.archive.org/view_archive.php?archive=/10/items/milhdbk-5-j/MILHDBK5J_jp2.zip&file=MILHDBK5J_jp2%2FMILHDBK5J_0944.jp2&ext=jpg",
+            "cross_check": "Wikipedia Ti-6Al-4V property table (citing Carpenter/AZoM): Young's modulus 104-113 GPa (15.1-16.4 x10^6 psi), which brackets 16.0; United Performance Metals datasheet: Modulus of Elasticity Tension 16.5 (x10^6 psi)",
+            "notes": "Tension modulus; same table gives compression modulus Ec = 16.4 x10^3 ksi. MIL-HDBK-5J Table 5.4.1.0(c1), p. 5-54 (annealed AMS 4928 bar) gives E = 16.9 x10^3 ksi and Ec = 17.2 x10^3 ksi — the 16.0 vs 16.9 Msi spread is product-form dependent within the same handbook. Elastic moduli in MIL-HDBK-5 carry no A/B/S statistical basis (treated as typical/average)."
+          },
+          {
+            "key": "poisson_ratio",
+            "value": 0.31,
+            "unit": "dimensionless",
+            "basis": "typical",
+            "source_id": "mil-hdbk-5j",
+            "source_citation": "MIL-HDBK-5J, 31 Jan 2003, Table 5.4.1.0(b), p. 5-53: mu = 0.31 (annealed Ti-6Al-4V sheet, strip, and plate) — read from Internet Archive scan (item milhdbk-5-j, leaf 944)",
+            "verified_at_url": "https://ia800103.us.archive.org/view_archive.php?archive=/10/items/milhdbk-5-j/MILHDBK5J_jp2.zip&file=MILHDBK5J_jp2%2FMILHDBK5J_0944.jp2&ext=jpg",
+            "cross_check": "Wikipedia Ti-6Al-4V property table: Poisson's ratio 0.31-0.37 (lower bound matches 0.31)",
+            "notes": "Bar table 5.4.1.0(c1) lists the same mu = 0.31. Some typical-property compilations quote ~0.342 (consistent with MatWeb-style typical data as quoted by third parties); MIL-HDBK-5J uses 0.31."
+          },
+          {
+            "key": "shear_modulus",
+            "value": 6.2,
+            "unit": "10^3 ksi",
+            "basis": "typical",
+            "source_id": "mil-hdbk-5j",
+            "source_citation": "MIL-HDBK-5J, 31 Jan 2003, Table 5.4.1.0(b), p. 5-53: G, 10^3 ksi = 6.2 (annealed Ti-6Al-4V sheet, strip, and plate) — read from Internet Archive scan (item milhdbk-5-j, leaf 944)",
+            "verified_at_url": "https://ia800103.us.archive.org/view_archive.php?archive=/10/items/milhdbk-5-j/MILHDBK5J_jp2.zip&file=MILHDBK5J_jp2%2FMILHDBK5J_0944.jp2&ext=jpg",
+            "cross_check": "Wikipedia Ti-6Al-4V property table: shear modulus 40-45 GPa (5.8-6.5 x10^6 psi), which brackets 6.2",
+            "notes": "Same G = 6.2 x10^3 ksi listed in bar table 5.4.1.0(c1), p. 5-54."
+          },
+          {
+            "key": "yield_strength",
+            "value": 126,
+            "unit": "ksi",
+            "basis": "design_minimum",
+            "source_id": "mil-hdbk-5j",
+            "source_citation": "MIL-HDBK-5J, 31 Jan 2003, Table 5.4.1.0(b), p. 5-53: Fty(L) = 126 ksi, A-basis, annealed Ti-6Al-4V sheet <= 0.1875 in (AMS 4911 / AMS-T-9046 Comp. AB-1) — read from Internet Archive scan (item milhdbk-5-j, leaf 944)",
+            "verified_at_url": "https://ia800103.us.archive.org/view_archive.php?archive=/10/items/milhdbk-5-j/MILHDBK5J_jp2.zip&file=MILHDBK5J_jp2%2FMILHDBK5J_0944.jp2&ext=jpg",
+            "cross_check": "Rolled Alloys 6Al-4V Data Sheet, 'Specified, AMS 4911, annealed sheet & plate': 0.2% Yield Strength 126 ksi for sizes up to 0.1874 in (spec minimum, same number)",
+            "notes": "A-basis (statistical design minimum). B-basis is 131 ksi; LT direction same as L (126/131). Plate 0.1875-2.000 in: A-basis Fty 120 ksi. Annealed AMS 4928 bar (Table 5.4.1.0(c1), p. 5-54): S-basis Fty(L) 125 ksi for <0.500 in; AMS 4928 spec minimum yield is 120 ksi (Upmet datasheet lists Yield Strength 120000 psi)."
+          },
+          {
+            "key": "ultimate_strength",
+            "value": 134,
+            "unit": "ksi",
+            "basis": "design_minimum",
+            "source_id": "mil-hdbk-5j",
+            "source_citation": "MIL-HDBK-5J, 31 Jan 2003, Table 5.4.1.0(b), p. 5-53: Ftu(L) = 134 ksi, A-basis, annealed Ti-6Al-4V sheet <= 0.1875 in (AMS 4911 / AMS-T-9046 Comp. AB-1) — read from Internet Archive scan (item milhdbk-5-j, leaf 944)",
+            "verified_at_url": "https://ia800103.us.archive.org/view_archive.php?archive=/10/items/milhdbk-5-j/MILHDBK5J_jp2.zip&file=MILHDBK5J_jp2%2FMILHDBK5J_0944.jp2&ext=jpg",
+            "cross_check": "Rolled Alloys 6Al-4V Data Sheet, 'Specified, AMS 4911, annealed sheet & plate': Tensile Strength 134 ksi for sizes up to 0.1874 in (spec minimum, same number)",
+            "notes": "A-basis (statistical design minimum). B-basis is 139 ksi. Plate 0.1875-2.000 in: A-basis Ftu 130 ksi. Annealed AMS 4928 bar (Table 5.4.1.0(c1), p. 5-54): S-basis Ftu(L) 135 ksi for <0.500 in; Upmet datasheet lists UTS 131000 psi for annealed bar. Rolled Alloys typical annealed bar range 138-155 ksi."
+          }
+        ],
+        "discrepancies": [
+          "Young's modulus differs by product form within MIL-HDBK-5J itself: E = 16.0 x10^3 ksi for annealed sheet/strip/plate (Table 5.4.1.0(b)) vs E = 16.9 x10^3 ksi for annealed AMS 4928 bar (Table 5.4.1.0(c1)). Supplier typicals fall in between (Upmet 16.5 x10^6 psi tension; Rolled Alloys 16.7 x10^6 psi at 70 F, STA condition), while Wikipedia's quoted range tops out at 113 GPa (16.4 x10^6 psi), slightly below the 5J bar value. Recorded 16.0 (sheet table) as primary per assignment; both values noted.",
+          "Strength minimums depend strongly on product form and thickness: sheet <=0.1875 in A-basis 134/126 ksi vs plate 0.1875-2.000 in A-basis 130/120 ksi vs AMS 4928 bar S-basis 135/125 ksi (<0.500 in), while the AMS 4928 purchase-spec minimum is ~130/120 ksi (Upmet quotes 131/120 ksi). A single 'annealed Ti-6Al-4V strength' is therefore ambiguous without form/thickness.",
+          "Wikipedia's typical tensile range (yield 880-920 MPa / 128-133 ksi) sits slightly above the 5J sheet A-basis 126 ksi — expected, since A-basis design minima are statistically conservative relative to typical test values.",
+          "Poisson's ratio: MIL-HDBK-5J uses 0.31; typical-property compilations often quote up to ~0.342 (Wikipedia range 0.31-0.37). Recorded the handbook value."
+        ]
+      },
+      {
+        "material_id": "ss-304",
+        "name": "304 stainless steel",
+        "material_class": "stainless",
+        "condition": "Annealed (ASTM A240 Condition A, sheet/strip/plate); physical properties at room temperature",
+        "properties": [
+          {
+            "key": "yield_strength",
+            "value": 30,
+            "unit": "ksi",
+            "basis": "spec_minimum",
+            "source_id": "astm-a240",
+            "source_citation": "ASTM A240/A240M, Type 304 (UNS S30400), specified minimum 0.2% offset yield strength, annealed; spec is paywalled so value verified via Penn Stainless 'Stainless Steel Plate 304/304L ASTM A240' product page quoting the A240 minimums ('minimum yield strength at 0.2% of 30 ksi')",
+            "verified_at_url": "https://www.pennstainless.com/stainless-steel-plate-304-304l-astm-a240/",
+            "cross_check": "Genn-Hann Stainless ASTM A240 explainer (https://www.ghinox.com/astm-a240/): 'Type 304: ... yield strength of 205 MPa (30 ksi)'",
+            "notes": "ASTM spec itself not accessed (paywalled); number confirmed on two independent supplier pages quoting the spec. Typical annealed yield is much higher (AK Steel datasheet lists 42 ksi typical for 304). Note: dual-certified 304/304L products are often listed against the 304L minimum of 25 ksi."
+          },
+          {
+            "key": "ultimate_strength",
+            "value": 75,
+            "unit": "ksi",
+            "basis": "spec_minimum",
+            "source_id": "astm-a240",
+            "source_citation": "ASTM A240/A240M, Type 304 (UNS S30400), specified minimum tensile strength, annealed; verified via Penn Stainless 'Stainless Steel Plate 304/304L ASTM A240' product page quoting the A240 minimums ('minimum tensile strength of 75 ksi')",
+            "verified_at_url": "https://www.pennstainless.com/stainless-steel-plate-304-304l-astm-a240/",
+            "cross_check": "Genn-Hann Stainless ASTM A240 explainer (https://www.ghinox.com/astm-a240/): 'Type 304: minimum tensile strength of 515 MPa (75 ksi)'",
+            "notes": "ASTM spec itself not accessed (paywalled). Typical annealed UTS is higher (AK Steel lists 90 ksi typical). Rolled Alloys' dual-cert 304/304L datasheet lists 70 ksi, which is the Type 304L minimum - see discrepancies."
+          },
+          {
+            "key": "density",
+            "value": 0.285,
+            "unit": "lb/in3",
+            "basis": "typical",
+            "source_id": "rolled-alloys-304",
+            "source_citation": "Rolled Alloys, '304/304L Data Sheet' (rev. 08/23), Physical Properties table: 'Density 0.285 lb/in3'",
+            "verified_at_url": "https://www.rolledalloys.com/wp-content/uploads/304-304L_Datasheet_rolled-alloys_USA.pdf",
+            "cross_check": "Penn Stainless 304/304L ASTM A240 plate page lists '0.285 lbm/in3 at 68 F'",
+            "notes": "AK Steel datasheet rounds to 0.29 lb/in3 (8.03 g/cm3); kmac-distribution (ASM-style AISI Type 304 data) lists 0.289 lb/in3. 0.285 lb/in3 corresponds to ~7.9 g/cm3 figure widely used for 304."
+          },
+          {
+            "key": "youngs_modulus",
+            "value": 28,
+            "unit": "x 10^3 ksi",
+            "basis": "typical",
+            "source_id": "ak-steel-304",
+            "source_citation": "AK Steel Corporation, '304/304L Stainless Steel Product Data Sheet', doc. 304/304L-S-8-01-07 (7/07), Physical Properties: 'Modulus of Elasticity, ksi (MPa): 28.0 x 10^3 (193 x 10^3) in tension'",
+            "verified_at_url": "https://www.spacematdb.com/spacemat/manudatasheets/304_304L_Data_Sheet.pdf",
+            "cross_check": "Penn Stainless 304/304L ASTM A240 plate page lists Modulus of Elasticity '28 psi x 10^6'",
+            "notes": "Equivalent to 28.0 x 10^6 psi (193 GPa), tension, room temperature. Rolled Alloys datasheet lists 29 x 10^6 psi at 68 F; kmac (ASM-style) gives 28000-29000 ksi range - see discrepancies. PDF verified via spacematdb.com mirror of the AK Steel datasheet."
+          },
+          {
+            "key": "poisson_ratio",
+            "value": 0.29,
+            "unit": "(dimensionless)",
+            "basis": "typical",
+            "source_id": "kmac-304",
+            "source_citation": "K-mac Distribution, '304 Stainless Material Technical Data Sheet' (AISI Type 304, ASM-style typical property listing): Poisson's Ratio 0.29",
+            "verified_at_url": "https://kmac-distribution.com/technical/304-stainless.htm",
+            "cross_check": "Rolled Alloys 304/304L Data Sheet (rev. 08/23) lists 'Poisson Ratio 0.3' (consistent at one significant figure)",
+            "notes": "Third-party page republishing the widely quoted ASM/AISI Type 304 typical dataset (consistent with MatWeb-quoted values; MatWeb itself NOT accessed per policy). AZoM gives a generic 0.265-0.275 range for S30400 - see discrepancies. 0.29 is the most commonly cited typical value for annealed 304."
+          },
+          {
+            "key": "shear_modulus",
+            "value": 11.2,
+            "unit": "x 10^3 ksi",
+            "basis": "typical",
+            "source_id": "ak-steel-304",
+            "source_citation": "AK Steel Corporation, '304/304L Stainless Steel Product Data Sheet', doc. 304/304L-S-8-01-07 (7/07), Physical Properties: 'Modulus of Elasticity, ksi (MPa): ... 11.2 x 10^3 (78 x 10^3) in torsion'",
+            "verified_at_url": "https://www.spacematdb.com/spacemat/manudatasheets/304_304L_Data_Sheet.pdf",
+            "cross_check": "AZoM S30400 property page gives shear modulus 74-81 GPa (10.7-11.7 x 10^6 psi), bracketing 78 GPa; kmac-distribution lists 12500 ksi (disagrees - see discrepancies)",
+            "notes": "Published by AK Steel as modulus of elasticity 'in torsion'. Supplementary to Poisson's ratio; sources disagree (11.2 vs 12.5 x 10^3 ksi), flagged in discrepancies."
+          }
+        ],
+        "discrepancies": [
+          "Rolled Alloys' dual-certified '304/304L' datasheet lists ASTM A240 minimums of UTS 70 ksi / 0.2% YS 25 ksi - those are the Type 304L minimums, not Type 304's 75/30 ksi. Penn Stainless and Genn-Hann both confirm 75 ksi / 30 ksi for straight Type 304; dual-cert product literature commonly quotes the lower L-grade floor.",
+          "Young's modulus: AK Steel and Penn Stainless give 28 x 10^6 psi (193 GPa); Rolled Alloys lists 29 x 10^6 psi at 68 F; kmac (ASM-style) gives a 28000-29000 ksi range. 28 x 10^6 psi (193 GPa) recorded as the most commonly published typical value.",
+          "Poisson's ratio: 0.29 (kmac/ASM-style typical) vs 0.3 (Rolled Alloys, likely rounded) vs 0.265-0.275 (AZoM generic S30400 range).",
+          "Density: 0.285 lb/in3 (Rolled Alloys, Penn Stainless) vs 0.289 lb/in3 (kmac) vs 0.29 lb/in3 / 8.03 g/cm3 (AK Steel) - roughly 7.9-8.03 g/cm3 spread, typical for austenitic grade literature.",
+          "Shear modulus: AK Steel lists 11.2 x 10^3 ksi (78 GPa) 'in torsion' while kmac lists 12500 ksi (86 GPa). Note AK Steel's own E=28.0e3 ksi with G=11.2e3 ksi implies nu ~ 0.25, internally inconsistent with the commonly cited nu = 0.29.",
+          "MIL-HDBK-5J not used: assignment specified ASTM A240 minimums for strength and typical elastic/physical properties; no 5J table consulted for this row."
+        ]
+      },
+      {
+        "material_id": "iron-gray-class30",
+        "name": "Gray Cast Iron, ASTM A48 Class 30",
+        "material_class": "cast-iron",
+        "condition": "As-cast, classified by separately cast test bars per ASTM A48/A48M (Class 30 = 30 ksi min tensile)",
+        "properties": [
+          {
+            "key": "ultimate_strength",
+            "value": 30,
+            "unit": "ksi",
+            "basis": "spec_minimum",
+            "source_id": "astm-a48",
+            "source_citation": "ASTM A48/A48M, Standard Specification for Gray Iron Castings, Class 30: specified minimum tensile strength 30 ksi [207 MPa] (paywalled; number verified via foundry datasheets quoting the spec)",
+            "verified_at_url": "https://www.pentictonfoundry.com/news/gray-iron-astm-a48-class-30/",
+            "cross_check": "iron-foundry.com ASTM A48 Class 30 page: 'min. tensile strength 207 MPa' (https://www.iron-foundry.com/astm-a48-class-30.html); also castingsr.com guide: 207 MPa (30,000 psi)",
+            "notes": "Class number equals the spec minimum tensile strength in ksi. Gray cast iron is brittle with a strongly nonlinear stress-strain curve and exhibits NO meaningful yield point, so yield_strength is intentionally omitted (castingsr.com guide explicitly notes no distinct yield behavior is specified for this material)."
+          },
+          {
+            "key": "compressive_strength",
+            "value": 109,
+            "unit": "ksi",
+            "basis": "typical",
+            "source_id": "penticton-a48-c30",
+            "source_citation": "Penticton Foundry, Gray Iron ASTM A48 Class 30 Data Sheet: compressive strength 109 ksi (752 MPa)",
+            "verified_at_url": "https://www.pentictonfoundry.com/news/gray-iron-astm-a48-class-30/",
+            "cross_check": "tubingchina.com 'Mechanical Properties of Gray Cast Iron' class table (reproducing the classic ASTM-class typical-property table, cf. Shigley Table A-24): Class 30 compressive strength 109 kpsi (https://tubingchina.com/Mechanical-Properties-of-Gray-Cast-Iron.htm)",
+            "notes": "Typical, not a spec minimum (ASTM A48 specifies tensile only). About 3.6x the tensile class minimum, characteristic of gray iron."
+          },
+          {
+            "key": "youngs_modulus",
+            "value": 13,
+            "unit": "10^6 psi",
+            "basis": "typical",
+            "source_id": "asm-desk-ed-1998",
+            "source_citation": "Davis, J.R. (ed.), Metals Handbook Desk Edition, ASM International, 1998, as quoted by AmesWeb 'Young's Modulus of Cast Iron': ASTM A48 Class 30 = 13.0-16.4 x 10^6 psi (90-113 GPa), secant modulus in tension",
+            "verified_at_url": "https://amesweb.info/Materials/Youngs-Modulus-of-Iron.aspx",
+            "cross_check": "tubingchina.com gray cast iron class table: Class 30 modulus of elasticity (tension) 13.0-16.4 Mpsi; castingsr.com A48 Class 30 guide: 90-113 GPa (13-16.5 x 10^6 psi)",
+            "notes": "RANGE: published as 13.0-16.4 x 10^6 psi; value recorded is the lower bound of the range, upper bound 16.4. Gray iron does not obey Hooke's law; this is the SECANT modulus, defined as the slope from the origin to 25% of tensile strength on the stress-strain curve. Store as a range, not a point value."
+          },
+          {
+            "key": "poisson_ratio",
+            "value": 0.26,
+            "unit": "dimensionless",
+            "basis": "typical",
+            "source_id": "asm-via-amesweb",
+            "source_citation": "AmesWeb 'Poisson's Ratio of Cast Iron' (citing Callister 2007 and Davis, ASM Metals Handbook Desk Edition 1998): gray irons ~0.26 (grades G1800/G3000/G4000 all listed 0.26)",
+            "verified_at_url": "https://amesweb.info/Materials/Poissons_Ratio_of_Iron.aspx",
+            "cross_check": "Sonelastic ferrous-metals property table (sourced from ASM Handbooks Vol. 1 & 2): gray iron grades G1800 and G4000 Poisson's ratio 0.26 (https://www.sonelastic.com/en/fundamentals/tables-of-materials-properties/ferrous-metals.html)",
+            "notes": "Generic gray-iron value, not class-30-specific; castingsr.com quotes 0.26-0.28 for Class 30. Given the nonlinear elasticity, treat as nominal."
+          },
+          {
+            "key": "density",
+            "value": 0.258,
+            "unit": "lb/in3",
+            "basis": "typical",
+            "source_id": "penticton-a48-c30",
+            "source_citation": "Penticton Foundry, Gray Iron ASTM A48 Class 30 Data Sheet: density 0.258 lb/in3 (7.15 g/cm3)",
+            "verified_at_url": "https://www.pentictonfoundry.com/news/gray-iron-astm-a48-class-30/",
+            "cross_check": "castingsr.com A48 Class 30 guide: density 7.10-7.25 g/cm3, which brackets 7.15 g/cm3 (= 0.258 lb/in3) (https://castingsr.com/technical-knowledge-of-astm-a48-class-30-a-complete-guide/)",
+            "notes": "Gray iron density varies slightly with graphite content/section size; 0.258 lb/in3 is the commonly published class 30 nominal."
+          }
+        ],
+        "discrepancies": [
+          "Yield strength: no value reported anywhere because gray cast iron has no meaningful yield point (brittle, nonlinear elasticity); any 'yield' figures occasionally seen for gray iron are estimates and were deliberately excluded.",
+          "Young's modulus: some aggregator sites surfaced in search (e.g. MakeItFrom for ASTM Grade 30, echoed by nuclear-power.com) list E around 180 GPa (26 x 10^6 psi), which conflicts sharply with the ASM Metals Handbook secant range of 13.0-16.4 x 10^6 psi (90-113 GPa) used here; the ~26 Msi figure appears erroneous for class 30 gray iron and was rejected.",
+          "Tensile strength: tubingchina's typical-property table lists 31 kpsi typical for Class 30 vs the 30 ksi ASTM A48 spec minimum recorded here - consistent (typical slightly above minimum), basis difference only.",
+          "Hardness ranges differ between sources (Penticton 174-210 BHN vs iron-foundry/castingsr 187-241 BHN) - not a requested property, noted for completeness.",
+          "Poisson's ratio: castingsr.com gives 0.26-0.28 for Class 30 vs the ASM-sourced 0.26 recorded; minor spread, 0.26 retained as the handbook nominal.",
+          "MatWeb was never accessed per EULA restriction; all values verified via foundry datasheets, AmesWeb (quoting ASM Metals Handbook Desk Edition), Sonelastic (quoting ASM Handbooks), and supplier technical guides."
+        ]
+      },
+      {
+        "material_id": "brass-c26000",
+        "name": "C26000 Cartridge Brass (70/30)",
+        "material_class": "copper-alloy",
+        "condition": "H02 (half-hard) temper, flat products (sheet/strip), 0.040 in section, typical values at 68°F (20°C). Elastic constants and density are temper-independent CDA values.",
+        "properties": [
+          {
+            "key": "density",
+            "value": 0.308,
+            "unit": "lb/in3",
+            "basis": "typical",
+            "source_id": "cda-c26000",
+            "source_citation": "Copper Development Association, C26000 Alloy datasheet (alloys.copper.org), Physical Properties: density 0.308 lb/cu in. at 68°F (specific gravity 8.53)",
+            "verified_at_url": "https://alloys.copper.org/alloy/C26000",
+            "cross_check": "Wieland Concast C26000 datasheet PDF (concast.com/files/C26000.pdf, 'Physical properties provided by CDA'): 0.308 lb/in3 at 68°F / 8.53 gm/cm3 at 20°C; also AZoM article 6341: 0.308 lb/in3 (8.53 g/cm3)",
+            "notes": "Density is temper-independent. MakeItFrom lists a rounded 8.2 g/cm3 — see discrepancies."
+          },
+          {
+            "key": "youngs_modulus",
+            "value": 16000,
+            "unit": "ksi",
+            "basis": "typical",
+            "source_id": "cda-c26000",
+            "source_citation": "Copper Development Association, C26000 Alloy datasheet (alloys.copper.org), Mechanical Properties: Modulus of Elasticity in Tension 16000 ksi",
+            "verified_at_url": "https://alloys.copper.org/alloy/C26000",
+            "cross_check": "Wieland Concast C26000 datasheet PDF (quoting CDA): 16000 ksi (110317 MPa); MakeItFrom H02 C26000 page: 110 GPa (16 x 10^6 psi)",
+            "notes": "Temper-independent. AZoM lists 117 GPa (16969 ksi), an outlier vs CDA/Concast/MakeItFrom — flagged in discrepancies."
+          },
+          {
+            "key": "shear_modulus",
+            "value": 6000,
+            "unit": "ksi",
+            "basis": "typical",
+            "source_id": "cda-c26000",
+            "source_citation": "Copper Development Association, C26000 Alloy datasheet (alloys.copper.org), Mechanical Properties: Modulus of Rigidity 6000 ksi",
+            "verified_at_url": "https://alloys.copper.org/alloy/C26000",
+            "cross_check": "Wieland Concast C26000 datasheet PDF (quoting CDA): 6000 ksi (41369 MPa); MakeItFrom H02 C26000 page: 41 GPa (5.9 x 10^6 psi)",
+            "notes": "CDA calls this 'Modulus of Rigidity'. Temper-independent."
+          },
+          {
+            "key": "poisson_ratio",
+            "value": 0.34,
+            "unit": "dimensionless",
+            "basis": "typical",
+            "source_id": "azom-6341",
+            "source_citation": "AZoM, 'Cartridge Brass UNS C26000', Article ID 6341 (azom.com): Poisson's ratio 0.34",
+            "verified_at_url": "https://www.azom.com/article.aspx?ArticleID=6341",
+            "cross_check": "No exact second-source agreement found: MakeItFrom H02 C26000 page lists 0.31; CDA's published E=16000 ksi and G=6000 ksi imply nu = E/(2G)-1 = 0.33",
+            "notes": "CDA does not publish Poisson's ratio directly. Sources disagree (0.31-0.34); shear_modulus is the better-verified elastic constant and is also provided. Treat 0.33-0.34 as typical."
+          },
+          {
+            "key": "yield_strength",
+            "value": 52,
+            "unit": "ksi",
+            "basis": "typical",
+            "source_id": "cda-c26000",
+            "source_citation": "Copper Development Association, C26000 Alloy datasheet (alloys.copper.org), Mechanical Properties, Flat Products, H02 (1/2 Hard) temper, 0.040 in section: yield strength at 0.5% extension under load, 52 ksi Typ",
+            "verified_at_url": "https://www.makeitfrom.com/material-properties/Half-Hard-H02-C26000-Brass",
+            "cross_check": "Copper and Brass Sales (materialsplus.com) C26000 H02 sheet product listings state TS 62 ksi / YS 52 ksi (confirmed via search results; direct page load returned 403)",
+            "notes": "Yield basis is 0.5% extension under load, not 0.2% offset. The CDA page was loaded but its H02 table row rendered with the yield cell dropped by the HTML-to-text conversion (remaining cells 62/25/70/65/40/18 match TS/El/HRB/HR30T/shear/fatigue only with YS=52); the 52 ksi value was directly seen on MakeItFrom as 360 MPa (52 x 10^3 psi). For comparison, ASTM B927/B927M-23 spec MINIMUM for H02 rod under 1/2 in dia is 35 ksi (Wieland Concast datasheet) — different product form and basis."
+          },
+          {
+            "key": "ultimate_strength",
+            "value": 62,
+            "unit": "ksi",
+            "basis": "typical",
+            "source_id": "cda-c26000",
+            "source_citation": "Copper Development Association, C26000 Alloy datasheet (alloys.copper.org), Mechanical Properties, Flat Products, H02 (1/2 Hard) temper, 0.040 in section: tensile strength 62 ksi Typ",
+            "verified_at_url": "https://alloys.copper.org/alloy/C26000",
+            "cross_check": "Copper and Brass Sales (materialsplus.com) C26000 H02 sheet listings: 62 ksi tensile (via search results); MakeItFrom H02 page: 420 MPa (61 x 10^3 psi)",
+            "notes": "Typical, not a spec minimum. ASTM B927/B927M-23 spec MINIMUM for H02 rod under 1/2 in dia is 57 ksi (Wieland Concast datasheet) — different product form."
+          }
+        ],
+        "discrepancies": [
+          "Elastic modulus: AZoM lists 117 GPa (16969 ksi) while CDA, Wieland Concast (quoting CDA), and MakeItFrom all give 16000 ksi (110 GPa). The CDA value 16000 ksi was used; AZoM appears to be the outlier.",
+          "Poisson's ratio: AZoM 0.34 vs MakeItFrom 0.31 vs 0.33 implied by CDA's own E (16000 ksi) and G (6000 ksi). CDA publishes no direct value; the reported 0.34 should be treated as approximate.",
+          "Density: MakeItFrom lists 8.2 g/cm3 vs CDA/Concast/AZoM 8.53 g/cm3 (0.308 lb/in3); MakeItFrom appears to use its own rounded estimate and was disregarded for density.",
+          "Ultimate strength: MakeItFrom rounds H02 UTS to 420 MPa (61 ksi) vs CDA typical 62 ksi for 0.040 in flat product — minor rounding difference.",
+          "CDA web page table extraction: automated HTML-to-markdown conversion of alloys.copper.org dropped the H02 yield-strength cell, initially making the row look like YS 25 ksi / 70% elongation (physically implausible for half-hard). Resolved via MakeItFrom and supplier listings: actual CDA row is TS 62 / YS 52 / El 25 / HRB 70.",
+          "Spec minimums vs typicals: ASTM B927/B927M-23 H02 rod minimums (TS 57/54/50 ksi, YS 35/32/30 ksi by diameter, per Wieland Concast) are well below the flat-product typical values reported here — different product form and statistical basis; do not mix.",
+          "MatWeb hosts C26000 H02 datasheets but was not accessed per EULA restrictions; values reported here are consistent with what third parties quote from it."
+        ]
+      },
+      {
+        "material_id": "nylon-66",
+        "name": "Nylon 6/6 (PA66), unfilled",
+        "material_class": "polymer",
+        "condition": "Unfilled injection-molding resin (Celanese/DuPont Zytel 101L NC010), dry as molded (DAM), 23 C. Conditioned (50% RH) values noted per property — PA66 is strongly moisture-sensitive.",
+        "properties": [
+          {
+            "key": "density",
+            "value": 1140,
+            "unit": "kg/m3",
+            "basis": "typical",
+            "source_id": "celanese-zytel-101l",
+            "source_citation": "Celanese, Zytel 101L NC010 Nylon Resin Product Data Sheet, rev. 2023-04-04, 'Other properties' table, Density, ISO 1183, dry",
+            "verified_at_url": "https://quickparts.com/wp-content/uploads/2023/04/zytel%C2%AE-101l-nc010-gb.pdf",
+            "cross_check": "DuPont Zytel 101L NC010 TDS rev. 2018-03-27 (plastore.it mirror): 1140 kg/m3 (ISO 1183, dry); Ensinger TECAMID 66 natural US datasheet: 1.14 g/cm3",
+            "notes": "Dry value. TDS also lists density of melt 970 kg/m3. Specific gravity equivalent 1.14."
+          },
+          {
+            "key": "youngs_modulus",
+            "value": 3100,
+            "unit": "MPa",
+            "basis": "typical",
+            "source_id": "celanese-zytel-101l",
+            "source_citation": "Celanese, Zytel 101L NC010 Nylon Resin Product Data Sheet, rev. 2023-04-04, 'Typical mechanical properties' table, Tensile Modulus, ISO 527-1/-2, dry/cond = 3100/1400 MPa",
+            "verified_at_url": "https://quickparts.com/wp-content/uploads/2023/04/zytel%C2%AE-101l-nc010-gb.pdf",
+            "cross_check": "DuPont Zytel 101L NC010 TDS rev. 2018-03-27 (plastore.it mirror): 3100/1400 MPa, ISO 527-1/-2",
+            "notes": "MOISTURE SENSITIVITY: drops from 3100 MPa dry-as-molded to 1400 MPa conditioned at 50% RH (more than half). Extruded stock shapes test higher (Ertalon 66 SA: 3550 MPa dry, ISO 527); Ensinger US ASTM D638 figure is 350,000 psi."
+          },
+          {
+            "key": "poisson_ratio",
+            "value": 0.37,
+            "unit": "-",
+            "basis": "typical",
+            "source_id": "celanese-zytel-101l",
+            "source_citation": "Celanese, Zytel 101L NC010 Nylon Resin Product Data Sheet, rev. 2023-04-04, Poisson's ratio, dry/cond = 0.37/0.43 (DuPont 2018 edition lists test standard ISO 527-1/-2)",
+            "verified_at_url": "https://quickparts.com/wp-content/uploads/2023/04/zytel%C2%AE-101l-nc010-gb.pdf",
+            "cross_check": "DuPont Zytel 101L NC010 TDS rev. 2018-03-27 (plastore.it mirror): 0.37/0.43, ISO 527-1/-2",
+            "notes": "0.37 dry as molded; rises to 0.43 conditioned at 50% RH. Generic literature values of ~0.39-0.41 for PA66 usually refer to partially conditioned material."
+          },
+          {
+            "key": "yield_strength",
+            "value": 82,
+            "unit": "MPa",
+            "basis": "typical",
+            "source_id": "celanese-zytel-101l",
+            "source_citation": "Celanese, Zytel 101L NC010 Nylon Resin Product Data Sheet, rev. 2023-04-04, Yield stress at 50 mm/min, ISO 527-1/-2, dry/cond = 82/55 MPa",
+            "verified_at_url": "https://quickparts.com/wp-content/uploads/2023/04/zytel%C2%AE-101l-nc010-gb.pdf",
+            "cross_check": "DuPont Zytel 101L NC010 TDS rev. 2018-03-27 (plastore.it mirror): 82/55 MPa; Ensinger TECAMID 66 natural (extruded, ASTM D638): tensile strength at yield 12,000 psi at 73 F",
+            "notes": "Tensile yield stress (yield strain 4.5% dry). MOISTURE SENSITIVITY: 82 MPa dry-as-molded falls to 55 MPa conditioned at 50% RH. BASF Ultramid A3K (search excerpt, not directly loaded) lists 85/50 MPa — small grade-to-grade variation."
+          },
+          {
+            "key": "ultimate_strength",
+            "value": 12300,
+            "unit": "psi",
+            "basis": "typical",
+            "source_id": "ensinger-tecamid-66",
+            "source_citation": "Ensinger TECAMID 66 natural (PA66 extruded stock shapes), US product datasheet, Tensile strength at break, ASTM D638, 73 F",
+            "verified_at_url": "https://www.ensingerplastics.com/en-us/shapes/products/pa66-tecamid-66-natural",
+            "cross_check": "Quadrant Ertalon 66 SA TDS (theplasticshop.co.uk): tensile strength 93 MPa dry, ISO 527-1/-2 (extruded rod); both are extruded-shape, dry-material figures",
+            "notes": "Molding-resin TDS (Zytel 101L) reports no break stress dry-as-molded — material is ductile (strain at break 45%), so yield stress (82 MPa) is the maximum engineering stress and the practical 'tensile strength' for molded DAM parts. This 12,300 psi break value is from extruded stock shape, dry; conditioned strength is substantially lower."
+          }
+        ],
+        "discrepancies": [
+          "Moisture condition dominates all mechanical properties: dry-as-molded vs 50% RH conditioned values are 3100 vs 1400 MPa (modulus), 82 vs 55 MPa (yield), 0.37 vs 0.43 (Poisson). A single-number row is misleading without the DAM qualifier.",
+          "Tensile modulus varies by product form and test standard: 3100 MPa (Zytel 101L molded, ISO 527) vs 3550 MPa (Ertalon 66 SA extruded, ISO 527) vs 350,000 psi ~= 2.4 GPa (Ensinger US page, ASTM D638) — the Ensinger ASTM figure is notably lower than the ISO figures.",
+          "Dry yield strength ranges 82-90 MPa across unfilled PA66 grades (Zytel 101L 82 MPa, BASF Ultramid A3K 85 MPa per search excerpt, Ertalon 66 SA 90 MPa).",
+          "No break/ultimate stress is published for the dry-as-molded molding resin (ductile failure at 45% strain); ultimate_strength reported here is from an extruded-shape datasheet and is essentially equal to yield.",
+          "MatWeb not accessed per EULA restriction; all values verified via manufacturer/supplier TDS mirrors loaded directly."
+        ]
+      },
+      {
+        "material_id": "wood-douglas-fir",
+        "name": "Douglas-fir (coast)",
+        "material_class": "wood",
+        "condition": "Clear, straight-grained small specimens at 12% moisture content; \"Coast\" Douglas-fir = grown in Oregon/Washington west of the Cascade Mountains summit (Wood Handbook Table 5-3 footnote e). Average values from species sampling — typical, not design minima.",
+        "properties": [
+          {
+            "key": "density",
+            "value": 0.48,
+            "unit": "dimensionless (specific gravity)",
+            "basis": "typical",
+            "source_id": "wood-handbook-fpl-gtr-282",
+            "source_citation": "USDA Forest Products Laboratory, Wood Handbook: Wood as an Engineering Material, FPL-GTR-282, Chapter 5 (Senalik & Farber), Table 5-3b, p. 5-12, Douglas-fir Coast, 12% MC",
+            "verified_at_url": "https://www.fpl.fs.usda.gov/documnts/fplgtr/fplgtr282/chapter_05_fpl_gtr282.pdf",
+            "cross_check": "FPL-GTR-190 (2010 ed.), Chapter 5, Table 5-3b, p. 5-12: 0.48 (identical); also 0.48 in metric Table 5-3a of both editions. https://www.fpl.fs.usda.gov/documnts/fplgtr/fplgtr190/chapter_05.pdf",
+            "notes": "Reported as SPECIFIC GRAVITY, not density (pipeline must convert: footnote b states SG is based on ovendry weight and volume at the tabulated moisture condition, i.e. volume at 12% MC for this row). Approximate density at 12% MC is ~32-34 lb/ft3 but that number is not published in this table, so only SG is recorded."
+          },
+          {
+            "key": "youngs_modulus",
+            "value": 1.95,
+            "unit": "x10^6 lbf/in2",
+            "basis": "typical",
+            "source_id": "wood-handbook-fpl-gtr-282",
+            "source_citation": "USDA FPL Wood Handbook FPL-GTR-282, Chapter 5, Table 5-3b (Static bending, Modulus of elasticity), p. 5-12, Douglas-fir Coast, 12% MC",
+            "verified_at_url": "https://www.fpl.fs.usda.gov/documnts/fplgtr/fplgtr282/chapter_05_fpl_gtr282.pdf",
+            "cross_check": "FPL-GTR-190 Table 5-3b, p. 5-12: 1.95 x10^6 lbf/in2 (identical); metric Table 5-3a in GTR-282 gives 13,400 MPa for the same row. https://www.fpl.fs.usda.gov/documnts/fplgtr/fplgtr190/chapter_05.pdf",
+            "notes": "E_L (longitudinal) from static bending: footnote c — measured on a simply supported, center-loaded beam, span-to-depth ratio 14/1; as tabulated it INCLUDES shear-deflection effect and may be increased ~10% to correct (i.e. ~2.15 x10^6 psi shear-free). Educational consumers comparing to axial E_L should note this."
+          },
+          {
+            "key": "poisson_ratio",
+            "value": 0.292,
+            "unit": "dimensionless",
+            "basis": "typical",
+            "source_id": "wood-handbook-fpl-gtr-282",
+            "source_citation": "USDA FPL Wood Handbook FPL-GTR-282, Chapter 5, Table 5-2 (Poisson's ratios for various species at approximately 12% moisture content), p. 5-3, Douglas-fir, mu_LR",
+            "verified_at_url": "https://www.fpl.fs.usda.gov/documnts/fplgtr/fplgtr282/chapter_05_fpl_gtr282.pdf",
+            "cross_check": "FPL-GTR-190 Table 5-2, p. 5-3: mu_LR = 0.292 (identical). https://www.fpl.fs.usda.gov/documnts/fplgtr/fplgtr190/chapter_05.pdf",
+            "notes": "Wood is orthotropic — six Poisson's ratios. Value given is mu_LR; full Douglas-fir set in Table 5-2: mu_LR 0.292, mu_LT 0.449, mu_RT 0.390, mu_TR 0.374, mu_RL 0.036, mu_TL 0.029. Table 5-2 lists 'Douglas-fir' at species level, NOT subdivided coast/interior. Shear-modulus ratios in Table 5-1: G_LR/E_L = 0.064, G_LT/E_L = 0.078, G_RT/E_L = 0.007."
+          },
+          {
+            "key": "modulus_of_rupture",
+            "value": 12400,
+            "unit": "lbf/in2",
+            "basis": "typical",
+            "source_id": "wood-handbook-fpl-gtr-282",
+            "source_citation": "USDA FPL Wood Handbook FPL-GTR-282, Chapter 5, Table 5-3b (Static bending, Modulus of rupture), p. 5-12, Douglas-fir Coast, 12% MC",
+            "verified_at_url": "https://www.fpl.fs.usda.gov/documnts/fplgtr/fplgtr282/chapter_05_fpl_gtr282.pdf",
+            "cross_check": "FPL-GTR-190 Table 5-3b, p. 5-12: 12,400 lbf/in2 (identical); metric Table 5-3a in GTR-282 gives 85,000 kPa for the same row. https://www.fpl.fs.usda.gov/documnts/fplgtr/fplgtr190/chapter_05.pdf",
+            "notes": "Average MOR of small clear specimens — NOT a design value; visually/mechanically graded lumber design values (e.g. NDS Fb) are far lower. Handbook notes MOR is not a true stress (flexure formula valid only to elastic limit)."
+          },
+          {
+            "key": "compressive_strength",
+            "value": 7230,
+            "unit": "lbf/in2",
+            "basis": "typical",
+            "source_id": "wood-handbook-fpl-gtr-282",
+            "source_citation": "USDA FPL Wood Handbook FPL-GTR-282, Chapter 5, Table 5-3b (Compression parallel to grain), p. 5-12, Douglas-fir Coast, 12% MC",
+            "verified_at_url": "https://www.fpl.fs.usda.gov/documnts/fplgtr/fplgtr282/chapter_05_fpl_gtr282.pdf",
+            "cross_check": "FPL-GTR-190 Table 5-3b, p. 5-12: 7,230 lbf/in2 (identical); metric Table 5-3a in GTR-282 gives 49,900 kPa. https://www.fpl.fs.usda.gov/documnts/fplgtr/fplgtr190/chapter_05.pdf",
+            "notes": "Maximum crushing strength parallel to grain (footnote a). Included as a bonus beyond the requested wood property set since it is a primary wood strength property. Compression perpendicular to grain (fiber stress at proportional limit) for the same row is 800 lbf/in2."
+          }
+        ],
+        "discrepancies": [
+          "No discrepancies: FPL-GTR-282 (current edition) and FPL-GTR-190 (2010 edition) publish identical values for Douglas-fir Coast at 12% MC (SG 0.48; MOR 12,400 lbf/in2; MOE 1.95 x10^6 lbf/in2; compression parallel 7,230 lbf/in2) and identical Poisson's ratios.",
+          "Yield strength and ultimate (tensile) strength were intentionally omitted: the Wood Handbook does not tabulate a yield strength for wood, and tension-parallel-to-grain data are sparse; MOR and compression parallel are the standard strength descriptors per the assignment.",
+          "Caveat rather than discrepancy: tabulated bending MOE includes a shear-deflection effect; the handbook says it may be increased ~10% to approximate shear-free E_L. Third-party tables sometimes quote the +10% corrected value (~2.1-2.2 Msi), which can look like a disagreement.",
+          "Poisson's ratios and elastic ratios (Tables 5-1, 5-2) are for Douglas-fir at species level, not specific to the Coast variety, unlike the Table 5-3 strength rows."
+        ]
+      },
+      {
+        "material_id": "concrete-normal",
+        "name": "Normal-weight concrete, f'c = 4000 psi class",
+        "material_class": "concrete",
+        "condition": "Normal-weight (plain), specified 28-day cylinder compressive strength f'c = 4000 psi, moist-cured per standard practice",
+        "properties": [
+          {
+            "key": "density",
+            "value": 145,
+            "unit": "pcf",
+            "basis": "typical",
+            "source_id": "uofm-civl1101",
+            "source_citation": "University of Memphis CIVL 1101/1112 course notes, 'Properties of Concrete' (Concrete Material Properties slides, p. 6/10): reinforced concrete with normal aggregates is about 150 lb/ft3 (pcf); if 5 pcf is allowed for steel, plain concrete w = 145 pcf",
+            "verified_at_url": "http://www.ce.memphis.edu/1112/notes/project_2/beam/CIVL1101_concrete_intro.pdf",
+            "cross_check": "Penn State AE thesis design tables (engr.psu.edu/ae/thesis/portfolios/2010/glc111/midterm/lw_conc_properties.pdf) lists '145 pcf (normal-weight)' explicitly; loaded and confirmed",
+            "notes": "145 pcf is plain normal-weight concrete; 150 pcf is the standard design value for REINFORCED concrete (ASCE 7 convention). Pipeline should treat 145 pcf as the plain-material density. WSDOT uses higher agency values (see discrepancies)."
+          },
+          {
+            "key": "compressive_strength",
+            "value": 4000,
+            "unit": "psi",
+            "basis": "spec_minimum",
+            "source_id": "uofm-civl1101",
+            "source_citation": "f'c = specified 28-day cylinder compressive strength per ACI 318 class designation (ACI 318 is paywalled; not fetched). University of Memphis CIVL 1101/1112 notes p. 5/10: 'Most structural concrete have f'c values in the 3,000 to 5,000 psi range'; compressive strength defined as measured maximum resistance at age 28 days",
+            "verified_at_url": "http://www.ce.memphis.edu/1112/notes/project_2/beam/CIVL1101_concrete_intro.pdf",
+            "cross_check": "ConcreteNetwork 'What is Concrete PSI?' (concretenetwork.com/concrete/compressive-strength-psi.html): cylinders tested 28 days after casting; 3000-4000 psi typical for slabs/driveways, 4000 psi mixes discussed; loaded and confirmed",
+            "notes": "This is the class-defining specified strength, not a measured typical. ACI 318 requires the actual mix to be proportioned so average strength exceeds f'c; individual test acceptance criteria are in ACI 318 Ch. 26."
+          },
+          {
+            "key": "youngs_modulus",
+            "value": 3605000,
+            "unit": "psi",
+            "basis": "typical",
+            "source_id": "aci-318-formula",
+            "source_citation": "ACI 318 elastic modulus formula for normal-weight concrete, Ec = 57,000*sqrt(f'c) psi (ACI 318-08 Sec. 8.5.1; ACI 318-19 Eq. 19.2.2.1.b), as quoted with worked example by CivilEngPro, 'Modulus of Elasticity of Concrete'; ACI 318 itself is paywalled and was not fetched",
+            "verified_at_url": "https://civilengpro.com/modulus-of-elasticity-of-concrete/",
+            "cross_check": "U. of Memphis CIVL 1101 notes p. 6/10 derive E = 57,000*sqrt(f'c) from E = 33*w^1.5*sqrt(f'c) at w = 145 pcf (ce.memphis.edu PDF, loaded); Penn State table (engr.psu.edu PDF, loaded) gives Ec = 3644 ksi at f'c = 4000 psi using the full ACI 33*wc^1.5*sqrt(f'c) formula at 145 pcf, within ~1% of 3605 ksi",
+            "notes": "Computed from the ACI 318 formula Ec = 57,000*sqrt(f'c) with f'c = 4000 psi: exact arithmetic gives 3,604,997 psi, conventionally rounded to 3,605,000 psi (3,605 ksi, ~3.6 Msi). This is a code estimate of the secant modulus, not a specified minimum; measured values vary with aggregate stiffness."
+          },
+          {
+            "key": "poisson_ratio",
+            "value": 0.2,
+            "unit": "dimensionless",
+            "basis": "typical",
+            "source_id": "gilson-c469",
+            "source_citation": "Gilson Company blog, 'Modulus of Elasticity & Poisson's Ratio of Concrete: Beyond Compressive Strength' (re ASTM C469 testing): 'typical ranges of Poisson's ratio values for concrete are 0.15 to 0.20 for normal weight concrete'",
+            "verified_at_url": "https://www.globalgilson.com/blog/modulus-of-elasticity-poissons-ratio-of-concrete-beyond-compressive-strength",
+            "cross_check": "CivilEngPro modulus-of-elasticity page (civilengpro.com, loaded): 'for concrete under small stresses, Poisson's ratio ranges approximately 0.15 to 0.20'",
+            "notes": "Published as a typical RANGE 0.15-0.20 for normal-weight concrete; 0.20 recorded here as the commonly assumed design value (e.g., AASHTO LRFD uses 0.2). Use the range, not a hard single value, in educational display."
+          }
+        ],
+        "discrepancies": [
+          "Unit weight: WSDOT Bridge Design Memo 05-2010 (wsdot.wa.gov/eesc/bridge/designmemos/05-2010.htm, loaded) directs 150 pcf for plain and 155 pcf for reinforced normal-weight concrete for dead-load calcs - 5 pcf above the common textbook/ASCE 7 values of 145 (plain) / 150 (reinforced) pcf; agency-specific conservatism, not an error.",
+          "Young's modulus: ACI 318's full formula Ec = 33*wc^1.5*sqrt(f'c) at wc = 145 pcf gives ~3,644,000 psi (Penn State table) vs the simplified Ec = 57,000*sqrt(f'c) giving ~3,605,000 psi (~1% lower, since 33*145^1.5 = 57,600 is rounded down to 57,000 in the code); both are ACI-sanctioned.",
+          "Poisson's ratio is published as a range (0.15-0.20) rather than a single value; 0.2 was recorded by convention.",
+          "Engineering ToolBox and CivilToday pages returned HTTP 403 to automated fetch and were not used; MatWeb was not accessed per policy. ACI 318 and ASTM C469 are paywalled and cited by designation only, with numbers verified via the accessible secondary sources listed."
+        ]
+      }
+    ],
+    "check": {
+      "verdicts": [
+        {
+          "material_id": "steel-a36",
+          "property_key": "yield_strength",
+          "verdict": "confirmed",
+          "reason": "36 ksi is the canonical ASTM A36 spec minimum (<=8 in.); verified via SSAB mill sheet + FE Handbook/Wikipedia cross-checks; thickness caveat (32 ksi >8 in.) correctly noted.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "steel-a36",
+          "property_key": "ultimate_strength",
+          "verdict": "confirmed",
+          "reason": "58 ksi is the floor of the A36 58-80 ksi specified range; range honestly disclosed in notes.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "steel-a36",
+          "property_key": "density",
+          "verdict": "confirmed",
+          "reason": "0.282 lb/in3 matches FE Handbook Table 1 generic steel; literature spread 0.28-0.284 disclosed; correctly labeled typical (A36 does not spec density).",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "steel-a36",
+          "property_key": "youngs_modulus",
+          "verdict": "confirmed",
+          "reason": "29 Mpsi (200 GPa) is the standard structural-steel typical; unit recorded as published.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "steel-a36",
+          "property_key": "poisson_ratio",
+          "verdict": "confirmed",
+          "reason": "0.30 is the standard steel typical; 0.26-0.32 source spread already flagged in discrepancies.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "steel-a36",
+          "property_key": "shear_modulus",
+          "verdict": "confirmed",
+          "reason": "11.5 Mpsi is exactly what FE Handbook Table 1 publishes; note E/2(1+nu)=11.15 Msi and AISC uses 11.2e3 ksi — within normal literature spread, already flagged.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "steel-1045",
+          "property_key": "density",
+          "verdict": "confirmed",
+          "reason": "7.87 g/cc standard for plain carbon steel; 7.85-7.87 spread disclosed.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "steel-1045",
+          "property_key": "youngs_modulus",
+          "verdict": "confirmed",
+          "reason": "200 GPa standard typical; 200-209 source spread disclosed.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "steel-1045",
+          "property_key": "poisson_ratio",
+          "verdict": "confirmed",
+          "reason": "0.29 typical for carbon steel; outlier 0.269 correctly rejected.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "steel-1045",
+          "property_key": "shear_modulus",
+          "verdict": "confirmed",
+          "reason": "80 GPa self-consistent with E=200/nu=0.29 within rounding (77.5 GPa exact); standard typical.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "steel-1045",
+          "property_key": "yield_strength",
+          "verdict": "confirmed",
+          "reason": "410 MPa normalized typical agrees across Interlloy + independent reproduction; sits plausibly above SAE J1397 hot-rolled estimate (45 ksi) and near ASM-style normalized typicals (~374-410 MPa); basis honestly labeled typical.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "steel-1045",
+          "property_key": "ultimate_strength",
+          "verdict": "suspicious",
+          "reason": "640 MPa rests on a single primary datasheet; the only third-party reproductions print 540 MPa. Curator's typo argument is sound (640 consistent with 187 HB ~3.4xHB=645 and inside the 570-700 MPa normalized band; 540 is not), so 640 is the better value — but provenance is one-source. Recommend storing with a caution flag or as a 570-700 MPa typical band.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "steel-4340",
+          "property_key": "density",
+          "verdict": "confirmed",
+          "reason": "0.283 lb/in3 is the 5J Section 2.3 low-alloy group value; cross-checked in files.engineering.com 5J chapter-2 excerpt.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "steel-4340",
+          "property_key": "youngs_modulus",
+          "verdict": "confirmed",
+          "reason": "29.0 x10^3 ksi per 5J; standard low-alloy steel value; unit-as-published preserved.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "steel-4340",
+          "property_key": "poisson_ratio",
+          "verdict": "confirmed",
+          "reason": "0.32 is faithfully what 5J Table 2.3.1.0 prints for all low-alloy steels; its mild internal inconsistency with E=29/G=11 is correctly flagged in discrepancies. Recorded as published — correct practice.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "steel-4340",
+          "property_key": "shear_modulus",
+          "verdict": "confirmed",
+          "reason": "11.0 x10^3 ksi per 5J group table; cross-checked in the 5J excerpt.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "steel-4340",
+          "property_key": "yield_strength",
+          "verdict": "confirmed",
+          "reason": "SPOT-VERIFIED: Ftu 260/Fty 217 ksi pair for AMS 6414 CEVM 4340 (S basis, Table 2.3.1.0(f1)) confirmed via Chegg listing of the 5J table and SSA Corp AMS 6414 datasheet (260 ksi level). Basis 'spec_minimum' is defensible since S = minimum per material spec.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "steel-4340",
+          "property_key": "ultimate_strength",
+          "verdict": "confirmed",
+          "reason": "SPOT-VERIFIED: 260 ksi S-basis is the classic AMS 6414 aerospace heat-treat level; confirmed via same secondary sources; heat-treat dependence properly documented.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "al-6061-t6",
+          "property_key": "density",
+          "verdict": "confirmed",
+          "reason": "0.098 lb/in3 = 2.70 g/cc; matches 5J and Aluminum Association convention.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "al-6061-t6",
+          "property_key": "youngs_modulus",
+          "verdict": "confirmed",
+          "reason": "9.9 x10^3 ksi (68 GPa) is the 5J sheet tension modulus; 9.9 vs 10.0 typical spread disclosed.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "al-6061-t6",
+          "property_key": "poisson_ratio",
+          "verdict": "confirmed",
+          "reason": "0.33 standard for aluminum alloys.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "al-6061-t6",
+          "property_key": "shear_modulus",
+          "verdict": "confirmed",
+          "reason": "3.8 x10^3 ksi (26 GPa) consistent with E=9.9/nu=0.33 (3.72) and 5J.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "al-6061-t6",
+          "property_key": "yield_strength[design_minimum]",
+          "verdict": "confirmed",
+          "reason": "SPOT-VERIFIED: A-basis Fty 36 ksi (L) for T6 sheet confirmed against MMPDS-04 Section 3.6.2 excerpt and multiple secondaries quoting the 42/36 ksi A-basis pair; LT=35 coinciding with B209 spec min correctly noted.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "al-6061-t6",
+          "property_key": "yield_strength[typical]",
+          "verdict": "confirmed",
+          "reason": "276 MPa (40 ksi) is the ASM-derived typical; 270 MPa variant flagged.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "al-6061-t6",
+          "property_key": "ultimate_strength[design_minimum]",
+          "verdict": "confirmed",
+          "reason": "SPOT-VERIFIED: A-basis Ftu 42 ksi confirmed (MMPDS lineage + B209 spec min 42 ksi agreement).",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "al-6061-t6",
+          "property_key": "ultimate_strength[typical]",
+          "verdict": "confirmed",
+          "reason": "310 MPa (45 ksi) typical, agrees with Wikipedia/ASM-derived values.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "al-7075-t6",
+          "property_key": "density",
+          "verdict": "confirmed",
+          "reason": "0.101 lb/in3 is the MIL-HDBK-5 lineage value; 2.80 vs 2.81 g/cc convention split disclosed.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "al-7075-t6",
+          "property_key": "youngs_modulus",
+          "verdict": "suspicious",
+          "reason": "Value 10.3 x10^3 ksi is correct (unchanged 5A through 5J) but basis 'design_minimum' is a mislabel relative to sibling rows: handbook moduli are average/typical values with no statistical basis; 6061 and 2024 rows label the identical quantity 'typical'. Relabel for consistency.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "al-7075-t6",
+          "property_key": "poisson_ratio",
+          "verdict": "confirmed",
+          "reason": "0.33 standard; matches 5J and Wikipedia.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "al-7075-t6",
+          "property_key": "shear_modulus",
+          "verdict": "suspicious",
+          "reason": "Value 3.9 x10^3 ksi correct (consistent with E=10.3/nu=0.33 giving 3.87) but same basis-label issue as E: should be 'typical' to match sibling rows.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "al-7075-t6",
+          "property_key": "yield_strength[design_minimum]",
+          "verdict": "suspicious",
+          "reason": "67 ksi is accurately sourced from NASA CR-123773 (MIL-HDBK-5A vintage) and honestly disclosed, but it is 1-2 ksi below the current 5J/MMPDS A-basis and AMS-QQ-A-250/12 spec minimum (~68-69 ksi for 0.040-0.125 in sheet). Inconsistent vintage vs the 5J-based 6061/2024/Ti rows; update to 5J or label vintage prominently.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "al-7075-t6",
+          "property_key": "ultimate_strength[design_minimum]",
+          "verdict": "suspicious",
+          "reason": "77 ksi A-basis is 5A-vintage; current 5J/AMS-QQ-A-250/12 minimum is 78 ksi for 0.040-0.125 in sheet (verified by curator via Alcoa/Aero Metals Alliance; 1 ksi generation gap disclosed). Same vintage-consistency recommendation.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "al-7075-t6",
+          "property_key": "yield_strength[typical]",
+          "verdict": "confirmed",
+          "reason": "73 ksi/503 MPa typical agrees with NASA CR-123773 tabular abstract and standard ASM typicals.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "al-7075-t6",
+          "property_key": "ultimate_strength[typical]",
+          "verdict": "confirmed",
+          "reason": "83 ksi/572 MPa typical agrees with NASA abstract and Wikipedia.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "al-2024-t3",
+          "property_key": "density",
+          "verdict": "confirmed",
+          "reason": "SPOT-VERIFIED: 0.100 lb/in3 read directly in the Juvinall Appendix F reprint of 5J Table 3.2.3.0(b1) (PDF loaded this session).",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "al-2024-t3",
+          "property_key": "youngs_modulus",
+          "verdict": "confirmed",
+          "reason": "SPOT-VERIFIED: 10.5 x10^3 ksi is the T3 sheet column; Juvinall reprint (loaded) shows the T351 plate column at 10.7, exactly matching the curator's sheet/plate distinction.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "al-2024-t3",
+          "property_key": "poisson_ratio",
+          "verdict": "confirmed",
+          "reason": "SPOT-VERIFIED: mu=0.33 read directly in the Juvinall 5J reprint.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "al-2024-t3",
+          "property_key": "shear_modulus",
+          "verdict": "confirmed",
+          "reason": "SPOT-VERIFIED: G=4.0 x10^3 ksi read directly in the Juvinall 5J reprint.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "al-2024-t3",
+          "property_key": "yield_strength",
+          "verdict": "confirmed",
+          "reason": "A-basis Fty 47 ksi (L) for T3 sheet is the standard 5J/MMPDS value; consistent with reprint plate value (48 L) and stressebook LT=42 cross-check; grain-direction dependence properly noted.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "al-2024-t3",
+          "property_key": "ultimate_strength[design_minimum]",
+          "verdict": "confirmed",
+          "reason": "A-basis Ftu 64 ksi (L); Juvinall reprint shows the same 64 ksi A-basis in the adjacent plate column and stressebook confirms LT 63 — consistent lineage.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "al-2024-t3",
+          "property_key": "ultimate_strength[typical]",
+          "verdict": "confirmed",
+          "reason": "70 ksi typical (United Aluminum) is the standard ASM-style typical; Wikipedia's lower 'typical' correctly diagnosed as likely Alclad spec values.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "ti-6al-4v",
+          "property_key": "density",
+          "verdict": "confirmed",
+          "reason": "SPOT-VERIFIED: Rolled Alloys Bulletin 1052 datasheet (PDF loaded this session) lists density 0.160 lb/in3, matching the 5J value.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "ti-6al-4v",
+          "property_key": "youngs_modulus",
+          "verdict": "confirmed",
+          "reason": "SPOT-VERIFIED (priority item): 16.0 x10^3 ksi is the 5J annealed sheet/strip/plate tension modulus; Rolled Alloys (loaded) lists 16.7 Msi at 70F (STA), UPM 16.5, 5J bar 16.9 — recorded value is faithful to the cited sheet table and the product-form spread is honestly documented. Consistent with the ~110-114 GPa engineering consensus.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "ti-6al-4v",
+          "property_key": "poisson_ratio",
+          "verdict": "confirmed",
+          "reason": "0.31 per 5J; ~0.34 typical-compilation variant disclosed.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "ti-6al-4v",
+          "property_key": "shear_modulus",
+          "verdict": "confirmed",
+          "reason": "6.2 x10^3 ksi (43 GPa) consistent with E=16.0/nu=0.31 (6.1) and the 40-45 GPa literature band.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "ti-6al-4v",
+          "property_key": "yield_strength",
+          "verdict": "confirmed",
+          "reason": "SPOT-VERIFIED: Rolled Alloys datasheet (loaded) shows AMS 4911 annealed sheet >0.063-0.1874 in: 0.2% YS 126 ksi — exact match to the 5J A-basis value; AMS 4911L summaries concur (126 up to 0.1875 in, 120 above).",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "ti-6al-4v",
+          "property_key": "ultimate_strength",
+          "verdict": "confirmed",
+          "reason": "SPOT-VERIFIED: Rolled Alloys (loaded) shows TS 134 ksi for AMS 4911 sheet <=0.1874 in (130 ksi for thicker plate) — exact match; form/thickness ambiguity properly documented.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "ss-304",
+          "property_key": "yield_strength",
+          "verdict": "confirmed",
+          "reason": "30 ksi (205 MPa) is the A240 Type 304 minimum; two independent supplier confirmations; 304L 25 ksi trap correctly flagged.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "ss-304",
+          "property_key": "ultimate_strength",
+          "verdict": "confirmed",
+          "reason": "75 ksi (515 MPa) A240 minimum confirmed by two suppliers; dual-cert 70 ksi confusion correctly diagnosed.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "ss-304",
+          "property_key": "density",
+          "verdict": "confirmed",
+          "reason": "0.285 lb/in3 (~7.9 g/cc) standard for 304; 7.9-8.03 spread disclosed.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "ss-304",
+          "property_key": "youngs_modulus",
+          "verdict": "confirmed",
+          "reason": "28 x10^3 ksi (193 GPa) is the most commonly published annealed-304 typical (AK Steel, ASM); 29 Msi variant flagged.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "ss-304",
+          "property_key": "poisson_ratio",
+          "verdict": "confirmed",
+          "reason": "0.29 is the standard typical for annealed austenitics; spread disclosed.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "ss-304",
+          "property_key": "shear_modulus",
+          "verdict": "confirmed",
+          "reason": "11.2 x10^3 ksi (78 GPa) faithful to AK Steel torsion modulus; note the stored triple (E=28e3, G=11.2e3, nu=0.29) is mutually inconsistent at ~5% level (E,G imply nu~0.25) — already flagged; pipeline should not solve one constant from the other two.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "iron-gray-class30",
+          "property_key": "ultimate_strength",
+          "verdict": "confirmed",
+          "reason": "30 ksi spec minimum is definitional (class number = min tensile, ksi); yield correctly omitted for brittle gray iron.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "iron-gray-class30",
+          "property_key": "compressive_strength",
+          "verdict": "confirmed",
+          "reason": "109 ksi typical matches the classic ASTM-class table (Shigley Table A-24 lineage) and Penticton; ~3.6x tensile ratio characteristic of gray iron.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "iron-gray-class30",
+          "property_key": "youngs_modulus",
+          "verdict": "confirmed",
+          "reason": "SPOT-VERIFIED (priority item): AmesWeb (loaded this session) confirms Class 30 E = 13.0-16.4 x10^6 psi (90-113 GPa) secant, citing ASM Metals Handbook Desk Edition 1998; the ~26 Msi aggregator figure was correctly rejected. Caveat: 13 must be stored/displayed as the lower bound of a RANGE, not a point value, exactly as the row notes.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "iron-gray-class30",
+          "property_key": "poisson_ratio",
+          "verdict": "confirmed",
+          "reason": "0.26 is the ASM gray-iron nominal; 0.26-0.28 spread disclosed.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "iron-gray-class30",
+          "property_key": "density",
+          "verdict": "confirmed",
+          "reason": "0.258 lb/in3 (7.15 g/cc) is the standard class-30 nominal, bracketed by the 7.10-7.25 cross-check.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "brass-c26000",
+          "property_key": "density",
+          "verdict": "confirmed",
+          "reason": "SPOT-VERIFIED: CDA page re-fetched this session shows 0.308 lb/in3 at 68F; MakeItFrom 8.2 g/cc correctly rejected as outlier.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "brass-c26000",
+          "property_key": "youngs_modulus",
+          "verdict": "confirmed",
+          "reason": "SPOT-VERIFIED: CDA re-fetch shows 16000 ksi modulus in tension (110 GPa); AZoM 117 GPa correctly treated as outlier.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "brass-c26000",
+          "property_key": "shear_modulus",
+          "verdict": "confirmed",
+          "reason": "SPOT-VERIFIED: CDA re-fetch shows 6000 ksi modulus of rigidity.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "brass-c26000",
+          "property_key": "poisson_ratio",
+          "verdict": "suspicious",
+          "reason": "0.34 (AZoM) has no exact second source: MakeItFrom says 0.31 and CDA's own E/G imply 0.33. Value is within the normal brass band so not wrong, but 0.33 (derived from the better-verified CDA constants) or a 0.31-0.34 range would be better supported.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "brass-c26000",
+          "property_key": "yield_strength",
+          "verdict": "confirmed",
+          "reason": "SPOT-VERIFIED: 52 ksi (0.5% EUL) H02 flat-product typical confirmed via MakeItFrom (360 MPa/52 ksi), materialsplus listings (62/52), Aurubis (49 nominal, consistent). My own re-fetch of the CDA page reproduced the identical dropped-cell artifact (renders as YS 25/El 70 — physically impossible for half-hard), independently confirming the curator's diagnosis. 0.5%-EUL basis correctly distinguished from 0.2% offset.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "brass-c26000",
+          "property_key": "ultimate_strength",
+          "verdict": "confirmed",
+          "reason": "SPOT-VERIFIED: CDA re-fetch shows 62 ksi typ for H02 0.040 in flat; multiple supplier agreement.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "nylon-66",
+          "property_key": "density",
+          "verdict": "confirmed",
+          "reason": "1140 kg/m3 dry is the standard unfilled PA66 value; two TDS mirrors agree.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "nylon-66",
+          "property_key": "youngs_modulus",
+          "verdict": "confirmed",
+          "reason": "3100 MPa DAM (ISO 527) standard for unfilled PA66; the dominant 3100->1400 MPa moisture drop is properly front-and-center.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "nylon-66",
+          "property_key": "poisson_ratio",
+          "verdict": "confirmed",
+          "reason": "0.37 DAM / 0.43 conditioned per Zytel TDS; plausible for a glassy-to-rubbery-transitioning polymer.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "nylon-66",
+          "property_key": "yield_strength",
+          "verdict": "confirmed",
+          "reason": "82 MPa DAM (ISO 527, 50 mm/min) standard for Zytel 101L; 55 MPa conditioned qualifier essential and present.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "nylon-66",
+          "property_key": "ultimate_strength",
+          "verdict": "confirmed",
+          "reason": "12,300 psi (~85 MPa) break stress is plausible for dry extruded PA66 (Ertalon 93 MPa comparable). Caveat: this is an extruded-stock ASTM D638 value paired with a molded-resin row whose own TDS reports no break stress — the form/standard mismatch is disclosed and must be preserved in display.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "wood-douglas-fir",
+          "property_key": "density",
+          "verdict": "confirmed",
+          "reason": "SG 0.48 (coast, 12% MC, Wood Handbook Table 5-3b) is canonical; correctly recorded as specific gravity with volume-basis footnote, not density.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "wood-douglas-fir",
+          "property_key": "youngs_modulus",
+          "verdict": "confirmed",
+          "reason": "1.95 x10^6 psi (13.4 GPa) bending MOE for coast Douglas-fir at 12% MC is canonical; shear-deflection (+~10%) caveat properly documented.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "wood-douglas-fir",
+          "property_key": "poisson_ratio",
+          "verdict": "confirmed",
+          "reason": "mu_LR 0.292 matches Wood Handbook Table 5-2; orthotropy and species-level (not coast-specific) caveats properly noted.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "wood-douglas-fir",
+          "property_key": "modulus_of_rupture",
+          "verdict": "confirmed",
+          "reason": "12,400 psi (85 MPa) MOR for coast Douglas-fir at 12% is canonical; small-clear vs graded-lumber design-value warning present.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "wood-douglas-fir",
+          "property_key": "compressive_strength",
+          "verdict": "confirmed",
+          "reason": "7,230 psi (49.9 MPa) compression parallel at 12% MC matches the handbook row.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "concrete-normal",
+          "property_key": "density",
+          "verdict": "confirmed",
+          "reason": "145 pcf plain / 150 pcf reinforced convention correctly distinguished; WSDOT agency variance noted.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "concrete-normal",
+          "property_key": "compressive_strength",
+          "verdict": "confirmed",
+          "reason": "f'c=4000 psi is class-defining (specified), basis correctly spec_minimum; ACI 318 cited by designation per ground rules.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "concrete-normal",
+          "property_key": "youngs_modulus",
+          "verdict": "confirmed",
+          "reason": "Arithmetic re-checked: 57,000*sqrt(4000) = 3,604,997 psi -> 3,605,000 psi; ACI formula cited as required; ~1% difference vs full 33*w^1.5 formula properly documented.",
+          "corrected_value": ""
+        },
+        {
+          "material_id": "concrete-normal",
+          "property_key": "poisson_ratio",
+          "verdict": "confirmed",
+          "reason": "0.2 is the conventional design value from the published 0.15-0.20 range; row correctly instructs displaying the range.",
+          "corrected_value": ""
+        }
+      ],
+      "cost_classes": [
+        {
+          "material_id": "steel-a36",
+          "cost_class": "low",
+          "rationale": "Commodity carbon structural steel — the cheapest structural metal. USGS MCS 2026 (Feb 2026, loaded): iron described as 'the least expensive and most widely used metal'; 2025e US raw steel 82 Mt with ~$149B sales value across mill products; HRC/structural shapes trade around $0.35-0.50/lb, roughly 1/4 the price of aluminum ingot.",
+          "source_url": "https://pubs.usgs.gov/periodicals/mcs2026/mcs2026-iron-steel.pdf"
+        },
+        {
+          "material_id": "steel-1045",
+          "cost_class": "low",
+          "rationale": "Plain medium-carbon bar steel; small grade premium over A36 but same commodity-carbon-steel price class (USGS MCS 2026 iron/steel anchor, loaded).",
+          "source_url": "https://pubs.usgs.gov/periodicals/mcs2026/mcs2026-iron-steel.pdf"
+        },
+        {
+          "material_id": "steel-4340",
+          "cost_class": "medium",
+          "rationale": "Ni-Cr-Mo alloying plus aerospace-quality consumable-electrode vacuum melting (AMS 6414) typically multiplies price several-fold over commodity carbon steel (knowledge-based premium on the verified USGS low-cost steel anchor); still far below titanium. Commodity-grade 4340 sits at the bottom of medium; CEVM/VAR aerospace stock trends toward high.",
+          "source_url": "https://pubs.usgs.gov/periodicals/mcs2026/mcs2026-iron-steel.pdf"
+        },
+        {
+          "material_id": "al-6061-t6",
+          "cost_class": "medium",
+          "rationale": "USGS MCS 2026 (loaded): primary aluminum ingot average US market price 180 cents/lb 2025e (+39% YoY) — roughly 4x carbon steel per pound; 6061 is the commodity wrought alloy with the smallest alloy premium.",
+          "source_url": "https://pubs.usgs.gov/periodicals/mcs2026/mcs2026-aluminum.pdf"
+        },
+        {
+          "material_id": "al-7075-t6",
+          "cost_class": "medium",
+          "rationale": "Same 180 cents/lb 2025e USGS ingot anchor; 7075 aerospace sheet/plate carries a meaningful conversion premium over 6061 (top of the medium band, knowledge-based premium).",
+          "source_url": "https://pubs.usgs.gov/periodicals/mcs2026/mcs2026-aluminum.pdf"
+        },
+        {
+          "material_id": "al-2024-t3",
+          "cost_class": "medium",
+          "rationale": "Same USGS aluminum anchor (180 cents/lb ingot 2025e); 2024-T3 aerospace-spec sheet premium comparable to 7075 — top of medium.",
+          "source_url": "https://pubs.usgs.gov/periodicals/mcs2026/mcs2026-aluminum.pdf"
+        },
+        {
+          "material_id": "ti-6al-4v",
+          "cost_class": "very_high",
+          "rationale": "USGS MCS 2026 (loaded): titanium sponge $12/kg 2025e (~$5.40/lb raw metal, ~3x aluminum ingot, >10x steel) with US 100% net import reliance; alloyed Ti-6Al-4V mill products (melt + convert) historically run an order of magnitude above sponge, the most expensive material in this set by far.",
+          "source_url": "https://pubs.usgs.gov/periodicals/mcs2026/mcs2026-titanium.pdf"
+        },
+        {
+          "material_id": "ss-304",
+          "cost_class": "medium",
+          "rationale": "Carbon-steel base (USGS low anchor, loaded) plus ~18% Cr / 8% Ni surcharge puts 304 sheet at roughly 3-4x carbon steel, comparable per-pound to aluminum semi-products. USGS MCS 2026 publishes no stainless unit price; relative placement is knowledge-based on the verified steel and nickel-bearing-alloy spreads.",
+          "source_url": "https://pubs.usgs.gov/periodicals/mcs2026/mcs2026-iron-steel.pdf"
+        },
+        {
+          "material_id": "iron-gray-class30",
+          "cost_class": "low",
+          "rationale": "Gray iron castings are the lowest-cost ferrous engineering product; USGS MCS 2026 (loaded): iron is 'the least expensive and most widely used metal'.",
+          "source_url": "https://pubs.usgs.gov/periodicals/mcs2026/mcs2026-iron-steel.pdf"
+        },
+        {
+          "material_id": "brass-c26000",
+          "cost_class": "high",
+          "rationale": "USGS MCS 2026 (loaded): COMEX copper averaged a record-high $4.80/lb 2025e (US producer cathode $4.90/lb) — ~2.7x aluminum ingot and >10x steel; C26000 is ~70% Cu and brass mill strip prices sit above the copper content, clearly above the aluminum/stainless tier but below titanium.",
+          "source_url": "https://pubs.usgs.gov/periodicals/mcs2026/mcs2026-copper.pdf"
+        },
+        {
+          "material_id": "nylon-66",
+          "cost_class": "medium",
+          "rationale": "Not a USGS commodity; no price source loaded this session (honesty note). Handbook/market knowledge: unfilled PA66 resin historically ~$1.30-2.50/lb — per-pound comparable to aluminum ingot (medium), though cheap per part by volume given 1.14 g/cc density.",
+          "source_url": ""
+        },
+        {
+          "material_id": "wood-douglas-fir",
+          "cost_class": "low",
+          "rationale": "Not a USGS commodity; no price source loaded this session (honesty note). Commodity softwood framing lumber (~$400-600/MBF in recent years, i.e. cents per pound) is among the cheapest structural materials per unit strength.",
+          "source_url": ""
+        },
+        {
+          "material_id": "concrete-normal",
+          "cost_class": "low",
+          "rationale": "Not a USGS metal commodity; no price source loaded this session (honesty note). Ready-mix normal-weight concrete (~$150-200/yd3, ~$0.04-0.05/lb) is the cheapest material in this set per pound — the floor of the relative scale.",
+          "source_url": ""
+        }
+      ],
+      "overall_notes": [
+        "VERDICT SUMMARY: 78 values scanned; 0 wrong, 7 suspicious, 71 confirmed. No unit or order-of-magnitude errors found; yield < ultimate holds everywhere applicable; gray cast iron and wood correctly omit yield strength. The dataset is unusually clean — every flagged issue was already self-disclosed in the curators' discrepancy lists; my flags concern provenance strength and label consistency, not value errors.",
+        "SPOT-VERIFICATIONS PERFORMED THIS SESSION (8 priority items, all loaded/confirmed): (1) 4340 Ftu 260 / Fty 217 ksi S-basis, AMS 6414 — Chegg listing of 5J Table 2.3.1.0(f) and SSA Corp AMS 6414 datasheet; (2) gray iron Class 30 E = 13.0-16.4 Msi secant — AmesWeb page loaded, citing ASM Metals Handbook Desk Edition 1998; (3) MIL-HDBK-5J Table 3.2.3.0(b1) physical/elastic constants (rho 0.100, G 4.0, mu 0.33, plate E 10.7 vs sheet 10.5) — Juvinall Appendix F reprint PDF downloaded and read page-by-page; (4) 6061-T6 sheet A-basis Ftu 42 / Fty 36 ksi — MMPDS-04 excerpt and multiple secondaries; (5) Ti-6Al-4V AMS 4911 sheet <=0.1875 in minimums 134/126 ksi plus density 0.160 lb/in3 and modulus — Rolled Alloys Bulletin 1052 datasheet PDF downloaded and read (16.7 Msi at 70F STA, consistent with 5J sheet 16.0 / bar 16.9 spread); (6) C26000 H02 62/52 ksi — MakeItFrom, materialsplus, Aurubis; (7)+(8) USGS MCS 2026 aluminum, copper, titanium, iron/steel chapter PDFs downloaded and read for prices.",
+        "INDEPENDENT REPRODUCTION OF THE CDA PARSING BUG: my fresh fetch of alloys.copper.org/alloy/C26000 rendered the H02 row as 'YS 25 / El 70 / HRB 65' — the same dropped-yield-cell artifact the curator diagnosed (physically impossible for half-hard brass). The recorded TS 62 / YS 52 / El 25 / HRB 70 interpretation is confirmed by three independent suppliers. Recommend the pipeline never scrape that CDA table without cell-count validation.",
+        "MAIN ACTIONABLE ITEM: the 7075-T6 row is MIL-HDBK-5A vintage (NASA CR-123773) while the 6061, 2024, Ti-6Al-4V and 4340 rows are 5J — its A-basis Ftu 77 / Fty 67 ksi sit ~1-2 ksi below current 5J/MMPDS and AMS-QQ-A-250/12 minimums (78/68-69 ksi for 0.040-0.125 in bare sheet). Either source the 5J sheet table values or display the vintage prominently; also relabel the 7075 E and G basis from 'design_minimum' to 'typical' for cross-row consistency (handbook moduli carry no statistical basis).",
+        "SECONDARY CAUTIONS FOR THE PIPELINE: (a) 1045 normalized UTS 640 MPa is single-primary-source (conflicting 540 MPa reproductions exist; 640 is the hardness-consistent choice) — store with a caution flag or as a 570-700 MPa typical band; (b) gray iron E must be stored as the 13.0-16.4 Msi SECANT range, never the 13 Msi point; (c) concrete Poisson 0.2 should display the 0.15-0.20 range; (d) the 304 triple (E 28e3 ksi, G 11.2e3 ksi, nu 0.29) is mutually inconsistent at ~5% — never derive one constant from the other two; (e) PA66 values are meaningless without the dry-as-molded qualifier (modulus halves at 50% RH); (f) Douglas-fir 'density' is specific gravity and the bending MOE includes shear deflection (+~10% to shear-free) — both correctly documented, must survive into display.",
+        "COST BASIS: relative classes anchored to USGS Mineral Commodity Summaries 2026 (February 2026), 2025 estimated prices verified by loading the chapter PDFs: aluminum ingot 180 c/lb; copper COMEX $4.80/lb (record high); titanium sponge $12/kg (US 100% import reliant, zero domestic production); iron/steel chapter publishes no unit price (82 Mt raw steel, ~$149B sales value; 'iron is the least expensive and most widely used metal'). Resulting ladder: concrete/wood/gray iron/carbon steels = low; aluminum alloys/304/4340/PA66 = medium; brass (copper-bearing) = high; Ti-6Al-4V = very_high. Nylon, wood, and concrete cost classes are handbook-knowledge relative placements with no price URL loaded (source_url left empty per honesty rule).",
+        "COMPLIANCE: MatWeb never accessed; ASTM/ACI/AMS paywalled specs cited by designation and verified via accessible secondaries only; read-only role observed (no files created or modified; the PDFs referenced were auto-saved tool outputs from WebFetch)."
+      ]
+    }
+  }
+}

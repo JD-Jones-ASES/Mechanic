@@ -130,7 +130,7 @@ def ingest(materials_dir: Path, out_db: Path, out_json: Path) -> int:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
-    repo = Path(__file__).resolve().parents[3].parent
+    repo = Path(__file__).resolve().parents[3]  # pipeline/src/mech_pipeline -> repo root
     ap.add_argument("--materials", type=Path, default=repo / "data" / "materials")
     ap.add_argument("--out-db", type=Path, default=repo / "data" / "build" / "materials.db")
     ap.add_argument("--out-json", type=Path, default=repo / "site" / "src" / "generated" / "materials.json")

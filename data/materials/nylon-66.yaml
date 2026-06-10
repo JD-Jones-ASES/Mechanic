@@ -1,0 +1,72 @@
+id: nylon-66
+name: Nylon 6/6 (PA66), unfilled
+class: polymer
+condition: Unfilled injection-molding resin (Celanese/DuPont Zytel 101L NC010), dry as molded (DAM), 23 C. Conditioned
+  (50% RH) values noted per property — PA66 is strongly moisture-sensitive.
+cost_class: medium
+cost_rationale: 'Not a USGS commodity; no price source loaded this session (honesty note). Handbook/market knowledge:
+  unfilled PA66 resin historically ~$1.30-2.50/lb — per-pound comparable to aluminum ingot (medium), though cheap
+  per part by volume given 1.14 g/cc density.'
+properties:
+- key: density
+  value: 1140
+  unit: kg/m**3
+  basis: typical
+  source_id: celanese-zytel-101l
+  citation: Celanese, Zytel 101L NC010 Nylon Resin Product Data Sheet, rev. 2023-04-04, 'Other properties' table,
+    Density, ISO 1183, dry
+  verified_at: https://quickparts.com/wp-content/uploads/2023/04/zytel%C2%AE-101l-nc010-gb.pdf
+  cross_check: 'DuPont Zytel 101L NC010 TDS rev. 2018-03-27 (plastore.it mirror): 1140 kg/m3 (ISO 1183, dry); Ensinger
+    TECAMID 66 natural US datasheet: 1.14 g/cm3'
+  notes: Dry value. TDS also lists density of melt 970 kg/m3. Specific gravity equivalent 1.14.
+- key: youngs_modulus
+  value: 3100
+  unit: MPa
+  basis: typical
+  source_id: celanese-zytel-101l
+  citation: Celanese, Zytel 101L NC010 Nylon Resin Product Data Sheet, rev. 2023-04-04, 'Typical mechanical properties'
+    table, Tensile Modulus, ISO 527-1/-2, dry/cond = 3100/1400 MPa
+  verified_at: https://quickparts.com/wp-content/uploads/2023/04/zytel%C2%AE-101l-nc010-gb.pdf
+  cross_check: 'DuPont Zytel 101L NC010 TDS rev. 2018-03-27 (plastore.it mirror): 3100/1400 MPa, ISO 527-1/-2'
+  notes: 'MOISTURE SENSITIVITY: drops from 3100 MPa dry-as-molded to 1400 MPa conditioned at 50% RH (more than half).
+    Extruded stock shapes test higher (Ertalon 66 SA: 3550 MPa dry, ISO 527); Ensinger US ASTM D638 figure is 350,000
+    psi.'
+- key: poisson_ratio
+  value: 0.37
+  unit: '1'
+  basis: typical
+  source_id: celanese-zytel-101l
+  citation: Celanese, Zytel 101L NC010 Nylon Resin Product Data Sheet, rev. 2023-04-04, Poisson's ratio, dry/cond
+    = 0.37/0.43 (DuPont 2018 edition lists test standard ISO 527-1/-2)
+  verified_at: https://quickparts.com/wp-content/uploads/2023/04/zytel%C2%AE-101l-nc010-gb.pdf
+  cross_check: 'DuPont Zytel 101L NC010 TDS rev. 2018-03-27 (plastore.it mirror): 0.37/0.43, ISO 527-1/-2'
+  notes: 0.37 dry as molded; rises to 0.43 conditioned at 50% RH. Generic literature values of ~0.39-0.41 for PA66
+    usually refer to partially conditioned material. [unit spelling normalized from '-']
+- key: yield_strength
+  value: 82
+  unit: MPa
+  basis: typical
+  source_id: celanese-zytel-101l
+  citation: Celanese, Zytel 101L NC010 Nylon Resin Product Data Sheet, rev. 2023-04-04, Yield stress at 50 mm/min,
+    ISO 527-1/-2, dry/cond = 82/55 MPa
+  verified_at: https://quickparts.com/wp-content/uploads/2023/04/zytel%C2%AE-101l-nc010-gb.pdf
+  cross_check: 'DuPont Zytel 101L NC010 TDS rev. 2018-03-27 (plastore.it mirror): 82/55 MPa; Ensinger TECAMID 66
+    natural (extruded, ASTM D638): tensile strength at yield 12,000 psi at 73 F'
+  notes: 'Tensile yield stress (yield strain 4.5% dry). MOISTURE SENSITIVITY: 82 MPa dry-as-molded falls to 55 MPa
+    conditioned at 50% RH. BASF Ultramid A3K (search excerpt, not directly loaded) lists 85/50 MPa — small grade-to-grade
+    variation.'
+- key: ultimate_strength
+  value: 12300
+  unit: psi
+  basis: typical
+  source_id: ensinger-tecamid-66
+  citation: Ensinger TECAMID 66 natural (PA66 extruded stock shapes), US product datasheet, Tensile strength at
+    break, ASTM D638, 73 F
+  verified_at: https://www.ensingerplastics.com/en-us/shapes/products/pa66-tecamid-66-natural
+  cross_check: 'Quadrant Ertalon 66 SA TDS (theplasticshop.co.uk): tensile strength 93 MPa dry, ISO 527-1/-2 (extruded
+    rod); both are extruded-shape, dry-material figures'
+  notes: Molding-resin TDS (Zytel 101L) reports no break stress dry-as-molded — material is ductile (strain at break
+    45%), so yield stress (82 MPa) is the maximum engineering stress and the practical 'tensile strength' for molded
+    DAM parts. This 12,300 psi break value is from extruded stock shape, dry; conditioned strength is substantially
+    lower.
+errata: []

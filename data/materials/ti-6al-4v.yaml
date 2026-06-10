@@ -1,0 +1,89 @@
+id: ti-6al-4v
+name: Ti-6Al-4V
+class: titanium
+condition: Annealed; primary strength values are A-basis for sheet <= 0.1875 in per AMS 4911 / AMS-T-9046 Comp.
+  AB-1 (MIL-HDBK-5J Table 5.4.1.0(b)); elastic/physical values from same table (sheet, strip, and plate)
+cost_class: very_high
+cost_rationale: 'USGS MCS 2026 (loaded): titanium sponge $12/kg 2025e (~$5.40/lb raw metal, ~3x aluminum ingot,
+  >10x steel) with US 100% net import reliance; alloyed Ti-6Al-4V mill products (melt + convert) historically run
+  an order of magnitude above sponge, the most expensive material in this set by far.'
+properties:
+- key: density
+  value: 0.16
+  unit: lb/inch**3
+  basis: typical
+  source_id: mil-hdbk-5j
+  citation: MIL-HDBK-5J, Metallic Materials and Elements for Aerospace Vehicle Structures, 31 Jan 2003, Table 5.4.1.0(b),
+    p. 5-53 (omega, lb/in.^3) — read from Internet Archive scan (item milhdbk-5-j, leaf 944)
+  verified_at: https://ia800103.us.archive.org/view_archive.php?archive=/10/items/milhdbk-5-j/MILHDBK5J_jp2.zip&file=MILHDBK5J_jp2%2FMILHDBK5J_0944.jp2&ext=jpg
+  cross_check: 'Rolled Alloys 6Al-4V Data Sheet (Bulletin 1052USe): Density 0.160 lb/inch3; also United Performance
+    Metals datasheet: 0.16 lb/in3'
+  notes: 'Published without statistical basis (nominal physical property). Stable citation page: https://archive.org/details/milhdbk-5-j.
+    Wikipedia gives 4.429-4.512 g/cm3 (0.160-0.163 lb/cu in), consistent. [unit spelling normalized from ''lb/in3'']'
+- key: youngs_modulus
+  value: 16
+  unit: Msi
+  basis: typical
+  source_id: mil-hdbk-5j
+  citation: 'MIL-HDBK-5J, 31 Jan 2003, Table 5.4.1.0(b), p. 5-53: E, 10^3 ksi = 16.0 (annealed Ti-6Al-4V sheet,
+    strip, and plate; tension) — read from Internet Archive scan (item milhdbk-5-j, leaf 944)'
+  verified_at: https://ia800103.us.archive.org/view_archive.php?archive=/10/items/milhdbk-5-j/MILHDBK5J_jp2.zip&file=MILHDBK5J_jp2%2FMILHDBK5J_0944.jp2&ext=jpg
+  cross_check: 'Wikipedia Ti-6Al-4V property table (citing Carpenter/AZoM): Young''s modulus 104-113 GPa (15.1-16.4
+    x10^6 psi), which brackets 16.0; United Performance Metals datasheet: Modulus of Elasticity Tension 16.5 (x10^6
+    psi)'
+  notes: Tension modulus; same table gives compression modulus Ec = 16.4 x10^3 ksi. MIL-HDBK-5J Table 5.4.1.0(c1),
+    p. 5-54 (annealed AMS 4928 bar) gives E = 16.9 x10^3 ksi and Ec = 17.2 x10^3 ksi — the 16.0 vs 16.9 Msi spread
+    is product-form dependent within the same handbook. Elastic moduli in MIL-HDBK-5 carry no A/B/S statistical
+    basis (treated as typical/average). [unit spelling normalized from '10^3 ksi']
+- key: poisson_ratio
+  value: 0.31
+  unit: '1'
+  basis: typical
+  source_id: mil-hdbk-5j
+  citation: 'MIL-HDBK-5J, 31 Jan 2003, Table 5.4.1.0(b), p. 5-53: mu = 0.31 (annealed Ti-6Al-4V sheet, strip, and
+    plate) — read from Internet Archive scan (item milhdbk-5-j, leaf 944)'
+  verified_at: https://ia800103.us.archive.org/view_archive.php?archive=/10/items/milhdbk-5-j/MILHDBK5J_jp2.zip&file=MILHDBK5J_jp2%2FMILHDBK5J_0944.jp2&ext=jpg
+  cross_check: 'Wikipedia Ti-6Al-4V property table: Poisson''s ratio 0.31-0.37 (lower bound matches 0.31)'
+  notes: Bar table 5.4.1.0(c1) lists the same mu = 0.31. Some typical-property compilations quote ~0.342 (consistent
+    with MatWeb-style typical data as quoted by third parties); MIL-HDBK-5J uses 0.31. [unit spelling normalized
+    from 'dimensionless']
+- key: shear_modulus
+  value: 6.2
+  unit: Msi
+  basis: typical
+  source_id: mil-hdbk-5j
+  citation: 'MIL-HDBK-5J, 31 Jan 2003, Table 5.4.1.0(b), p. 5-53: G, 10^3 ksi = 6.2 (annealed Ti-6Al-4V sheet, strip,
+    and plate) — read from Internet Archive scan (item milhdbk-5-j, leaf 944)'
+  verified_at: https://ia800103.us.archive.org/view_archive.php?archive=/10/items/milhdbk-5-j/MILHDBK5J_jp2.zip&file=MILHDBK5J_jp2%2FMILHDBK5J_0944.jp2&ext=jpg
+  cross_check: 'Wikipedia Ti-6Al-4V property table: shear modulus 40-45 GPa (5.8-6.5 x10^6 psi), which brackets
+    6.2'
+  notes: Same G = 6.2 x10^3 ksi listed in bar table 5.4.1.0(c1), p. 5-54. [unit spelling normalized from '10^3 ksi']
+- key: yield_strength
+  value: 126
+  unit: ksi
+  basis: design_minimum
+  source_id: mil-hdbk-5j
+  citation: 'MIL-HDBK-5J, 31 Jan 2003, Table 5.4.1.0(b), p. 5-53: Fty(L) = 126 ksi, A-basis, annealed Ti-6Al-4V
+    sheet <= 0.1875 in (AMS 4911 / AMS-T-9046 Comp. AB-1) — read from Internet Archive scan (item milhdbk-5-j, leaf
+    944)'
+  verified_at: https://ia800103.us.archive.org/view_archive.php?archive=/10/items/milhdbk-5-j/MILHDBK5J_jp2.zip&file=MILHDBK5J_jp2%2FMILHDBK5J_0944.jp2&ext=jpg
+  cross_check: 'Rolled Alloys 6Al-4V Data Sheet, ''Specified, AMS 4911, annealed sheet & plate'': 0.2% Yield Strength
+    126 ksi for sizes up to 0.1874 in (spec minimum, same number)'
+  notes: 'A-basis (statistical design minimum). B-basis is 131 ksi; LT direction same as L (126/131). Plate 0.1875-2.000
+    in: A-basis Fty 120 ksi. Annealed AMS 4928 bar (Table 5.4.1.0(c1), p. 5-54): S-basis Fty(L) 125 ksi for <0.500
+    in; AMS 4928 spec minimum yield is 120 ksi (Upmet datasheet lists Yield Strength 120000 psi).'
+- key: ultimate_strength
+  value: 134
+  unit: ksi
+  basis: design_minimum
+  source_id: mil-hdbk-5j
+  citation: 'MIL-HDBK-5J, 31 Jan 2003, Table 5.4.1.0(b), p. 5-53: Ftu(L) = 134 ksi, A-basis, annealed Ti-6Al-4V
+    sheet <= 0.1875 in (AMS 4911 / AMS-T-9046 Comp. AB-1) — read from Internet Archive scan (item milhdbk-5-j, leaf
+    944)'
+  verified_at: https://ia800103.us.archive.org/view_archive.php?archive=/10/items/milhdbk-5-j/MILHDBK5J_jp2.zip&file=MILHDBK5J_jp2%2FMILHDBK5J_0944.jp2&ext=jpg
+  cross_check: 'Rolled Alloys 6Al-4V Data Sheet, ''Specified, AMS 4911, annealed sheet & plate'': Tensile Strength
+    134 ksi for sizes up to 0.1874 in (spec minimum, same number)'
+  notes: 'A-basis (statistical design minimum). B-basis is 139 ksi. Plate 0.1875-2.000 in: A-basis Ftu 130 ksi.
+    Annealed AMS 4928 bar (Table 5.4.1.0(c1), p. 5-54): S-basis Ftu(L) 135 ksi for <0.500 in; Upmet datasheet lists
+    UTS 131000 psi for annealed bar. Rolled Alloys typical annealed bar range 138-155 ksi.'
+errata: []

@@ -1,0 +1,85 @@
+id: ss-304
+name: 304 stainless steel
+class: stainless
+condition: Annealed (ASTM A240 Condition A, sheet/strip/plate); physical properties at room temperature
+cost_class: medium
+cost_rationale: Carbon-steel base (USGS low anchor, loaded) plus ~18% Cr / 8% Ni surcharge puts 304 sheet at roughly
+  3-4x carbon steel, comparable per-pound to aluminum semi-products. USGS MCS 2026 publishes no stainless unit price;
+  relative placement is knowledge-based on the verified steel and nickel-bearing-alloy spreads.
+properties:
+- key: yield_strength
+  value: 30
+  unit: ksi
+  basis: spec_minimum
+  source_id: astm-a240
+  citation: ASTM A240/A240M, Type 304 (UNS S30400), specified minimum 0.2% offset yield strength, annealed; spec
+    is paywalled so value verified via Penn Stainless 'Stainless Steel Plate 304/304L ASTM A240' product page quoting
+    the A240 minimums ('minimum yield strength at 0.2% of 30 ksi')
+  verified_at: https://www.pennstainless.com/stainless-steel-plate-304-304l-astm-a240/
+  cross_check: 'Genn-Hann Stainless ASTM A240 explainer (https://www.ghinox.com/astm-a240/): ''Type 304: ... yield
+    strength of 205 MPa (30 ksi)'''
+  notes: 'ASTM spec itself not accessed (paywalled); number confirmed on two independent supplier pages quoting
+    the spec. Typical annealed yield is much higher (AK Steel datasheet lists 42 ksi typical for 304). Note: dual-certified
+    304/304L products are often listed against the 304L minimum of 25 ksi.'
+- key: ultimate_strength
+  value: 75
+  unit: ksi
+  basis: spec_minimum
+  source_id: astm-a240
+  citation: ASTM A240/A240M, Type 304 (UNS S30400), specified minimum tensile strength, annealed; verified via Penn
+    Stainless 'Stainless Steel Plate 304/304L ASTM A240' product page quoting the A240 minimums ('minimum tensile
+    strength of 75 ksi')
+  verified_at: https://www.pennstainless.com/stainless-steel-plate-304-304l-astm-a240/
+  cross_check: 'Genn-Hann Stainless ASTM A240 explainer (https://www.ghinox.com/astm-a240/): ''Type 304: minimum
+    tensile strength of 515 MPa (75 ksi)'''
+  notes: ASTM spec itself not accessed (paywalled). Typical annealed UTS is higher (AK Steel lists 90 ksi typical).
+    Rolled Alloys' dual-cert 304/304L datasheet lists 70 ksi, which is the Type 304L minimum - see discrepancies.
+- key: density
+  value: 0.285
+  unit: lb/inch**3
+  basis: typical
+  source_id: rolled-alloys-304
+  citation: 'Rolled Alloys, ''304/304L Data Sheet'' (rev. 08/23), Physical Properties table: ''Density 0.285 lb/in3'''
+  verified_at: https://www.rolledalloys.com/wp-content/uploads/304-304L_Datasheet_rolled-alloys_USA.pdf
+  cross_check: Penn Stainless 304/304L ASTM A240 plate page lists '0.285 lbm/in3 at 68 F'
+  notes: AK Steel datasheet rounds to 0.29 lb/in3 (8.03 g/cm3); kmac-distribution (ASM-style AISI Type 304 data)
+    lists 0.289 lb/in3. 0.285 lb/in3 corresponds to ~7.9 g/cm3 figure widely used for 304. [unit spelling normalized
+    from 'lb/in3']
+- key: youngs_modulus
+  value: 28
+  unit: Msi
+  basis: typical
+  source_id: ak-steel-304
+  citation: 'AK Steel Corporation, ''304/304L Stainless Steel Product Data Sheet'', doc. 304/304L-S-8-01-07 (7/07),
+    Physical Properties: ''Modulus of Elasticity, ksi (MPa): 28.0 x 10^3 (193 x 10^3) in tension'''
+  verified_at: https://www.spacematdb.com/spacemat/manudatasheets/304_304L_Data_Sheet.pdf
+  cross_check: Penn Stainless 304/304L ASTM A240 plate page lists Modulus of Elasticity '28 psi x 10^6'
+  notes: Equivalent to 28.0 x 10^6 psi (193 GPa), tension, room temperature. Rolled Alloys datasheet lists 29 x
+    10^6 psi at 68 F; kmac (ASM-style) gives 28000-29000 ksi range - see discrepancies. PDF verified via spacematdb.com
+    mirror of the AK Steel datasheet. [unit spelling normalized from 'x 10^3 ksi']
+- key: poisson_ratio
+  value: 0.29
+  unit: '1'
+  basis: typical
+  source_id: kmac-304
+  citation: 'K-mac Distribution, ''304 Stainless Material Technical Data Sheet'' (AISI Type 304, ASM-style typical
+    property listing): Poisson''s Ratio 0.29'
+  verified_at: https://kmac-distribution.com/technical/304-stainless.htm
+  cross_check: Rolled Alloys 304/304L Data Sheet (rev. 08/23) lists 'Poisson Ratio 0.3' (consistent at one significant
+    figure)
+  notes: Third-party page republishing the widely quoted ASM/AISI Type 304 typical dataset (consistent with MatWeb-quoted
+    values; MatWeb itself NOT accessed per policy). AZoM gives a generic 0.265-0.275 range for S30400 - see discrepancies.
+    0.29 is the most commonly cited typical value for annealed 304. [unit spelling normalized from '(dimensionless)']
+- key: shear_modulus
+  value: 11.2
+  unit: Msi
+  basis: typical
+  source_id: ak-steel-304
+  citation: 'AK Steel Corporation, ''304/304L Stainless Steel Product Data Sheet'', doc. 304/304L-S-8-01-07 (7/07),
+    Physical Properties: ''Modulus of Elasticity, ksi (MPa): ... 11.2 x 10^3 (78 x 10^3) in torsion'''
+  verified_at: https://www.spacematdb.com/spacemat/manudatasheets/304_304L_Data_Sheet.pdf
+  cross_check: AZoM S30400 property page gives shear modulus 74-81 GPa (10.7-11.7 x 10^6 psi), bracketing 78 GPa;
+    kmac-distribution lists 12500 ksi (disagrees - see discrepancies)
+  notes: Published by AK Steel as modulus of elasticity 'in torsion'. Supplementary to Poisson's ratio; sources
+    disagree (11.2 vs 12.5 x 10^3 ksi), flagged in discrepancies. [unit spelling normalized from 'x 10^3 ksi']
+errata: []

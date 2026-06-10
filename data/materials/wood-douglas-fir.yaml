@@ -1,0 +1,81 @@
+id: wood-douglas-fir
+name: Douglas-fir (coast)
+class: wood
+condition: Clear, straight-grained small specimens at 12% moisture content; "Coast" Douglas-fir = grown in Oregon/Washington
+  west of the Cascade Mountains summit (Wood Handbook Table 5-3 footnote e). Average values from species sampling
+  — typical, not design minima.
+cost_class: low
+cost_rationale: Not a USGS commodity; no price source loaded this session (honesty note). Commodity softwood framing
+  lumber (~$400-600/MBF in recent years, i.e. cents per pound) is among the cheapest structural materials per unit
+  strength.
+properties:
+- key: density
+  value: 0.48
+  unit: g/cm**3
+  basis: typical
+  source_id: wood-handbook-fpl-gtr-282
+  citation: 'USDA Forest Products Laboratory, Wood Handbook: Wood as an Engineering Material, FPL-GTR-282, Chapter
+    5 (Senalik & Farber), Table 5-3b, p. 5-12, Douglas-fir Coast, 12% MC'
+  verified_at: https://www.fpl.fs.usda.gov/documnts/fplgtr/fplgtr282/chapter_05_fpl_gtr282.pdf
+  cross_check: 'FPL-GTR-190 (2010 ed.), Chapter 5, Table 5-3b, p. 5-12: 0.48 (identical); also 0.48 in metric Table
+    5-3a of both editions. https://www.fpl.fs.usda.gov/documnts/fplgtr/fplgtr190/chapter_05.pdf'
+  notes: 'Reported as SPECIFIC GRAVITY, not density (pipeline must convert: footnote b states SG is based on ovendry
+    weight and volume at the tabulated moisture condition, i.e. volume at 12% MC for this row). Approximate density
+    at 12% MC is ~32-34 lb/ft3 but that number is not published in this table, so only SG is recorded. [unit spelling
+    normalized from ''dimensionless (specific gravity)''] Published as SPECIFIC GRAVITY 0.48 (ovendry mass / volume
+    at 12% MC), recorded here as the g/cm^3 equivalent; air-dry density including moisture mass is ~10% higher.
+    Wood is orthotropic.'
+- key: youngs_modulus
+  value: 1.95
+  unit: Msi
+  basis: typical
+  source_id: wood-handbook-fpl-gtr-282
+  citation: USDA FPL Wood Handbook FPL-GTR-282, Chapter 5, Table 5-3b (Static bending, Modulus of elasticity), p.
+    5-12, Douglas-fir Coast, 12% MC
+  verified_at: https://www.fpl.fs.usda.gov/documnts/fplgtr/fplgtr282/chapter_05_fpl_gtr282.pdf
+  cross_check: 'FPL-GTR-190 Table 5-3b, p. 5-12: 1.95 x10^6 lbf/in2 (identical); metric Table 5-3a in GTR-282 gives
+    13,400 MPa for the same row. https://www.fpl.fs.usda.gov/documnts/fplgtr/fplgtr190/chapter_05.pdf'
+  notes: 'E_L (longitudinal) from static bending: footnote c — measured on a simply supported, center-loaded beam,
+    span-to-depth ratio 14/1; as tabulated it INCLUDES shear-deflection effect and may be increased ~10% to correct
+    (i.e. ~2.15 x10^6 psi shear-free). Educational consumers comparing to axial E_L should note this. [unit spelling
+    normalized from ''x10^6 lbf/in2'']'
+- key: poisson_ratio
+  value: 0.292
+  unit: '1'
+  basis: typical
+  source_id: wood-handbook-fpl-gtr-282
+  citation: USDA FPL Wood Handbook FPL-GTR-282, Chapter 5, Table 5-2 (Poisson's ratios for various species at approximately
+    12% moisture content), p. 5-3, Douglas-fir, mu_LR
+  verified_at: https://www.fpl.fs.usda.gov/documnts/fplgtr/fplgtr282/chapter_05_fpl_gtr282.pdf
+  cross_check: 'FPL-GTR-190 Table 5-2, p. 5-3: mu_LR = 0.292 (identical). https://www.fpl.fs.usda.gov/documnts/fplgtr/fplgtr190/chapter_05.pdf'
+  notes: 'Wood is orthotropic — six Poisson''s ratios. Value given is mu_LR; full Douglas-fir set in Table 5-2:
+    mu_LR 0.292, mu_LT 0.449, mu_RT 0.390, mu_TR 0.374, mu_RL 0.036, mu_TL 0.029. Table 5-2 lists ''Douglas-fir''
+    at species level, NOT subdivided coast/interior. Shear-modulus ratios in Table 5-1: G_LR/E_L = 0.064, G_LT/E_L
+    = 0.078, G_RT/E_L = 0.007. [unit spelling normalized from ''dimensionless'']'
+- key: modulus_of_rupture
+  value: 12400
+  unit: psi
+  basis: typical
+  source_id: wood-handbook-fpl-gtr-282
+  citation: USDA FPL Wood Handbook FPL-GTR-282, Chapter 5, Table 5-3b (Static bending, Modulus of rupture), p. 5-12,
+    Douglas-fir Coast, 12% MC
+  verified_at: https://www.fpl.fs.usda.gov/documnts/fplgtr/fplgtr282/chapter_05_fpl_gtr282.pdf
+  cross_check: 'FPL-GTR-190 Table 5-3b, p. 5-12: 12,400 lbf/in2 (identical); metric Table 5-3a in GTR-282 gives
+    85,000 kPa for the same row. https://www.fpl.fs.usda.gov/documnts/fplgtr/fplgtr190/chapter_05.pdf'
+  notes: Average MOR of small clear specimens — NOT a design value; visually/mechanically graded lumber design values
+    (e.g. NDS Fb) are far lower. Handbook notes MOR is not a true stress (flexure formula valid only to elastic
+    limit). [unit spelling normalized from 'lbf/in2']
+- key: compressive_strength
+  value: 7230
+  unit: psi
+  basis: typical
+  source_id: wood-handbook-fpl-gtr-282
+  citation: USDA FPL Wood Handbook FPL-GTR-282, Chapter 5, Table 5-3b (Compression parallel to grain), p. 5-12,
+    Douglas-fir Coast, 12% MC
+  verified_at: https://www.fpl.fs.usda.gov/documnts/fplgtr/fplgtr282/chapter_05_fpl_gtr282.pdf
+  cross_check: 'FPL-GTR-190 Table 5-3b, p. 5-12: 7,230 lbf/in2 (identical); metric Table 5-3a in GTR-282 gives 49,900
+    kPa. https://www.fpl.fs.usda.gov/documnts/fplgtr/fplgtr190/chapter_05.pdf'
+  notes: Maximum crushing strength parallel to grain (footnote a). Included as a bonus beyond the requested wood
+    property set since it is a primary wood strength property. Compression perpendicular to grain (fiber stress
+    at proportional limit) for the same row is 800 lbf/in2. [unit spelling normalized from 'lbf/in2']
+errata: []

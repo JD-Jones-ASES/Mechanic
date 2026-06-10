@@ -1,0 +1,71 @@
+id: iron-gray-class30
+name: Gray Cast Iron, ASTM A48 Class 30
+class: cast-iron
+condition: As-cast, classified by separately cast test bars per ASTM A48/A48M (Class 30 = 30 ksi min tensile)
+cost_class: low
+cost_rationale: 'Gray iron castings are the lowest-cost ferrous engineering product; USGS MCS 2026 (loaded): iron
+  is ''the least expensive and most widely used metal''.'
+properties:
+- key: ultimate_strength
+  value: 30
+  unit: ksi
+  basis: spec_minimum
+  source_id: astm-a48
+  citation: 'ASTM A48/A48M, Standard Specification for Gray Iron Castings, Class 30: specified minimum tensile strength
+    30 ksi [207 MPa] (paywalled; number verified via foundry datasheets quoting the spec)'
+  verified_at: https://www.pentictonfoundry.com/news/gray-iron-astm-a48-class-30/
+  cross_check: 'iron-foundry.com ASTM A48 Class 30 page: ''min. tensile strength 207 MPa'' (https://www.iron-foundry.com/astm-a48-class-30.html);
+    also castingsr.com guide: 207 MPa (30,000 psi)'
+  notes: Class number equals the spec minimum tensile strength in ksi. Gray cast iron is brittle with a strongly
+    nonlinear stress-strain curve and exhibits NO meaningful yield point, so yield_strength is intentionally omitted
+    (castingsr.com guide explicitly notes no distinct yield behavior is specified for this material).
+- key: compressive_strength
+  value: 109
+  unit: ksi
+  basis: typical
+  source_id: penticton-a48-c30
+  citation: 'Penticton Foundry, Gray Iron ASTM A48 Class 30 Data Sheet: compressive strength 109 ksi (752 MPa)'
+  verified_at: https://www.pentictonfoundry.com/news/gray-iron-astm-a48-class-30/
+  cross_check: 'tubingchina.com ''Mechanical Properties of Gray Cast Iron'' class table (reproducing the classic
+    ASTM-class typical-property table, cf. Shigley Table A-24): Class 30 compressive strength 109 kpsi (https://tubingchina.com/Mechanical-Properties-of-Gray-Cast-Iron.htm)'
+  notes: Typical, not a spec minimum (ASTM A48 specifies tensile only). About 3.6x the tensile class minimum, characteristic
+    of gray iron.
+- key: youngs_modulus
+  value: 13
+  unit: Msi
+  basis: typical
+  source_id: asm-desk-ed-1998
+  citation: 'Davis, J.R. (ed.), Metals Handbook Desk Edition, ASM International, 1998, as quoted by AmesWeb ''Young''s
+    Modulus of Cast Iron'': ASTM A48 Class 30 = 13.0-16.4 x 10^6 psi (90-113 GPa), secant modulus in tension'
+  verified_at: https://amesweb.info/Materials/Youngs-Modulus-of-Iron.aspx
+  cross_check: 'tubingchina.com gray cast iron class table: Class 30 modulus of elasticity (tension) 13.0-16.4 Mpsi;
+    castingsr.com A48 Class 30 guide: 90-113 GPa (13-16.5 x 10^6 psi)'
+  notes: 'RANGE: published as 13.0-16.4 x 10^6 psi; value recorded is the lower bound of the range, upper bound
+    16.4. Gray iron does not obey Hooke''s law; this is the SECANT modulus, defined as the slope from the origin
+    to 25% of tensile strength on the stress-strain curve. Store as a range, not a point value. [unit spelling normalized
+    from ''10^6 psi''] LOWER BOUND of the 13.0-16.4 Msi secant range (ASM Metals Handbook Desk Ed. 1998); gray iron
+    has no single linear E — never present as a point value without this caveat.'
+- key: poisson_ratio
+  value: 0.26
+  unit: '1'
+  basis: typical
+  source_id: asm-via-amesweb
+  citation: 'AmesWeb ''Poisson''s Ratio of Cast Iron'' (citing Callister 2007 and Davis, ASM Metals Handbook Desk
+    Edition 1998): gray irons ~0.26 (grades G1800/G3000/G4000 all listed 0.26)'
+  verified_at: https://amesweb.info/Materials/Poissons_Ratio_of_Iron.aspx
+  cross_check: 'Sonelastic ferrous-metals property table (sourced from ASM Handbooks Vol. 1 & 2): gray iron grades
+    G1800 and G4000 Poisson''s ratio 0.26 (https://www.sonelastic.com/en/fundamentals/tables-of-materials-properties/ferrous-metals.html)'
+  notes: Generic gray-iron value, not class-30-specific; castingsr.com quotes 0.26-0.28 for Class 30. Given the
+    nonlinear elasticity, treat as nominal. [unit spelling normalized from 'dimensionless']
+- key: density
+  value: 0.258
+  unit: lb/inch**3
+  basis: typical
+  source_id: penticton-a48-c30
+  citation: 'Penticton Foundry, Gray Iron ASTM A48 Class 30 Data Sheet: density 0.258 lb/in3 (7.15 g/cm3)'
+  verified_at: https://www.pentictonfoundry.com/news/gray-iron-astm-a48-class-30/
+  cross_check: 'castingsr.com A48 Class 30 guide: density 7.10-7.25 g/cm3, which brackets 7.15 g/cm3 (= 0.258 lb/in3)
+    (https://castingsr.com/technical-knowledge-of-astm-a48-class-30-a-complete-guide/)'
+  notes: Gray iron density varies slightly with graphite content/section size; 0.258 lb/in3 is the commonly published
+    class 30 nominal. [unit spelling normalized from 'lb/in3']
+errata: []
