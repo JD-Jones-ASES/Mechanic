@@ -14,7 +14,7 @@
     "dev": "astro dev",
     "build": "pnpm run gen && pnpm run check:katex && pnpm run check:parity && astro build && pagefind --site dist",
     "preview": "astro preview",
-    "test:unit": "node --test tests/",
+    "test:unit": "node --test \"tests/**/*.test.mjs\"",
     "test:e2e": "playwright test"
   },
   "dependencies": {
