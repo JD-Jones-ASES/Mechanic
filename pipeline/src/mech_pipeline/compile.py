@@ -167,6 +167,10 @@ class ThingCompiler:
                     "guard_fn": g_id, "kind": "predicate", "severity": sev,
                     "message": str(_require(env, "message", vc)),
                     "citation": env.get("citation"),
+                    # dependency list lets the engine evaluate this predicate
+                    # even when evaluation was refused (e.g. "cannot assemble"
+                    # must not be masked by the undefined-sqrt guard)
+                    "needs": sorted(str(s) for s in cond.free_symbols),
                 })
             self.residuals.append((rid, residual))
             rels.append({
@@ -205,11 +209,24 @@ class ThingCompiler:
             branches_meta = cfg.get("branches")
             if expected_branches > 1 and not branches_meta:
                 raise BuildError(f"{c}: expected_branches={expected_branches} requires a 'branches' block")
+            if expected_branches == 1 and branches_meta:
+                raise BuildError(f"{c}: a 'branches' block requires expected_branches > 1")
+            labels: list[str | None] = list(branches_meta["labels"]) if branches_meta else [None]
+            if branches_meta and len(labels) != expected_branches:
+                raise BuildError(
+                    f"{c}: branch-count mismatch — expected_branches={expected_branches} but "
+                    f"branches.labels has {len(labels)} entries"
+                )
 
             solutions_raw = _require(cfg, "solutions", c)
             targets_needed = {s for s in non_material if s not in inputs and s not in constraints}
             plan = []
-            ordered: list[tuple[sp.Symbol, sp.Expr]] = []
+            # one solution chain per branch label; unbranched targets are shared
+            ordered_by_label: dict[str | None, list[tuple[sp.Symbol, sp.Expr]]] = {
+                lab: [] for lab in labels
+            }
+            all_pairs: list[tuple[sp.Symbol, sp.Expr]] = []  # guard derivation, deduped
+            any_branched = False
             fn_prefix_base = f"cfg_{cid.replace('-', '_')}"
             for target_name, sol in solutions_raw.items():
                 tc = f"{c}, solution for '{target_name}'"
@@ -219,8 +236,8 @@ class ThingCompiler:
                 if target in inputs or target in constraints or self.specs[target].role == "material":
                     raise BuildError(f"{tc}: target is an input/constraint/material variable")
                 if isinstance(sol, dict):  # multi-branch
-                    labels = list(sol)
-                    if branches_meta is None or labels != list(branches_meta.get("labels", [])):
+                    any_branched = True
+                    if branches_meta is None or list(sol) != labels:
                         raise BuildError(f"{tc}: branch labels must match configuration branches.labels")
                     branch_fns, branch_latex = {}, {}
                     for label, expr_str in sol.items():
@@ -230,7 +247,8 @@ class ThingCompiler:
                         self.fns.append(emit_function(fn_id, expr, f"{tc} [{label}]"))
                         branch_fns[label] = fn_id
                         branch_latex[label] = sp.latex(sp.Eq(target, expr), **LATEX_OPTS)
-                        ordered.append((target, expr))  # each branch must satisfy relations
+                        ordered_by_label[label].append((target, expr))
+                        all_pairs.append((target, expr))
                     plan.append({"type": "eval", "target": target_name,
                                  "branch_fns": branch_fns, "latex": branch_latex})
                 else:
@@ -238,33 +256,54 @@ class ThingCompiler:
                     check_homogeneous(expr - target, self.unit_map, tc)
                     fn_id = f"{fn_prefix_base}_{target_name}"
                     self.fns.append(emit_function(fn_id, expr, tc))
-                    ordered.append((target, expr))
+                    for lab in labels:
+                        ordered_by_label[lab].append((target, expr))
+                    all_pairs.append((target, expr))
                     plan.append({"type": "eval", "target": target_name, "fn": fn_id,
                                  "latex": sp.latex(sp.Eq(target, expr), **LATEX_OPTS)})
                 targets_needed.discard(target)
             if targets_needed:
                 raise BuildError(f"{c}: no solution authored for {sorted(map(str, targets_needed))}")
+            if expected_branches > 1 and not any_branched:
+                raise BuildError(
+                    f"{c}: branch-count mismatch — expected_branches={expected_branches} "
+                    f"but every authored solution is single-branch"
+                )
 
-            # NOTE: multi-branch resolve uses each branch independently; v1 things
-            # are single-branch, and the four-bar case lands as branch-per-solution.
-            resolved = resolve_solutions(ordered, constraints, c)
-
-            # DOF check on the solution manifold (off-manifold sampling overcounts
-            # the rank when a relation is implied by the others — see verify.py)
+            # EVERY branch is independently resolved and proven against EVERY
+            # relation, and the DOF check runs on each branch's own manifold —
+            # an unverified crossed-circuit solution must fail the build, not
+            # ship as a selectable widget state (CLAUDE.md: branch-count
+            # mismatch / solution residual != 0 are loud failures).
             material_syms = [s for s in self.specs if self.specs[s].role == "material"]
             residual_exprs = [r for _, r in self.residuals]
             residual_exprs += [sym - val for sym, val in constraints.items()]
-            pts = manifold_points(inputs, material_syms, resolved, self.specs, seed=c)
-            dof_check(non_material, residual_exprs, inputs, pts, c)
-
-            verify_solutions_against_relations(self.residuals, resolved, self.specs, c)
-            self.resolved_by_cfg[cid] = resolved
+            samples: list[dict] = []
+            first_resolved: dict[sp.Symbol, sp.Expr] | None = None
+            for lab in labels:
+                lc = c if lab is None else f"{c}, branch '{lab}'"
+                resolved = resolve_solutions(ordered_by_label[lab], constraints, lc)
+                pts = manifold_points(inputs, material_syms, resolved, self.specs, seed=lc)
+                dof_check(non_material, residual_exprs, inputs, pts, lc)
+                verify_solutions_against_relations(self.residuals, resolved, self.specs, lc)
+                if first_resolved is None:
+                    first_resolved = resolved
+                samples.extend(self._samples(cid, inputs, constraints, resolved, branch=lab))
+            # derivation steps are checked against the first branch's closed
+            # forms; author branch-independent steps (or definition steps) for
+            # anything downstream of the branch split
+            self.resolved_by_cfg[cid] = first_resolved or {}
 
             guards = []
-            for gi, (target, expr) in enumerate(ordered):
+            seen_guards: set[tuple[str, str]] = set()
+            for gi, (target, expr) in enumerate(all_pairs):
                 for g_name, g_expr, kind, msg in auto_guards(
                     expr, f"{fn_prefix_base}_g{gi}", str(target)
                 ):
+                    key = (kind, sp.srepr(g_expr))
+                    if key in seen_guards:  # ± branches share denominators/sqrt args
+                        continue
+                    seen_guards.add(key)
                     self.fns.append(emit_function(g_name, g_expr, c))
                     guards.append({"guard_fn": g_name, "kind": kind, "severity": "invalid",
                                    "message": msg, "auto": True})
@@ -276,19 +315,23 @@ class ThingCompiler:
                 "plan": plan,
                 "branches": branches_meta,
                 "guards": guards,
-                "samples": self._samples(cid, inputs, constraints, resolved),
+                "samples": samples,
             })
         self.artifact["configurations"] = cfgs
 
-    def _samples(self, cid, inputs, constraints, resolved, n=3) -> list[dict]:
+    def _samples(self, cid, inputs, constraints, resolved, n=3, branch=None) -> list[dict]:
         """High-precision SymPy-computed input/output samples — the parity oracle
-        for the JS evaluator (checked by site tests and Playwright goldens)."""
+        for the JS evaluator (checked by site tests and Playwright goldens).
+        Multi-branch configurations get a sample set per branch label."""
         from .verify import _sample_value
 
-        rng = random.Random(f"{self.thing_id}/{cid}/samples")
+        seed = f"{self.thing_id}/{cid}/samples"
+        if branch is not None:
+            seed += f"/{branch}"
+        rng = random.Random(seed)
         out = []
         attempts = 0
-        while len(out) < n and attempts < 10 * n:
+        while len(out) < n and attempts < 40 * n:
             attempts += 1
             material_syms = [s for s in self.specs if self.specs[s].role == "material"]
             subs = {s: _sample_value(self.specs[s], rng) for s in [*inputs, *material_syms]}
@@ -296,13 +339,16 @@ class ThingCompiler:
             sample_out = {}
             ok = True
             for target, expr in resolved.items():
-                val = expr.evalf(25, subs=subs)
-                if not val.is_number or val.has(sp.zoo, sp.oo, sp.nan):
-                    ok = False
+                val = expr.evalf(25, subs=subs, chop=True)
+                if not val.is_number or val.has(sp.zoo, sp.oo, sp.nan) or val.is_real is not True:
+                    ok = False  # off the real domain (e.g. non-assembling linkage); resample
                     break
                 sample_out[str(target)] = float(val)
             if ok:
-                out.append({"inputs": sample_in, "outputs": sample_out})
+                sample = {"inputs": sample_in, "outputs": sample_out}
+                if branch is not None:
+                    sample["branch"] = branch
+                out.append(sample)
         if len(out) < n:
             raise BuildError(f"{self.ctx}, configuration '{cid}': could not generate parity samples")
         return out

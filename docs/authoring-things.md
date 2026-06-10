@@ -86,6 +86,37 @@ sources:
 6. Material-bound variables can never appear in `inputs` or as solution targets.
 7. Every relation and every validity envelope carries a citation that resolves in `sources`.
 
+## Multi-branch configurations (the four-bar pattern)
+
+When a target has several honest solutions (quadratic targets: two assembly circuits), author ALL
+of them:
+
+```yaml
+configurations:
+  - id: position
+    expected_branches: 2
+    branches: { selector: circuit, labels: [open, crossed], continuity: follow-previous }
+    solutions:
+      theta4:
+        open: 2*atan((...- sqrt(...))/(...))   # label order must match branches.labels exactly
+        crossed: 2*atan((...+ sqrt(...))/(...))
+```
+
+What the build does with this:
+
+- **Every branch is resolved and verified independently against every relation**, and the DOF
+  check runs on each branch's own manifold. A crossed-circuit solution that doesn't close the
+  loop fails the build naming the branch — wrong sign pairings cannot ship.
+- Parity samples are generated per branch (`samples[].branch`), and the widget grows a selector
+  (labelled with `selector`) that picks the branch at runtime.
+- The derivation is checked against the FIRST label's closed forms: keep steps branch-independent
+  (loop equations, eliminations, the quadratic itself) or mark the branch-split step `definition`.
+- Partial-domain solutions are fine: where a branch evaluates complex (a non-assembling linkage),
+  the verifier resamples — but it must find enough real samples inside the declared bounds, so
+  keep bounds honest.
+- `expected_branches` must equal `len(branches.labels)`, at least one solution must actually be
+  branched, and single-branch configurations must not carry a `branches` block.
+
 ## Things authors get wrong (checklist)
 
 - Forgetting `positive: true` on lengths/areas → verification of `sqrt` steps fails. Declare assumptions.

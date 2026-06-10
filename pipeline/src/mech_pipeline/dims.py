@@ -99,6 +99,19 @@ def si_factor(unit_expr: sp.Expr, context: str) -> float:
     return float(factor)
 
 
+def _strip_minmax(expr: sp.Expr, unit_map: dict[sp.Symbol, sp.Expr], context: str) -> sp.Expr:
+    """Min/Max are dimension-transparent: all arguments must share a dimension,
+    and the node then carries it. _collect_factor_and_dimension does not know
+    them, so check the arguments pairwise and replace the node by its first
+    argument before the walk. (Used by e.g. the Grashof condition.)"""
+    for node in [*expr.atoms(sp.Min), *expr.atoms(sp.Max)]:
+        first = node.args[0]
+        for other in node.args[1:]:
+            check_homogeneous(first - other, unit_map, f"{context} (inside {type(node).__name__})")
+        expr = expr.xreplace({node: first})
+    return expr
+
+
 def check_homogeneous(expr: sp.Expr, unit_map: dict[sp.Symbol, sp.Expr], context: str) -> None:
     """Fail the build unless `expr` is dimensionally homogeneous.
 
@@ -110,6 +123,8 @@ def check_homogeneous(expr: sp.Expr, unit_map: dict[sp.Symbol, sp.Expr], context
     missing = [s for s in expr.free_symbols if s not in unit_map]
     if missing:
         raise BuildError(f"{context}: symbols without declared units: {sorted(map(str, missing))}")
+    if expr.has(sp.Min) or expr.has(sp.Max):
+        expr = _strip_minmax(expr, unit_map, context)
     substituted = expr.subs(unit_map)
     try:
         SI._collect_factor_and_dimension(substituted)

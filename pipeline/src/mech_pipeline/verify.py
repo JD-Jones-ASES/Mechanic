@@ -23,6 +23,14 @@ from . import BuildError
 NUM_SAMPLES = 30
 PRECISION_DPS = 50
 TOLERANCE = sp.Float("1e-40")
+# simplify() is super-linear and can effectively hang on large trig/radical
+# expressions (the blind-solve lesson, ADR-0002). Above this op count the
+# symbolic tiers are skipped and the high-precision numeric tier decides.
+SIMPLIFY_OPS_CAP = 200
+# Numeric-rank zero threshold for the DOF check on transcendental manifolds:
+# entries are evaluated at 50 dps, so a truly dependent row collapses to
+# ~1e-49 — far below the chop — while generic entries are O(1).
+RANK_CHOP = sp.Float("1e-30")
 
 
 @dataclass
@@ -62,34 +70,52 @@ def tiered_zero(
 ) -> None:
     """Prove `expr` is identically zero over the declared domain, or fail the build."""
     expr = sp.together(expr)
-    # Tier 1: structural simplification
-    if sp.simplify(expr) == 0:
-        return
-    # Tier 2: equals() (random-evaluation backed, can return None on true identities)
-    if expr.equals(0) is True:
-        return
-    # Tier 3: exp rewrite catches trig identities tiers 1-2 miss
-    if sp.simplify(expr.rewrite(sp.exp)) == 0:
-        return
-    # Tier 4: high-precision numeric sampling over the declared domain
+    # ALL symbolic tiers are gated on size: simplify() AND equals() are
+    # super-linear and can effectively hang on loop-closure-sized trig/radical
+    # expressions (the blind-solve lesson, ADR-0002). Large expressions go
+    # straight to the high-precision numeric tier.
+    if sp.count_ops(expr) <= SIMPLIFY_OPS_CAP:
+        # Tier 1: structural simplification
+        if sp.simplify(expr) == 0:
+            return
+        # Tier 2: equals() (random-evaluation backed, can return None on true identities)
+        if expr.equals(0) is True:
+            return
+        # Tier 3: exp rewrite catches trig identities tiers 1-2 miss
+        if sp.simplify(expr.rewrite(sp.exp)) == 0:
+            return
+    # Tier 4: high-precision numeric sampling over the declared domain.
+    # Solutions may be partial-domain (a four-bar assembles only where the
+    # discriminant is nonnegative): complex/singular samples are domain holes
+    # to resample, NOT failures — but enough real samples must exist or the
+    # identity is uncertified.
     rng = random.Random(seed)
     free = sorted(expr.free_symbols, key=str)
     unknown = [s for s in free if s not in specs]
     if unknown:
         raise BuildError(f"{context}: cannot sample undeclared symbols {list(map(str, unknown))}")
-    for i in range(NUM_SAMPLES):
+    valid = 0
+    attempts = 0
+    while valid < NUM_SAMPLES and attempts < 20 * NUM_SAMPLES:
+        attempts += 1
         subs = {s: _sample_value(specs[s], rng) for s in free}
         try:
-            val = expr.evalf(PRECISION_DPS, subs=subs)
+            val = expr.evalf(PRECISION_DPS, subs=subs, chop=True)
         except (ValueError, ZeroDivisionError):
             continue  # landed on a removable singularity; resample
-        if not val.is_number or val.has(sp.zoo, sp.oo, sp.nan):
-            continue
+        if not val.is_number or val.has(sp.zoo, sp.oo, sp.nan) or val.is_real is not True:
+            continue  # off the real domain (e.g. non-assembling linkage); resample
+        valid += 1
         if abs(val) > TOLERANCE:
             raise BuildError(
-                f"{context}: NOT an identity — residual {sp.N(val, 6)} at sample {i} "
+                f"{context}: NOT an identity — residual {sp.N(val, 6)} at sample {attempts} "
                 f"{ {str(k): str(v) for k, v in subs.items()} }"
             )
+    if valid < max(10, NUM_SAMPLES // 3):
+        raise BuildError(
+            f"{context}: only {valid} real-valued samples found in the declared domain after "
+            f"{attempts} attempts — cannot certify the identity (check variable bounds)"
+        )
     return  # symbolic tiers undecided, numeric tier passed (documented semi-decidability)
 
 
@@ -158,15 +184,31 @@ def manifold_points(
     seed: str,
     n: int = 3,
 ) -> list[dict[sp.Symbol, sp.Expr]]:
-    """Exact rational points ON the solution manifold: sample the independents,
-    derive everything else through the verified solutions."""
+    """Exact points ON the solution manifold: sample the independents, derive
+    everything else through the verified solutions. Partial-domain solutions
+    (non-assembling linkage geometries) yield complex values — resample until
+    n fully real points are found, or fail loudly."""
     rng = random.Random(seed)
-    pts = []
-    for _ in range(n):
+    pts: list[dict[sp.Symbol, sp.Expr]] = []
+    attempts = 0
+    while len(pts) < n and attempts < 60 * n:
+        attempts += 1
         pt = {s: _sample_value(specs[s], rng) for s in [*inputs, *material_syms]}
+        ok = True
         for target, expr in resolved.items():
-            pt[target] = sp.nsimplify(expr.subs(pt))
-        pts.append(pt)
+            val = expr.subs(pt)
+            approx = sp.N(val, 30, chop=True)
+            if not approx.is_number or approx.has(sp.zoo, sp.oo, sp.nan) or approx.is_real is not True:
+                ok = False
+                break
+            pt[target] = sp.nsimplify(val)
+        if ok:
+            pts.append(pt)
+    if len(pts) < n:
+        raise BuildError(
+            f"{seed}: could not find {n} real points on the solution manifold inside the "
+            f"declared bounds ({attempts} attempts) — check variable bounds"
+        )
     return pts
 
 
@@ -182,8 +224,13 @@ def dof_check(
     planetary power balance, a polynomial combination of Willis + the torque
     relations) has a dependent gradient only ON the manifold — at random
     off-manifold points it looks independent and the count comes out wrong.
-    Rank is exact (rational arithmetic); max over points guards against
-    coefficients vanishing at an unlucky sample.
+    Rank is exact (rational arithmetic) whenever the manifold point is
+    rational; max over points guards against coefficients vanishing at an
+    unlucky sample. Trig manifolds (loop-closure linkages) yield exact but
+    transcendental point values — atan-of-radical entries — where exact rank
+    is intractable, so those points fall back to a 50-dps numeric rank with a
+    chop far above the noise floor (RANK_CHOP): an implied relation's
+    dependent row still collapses to ~1e-49 and is correctly discounted.
     """
     if not residuals:
         raise BuildError(f"{context}: no relations")
@@ -193,7 +240,12 @@ def dof_check(
         missing = [s for s in jac.free_symbols if s not in pt]
         if missing:
             raise BuildError(f"{context}: manifold point lacks {sorted(map(str, missing))}")
-        rank = max(rank, jac.subs(pt).rank())
+        sub = jac.subs(pt)
+        if all(getattr(v, "is_Rational", False) for v in pt.values()):
+            rank = max(rank, sub.rank())
+        else:
+            num = sub.evalf(PRECISION_DPS)
+            rank = max(rank, num.rank(iszerofunc=lambda x: abs(x) < RANK_CHOP))
     dof = len(unknowns) - rank
     if len(inputs) != dof:
         raise BuildError(

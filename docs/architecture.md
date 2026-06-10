@@ -85,9 +85,13 @@ step before `astro build`).
       // { "type": "solve1d", "target": "x", "residual_fn": "…", "bracket_fns": ["…","…"] }  // Brent
       // { "type": "solveND", … }          // RESERVED — feedback loops, not implemented
     ],
-    "branches": null,                      // or { "selector": "assembly", "labels": ["open","crossed"],
-                                           //      "continuity": "follow-previous" } with per-branch fns
-    "guards": [{ "guard_fn": "g_w", "severity": "invalid", "message": "ω_r = ω_c: ratio undefined", "auto": true }]
+    "branches": null,                      // or { "selector": "circuit", "labels": ["open","crossed"],
+                                           //      "continuity": "follow-previous" } with per-branch fns;
+                                           // EVERY branch is independently verified against EVERY relation
+    "guards": [{ "guard_fn": "g_w", "severity": "invalid", "message": "ω_r = ω_c: ratio undefined", "auto": true }],
+    "samples": [{ "inputs": {"…": 1}, "outputs": {"…": 2}, "branch": "open" }]
+                                           // SymPy-computed parity oracle for the JS evaluator;
+                                           // "branch" present only on multi-branch configurations
   }],
   "derivation": [{ "latex": "…", "prose": "…", "rule": "…" }],   // pre-verified; rendered build-time
   "material_binding": null,                // or { "E": "youngs_modulus", "sigma_y": "yield_strength", … }
