@@ -99,11 +99,11 @@ coupler-curve inverse · custom domain · analytics (none, stated policy) · acc
 `docs/decisions/` — ADRs (read before re-litigating a choice; ADR-0007 = the verification model).
 `docs/roadmap.md` — the phased plan toward the final product (Phase 3 items 1–2 shipped 2026-06-10:
 Johnson hand-off + scoped refusal + solve1d/eccentric column; item 3 = ADR-0008, PROPOSED, needs owner
-sign-off. Phase 2's radial-field and spur-gear batches remain deliberately unshipped; pause for owner
-direction between phases). Build: `pnpm build` in `site/` runs the
+sign-off. Phase 2 radial-field: rotating-disk-bore shipped; shrink-fit compound cylinder and the
+spur-gear tabulated-data stress test remain; pause for owner direction between phases). Build: `pnpm build` in `site/` runs the
 Python pipeline first; `uv run pytest` in `pipeline/` for math-layer tests. A cold build takes ≈ 3–4
 minutes — four-bar branch verification dominates; it is slow, not hung — but unchanged THINGs are
 cache-reused, so warm rebuilds take seconds plus the astro step. The repo is public and the site deploys
 from CI on every push to main — there is no review step between merge and the public site:
-https://jd-jones-ases.github.io/Mechanic/ (catalog state: 15 THINGs; the live `/verification/` page is
+https://jd-jones-ases.github.io/Mechanic/ (catalog state: 16 THINGs; the live `/verification/` page is
 the public statement of what is and isn't machine-proven).

@@ -39,8 +39,10 @@ factory capability, the way the flywheel exercised `poisson_ratio` and new quant
   invalid envelope — refusal by classical theorem, the sim's stadium construction goes complex
   at exactly the same boundary).
 - **Radial-field family (already promised by existing failure notes):** rotating disk with a
-  central bore, shrink-fit compound cylinder (the autofrettage story made interactive — and
-  secretly a chaining story).
+  central bore ✅ shipped 2026-06-10 (the vanishing-hole ×2 as a machine-proven limit; 1/√2
+  speed penalty; e_m rises at fixed speed — both flywheel cross-links live); shrink-fit
+  compound cylinder remains (the autofrettage story made interactive — and secretly a chaining
+  story).
 - **The deliberate schema stress-test:** spur gear pair (Lewis bending) forces a
   tabulated-data-with-provenance mechanism (form-factor tables as cited data, not magic
   numbers). Design that capability on purpose, not ad hoc.
