@@ -7,7 +7,7 @@ A browsable, citation-backed database of mechanical and physical THINGS — gear
 springs, belts, pressure vessels, linkages — for engineering undergraduates. Every THING ships
 its governing equations **with machine-verified derivations**, an interactive simulation,
 material selection with visible provenance, and a how-it-fails note. The
-[catalog](https://jd-jones-ases.github.io/Mechanic/things/) currently holds 16 THINGs spanning
+[catalog](https://jd-jones-ases.github.io/Mechanic/things/) currently holds 17 THINGs spanning
 statics, mechanics of materials, and machine design, plus a
 [chaining demo](https://jd-jones-ases.github.io/Mechanic/chain-demo/) that wires a gearbox into a
 shaft through type-checked port bindings.

@@ -141,6 +141,8 @@ a { color: var(--accent); }
 /* filled stress distribution (EccentricColumnSim): bar from σ_min to σ_max */
 .stress-fill { fill: var(--accent); opacity: 0.55; }
 .stress-fill-over { fill: #dc2626; opacity: 0.8; }
+/* compound cylinder: the shrink-fit interface between liner and jacket */
+.shrink-iface { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 5 4; }
 /* flywheel-specific (fw-* shared by the bored disk) */
 .disk-bore { fill: var(--paper); stroke: var(--ink); stroke-width: 1.5; }
 .fw-scribe { stroke: var(--ink); stroke-width: 2; stroke-linecap: round; }

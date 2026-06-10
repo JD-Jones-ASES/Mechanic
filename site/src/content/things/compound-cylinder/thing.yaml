@@ -1,0 +1,491 @@
+id: compound-cylinder
+title: Compound Cylinder (Shrink Fit)
+summary: >-
+  Where the monobloc wall gave up: shrink a jacket over a liner and the interference squeezes
+  the bore into hoop compression before the pressure ever arrives. Service tension must spend
+  that compression first — and at the balanced fit with the interface at √(r_i·r_o), the
+  elastic pressure ceiling approaches DOUBLE the one no solid wall could pass.
+facets: [stress, mass-cost]
+
+variables:
+  - symbol: r_i
+    name: Bore radius (liner inner)
+    latex: r_i
+    unit: m
+    quantity_kind: length
+    default: 0.04
+    bounds: [0.005, 0.25]
+    positive: true
+    display_units: [mm, m]
+  - symbol: r_c
+    name: Interface radius
+    latex: r_c
+    unit: m
+    quantity_kind: length
+    default: 0.06
+    bounds: [0.006, 0.4]
+    positive: true
+    display_units: [mm, m]
+  - symbol: r_o
+    name: Outer radius (jacket outer)
+    latex: r_o
+    unit: m
+    quantity_kind: length
+    default: 0.09
+    bounds: [0.008, 0.5]
+    positive: true
+    display_units: [mm, m]
+  - symbol: delta
+    name: Radial interference
+    latex: '\delta'
+    unit: m
+    quantity_kind: length
+    default: 3.0e-5
+    bounds: [1.0e-6, 3.0e-4]
+    positive: true
+    display_units: [um, mm]
+  - symbol: p
+    name: Working internal pressure
+    latex: p
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 100.0e6
+    bounds: [1.0e5, 6.0e8]
+    positive: true
+    display_units: [MPa, Pa]
+  - symbol: E
+    name: Young's modulus
+    latex: E
+    unit: Pa
+    quantity_kind: elastic_modulus
+    default: 200.0e9
+    bounds: [1.0e9, 500.0e9]
+    positive: true
+    role: material
+    display_units: [GPa, Pa]
+  - symbol: sigma_y
+    name: Yield strength
+    latex: '\sigma_y'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 250.0e6
+    bounds: [10.0e6, 2.0e9]
+    positive: true
+    role: material
+    display_units: [MPa, Pa]
+  - symbol: rho
+    name: Density
+    latex: '\rho'
+    unit: kg/m**3
+    quantity_kind: density
+    default: 7850
+    bounds: [400, 9000]
+    positive: true
+    role: material
+    display_units: ["kg/m^3"]
+  - symbol: p_c
+    name: Shrink-fit contact pressure
+    latex: p_c
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 1.9231e7
+    bounds: [0, 2.0e9]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: sigma_ti_res
+    name: Assembly hoop at the bore (residual)
+    latex: '\sigma_{\theta,i}^{res}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: -6.9231e7
+    bounds: [-5.0e9, 0]
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: sigma_tc_res
+    name: Assembly hoop at the jacket bore
+    latex: '\sigma_{\theta,c}^{res}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 5.0e7
+    bounds: [0, 5.0e9]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: sigma_ti_tot
+    name: Bore hoop at full pressure
+    latex: '\sigma_{\theta,i}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 8.0e7
+    bounds: [-5.0e9, 5.0e9]
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: tau_bore
+    name: Bore shear at full pressure (signed)
+    latex: '\tau_i'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 9.0e7
+    bounds: [-2.5e9, 2.5e9]
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: tau_iface
+    name: Interface shear at full pressure
+    latex: '\tau_c'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 9.0e7
+    bounds: [0, 5.0e9]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: SF_bore
+    name: Safety factor — liner bore (first yield)
+    latex: '\mathrm{SF}_i'
+    unit: '1'
+    quantity_kind: safety_factor
+    default: 1.3889
+    bounds: [-1.0e4, 1.0e4]
+    role: derived
+  - symbol: SF_iface
+    name: Safety factor — jacket bore (first yield)
+    latex: '\mathrm{SF}_c'
+    unit: '1'
+    quantity_kind: safety_factor
+    default: 1.3889
+    bounds: [0, 1.0e4]
+    positive: true
+    role: derived
+  - symbol: delta_bal
+    name: Balanced-fit interference
+    latex: '\delta_{bal}'
+    unit: m
+    quantity_kind: length
+    default: 3.0e-5
+    bounds: [0, 1.0e-2]
+    positive: true
+    role: derived
+    display_units: [um, mm]
+  - symbol: mu_L
+    name: Wall mass per unit length
+    latex: '\mu'
+    unit: kg/m
+    quantity_kind: linear_density
+    default: 160.30
+    bounds: [0, 1.0e5]
+    positive: true
+    role: derived
+    display_units: ["kg/m"]
+
+materials:
+  binds:
+    E: youngs_modulus
+    sigma_y: yield_strength
+    rho: density
+
+relations:
+  - id: contact-pressure
+    group: stress
+    latex: 'p_c = \frac{E\,\delta}{r_c}\,\frac{(r_c^2 - r_i^2)\,(r_o^2 - r_c^2)}{2\,r_c^2\,(r_o^2 - r_i^2)}'
+    residual: 2*p_c*r_c**3*(r_o**2 - r_i**2) - E*delta*(r_o**2 - r_c**2)*(r_c**2 - r_i**2)
+    assumptions:
+      - both members the same elastic material — Poisson's ratio cancels exactly from the
+        closure (the derivation proves this with ν left symbolic); different metals would keep it
+      - equal member lengths, ends free (plane stress); interference small next to the radii
+      - the radial interference δ, not the diametral value — half the difference of the
+        as-machined diameters
+    citation: timoshenko-som2
+    validity:
+      - condition: r_c > r_i
+        severity: invalid
+        message: >-
+          The interface has met (or passed) the bore — no liner remains, and every number on
+          this page is geometry-free fiction until r_i < r_c again.
+        citation: timoshenko-som2
+      - condition: r_o > r_c
+        severity: invalid
+        message: >-
+          The jacket has no wall — the outer radius must clear the interface. Every readout is
+          refused until r_c < r_o again.
+        citation: timoshenko-som2
+  - id: assembly-bore-hoop
+    group: stress
+    latex: '\sigma_{\theta,i}^{res} = -\,\frac{2\,p_c\,r_c^2}{r_c^2 - r_i^2}'
+    residual: sigma_ti_res*(r_c**2 - r_i**2) + 2*p_c*r_c**2
+    assumptions:
+      - the liner alone is a Lamé cylinder under external pressure p_c — hoop compression
+        peaks at ITS bore, exactly where the service pressure will later hurt most
+    citation: timoshenko-som2
+    validity:
+      - condition: -sigma_ti_res < sigma_y
+        severity: warn
+        message: >-
+          Assembly alone has driven the liner bore to compressive yield (Tresca) — before any
+          service pressure exists. The elastic shrink-fit prediction, and the residual
+          compression it promises, stops being the truth here: back the interference off.
+        citation: shigley
+  - id: assembly-jacket-hoop
+    group: stress
+    latex: '\sigma_{\theta,c}^{res} = p_c\,\frac{r_o^2 + r_c^2}{r_o^2 - r_c^2}'
+    residual: sigma_tc_res*(r_o**2 - r_c**2) - p_c*(r_o**2 + r_c**2)
+    assumptions:
+      - the jacket alone is a Lamé cylinder under internal pressure p_c — hoop tension peaks
+        at its bore, the interface; the jacket pays for the liner's relief in advance
+    citation: timoshenko-som2
+    validity:
+      - condition: 2*p_c*r_o**2 < sigma_y*(r_o**2 - r_c**2)
+        severity: warn
+        message: >-
+          Assembly alone yields the jacket bore (Tresca) — the as-built contact pressure falls
+          below this elastic prediction as the metal redistributes. Done by accident this is an
+          oversized fit; done on purpose — pre-yielding the wall to leave the bore in residual
+          compression — it is autofrettage, with pressure standing in for the liner.
+        citation: timoshenko-som2
+  - id: total-bore-hoop
+    group: stress
+    latex: '\sigma_{\theta,i} = p\,\frac{r_o^2 + r_i^2}{r_o^2 - r_i^2} + \sigma_{\theta,i}^{res}'
+    residual: (sigma_ti_tot - sigma_ti_res)*(r_o**2 - r_i**2) - p*(r_o**2 + r_i**2)
+    assumptions:
+      - same-material superposition — under working pressure the assembled wall carries the
+        one-piece (monobloc) Lamé field of a cylinder r_i → r_o, and the frozen-in assembly
+        stresses ride on top (Timoshenko, Art. 41)
+      - the interface stays closed — internal pressure presses the liner INTO the jacket, so
+        the fit cannot separate in service
+    citation: timoshenko-som2
+  - id: bore-shear
+    group: stress
+    latex: '\tau_i = \frac{p\,r_o^2}{r_o^2 - r_i^2} - \frac{p_c\,r_c^2}{r_c^2 - r_i^2}'
+    residual: tau_bore*(r_o**2 - r_i**2)*(r_c**2 - r_i**2) - p*r_o**2*(r_c**2 - r_i**2) + p_c*r_c**2*(r_o**2 - r_i**2)
+    assumptions:
+      - the monobloc bore shear p·r_o²/(r_o²−r_i²) — the thick-walled cylinder's governing
+        number — minus the shear relief bought by the fit
+      - signed by convention — positive means service tension governs the bore; negative means
+        the fit still holds the bore in net compression at full pressure
+    citation: timoshenko-som2
+    validity:
+      - condition: 2*tau_bore < sigma_y
+        severity: warn
+        message: >-
+          The liner bore has reached first yield in service (Tresca, 2τ = σ_y). A ductile wall
+          redistributes beyond this line — this elastic page ends here.
+        citation: shigley
+  - id: interface-shear
+    group: stress
+    latex: '\tau_c = \frac{p_c\,r_o^2}{r_o^2 - r_c^2} + \frac{p\,r_i^2\,r_o^2}{r_c^2\,(r_o^2 - r_i^2)}'
+    residual: tau_iface*r_c**2*(r_o**2 - r_c**2)*(r_o**2 - r_i**2) - p_c*r_o**2*r_c**2*(r_o**2 - r_i**2) - p*r_i**2*r_o**2*(r_o**2 - r_c**2)
+    assumptions:
+      - the jacket bore (the interface) is the jacket's worst point — assembly tension plus the
+        working field's spread there; both terms pull the same way, so over-shrinking moves the
+        failure point outward to the interface
+      - hoop is tensile and radial compressive at every knob state here, so this spread is the
+        honest Tresca shear with no sign caveat
+    citation: timoshenko-som2
+    validity:
+      - condition: 2*tau_iface < sigma_y
+        severity: warn
+        message: >-
+          The jacket bore has reached first yield in service (Tresca, 2τ = σ_y) — the fit is
+          carrying more than the jacket can elastically hold. Less interference, a larger
+          jacket, or a stronger material.
+        citation: shigley
+  - id: bore-margin
+    group: stress
+    latex: '\mathrm{SF}_i = \frac{\sigma_y}{2\,\tau_i}'
+    residual: 2*SF_bore*tau_bore - sigma_y
+    assumptions:
+      - maximum-shear-stress (Tresca) criterion against first yield at the liner bore — same
+        convention as the thick-walled cylinder this page extends
+      - meaningful only while the bore carries net hoop tension; the scoped envelope below
+        refuses the readout (and only this readout) when the fit holds the bore in compression
+    citation: shigley
+    validity:
+      - condition: sigma_ti_tot > 0
+        severity: invalid
+        scope: [SF_bore]
+        message: >-
+          Over-shrunk for this pressure — even at full p the liner bore sits in net hoop
+          compression, so a tensile first-yield margin there is meaningless and this readout is
+          refused. The binding checks are compressive yield at assembly (see that warning) and
+          the jacket margin, which now governs.
+        citation: timoshenko-som2
+  - id: interface-margin
+    group: stress
+    latex: '\mathrm{SF}_c = \frac{\sigma_y}{2\,\tau_c}'
+    residual: 2*SF_iface*tau_iface - sigma_y
+    assumptions:
+      - Tresca against first yield at the jacket bore — under-shrunk walls fail at the liner
+        bore, over-shrunk walls fail here; the balanced fit makes the two margins equal
+    citation: shigley
+  - id: balanced-interference
+    group: stress
+    latex: '\delta_{bal} = \frac{2\,p\,r_c\,r_o^2\,(r_c^2 - r_i^2)}{E\,\left(2\,r_o^2\,r_c^2 - r_c^4 - r_o^2\,r_i^2\right)}'
+    residual: E*delta_bal*(2*r_o**2*r_c**2 - r_c**4 - r_o**2*r_i**2) - 2*p*r_c*r_o**2*(r_c**2 - r_i**2)
+    assumptions:
+      - the interference at which the two Tresca shears are equal at the current pressure —
+        τ_i falls and τ_c rises linearly with contact pressure, so the crossing is unique and
+        closed-form; no new physics enters, only algebra over the two cited shears (the
+        derivation and test suite verify it)
+      - the denominator 2r_o²r_c² − r_c⁴ − r_o²r_i² = r_c²(r_o²−r_c²) + r_o²(r_c²−r_i²) is
+        positive for every legal geometry, so a balanced fit always exists
+      - with the interface at r_c = √(r_i·r_o), this fit maximizes the elastic pressure
+        capacity — the classical two-shell gun-barrel optimum (proven in pipeline/tests/)
+    citation: timoshenko-som2
+  - id: mass-per-length
+    group: mass-cost
+    latex: '\mu = \rho\,\pi\,(r_o^2 - r_i^2)'
+    residual: mu_L - rho*pi*(r_o**2 - r_i**2)
+    assumptions:
+      - prismatic two-piece annulus, uniform density — the interface adds no material; the
+        compound wall weighs exactly what the monobloc wall of the same envelope weighs
+    citation: gere
+configurations:
+  - id: analyze
+    label: Geometry, fit and pressure in — both margins out
+    constraints: {}
+    inputs: [r_i, r_c, r_o, delta, p]
+    solutions:
+      p_c: E*delta*(r_o**2 - r_c**2)*(r_c**2 - r_i**2)/(2*r_c**3*(r_o**2 - r_i**2))
+      sigma_ti_res: -2*p_c*r_c**2/(r_c**2 - r_i**2)
+      sigma_tc_res: p_c*(r_o**2 + r_c**2)/(r_o**2 - r_c**2)
+      sigma_ti_tot: p*(r_o**2 + r_i**2)/(r_o**2 - r_i**2) + sigma_ti_res
+      tau_bore: p*r_o**2/(r_o**2 - r_i**2) - p_c*r_c**2/(r_c**2 - r_i**2)
+      tau_iface: p_c*r_o**2/(r_o**2 - r_c**2) + p*r_i**2*r_o**2/(r_c**2*(r_o**2 - r_i**2))
+      SF_bore: sigma_y/(2*tau_bore)
+      SF_iface: sigma_y/(2*tau_iface)
+      delta_bal: 2*p*r_c*r_o**2*(r_c**2 - r_i**2)/(E*(2*r_o**2*r_c**2 - r_c**4 - r_o**2*r_i**2))
+      mu_L: rho*pi*(r_o**2 - r_i**2)
+
+derivation:
+  verifies_configuration: analyze
+  locals:
+    - symbol: nu
+      unit: '1'
+      positive: true
+      bounds: [0.05, 0.49]
+    - symbol: u_j
+      unit: m
+      define: (r_c/E)*(p_c*(r_o**2 + r_c**2)/(r_o**2 - r_c**2) + nu*p_c)
+    - symbol: u_l
+      unit: m
+      define: -(r_c/E)*(p_c*(r_c**2 + r_i**2)/(r_c**2 - r_i**2) - nu*p_c)
+  steps:
+    - expr: Eq(u_j, (r_c/E)*(p_c*(r_o**2 + r_c**2)/(r_o**2 - r_c**2) + nu*p_c))
+      prose: >-
+        The modeling step: each member alone is the thick-walled cylinder's Lamé field. The
+        jacket carries the contact pressure p_c on its bore, so its bore hoop stress is
+        p_c(r_o²+r_c²)/(r_o²−r_c²) with radial −p_c — and plane-stress Hooke turns that face's
+        hoop strain into a radial displacement, u = (r_c/E)(σ_θ − ν σ_r). The jacket bore grows
+        by u_j. (The test suite re-derives the field and this displacement from equilibrium,
+        compatibility, and Hooke independently.)
+      rule: 'elasticity: Lamé field + plane-stress Hooke at the jacket bore'
+      check: definition
+    - expr: Eq(u_l, -(r_c/E)*(p_c*(r_c**2 + r_i**2)/(r_c**2 - r_i**2) - nu*p_c))
+      prose: >-
+        The liner sees the same p_c from outside: a Lamé cylinder under external pressure. Its
+        outer face carries hoop −p_c(r_c²+r_i²)/(r_c²−r_i²) and radial −p_c, so the same Hooke
+        line moves that face inward — u_l is negative. The two displaced faces must land on a
+        common circle.
+      rule: 'elasticity: the same field with the pressure outside'
+      check: definition
+    - expr: Eq(delta, u_j - u_l)
+      prose: >-
+        Closure: the jacket bore grows, the liner face shrinks, and together they absorb
+        exactly the machined mismatch δ. Watch ν: the jacket contributes +ν·p_c·r_c/E, the
+        liner −ν·p_c·r_c/E — same metal, equal and opposite, gone. This line is verified with
+        ν left fully symbolic, so the cancellation is machine-proven for every ν in the
+        registry, not sampled at one value. (Different metals keep their ν's: Shigley's §3-16
+        general form has all four of E_i, ν_i, E_o, ν_o.)
+      rule: 'closure: the faces share one circle — and ν cancels'
+    - expr: Eq(p_c, E*delta*(r_o**2 - r_c**2)*(r_c**2 - r_i**2)/(2*r_c**3*(r_o**2 - r_i**2)))
+      prose: >-
+        Solve the closure for the contact pressure: Timoshenko's eq. 181, Shigley's §3-16
+        same-material form. Microns of interference make tens of MPa — at this page's defaults,
+        30 µm of squeeze buys 19.2 MPa of contact pressure. This is why shrink fits are
+        specified in tenths of a thousandth and why the parts are assembled with heat or liquid
+        nitrogen, not a bigger hammer.
+      rule: 'solve the closure for p_c (Timoshenko eq. 181)'
+    - expr: Eq(sigma_ti_res, -2*p_c*r_c**2/(r_c**2 - r_i**2))
+      prose: >-
+        The prize. Evaluate the liner's external-pressure field at its own bore: hoop
+        compression of −2p_c·r_c²/(r_c²−r_i²) — at the defaults, −69 MPa parked exactly where
+        the thick-walled cylinder hurts most. The factor 2r_c²/(r_c²−r_i²) > 2 means every
+        pascal of contact pressure buys MORE than two pascals of bore relief.
+      rule: evaluate the liner field at the bore
+    - expr: Eq(sigma_ti_tot, p*(r_o**2 + r_i**2)/(r_o**2 - r_i**2) + sigma_ti_res)
+      prose: >-
+        Now pressurize. Same metal on both sides of the interface means the assembled wall
+        responds to p exactly as one monobloc cylinder r_i → r_o — "the stresses produced by
+        this pressure are the same as in a cylinder with a solid wall" (Timoshenko, Art. 41) —
+        and the frozen assembly field rides on top. The bore's service tension starts from −69
+        MPa instead of zero: at the defaults it climbs only to +80 MPa where the monobloc bore
+        would already read +149 MPa.
+      rule: 'superposition: monobloc working field + frozen residual'
+    - expr: Eq(2*tau_bore, sigma_ti_tot + p)
+      prose: >-
+        The bore's Tresca pinch: radial stress there is the full −p, so the governing spread is
+        σ_θ,i − (−p). The fit cannot touch the radial term — relief arrives only through the
+        hoop. (While σ_θ,i stays positive this is the true maximum shear at the bore; when
+        over-shrinking drives σ_θ,i negative the page refuses the bore margin rather than
+        quietly reporting the wrong criterion — see the scoped envelope.)
+      rule: maximum shear at the liner bore
+    - expr: Eq(2*tau_iface, sigma_tc_res + p_c + 2*p*r_i**2*r_o**2/(r_c**2*(r_o**2 - r_i**2)))
+      prose: >-
+        The bill arrives at the interface. The jacket bore stacks its assembly tension
+        σ_θ,c^res on the working field's spread there, plus its own radial −p_c: every micron
+        of interference RAISES this shear while it LOWERS the bore's. The wall has two
+        candidate failure points and the knobs slide the danger between them.
+      rule: maximum shear at the jacket bore
+    - expr: Eq(E*delta_bal*(2*r_o**2*r_c**2 - r_c**4 - r_o**2*r_i**2), 2*p*r_c*r_o**2*(r_c**2 - r_i**2))
+      prose: >-
+        Both shears are linear in p_c, one falling and one rising, so they cross exactly once:
+        set τ_i = τ_c, solve for p_c, and map back through the closure. The result is the
+        balanced interference — the fit that makes liner and jacket reach first yield together,
+        which is the most pressure this geometry can elastically hold. Put the interface at the
+        geometric mean r_c = √(r_i·r_o) and the balanced wall's capacity is σ_y(1 − r_i/r_o):
+        against the monobloc's (σ_y/2)(1 − r_i²/r_o²) that is a gain of 2/(1 + r_i/r_o) — TWO
+        shells approach TWICE the ceiling as walls grow thick (machine-proven in the test
+        suite, along with the optimum location itself). The default knobs sit exactly at this
+        balanced optimum; nudge δ either way and watch one margin sag.
+      rule: 'balance: equal margins, the two-shell optimum'
+sim:
+  engine: statics-cascade
+  config:
+    draw: compound-cylinder
+
+sources:
+  - id: timoshenko-som2
+    citation: >-
+      Timoshenko, S., Strength of Materials, Part II: Advanced Theory and Problems, 1st ed.,
+      Van Nostrand, 1930 — ch. VI "Deformations Symmetrical About an Axis", Art. 40 (the
+      thick-walled cylinder: Lamé field, internal/external pressure, displacements) and Art. 41
+      "Stresses Produced by Shrink Fit" (eq. 181: the same-material contact pressure; built-up
+      cylinders under internal pressure behave as one solid wall with shrink stresses
+      superposed; gun barrels; pre-yielding a solid tube as the analogous trick).
+    verification: >-
+      Chapter/article numbers, eq. 181, and the superposition sentence pinned against the
+      Internet Archive full text (in.ernet.dli.2015.140195), 2026-06-10. The book's own worked
+      example (Art. 41, Prob. 2: p = 4,050 psi) is re-computed from the authored contact-
+      pressure relation as a published golden in pipeline/tests/test_shrinkfit_physics.py, and
+      the Lamé fields are independently re-derived there from equilibrium + compatibility.
+  - id: shigley
+    citation: >-
+      Budynas, R. G., & Nisbett, J. K., Shigley's Mechanical Engineering Design, 10th ed.,
+      McGraw-Hill, 2015 — §3-16 "Press and Shrink Fits" (radial interference, the general
+      two-material contact-pressure relation and its same-material collapse), §3-14 (stresses
+      in pressurized cylinders), and §5-4 (maximum-shear-stress theory, S_sy = 0.5 S_y).
+    verification: >-
+      §3-16 title confirmed in the ch. 3 section sequence (3-13…3-19) against published
+      11th-edition-SI section listings, 2026-06-10, consistent with the §3-14 pin recorded by
+      the thick-walled-cylinder THING. The general interference relation and both assembly
+      stress states verified against the publisher's companion tutorial (McGraw-Hill,
+      "Machine Design Tutorial 4-17: Press and Shrink Fits", eqs. T4-57…T4-60, 7th-edition
+      text numbering), 2026-06-10; its same-material collapse is re-proven symbolically in
+      pipeline/tests/test_shrinkfit_physics.py.
+  - id: gere
+    citation: >-
+      Gere, J. M., & Goodno, B. J., Mechanics of Materials, 9th ed., Cengage, 2018 — prismatic
+      members and section properties (annular area, mass per length).
+    verification: >-
+      Topic-level citation, not section-pinned; identical to the annulus citation already
+      carried by the thick-walled-cylinder THING.
