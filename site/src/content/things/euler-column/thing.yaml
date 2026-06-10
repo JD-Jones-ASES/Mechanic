@@ -1,0 +1,377 @@
+id: euler-column
+title: Euler Column (Buckling)
+summary: >-
+  Push down on a slender strut and it fails sideways — at a load set entirely by stiffness and
+  geometry. Yield strength is nowhere in Euler's formula: the "strong" steel column buckles at
+  exactly the same load as the mild one. Strength only decides where the formula stops being true.
+facets: [stability, stress, mass-cost]
+
+variables:
+  - symbol: P
+    name: Applied axial load
+    latex: P
+    unit: N
+    quantity_kind: force
+    default: 10000
+    bounds: [100, 5.0e5]
+    positive: true
+    display_units: [kN, N]
+  - symbol: L
+    name: Column length
+    latex: L
+    unit: m
+    quantity_kind: length
+    default: 2.0
+    bounds: [0.2, 6.0]
+    positive: true
+    display_units: [m, mm]
+  - symbol: d
+    name: Diameter (solid circular)
+    latex: d
+    unit: m
+    quantity_kind: length
+    default: 0.05
+    bounds: [0.01, 0.3]
+    positive: true
+    display_units: [mm, m]
+  - symbol: K
+    name: Effective length factor
+    latex: K
+    unit: '1'
+    quantity_kind: ratio
+    default: 1.0
+    bounds: [0.4, 2.5]
+    positive: true
+  - symbol: E
+    name: Young's modulus
+    latex: E
+    unit: Pa
+    quantity_kind: elastic_modulus
+    default: 200.0e9
+    bounds: [1.0e9, 450.0e9]
+    positive: true
+    role: material
+    display_units: [GPa, Pa]
+  - symbol: sigma_y
+    name: Yield strength
+    latex: '\sigma_y'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 250.0e6
+    bounds: [10.0e6, 2.0e9]
+    positive: true
+    role: material
+    display_units: [MPa, Pa]
+  - symbol: rho
+    name: Density
+    latex: '\rho'
+    unit: kg/m**3
+    quantity_kind: density
+    default: 7800
+    bounds: [400, 9000]
+    positive: true
+    role: material
+    display_units: ["kg/m^3"]
+  - symbol: I
+    name: Second moment of area
+    latex: I
+    unit: m**4
+    quantity_kind: second_moment_of_area
+    default: 3.07e-7
+    bounds: [1.0e-10, 1.0e-2]
+    positive: true
+    role: derived
+  - symbol: A
+    name: Cross-section area
+    latex: A
+    unit: m**2
+    quantity_kind: area
+    default: 2.0e-3
+    bounds: [1.0e-5, 0.1]
+    positive: true
+    role: derived
+  - symbol: r_g
+    name: Radius of gyration
+    latex: r
+    unit: m
+    quantity_kind: length
+    default: 0.0125
+    bounds: [1.0e-3, 0.1]
+    positive: true
+    role: derived
+    display_units: [mm, m]
+  - symbol: lam
+    name: Slenderness ratio
+    latex: '\lambda'
+    unit: '1'
+    quantity_kind: ratio
+    default: 160
+    bounds: [0.5, 10000]
+    positive: true
+    role: derived
+  - symbol: lam_T
+    name: Transition slenderness
+    latex: '\lambda_T'
+    unit: '1'
+    quantity_kind: ratio
+    default: 126
+    bounds: [1, 2000]
+    positive: true
+    role: derived
+  - symbol: P_cr
+    name: Euler critical load
+    latex: 'P_{cr}'
+    unit: N
+    quantity_kind: force
+    default: 150000
+    bounds: [0, 1.0e12]
+    positive: true
+    role: derived
+    display_units: [kN, N]
+  - symbol: sigma_cr
+    name: Critical stress
+    latex: '\sigma_{cr}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 7.7e7
+    bounds: [0, 1.0e13]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: SF_b
+    name: Safety factor (buckling)
+    latex: '\mathrm{SF}_{b}'
+    unit: '1'
+    quantity_kind: safety_factor
+    default: 15
+    bounds: [0, 1.0e10]
+    positive: true
+    role: derived
+  - symbol: m_col
+    name: Column mass
+    latex: m
+    unit: kg
+    quantity_kind: mass
+    default: 30
+    bounds: [0, 1.0e5]
+    positive: true
+    role: derived
+    display_units: [kg]
+
+materials:
+  binds:
+    E: youngs_modulus
+    sigma_y: yield_strength
+    rho: density
+
+relations:
+  - id: circ-second-moment
+    group: stress
+    latex: 'I = \frac{\pi d^4}{64}'
+    residual: I - pi*d**4/64
+    assumptions:
+      - solid circular cross-section (every bending axis alike — no weak axis to pick)
+    citation: gere
+  - id: circ-area
+    group: stress
+    latex: 'A = \frac{\pi d^2}{4}'
+    residual: A - pi*d**2/4
+    assumptions:
+      - solid circular cross-section
+    citation: gere
+  - id: radius-of-gyration
+    group: stability
+    latex: 'r = \sqrt{I/A}'
+    residual: r_g**2*A - I
+    assumptions:
+      - definition — the section's bending stiffness expressed as a length
+    citation: gere
+  - id: slenderness
+    group: stability
+    latex: '\lambda = \frac{K L}{r}'
+    residual: lam*r_g - K*L
+    assumptions:
+      - effective length KL folds the end conditions into an equivalent pinned-pinned column
+    citation: gere
+  - id: euler-load
+    group: stability
+    latex: 'P_{cr} = \frac{\pi^2 E I}{(K L)^2}'
+    residual: P_cr*(K*L)**2 - pi**2*E*I
+    assumptions:
+      - perfectly straight column, load perfectly centered (real columns are neither)
+      - linear elastic right up to buckling
+      - end conditions idealized by the effective length factor K
+    citation: gere
+    validity:
+      - condition: lam >= lam_T
+        severity: invalid
+        message: >-
+          Slenderness is below the transition value λ_T — this is an intermediate or short column,
+          where the material yields before (or while) it buckles. Euler's formula overpredicts the
+          strength here, on the dangerous side; an inelastic theory (e.g. the Johnson parabola) is
+          required, and this page refuses to show a wrong number instead.
+        citation: gere
+  - id: transition-slenderness
+    group: stability
+    latex: '\lambda_T = \sqrt{\frac{2 \pi^2 E}{\sigma_y}}'
+    residual: lam_T**2*sigma_y - 2*pi**2*E
+    assumptions:
+      - conventional cutoff where the Euler stress reaches σ_y/2
+    citation: gere
+  - id: critical-stress
+    group: stability
+    latex: '\sigma_{cr} = \frac{P_{cr}}{A} = \frac{\pi^2 E}{\lambda^2}'
+    residual: sigma_cr*A - P_cr
+    assumptions:
+      - average axial stress at the critical load
+    citation: gere
+  - id: buckling-safety-factor
+    group: stability
+    latex: '\mathrm{SF}_b = \frac{P_{cr}}{P}'
+    residual: SF_b*P - P_cr
+    assumptions:
+      - margin against elastic buckling only — yield is a separate check
+    citation: gere
+  - id: mass
+    group: mass-cost
+    latex: 'm = \rho A L'
+    residual: m_col - rho*A*L
+    assumptions:
+      - prismatic column, uniform density
+    citation: gere
+
+configurations:
+  - id: pinned-pinned
+    label: Pinned–pinned (K = 1) — the reference case
+    constraints: { K: 1 }
+    inputs: [P, L, d]
+    solutions:
+      I: pi*d**4/64
+      A: pi*d**2/4
+      r_g: d/4
+      lam: K*L/r_g
+      lam_T: sqrt(2*pi**2*E/sigma_y)
+      P_cr: pi**2*E*I/(K*L)**2
+      sigma_cr: P_cr/A
+      SF_b: P_cr/P
+      m_col: rho*A*L
+  - id: fixed-free
+    label: Fixed–free flagpole (K = 2) — quarter the strength
+    constraints: { K: 2 }
+    inputs: [P, L, d]
+    solutions:
+      I: pi*d**4/64
+      A: pi*d**2/4
+      r_g: d/4
+      lam: K*L/r_g
+      lam_T: sqrt(2*pi**2*E/sigma_y)
+      P_cr: pi**2*E*I/(K*L)**2
+      sigma_cr: P_cr/A
+      SF_b: P_cr/P
+      m_col: rho*A*L
+  - id: fixed-fixed
+    label: Fixed–fixed (K = 0.5) — four times the strength
+    constraints: { K: 0.5 }
+    inputs: [P, L, d]
+    solutions:
+      I: pi*d**4/64
+      A: pi*d**2/4
+      r_g: d/4
+      lam: K*L/r_g
+      lam_T: sqrt(2*pi**2*E/sigma_y)
+      P_cr: pi**2*E*I/(K*L)**2
+      sigma_cr: P_cr/A
+      SF_b: P_cr/P
+      m_col: rho*A*L
+  - id: fixed-pinned
+    label: Fixed–pinned (K = 0.699, theoretical)
+    constraints: { K: 0.699 }
+    inputs: [P, L, d]
+    solutions:
+      I: pi*d**4/64
+      A: pi*d**2/4
+      r_g: d/4
+      lam: K*L/r_g
+      lam_T: sqrt(2*pi**2*E/sigma_y)
+      P_cr: pi**2*E*I/(K*L)**2
+      sigma_cr: P_cr/A
+      SF_b: P_cr/P
+      m_col: rho*A*L
+  - id: any-end
+    label: Any end condition — K as a knob
+    constraints: {}
+    inputs: [P, L, d, K]
+    solutions:
+      I: pi*d**4/64
+      A: pi*d**2/4
+      r_g: d/4
+      lam: K*L/r_g
+      lam_T: sqrt(2*pi**2*E/sigma_y)
+      P_cr: pi**2*E*I/(K*L)**2
+      sigma_cr: P_cr/A
+      SF_b: P_cr/P
+      m_col: rho*A*L
+
+derivation:
+  verifies_configuration: pinned-pinned
+  locals:
+    - symbol: k_e
+      unit: 1/m
+      positive: true
+      define: sqrt(P_cr/(E*I))
+  steps:
+    - expr: Eq(k_e**2, P_cr/(E*I))
+      prose: >-
+        Nudge a pinned, axially loaded column sideways by v(x). Each cross-section now carries a
+        bending moment M = −P·v, so the elastic curve obeys EI·v″ = −P·v — simple harmonic motion
+        in space: v″ + k²v = 0, with k² = P/EI. The straight column is always an equilibrium; the
+        question is whether a bent neighbor exists too.
+      rule: 'modeling: moment in the perturbed configuration'
+      check: definition
+    - expr: Eq(k_e*L, pi)
+      prose: >-
+        The sinusoidal solutions v = C·sin(kx) already satisfy the pinned base; the pinned top
+        demands sin(kL) = 0, so a bent equilibrium exists only when kL = π, 2π, 3π… Below the first
+        root, straight is the only shape; at kL = π a sideways escape route opens. Buckling is an
+        eigenvalue problem, not a stress check. (The test suite re-derives this by solving the
+        differential equation independently.)
+      rule: 'eigencondition: first nonzero root of sin(kL) = 0'
+      check: definition
+    - expr: Eq(P_cr, pi**2*E*I/L**2)
+      prose: >-
+        Unpack k² = P/EI at kL = π: the Euler load. Only stiffness E and geometry I, L appear —
+        the column's strength is irrelevant, because nothing has yielded; the structure has simply
+        found a cheaper shape.
+      rule: solve the eigencondition for P
+    - expr: Eq(sigma_cr, pi**2*E/lam**2)
+      prose: >-
+        Divide by the area and write the geometry as the slenderness λ = KL/r (here K = 1):
+        Euler's hyperbola. Double the slenderness, quarter the stress a column can carry — and σ_y
+        is still nowhere in sight.
+      rule: normalize to the Euler hyperbola
+    - expr: Eq(lam_T**2*sigma_y, 2*pi**2*E)
+      prose: >-
+        The hyperbola can't be trusted forever: climbing it leftward (stubbier columns), the
+        critical stress eventually reaches the material's own yield region. The conventional
+        boundary sets σ_cr = σ_y/2, giving λ_T = √(2π²E/σ_y). Left of λ_T the column yields before
+        Euler's bent equilibrium arrives — the widget refuses to answer there rather than
+        overpredict.
+      rule: intersect the hyperbola with σ_y/2
+    - expr: Eq(SF_b, P_cr/P)
+      prose: >-
+        The buckling margin. Note what swapping materials does: σ_y (strength) moves only λ_T —
+        the envelope of validity — while E (stiffness) moves the load itself. A 4340 column at
+        1500 MPa yield buckles at exactly the same load as mild A36 steel.
+      rule: definition of the buckling safety factor
+sim:
+  engine: statics-cascade
+  config:
+    draw: euler-column
+
+sources:
+  - id: gere
+    citation: >-
+      Gere, J. M., & Goodno, B. J., Mechanics of Materials, 9th ed., Cengage, 2018 — §11.3–11.6
+      (Euler buckling of ideal columns, effective lengths for the four classic end conditions
+      incl. K = 0.699 for fixed–pinned, critical stress, slenderness limits and inelastic
+      buckling).

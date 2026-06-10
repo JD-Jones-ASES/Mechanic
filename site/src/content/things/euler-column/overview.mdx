@@ -1,0 +1,30 @@
+Squeeze a slender strut along its axis and it doesn't crush — it *escapes sideways*. Push a meter
+stick against the floor and watch it bow: nothing has yielded, no fibers have torn, the material is
+fine. The straight shape simply stopped being the cheapest equilibrium. That's buckling, and it is
+a different *kind* of failure from every stress story on this site: geometric, sudden, and governed
+by an eigenvalue rather than a strength.
+
+$$P_{cr} = \frac{\pi^2 E I}{(KL)^2}$$
+
+Read the cast of characters carefully, because the most important one is missing. Stiffness $E$ is
+there. Geometry is there twice — $I$ in the numerator, length *squared* in the denominator. **Yield
+strength is not there.** Swap the widget from A36 mild steel ($\sigma_y \approx 250$ MPa) to
+quenched 4340 at six times the strength: the critical load does not move by one newton. Both are
+steel; both have $E \approx 200$ GPa; the column could not care less how strong the material is,
+because buckling never asks the material to fail. If you remember one thing: **columns are bought
+with stiffness, not strength** — which is also why buckling-limited structures (masts, pushrods,
+truss compression chords) are where aluminum and composites earn their keep on $E/\rho$, not
+$\sigma_y/\rho$.
+
+So is $\sigma_y$ useless? No — it decides where Euler's formula is *allowed to speak*. Stubby
+columns yield before any bent equilibrium arrives; slender ones buckle long before yielding. The
+boundary is the transition slenderness $\lambda_T = \sqrt{2\pi^2 E/\sigma_y}$, and notice the
+twist: raising $\sigma_y$ *expands* Euler's empire (the envelope moves left) even though it never
+changes the load. Drive the length down in the widget and watch the page *refuse* to answer once
+$\lambda < \lambda_T$ — an inelastic column theory like the Johnson parabola owns that region, and
+showing Euler's number there would err on the dangerous side.
+
+The end conditions are the configurations. Clamping both ends ($K = 0.5$) buys 4× the load of
+pinned–pinned; a flagpole ($K = 2$) pays 4× penalty — a factor of **sixteen** between the extremes,
+from boundary conditions alone, with identical material and cross-section. Restraint is the
+cheapest structural material ever invented.

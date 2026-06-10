@@ -1,0 +1,25 @@
+Pump pressure into a closed tube and the wall goes into tension two ways at once: around the
+circumference (**hoop** stress) and along the axis (**longitudinal** stress). Two free-body cuts —
+one lengthwise, one crosswise — give both stresses in three lines of statics, and the punchline is
+geometric, not material:
+
+$$\sigma_h = \frac{pr}{t} = 2\,\sigma_l$$
+
+The hoop direction is always twice as loaded. That single factor of 2 explains why an overcooked
+sausage splits **lengthwise** (the hoop stress lets go first, and the crack runs along the axis),
+why wound-filament tanks wrap most of their fiber circumferentially, and why a burst pipe shows a
+long axial slit rather than a clean ring.
+
+This THING is also the portal's clearest demonstration that **relations are undirected**. The
+*analyze* configuration takes geometry and pressure in, stresses and safety factor out. The
+*design* configuration takes the same four relations and runs them the other way: declare the
+safety factor you want, and the required wall thickness $t = \mathrm{SF}\cdot pr/\sigma_y$ comes
+out — along with the mass you'll pay for it. Switch to the design configuration and swap materials:
+a stronger alloy doesn't change the stress at all (that's set by $p$, $r$, $t$), it changes how
+little $t$ you need. Strength buys *thinness*, and thinness times density is the real currency,
+which is why the materials page plots $\sigma_y$ against $\rho$.
+
+The thin-wall formulas live inside an envelope: they pretend stress is uniform through the
+thickness, which is honest while $r/t \ge 10$ and increasingly wrong below that. The widget will
+warn you as you leave the envelope and refuse beyond $r/t < 5$ — the thick-wall (Lamé) analysis is
+a different THING.

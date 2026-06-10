@@ -1,0 +1,26 @@
+Euler's formula describes a perfect column — straight, homogeneous, loaded exactly through the
+centroid. Real columns are none of these, and almost every real complication is unfavorable:
+
+- **Imperfections rule the neighborhood of $P_{cr}$.** A slight initial bow or a load applied a few
+  millimeters off-axis turns the clean bifurcation into a smooth curve that *approaches* Euler's
+  load asymptotically while deflections grow without bound. Real columns are designed to fractions
+  of $P_{cr}$ precisely because the formula is a ceiling, not a working value.
+- **Intermediate columns die of both diseases at once.** Between "short and yielding" and "slender
+  and Euler" lies the regime where partial yielding erodes the stiffness that buckling depends on.
+  Empirical curves (Johnson parabola, modern column design curves) bridge the gap — this is the
+  region where the widget shows its red banner instead of a number.
+- **Buckling is often catastrophic, not gradual.** Past the critical load there is no nearby
+  equilibrium to settle into; deflection growth is explosive. Compression failures in trusses and
+  frames tend to be sudden and total, which is why codes apply heavier safety factors to
+  compression members than to tension members.
+- **The column buckles about its weakest axis** — and the relevant $I$ is the *smallest* one. A
+  circular section (used on this page) dodges the issue by symmetry; a rectangular strut snaps
+  about its thin direction, and an angle section about a diagonal you might not have considered.
+  Bracing that stops the weak-axis shape forces the column into a higher mode and can multiply its
+  capacity.
+- **Local and lateral-torsional buckling.** Thin-walled sections can crumple locally (a soda can
+  carries hundreds of newtons until its wall wrinkles) and open sections can twist as they bow.
+  Euler's single half-sine is only one of many escape routes; the structure takes the cheapest.
+- **Eccentric loading has its own formula.** Deliberate offsets (brackets, crane columns) are the
+  secant-formula problem — deflections and stresses grow from the first newton, with no
+  bifurcation at all.

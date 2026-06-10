@@ -15,12 +15,20 @@ import { MaterialPicker, pickProperty, type MaterialRow } from "./MaterialPicker
 import { Readouts } from "./Readouts";
 import { ValidityBanner } from "./ValidityBanner";
 import { BeamSim } from "./sims/BeamSim";
+import { ColumnSim } from "./sims/ColumnSim";
+import { FourbarSim } from "./sims/FourbarSim";
 import { PlanetarySim } from "./sims/PlanetarySim";
+import { ShaftSim } from "./sims/ShaftSim";
+import { VesselSim } from "./sims/VesselSim";
 
 const fnsModules = import.meta.glob("../generated/things/*.fns.ts");
 const SIMS: Record<string, (p: { values: VarRecord }) => JSX.Element> = {
   planetary: PlanetarySim,
   "cantilever-beam": BeamSim,
+  "pressure-vessel": VesselSim,
+  "torsion-shaft": ShaftSim,
+  "euler-column": ColumnSim,
+  fourbar: FourbarSim,
 };
 
 interface Props {
@@ -46,10 +54,13 @@ export default function ThingWidget({ artifact, materials, sim }: Props) {
   const [knobs, setKnobs] = useState<VarRecord>(() => defaultsFor(cfgId));
   const [displayUnits, setDisplayUnits] = useState<Record<string, string>>({});
   const [materialId, setMaterialId] = useState(materials[0]?.id ?? "");
+  const [branch, setBranch] = useState<string | undefined>(undefined);
+  const activeBranch = cfg.branches ? (branch ?? cfg.branches.labels[0]) : undefined;
 
   const switchConfig = (id: string) => {
     setCfgId(id);
     setKnobs(defaultsFor(id));
+    setBranch(undefined);
   };
 
   const materialValues = useMemo((): VarRecord => {
@@ -67,8 +78,8 @@ export default function ThingWidget({ artifact, materials, sim }: Props) {
   const result = useMemo(() => {
     if (!fns) return null;
     const engine = new RelationEngine(artifact, fns);
-    return engine.evaluate(cfgId, { ...knobs, ...materialValues });
-  }, [fns, artifact, cfgId, knobs, materialValues]);
+    return engine.evaluate(cfgId, { ...knobs, ...materialValues }, activeBranch);
+  }, [fns, artifact, cfgId, knobs, materialValues, activeBranch]);
 
   const targets = cfg.plan.map((s) => s.target);
   const SimComponent = sim?.config?.draw ? SIMS[String(sim.config.draw)] : undefined;
@@ -86,6 +97,23 @@ export default function ThingWidget({ artifact, materials, sim }: Props) {
             {artifact.configurations.map((c) => (
               <option value={c.id} key={c.id}>
                 {c.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      ) : null}
+
+      {cfg.branches ? (
+        <label class="branch-select">
+          {cfg.branches.selector}{" "}
+          <select
+            data-testid="branch-select"
+            value={activeBranch}
+            onInput={(e) => setBranch(e.currentTarget.value)}
+          >
+            {cfg.branches.labels.map((l) => (
+              <option value={l} key={l}>
+                {l}
               </option>
             ))}
           </select>

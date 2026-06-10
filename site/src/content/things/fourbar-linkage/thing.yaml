@@ -1,0 +1,212 @@
+id: fourbar-linkage
+title: Four-Bar Linkage (Position)
+summary: >-
+  Four pinned links — ground, crank, coupler, rocker — and the oldest mechanism in the book.
+  Spin the crank and the rocker answers through pure geometry. Every position has TWO valid
+  assemblies (open and crossed): the first THING in the catalog where one input has two honest
+  answers, and the widget lets you pick the circuit.
+facets: [kinematics]
+
+variables:
+  - symbol: a
+    name: Crank length
+    latex: a
+    unit: m
+    quantity_kind: length
+    default: 0.04
+    bounds: [0.01, 0.5]
+    positive: true
+    display_units: [mm, m]
+  - symbol: b
+    name: Coupler length
+    latex: b
+    unit: m
+    quantity_kind: length
+    default: 0.12
+    bounds: [0.01, 0.5]
+    positive: true
+    display_units: [mm, m]
+  - symbol: c
+    name: Rocker length
+    latex: c
+    unit: m
+    quantity_kind: length
+    default: 0.08
+    bounds: [0.01, 0.5]
+    positive: true
+    display_units: [mm, m]
+  - symbol: d
+    name: Ground link length
+    latex: d
+    unit: m
+    quantity_kind: length
+    default: 0.10
+    bounds: [0.01, 0.5]
+    positive: true
+    display_units: [mm, m]
+  - symbol: theta2
+    name: Crank angle
+    latex: '\theta_2'
+    unit: rad
+    quantity_kind: angle
+    default: 0.7
+    bounds: [0, 6.2832]
+    display_units: [deg, rad]
+  - symbol: theta3
+    name: Coupler angle
+    latex: '\theta_3'
+    unit: rad
+    quantity_kind: angle
+    default: 0.35
+    bounds: [-3.1416, 3.1416]
+    role: derived
+    display_units: [deg, rad]
+  - symbol: theta4
+    name: Rocker angle
+    latex: '\theta_4'
+    unit: rad
+    quantity_kind: angle
+    default: 1.0
+    bounds: [-3.1416, 3.1416]
+    role: derived
+    display_units: [deg, rad]
+
+relations:
+  - id: loop-closure-x
+    group: kinematics
+    latex: 'a\cos\theta_2 + b\cos\theta_3 - c\cos\theta_4 - d = 0'
+    residual: a*cos(theta2) + b*cos(theta3) - c*cos(theta4) - d
+    assumptions:
+      - rigid links, ideal revolute (pin) joints, no clearances
+      - planar mechanism; ground pivots at distance d on the x-axis
+    citation: norton
+    validity:
+      - condition: Abs(b**2 + c**2 - (a**2 + d**2 - 2*a*d*cos(theta2))) <= 2*b*c
+        severity: invalid
+        message: >-
+          The links cannot assemble at this crank angle — the coupler and rocker together cannot
+          reach between the crank pin and the fixed pivot. (Non-Grashof linkages have whole arcs
+          of crank angle where this happens.)
+        citation: norton
+      - condition: Abs(b**2 + c**2 - (a**2 + d**2 - 2*a*d*cos(theta2))) <= sqrt(3)*b*c
+        severity: warn
+        message: >-
+          Transmission angle is outside 30°–150°. The coupler is pushing the rocker nearly along
+          its own length; force transmission is poor, and a real linkage here binds, chatters, or
+          stalls. Designers keep the transmission angle above ~40°.
+        citation: norton
+      - condition: 2*(Min(a, b, c, d) + Max(a, b, c, d)) <= a + b + c + d
+        severity: warn
+        message: >-
+          Non-Grashof linkage (shortest + longest exceeds the sum of the other two): no link can
+          fully rotate. This is a triple-rocker — the crank will hit assembly limits within one
+          revolution.
+        citation: norton
+  - id: loop-closure-y
+    group: kinematics
+    latex: 'a\sin\theta_2 + b\sin\theta_3 - c\sin\theta_4 = 0'
+    residual: a*sin(theta2) + b*sin(theta3) - c*sin(theta4)
+    assumptions:
+      - rigid links, ideal revolute (pin) joints, no clearances
+    citation: norton
+
+configurations:
+  - id: position
+    label: Link lengths and crank angle in — coupler and rocker angles out
+    constraints: {}
+    inputs: [a, b, c, d, theta2]
+    expected_branches: 2
+    branches:
+      selector: circuit
+      labels: [open, crossed]
+      continuity: follow-previous
+    solutions:
+      theta4:
+        open: >-
+          2*atan((2*sin(theta2) - sqrt(4*sin(theta2)**2
+          - 4*(cos(theta2) - d/a - (d/c)*cos(theta2) + (a**2 - b**2 + c**2 + d**2)/(2*a*c))
+          *(d/a - (d/c + 1)*cos(theta2) + (a**2 - b**2 + c**2 + d**2)/(2*a*c))))
+          /(2*(cos(theta2) - d/a - (d/c)*cos(theta2) + (a**2 - b**2 + c**2 + d**2)/(2*a*c))))
+        crossed: >-
+          2*atan((2*sin(theta2) + sqrt(4*sin(theta2)**2
+          - 4*(cos(theta2) - d/a - (d/c)*cos(theta2) + (a**2 - b**2 + c**2 + d**2)/(2*a*c))
+          *(d/a - (d/c + 1)*cos(theta2) + (a**2 - b**2 + c**2 + d**2)/(2*a*c))))
+          /(2*(cos(theta2) - d/a - (d/c)*cos(theta2) + (a**2 - b**2 + c**2 + d**2)/(2*a*c))))
+      theta3:
+        open: >-
+          2*atan((2*sin(theta2) - sqrt(4*sin(theta2)**2
+          - 4*(cos(theta2) - d/a + (d/b)*cos(theta2) + (c**2 - d**2 - a**2 - b**2)/(2*a*b))
+          *(d/a + (d/b - 1)*cos(theta2) + (c**2 - d**2 - a**2 - b**2)/(2*a*b))))
+          /(2*(cos(theta2) - d/a + (d/b)*cos(theta2) + (c**2 - d**2 - a**2 - b**2)/(2*a*b))))
+        crossed: >-
+          2*atan((2*sin(theta2) + sqrt(4*sin(theta2)**2
+          - 4*(cos(theta2) - d/a + (d/b)*cos(theta2) + (c**2 - d**2 - a**2 - b**2)/(2*a*b))
+          *(d/a + (d/b - 1)*cos(theta2) + (c**2 - d**2 - a**2 - b**2)/(2*a*b))))
+          /(2*(cos(theta2) - d/a + (d/b)*cos(theta2) + (c**2 - d**2 - a**2 - b**2)/(2*a*b))))
+
+derivation:
+  verifies_configuration: position
+  locals:
+    - symbol: u
+      unit: '1'
+      define: tan(theta4/2)
+  steps:
+    - expr: Eq(a*cos(theta2) + b*cos(theta3), d + c*cos(theta4))
+      prose: >-
+        Walk the linkage as vectors: crank then coupler must land on the same point as ground then
+        rocker. This is the x-component of that loop. Rigid links and pin joints are the entire
+        physics of the device — everything below is algebra.
+      rule: 'vector loop, x-component'
+      check: definition
+    - expr: Eq(a*sin(theta2) + b*sin(theta3), c*sin(theta4))
+      prose: >-
+        The y-component of the same loop (the ground link lies along x, so it contributes
+        nothing here). Two equations, two unknown angles θ3 and θ4 — but they are tangled in
+        sines and cosines, not linear in anything.
+      rule: 'vector loop, y-component'
+      check: definition
+    - expr: 'Eq(b**2, (d + c*cos(theta4) - a*cos(theta2))**2 + (c*sin(theta4) - a*sin(theta2))**2)'
+      prose: >-
+        Isolate the θ3 terms — b·cosθ3 from the first equation, b·sinθ3 from the second — then
+        square and add. The identity cos² + sin² = 1 swallows θ3 whole, leaving one equation in
+        the one unknown θ4. Eliminating a variable you don't want is the oldest trick in
+        kinematics.
+      rule: 'square and add to eliminate θ3'
+    - expr: >-
+        Eq((d/a)*cos(theta4) - (d/c)*cos(theta2) + (a**2 - b**2 + c**2 + d**2)/(2*a*c),
+        cos(theta2 - theta4))
+      prose: >-
+        Expand, divide through by 2ac, and gather the geometry into three constants K1 = d/a,
+        K2 = d/c, K3 = (a² − b² + c² + d²)/2ac: Freudenstein's equation, the 1954 form that made
+        linkage synthesis a pencil-and-paper subject. Given θ2, everything but θ4 is a number.
+      rule: "Freudenstein's equation"
+    - expr: >-
+        Eq((cos(theta2) - d/a - (d/c)*cos(theta2) + (a**2 - b**2 + c**2 + d**2)/(2*a*c))*u**2
+        + (-2*sin(theta2))*u
+        + (d/a - (d/c + 1)*cos(theta2) + (a**2 - b**2 + c**2 + d**2)/(2*a*c)), 0)
+      prose: >-
+        The half-angle substitution u = tan(θ4/2) turns cosθ4 into (1−u²)/(1+u²) and sinθ4 into
+        2u/(1+u²), collapsing the trigonometry into an ordinary quadratic A·u² + B·u + C = 0.
+        (Handed the raw loop equations, a computer algebra system's blind solver hangs; this
+        200-year-old substitution is the difference between intractable and trivial.)
+      rule: 'Weierstrass (tan-half-angle) substitution'
+    - expr: Eq(theta4, 2*atan(u))
+      prose: >-
+        Invert the substitution. A quadratic has TWO roots, and both are real wherever the linkage
+        assembles: the open circuit and the crossed circuit — two genuinely different ways to pin
+        the same four links together at the same crank angle. No continuous motion connects them;
+        you must disassemble the linkage to switch. The widget's circuit selector chooses, and the
+        build verifies each root against the loop equations independently.
+      rule: 'two roots, two circuits'
+sim:
+  engine: kinematic-position
+  config:
+    draw: fourbar
+
+sources:
+  - id: norton
+    citation: >-
+      Norton, R. L., Design of Machinery: An Introduction to the Synthesis and Analysis of
+      Mechanisms and Machines, 5th ed., McGraw-Hill, 2012 — ch. 2 (Grashof condition), ch. 4
+      (vector-loop position analysis, the K-constant/Freudenstein closed form, open vs. crossed
+      circuits, transmission angle).

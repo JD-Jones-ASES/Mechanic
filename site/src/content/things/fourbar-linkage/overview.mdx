@@ -1,0 +1,28 @@
+Pin four rigid links into a loop and you own the oldest machine element there is: the four-bar
+linkage. Bicycle suspension, engine hood hinges, locking pliers, oil-well pumpjacks, your own
+knee — all four-bars. One degree of freedom: turn the crank ($\theta_2$) and every other angle is
+*decided by geometry*, no springs, no slip, no choice.
+
+Except — two choices. The position problem reduces (via Freudenstein's equation and the
+tan-half-angle trick in the derivation below) to a **quadratic**, and a quadratic has two roots.
+Both are real, both are honest equilibrium assemblies of the same four links at the same crank
+angle: the **open** circuit and the **crossed** circuit, mirror-ish twins that no continuous motion
+connects. You'd have to pull a pin to switch. This THING is the first in the catalog where a single
+input has two verified answers, and the widget grows a *circuit* selector to pick between them —
+each branch independently machine-proved against the loop equations.
+
+Three warnings the widget will raise, all geometric facts rather than strength limits:
+
+- **Assembly.** If the coupler and rocker together can't reach between the crank pin and the far
+  ground pivot, there is no linkage at that crank angle — the discriminant goes negative and the
+  page says so rather than inventing a number.
+- **Grashof.** Whether *any* link can fully rotate is decided by one inequality on the four
+  lengths: $s + l \le p + q$. Satisfy it (the default lengths do) and the crank cranks; violate it
+  and you own a triple-rocker that jams partway around.
+- **Transmission angle.** Even an assembled linkage can be a *bad* linkage: when the coupler
+  pushes the rocker nearly along the rocker's own length, the force goes into the bearings instead
+  of the motion. Watch the warning fire near the extremes of travel.
+
+There is no material picker here, and that's the lesson: kinematics is the geometry of motion.
+Steel, titanium, or 3D-printed nylon, the angles are identical — material enters only when forces
+and stiffness do (the torque-power and stress THINGs).

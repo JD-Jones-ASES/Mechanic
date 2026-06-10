@@ -1,0 +1,281 @@
+id: torsion-shaft
+title: Shaft in Torsion (Solid, Circular)
+summary: >-
+  The power-transmission workhorse: twist a solid circular bar and shear stress winds around it.
+  Three material properties drive three different outputs — stiffness (G) sets the twist, strength
+  (σ_y) sets the margin, and the stress itself doesn't care what the shaft is made of at all.
+facets: [stress, torque-power, mass-cost]
+
+variables:
+  - symbol: T
+    name: Torque
+    latex: T
+    unit: N*m
+    quantity_kind: torque
+    default: 500
+    bounds: [1, 20000]
+    positive: true
+    display_units: ["N*m"]
+  - symbol: omega
+    name: Shaft speed
+    latex: '\omega'
+    unit: rad/s
+    quantity_kind: angular_velocity
+    default: 100
+    bounds: [1, 1000]
+    positive: true
+    display_units: [rad/s, rpm]
+  - symbol: d
+    name: Diameter
+    latex: d
+    unit: m
+    quantity_kind: length
+    default: 0.04
+    bounds: [0.005, 0.3]
+    positive: true
+    display_units: [mm, m]
+  - symbol: L
+    name: Length
+    latex: L
+    unit: m
+    quantity_kind: length
+    default: 1.0
+    bounds: [0.05, 5.0]
+    positive: true
+    display_units: [m, mm]
+  - symbol: G
+    name: Shear modulus
+    latex: G
+    unit: Pa
+    quantity_kind: elastic_modulus
+    default: 79.0e9
+    bounds: [0.5e9, 200.0e9]
+    positive: true
+    role: material
+    display_units: [GPa, Pa]
+  - symbol: sigma_y
+    name: Yield strength (tension)
+    latex: '\sigma_y'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 250.0e6
+    bounds: [10.0e6, 2.0e9]
+    positive: true
+    role: material
+    display_units: [MPa, Pa]
+  - symbol: rho
+    name: Density
+    latex: '\rho'
+    unit: kg/m**3
+    quantity_kind: density
+    default: 7800
+    bounds: [400, 9000]
+    positive: true
+    role: material
+    display_units: ["kg/m^3"]
+  - symbol: J
+    name: Polar second moment of area
+    latex: J
+    unit: m**4
+    quantity_kind: second_moment_of_area
+    default: 2.5e-7
+    bounds: [1.0e-10, 1.0e-2]
+    positive: true
+    role: derived
+  - symbol: tau
+    name: Max shear stress (surface)
+    latex: '\tau_{max}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 4.0e7
+    bounds: [0, 5.0e9]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: theta
+    name: Angle of twist
+    latex: '\theta'
+    unit: rad
+    quantity_kind: angle
+    default: 0.03
+    bounds: [0, 60]
+    positive: true
+    role: derived
+    display_units: [deg, rad]
+  - symbol: P_w
+    name: Transmitted power
+    latex: P
+    unit: W
+    quantity_kind: power
+    default: 50000
+    bounds: [10, 1.0e6]
+    positive: true
+    display_units: [kW, W]
+  - symbol: SF
+    name: Safety factor (shear yield)
+    latex: '\mathrm{SF}'
+    unit: '1'
+    quantity_kind: safety_factor
+    default: 3
+    bounds: [0, 100]
+    positive: true
+    role: derived
+  - symbol: m_shaft
+    name: Shaft mass
+    latex: m
+    unit: kg
+    quantity_kind: mass
+    default: 10
+    bounds: [0, 5000]
+    positive: true
+    role: derived
+    display_units: [kg]
+
+materials:
+  binds:
+    G: shear_modulus
+    sigma_y: yield_strength
+    rho: density
+
+relations:
+  - id: polar-moment
+    group: stress
+    latex: 'J = \frac{\pi d^4}{32}'
+    residual: J - pi*d**4/32
+    assumptions:
+      - solid circular cross-section
+    citation: gere
+  - id: shear-stress
+    group: stress
+    latex: '\tau_{max} = \frac{T\,(d/2)}{J} = \frac{16\,T}{\pi d^3}'
+    residual: tau*J - T*(d/2)
+    assumptions:
+      - linear elastic, shear stress grows linearly from zero at the axis to a max at the surface
+      - pure torsion — no bending, no axial load, no stress concentrations (keyways, steps)
+    citation: gere
+    validity:
+      - condition: tau < sigma_y/2
+        severity: warn
+        message: >-
+          Surface shear stress exceeds the shear yield strength (σ_y/2 by the maximum-shear-stress
+          criterion) — the outer fibers have yielded and every elastic number here stops being the
+          truth.
+        citation: shigley
+  - id: twist
+    group: stress
+    latex: '\theta = \frac{T\,L}{G\,J}'
+    residual: theta*G*J - T*L
+    assumptions:
+      - linear elastic, uniform section and torque along the length
+      - plane cross-sections rotate rigidly (exact for circular sections, wrong for everything else)
+    citation: gere
+  - id: power
+    group: torque-power
+    latex: 'P = T\,\omega'
+    residual: P_w - T*omega
+    assumptions:
+      - steady rotation — torque and speed constant
+    citation: shigley
+  - id: safety-factor
+    group: stress
+    latex: '\mathrm{SF} = \frac{\sigma_y/2}{\tau_{max}}'
+    residual: SF*tau - sigma_y/2
+    assumptions:
+      - maximum-shear-stress (Tresca) criterion — shear yield at σ_y/2; conservative next to the
+        distortion-energy value 0.577 σ_y
+    citation: shigley
+  - id: mass
+    group: mass-cost
+    latex: 'm = \rho \frac{\pi d^2}{4} L'
+    residual: m_shaft - rho*(pi*d**2/4)*L
+    assumptions:
+      - prismatic solid shaft, uniform density
+    citation: gere
+
+configurations:
+  - id: torque-in
+    label: Torque in — stress, twist, power, margin out
+    constraints: {}
+    inputs: [T, d, L, omega]
+    solutions:
+      J: pi*d**4/32
+      tau: 16*T/(pi*d**3)
+      theta: T*L/(G*J)
+      P_w: T*omega
+      SF: sigma_y/(2*tau)
+      m_shaft: rho*(pi*d**2/4)*L
+  - id: power-in
+    label: Power and speed in — the same relations find the torque first
+    constraints: {}
+    inputs: [P_w, omega, d, L]
+    solutions:
+      T: P_w/omega
+      J: pi*d**4/32
+      tau: 16*T/(pi*d**3)
+      theta: T*L/(G*J)
+      SF: sigma_y/(2*tau)
+      m_shaft: rho*(pi*d**2/4)*L
+
+derivation:
+  verifies_configuration: torque-in
+  locals:
+    - symbol: r_c
+      unit: m
+      positive: true
+      bounds: [0.001, 0.15]
+    - symbol: gamma
+      unit: '1'
+      define: r_c*theta/L
+  steps:
+    - expr: Eq(gamma, r_c*theta/L)
+      prose: >-
+        The modeling step: cross-sections of a circular shaft rotate rigidly without warping, so a
+        straight line scribed along the surface becomes a shallow helix. The shear strain at radius
+        r is the helix angle, γ = rθ/L — zero on the axis, maximum at the surface.
+      rule: 'kinematics: plane sections rotate rigidly'
+      check: definition
+    - expr: Eq(tau, G*(d/2)*theta/L)
+      prose: >-
+        Hooke's law in shear, τ = Gγ, evaluated at the surface r = d/2 where the strain peaks. The
+        stress distribution is a cone: zero at the center, linear to the rim — which is why hollow
+        shafts are such a good deal; the middle barely works.
+      rule: "Hooke's law in shear"
+    - expr: Eq(theta, T*L/(G*J))
+      prose: >-
+        The torque is the resultant of the stress distribution: T = ∫ r·τ(r) dA = (Gθ/L)∫ r² dA =
+        GθJ/L, where J = ∫ r² dA is the polar second moment. Solve for the twist. (The build's test
+        suite re-runs that integral with a computer algebra system as an independent check.)
+      rule: integrate the stress distribution
+    - expr: Eq(tau, 16*T/(pi*d**3))
+      prose: >-
+        Substitute J = πd⁴/32 and r = d/2. Stress falls with the cube of diameter — upsizing a
+        shaft by 26% halves the stress, which is why diameter, not material, is the first lever a
+        designer reaches for.
+      rule: substitute the solid circular section
+    - expr: Eq(P_w, T*omega)
+      prose: >-
+        Power is torque times angular speed. The same 50 kW can be a screaming 500 rad/s at 100 N·m
+        or a grinding 50 rad/s at 1000 N·m — and it is the torque, not the power, that sizes the
+        shaft. This is why gearboxes exist.
+      rule: definition of mechanical power
+    - expr: Eq(SF, sigma_y/(2*tau))
+      prose: >-
+        Yield in shear arrives at σ_y/2 by the maximum-shear-stress criterion. Note what each
+        material property touches: G set the twist (stiffness), σ_y sets this margin (strength),
+        and τ itself contains no material property at all — geometry and load alone.
+      rule: maximum-shear-stress criterion
+sim:
+  engine: statics-cascade
+  config:
+    draw: torsion-shaft
+
+sources:
+  - id: gere
+    citation: >-
+      Gere, J. M., & Goodno, B. J., Mechanics of Materials, 9th ed., Cengage, 2018 — §3.3–3.5
+      (circular shafts in torsion: strain kinematics, the torsion formula, angle of twist).
+  - id: shigley
+    citation: >-
+      Budynas, R. G., & Nisbett, J. K., Shigley's Mechanical Engineering Design, 10th ed.,
+      McGraw-Hill, 2015 — §3-12 (power transmission, P = Tω), §5-4 (maximum-shear-stress theory,
+      S_sy = 0.5 S_y).

@@ -1,0 +1,223 @@
+id: pressure-vessel
+title: Thin-Walled Pressure Vessel (Cylinder)
+summary: >-
+  A pressurized tube with closed ends — scuba tank, boiler, rocket stage. The hoop stress is
+  exactly twice the longitudinal stress, which is why sausages split lengthwise; and because the
+  relations are undirected, the same widget runs backwards as a design tool: pick a safety factor
+  and the wall thickness falls out.
+facets: [stress, mass-cost]
+
+variables:
+  - symbol: p
+    name: Internal gauge pressure
+    latex: p
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 2.0e6
+    bounds: [1.0e4, 5.0e7]
+    positive: true
+    display_units: [MPa, kPa, Pa]
+  - symbol: r
+    name: Inner radius
+    latex: r
+    unit: m
+    quantity_kind: length
+    default: 0.5
+    bounds: [0.05, 2.0]
+    positive: true
+    display_units: [m, mm]
+  - symbol: t
+    name: Wall thickness
+    latex: t
+    unit: m
+    quantity_kind: length
+    default: 0.01
+    bounds: [0.001, 0.2]
+    positive: true
+    display_units: [mm, m]
+  - symbol: L
+    name: Cylinder length
+    latex: L
+    unit: m
+    quantity_kind: length
+    default: 2.0
+    bounds: [0.1, 10.0]
+    positive: true
+    display_units: [m]
+  - symbol: sigma_y
+    name: Yield strength
+    latex: '\sigma_y'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 250.0e6
+    bounds: [10.0e6, 2.0e9]
+    positive: true
+    role: material
+    display_units: [MPa, Pa]
+  - symbol: rho
+    name: Density
+    latex: '\rho'
+    unit: kg/m**3
+    quantity_kind: density
+    default: 7800
+    bounds: [400, 9000]
+    positive: true
+    role: material
+    display_units: ["kg/m^3"]
+  - symbol: sigma_h
+    name: Hoop (circumferential) stress
+    latex: '\sigma_h'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 1.0e8
+    bounds: [0, 5.0e9]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: sigma_l
+    name: Longitudinal (axial) stress
+    latex: '\sigma_l'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 5.0e7
+    bounds: [0, 5.0e9]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: SF
+    name: Safety factor (yield, hoop)
+    latex: '\mathrm{SF}'
+    unit: '1'
+    quantity_kind: safety_factor
+    default: 4
+    bounds: [1, 12]
+    positive: true
+  - symbol: m_shell
+    name: Shell mass (barrel only)
+    latex: m
+    unit: kg
+    quantity_kind: mass
+    default: 500
+    bounds: [0, 1.0e5]
+    positive: true
+    role: derived
+    display_units: [kg]
+
+materials:
+  binds:
+    sigma_y: yield_strength
+    rho: density
+
+relations:
+  - id: hoop-stress
+    group: stress
+    latex: '\sigma_h = \frac{p\,r}{t}'
+    residual: sigma_h*t - p*r
+    assumptions:
+      - thin wall (t ≪ r), so the stress is uniform through the thickness
+      - internal gauge pressure; external pressure is atmospheric
+      - away from the end caps and any nozzles or welds (Saint-Venant)
+    citation: gere
+    validity:
+      - condition: r >= 10*t
+        severity: warn
+        message: >-
+          r/t has dropped below 10 — outside the usual thin-wall envelope. The true maximum stress
+          (at the inner surface, by Lamé's thick-wall analysis) is several percent above pr/t and
+          climbing as the wall thickens.
+        citation: gere
+      - condition: r >= 5*t
+        severity: invalid
+        message: >-
+          r/t is below 5: this is a thick-walled vessel, and the thin-wall formula is no longer an
+          approximation but a wrong answer. Lamé's thick-wall analysis is required.
+        citation: gere
+  - id: longitudinal-stress
+    group: stress
+    latex: '\sigma_l = \frac{p\,r}{2\,t}'
+    residual: sigma_l*2*t - p*r
+    assumptions:
+      - closed ends — the caps put the pressure load into the wall as axial tension
+      - thin wall, away from the caps themselves
+    citation: gere
+  - id: safety-factor
+    group: stress
+    latex: '\mathrm{SF} = \frac{\sigma_y}{\sigma_h}'
+    residual: SF*sigma_h - sigma_y
+    assumptions:
+      - hoop stress governs — it is exactly twice the longitudinal stress
+      - safety factor against first yield (not against burst; ductile vessels carry beyond yield)
+    citation: gere
+  - id: shell-mass
+    group: mass-cost
+    latex: 'm = 2\pi\,r\,t\,L\,\rho'
+    residual: m_shell - rho*2*pi*r*t*L
+    assumptions:
+      - thin-shell mass of the cylindrical barrel only; end caps excluded
+      - mid-surface circumference taken at the inner radius (error of order t/r)
+    citation: gere
+
+configurations:
+  - id: analyze
+    label: Geometry and pressure in — stresses, safety factor, mass out
+    constraints: {}
+    inputs: [p, r, t, L]
+    solutions:
+      sigma_h: p*r/t
+      sigma_l: p*r/(2*t)
+      SF: sigma_y*t/(p*r)
+      m_shell: rho*2*pi*r*t*L
+  - id: design
+    label: Required safety factor in — wall thickness out (same relations, run backwards)
+    constraints: {}
+    inputs: [p, r, SF, L]
+    solutions:
+      t: SF*p*r/sigma_y
+      sigma_h: sigma_y/SF
+      sigma_l: sigma_y/(2*SF)
+      m_shell: rho*2*pi*r*SF*p*r/sigma_y*L
+
+derivation:
+  verifies_configuration: analyze
+  steps:
+    - expr: Eq(2*sigma_h*t*L, p*2*r*L)
+      prose: >-
+        Slice the cylinder in half lengthwise and balance the half-shell: the pressure pushing on
+        the flat projected area (2r by L) must be carried by the two cut walls, each of area t by
+        L, in circumferential tension. Curvature does the projection for you — only the projected
+        area matters.
+      rule: 'statics: half-shell free body'
+    - expr: Eq(sigma_h, p*r/t)
+      prose: >-
+        Divide through. Stress scales with r and inversely with t: big vessels need
+        disproportionately thick walls, which is why pressure vessels want to be small or
+        spherical.
+      rule: solve for the hoop stress
+    - expr: Eq(sigma_l*2*pi*r*t, p*pi*r**2)
+      prose: >-
+        Now cut the cylinder crosswise: the pressure on the circular end cap (area πr²) is carried
+        by the thin ring of wall (circumference 2πr times thickness t) in axial tension.
+      rule: 'statics: end-cap free body'
+    - expr: Eq(sigma_l, sigma_h/2)
+      prose: >-
+        Compare the two: the longitudinal stress is exactly half the hoop stress, independent of
+        every dimension. The wall is twice as close to yielding around the circumference as along
+        the axis — which is why an overcooked sausage always splits lengthwise.
+      rule: compare the two stresses
+    - expr: Eq(SF, sigma_y*t/(p*r))
+      prose: >-
+        The safety factor compares yield strength to the governing (hoop) stress. Read it as a
+        design equation: for a required SF, the wall must be t = SF·p·r/σ_y — that inversion is
+        exactly what the "design" configuration runs.
+      rule: definition of safety factor against yield
+sim:
+  engine: statics-cascade
+  config:
+    draw: pressure-vessel
+
+sources:
+  - id: gere
+    citation: >-
+      Gere, J. M., & Goodno, B. J., Mechanics of Materials, 9th ed., Cengage, 2018 — §8.2–8.3
+      (thin-walled spherical and cylindrical pressure vessels, including the r/t ≥ 10 thin-shell
+      criterion and the hoop/longitudinal 2:1 ratio).

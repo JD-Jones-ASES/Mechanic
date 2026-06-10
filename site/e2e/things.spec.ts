@@ -95,3 +95,150 @@ test("derivations and equations render as KaTeX with MathML", async ({ page }) =
   expect(await page.locator(".katex").count()).toBeGreaterThan(5);
   expect(await page.locator(".katex math").count()).toBeGreaterThan(0); // screen-reader MathML
 });
+
+/**
+ * Pressure vessel (defaults p=2 MPa, r=0.5 m, t=10 mm):
+ *   σ_h = pr/t = 100 MPa exactly, σ_l = 50 MPa; A36 (σ_y=248.2 MPa) → SF=2.482.
+ * Design config (SF=4, A36): t = SF·p·r/σ_y = 16.12 mm, σ_h = σ_y/SF = 62.05 MPa.
+ */
+test("pressure vessel: analyze goldens, and the design config runs the relations backwards", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/pressure-vessel/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  expect(await readOutput(page, "sigma_h")).toBeCloseTo(100, 1); // MPa
+  expect(await readOutput(page, "sigma_l")).toBeCloseTo(50, 1);
+  expect(await readOutput(page, "SF")).toBeCloseTo(2.482, 2);
+
+  // same relations, opposite direction: SF becomes a knob, t becomes an output
+  await page.getByTestId("config-select").selectOption("design");
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  await expect(page.locator("#knob-SF")).toBeVisible();
+  expect(await readOutput(page, "t")).toBeCloseTo(16.12, 1); // mm
+  expect(await readOutput(page, "sigma_h")).toBeCloseTo(62.05, 1);
+  expect(errors).toEqual([]);
+});
+
+test("pressure vessel: thin-wall envelope refuses thick-wall inputs", async ({ page }) => {
+  await page.goto("things/pressure-vessel/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+  await page.locator("#knob-t").fill("200"); // mm → r/t = 2.5, far past the envelope
+  await expect(page.locator(".validity-invalid").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/thick-walled/i);
+});
+
+/**
+ * Torsion shaft (defaults T=500 N·m, d=40 mm): τ = 16T/πd³ = 39.79 MPa for EVERY
+ * material (stress is material-blind — the THING's aha). 4340 (G = 11.0 Msi =
+ * 75.84 GPa): θ = TL/GJ = 0.02623 rad = 1.503°. Power config (50 kW @ 100 rad/s)
+ * finds the same T=500 N·m first.
+ */
+test("torsion shaft: stress ignores the material; twist and margin do not", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/torsion-shaft/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  await page.getByTestId("material-select").selectOption("steel-4340");
+  const tau4340 = await readOutput(page, "tau");
+  const theta4340 = await readOutput(page, "theta"); // degrees
+  const sf4340 = await readOutput(page, "SF");
+  expect(tau4340).toBeCloseTo(39.79, 1);
+  expect(theta4340).toBeCloseTo(1.503, 2);
+
+  await page.getByTestId("material-select").selectOption("al-6061-t6");
+  const tauAl = await readOutput(page, "tau");
+  const thetaAl = await readOutput(page, "theta");
+  const sfAl = await readOutput(page, "SF");
+  expect(tauAl).toBeCloseTo(tau4340, 5); // identical stress, different material
+  expect(thetaAl).toBeGreaterThan(theta4340); // lower G → more twist
+  expect(sfAl).toBeLessThan(sf4340); //          lower σ_y → less margin
+  expect(errors).toEqual([]);
+});
+
+test("torsion shaft: power-in config finds the torque; materials without G are not offered", async ({ page }) => {
+  await page.goto("things/torsion-shaft/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  // 9 of the 13 seed materials publish a shear modulus; the rest are excluded, visibly
+  expect(await page.getByTestId("material-select").locator("option").count()).toBe(9);
+  await expect(page.getByText(/not listed here/i)).toBeVisible();
+
+  await page.getByTestId("config-select").selectOption("power-in");
+  await expect(page.locator("#knob-P_w")).toBeVisible();
+  expect(await readOutput(page, "T")).toBeCloseTo(500, 1); // 50 kW / 100 rad/s
+  expect(await readOutput(page, "tau")).toBeCloseTo(39.79, 1);
+});
+
+/**
+ * Euler column (defaults P=10 kN, L=2 m, d=50 mm, pinned-pinned):
+ *   I = π·0.05⁴/64 = 3.068e-7 m⁴; A36 (E=199.95 GPa): P_cr = π²EI/L² = 151.4 kN,
+ *   λ = KL/r = 160 > λ_T(A36) = 126.1 → valid. 4340 has the SAME E (29.0 Msi) at
+ *   6× the yield strength → P_cr must not move (strength is irrelevant to buckling)
+ *   while λ_T drops to 51.4 (the envelope moves instead).
+ */
+test("euler column: yield strength moves the envelope, never the load", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/euler-column/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  const pcrA36 = await readOutput(page, "P_cr"); // kN
+  const lamTA36 = await readOutput(page, "lam_T");
+  expect(pcrA36).toBeCloseTo(151.4, 0);
+  expect(await readOutput(page, "lam")).toBeCloseTo(160, 1);
+  expect(lamTA36).toBeCloseTo(126.1, 0);
+
+  await page.getByTestId("material-select").selectOption("steel-4340");
+  const pcr4340 = await readOutput(page, "P_cr");
+  const lamT4340 = await readOutput(page, "lam_T");
+  expect(pcr4340).toBeCloseTo(pcrA36, 1); // same E ⇒ same buckling load
+  expect(lamT4340).toBeLessThan(lamTA36 * 0.6); // 6× yield ⇒ much wider Euler validity
+  expect(errors).toEqual([]);
+});
+
+test("euler column: end conditions are configurations; the inelastic region refuses to answer", async ({ page }) => {
+  await page.goto("things/euler-column/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+  await page.getByTestId("material-select").selectOption("steel-a36");
+
+  await page.getByTestId("config-select").selectOption("fixed-free");
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  expect(await readOutput(page, "P_cr")).toBeCloseTo(151.4 / 4, 0); // K=2 ⇒ quarter strength
+
+  await page.getByTestId("config-select").selectOption("pinned-pinned");
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  await page.locator("#knob-L").fill("0.8"); // λ = 64 < λ_T: intermediate column
+  await expect(page.locator(".validity-invalid").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/intermediate|Johnson/i);
+});
+
+/**
+ * Four-bar (defaults a=40, b=120, c=80, d=100 mm, θ2=0.7 rad ≈ 40.1°):
+ *   open circuit:    θ3 = 0.35396 rad = 20.28°, θ4 = 1.00103 rad = 57.36°
+ *   crossed circuit: θ3 = −1.06496 rad = −61.02°, θ4 = −1.71203 rad = −98.08°
+ * (verified against blind nsolve roots in pipeline/tests/test_fourbar_physics.py)
+ */
+test("four-bar: one crank angle, two verified circuits, selectable", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/fourbar-linkage/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  expect(await readOutput(page, "theta4")).toBeCloseTo(57.36, 1); // degrees, open
+  expect(await readOutput(page, "theta3")).toBeCloseTo(20.28, 1);
+
+  await page.getByTestId("branch-select").selectOption("crossed");
+  expect(await readOutput(page, "theta4")).toBeCloseTo(-98.08, 1);
+  expect(await readOutput(page, "theta3")).toBeCloseTo(-61.02, 1);
+  expect(errors).toEqual([]);
+});
+
+test("four-bar: non-Grashof geometry warns, and impossible assemblies refuse", async ({ page }) => {
+  await page.goto("things/fourbar-linkage/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  await page.locator("#knob-d").fill("300"); // mm: s+l = 340 > p+q = 200 — triple-rocker
+  await expect(page.locator(".validity")).toContainText(/Grashof|triple-rocker/i);
+  // and at this crank angle the coupler+rocker can't reach: outputs are refused
+  await expect(page.locator(".validity-invalid").first()).toBeVisible();
+});

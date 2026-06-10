@@ -1,0 +1,26 @@
+Every machine that spins — every motor, gearbox, drill, driveshaft, wind turbine — pushes its
+power through a shaft in torsion. Twist a solid circular bar and the cross-sections rotate rigidly,
+shearing the material between them; the strain (and so the stress) grows linearly from zero at the
+axis to a maximum at the surface:
+
+$$\tau_{max} = \frac{16\,T}{\pi d^3} \qquad \theta = \frac{T L}{G J} \qquad P = T\,\omega$$
+
+Three things to notice, one per formula:
+
+- **The stress contains no material property.** $\tau$ is set by torque and diameter alone — swap
+  steel for aluminum in the widget and watch $\tau_{max}$ refuse to move while everything else
+  changes. Material choice never changes the stress in a statically determinate part; it changes
+  what the part can *tolerate* ($\sigma_y$ → SF) and how much it *distorts* ($G$ → θ).
+- **Diameter is cubed.** A 26% larger shaft halves the stress; doubling it cuts the stress
+  eightfold. No alloy upgrade competes with a few millimeters of radius — and since the middle of
+  a solid shaft barely works (the stress cone is zero at the axis), hollow shafts keep most of the
+  strength at a fraction of the mass.
+- **Torque, not power, sizes the shaft.** $P = T\omega$ means the same 50 kW arrives as gentle
+  torque at high speed or brutal torque at low speed. The *power-in* configuration makes the
+  widget find $T$ first — drop the speed knob and watch the stress climb at constant power. This
+  is the whole reason gearboxes exist: they trade speed for torque, and the slow side always needs
+  the fatter shaft.
+
+The twist matters more often than beginners expect: machine tools lose accuracy, control linkages
+feel spongy, and long drivelines resonate — all serviceability failures governed by $G$ and $J$,
+arriving long before anything yields.
