@@ -22,6 +22,7 @@ const DISPLAY_FACTORS: Record<string, { factor: number; label: string }> = {
   "N*m": { factor: 1, label: "N·m" },
   "kg/m^3": { factor: 1, label: "kg/m³" },
   "kg/m**3": { factor: 1, label: "kg/m³" },
+  "kg/m": { factor: 1, label: "kg/m" },
   "m**4": { factor: 1, label: "m⁴" },
   "m**2": { factor: 1, label: "m²" },
   kg: { factor: 1, label: "kg" },

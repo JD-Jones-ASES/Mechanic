@@ -1,0 +1,31 @@
+The widget's margin is first yield at the bore under steady internal pressure, for a plain
+monolithic wall. Real high-pressure hardware fails differently — and the most interesting
+"failures" are the ones designers inflict on purpose:
+
+- **Autofrettage — yielding the bore on purpose.** Since the elastic ceiling $p < \sigma_y/2$
+  cannot be out-thickened, makers of gun barrels and waterjet intensifiers pre-pressurize the
+  cylinder until the bore yields plastically, then release. The elastic outer wall squeezes the
+  yielded core, leaving the bore in *residual compression* — the next pressurization must first
+  cancel that compression before the bore feels any tension. The same trick wearing different
+  hats: shrink-fitted compound cylinders, wire-wound vessels, and the 19th-century built-up
+  cannon. The widget's first-yield warning marks exactly the line autofrettage deliberately
+  crosses.
+- **Fatigue at the bore.** Pressure equipment is cycled — every stroke of an intensifier is a
+  full stress cycle at the point the field concentrates. Cracks start at the bore (or at any
+  cross-bore: a side port roughly *triples* the local stress, far worse than the bare Lamé
+  number) and grow radially. Autofrettage earns most of its keep here: residual compression
+  slams the crack-driving cycle shut.
+- **Leak-before-burst vs. fragmentation.** A tough wall lets a fatigue crack tunnel through and
+  leak — annoying, visible, survivable. A brittle or thick-and-cold wall can instead reach
+  critical crack size before breakthrough and burst into fragments. Pressure-vessel codes are
+  organized around forcing the first outcome; it is the difference between a puddle and a bomb.
+- **The ends are not this page.** Lamé describes the long barrel away from closures. End caps,
+  threads, flanges, and nozzles add axial and discontinuity stresses that routinely govern —
+  high-pressure closures are their own discipline (and the usual leak path).
+- **External pressure is not the mirror image.** Vacuum jackets and submersible hulls fail by
+  *buckling* — stability, not strength. A wall with a comfortable Lamé margin can still collapse
+  inward like a drink can; see the [Euler column](../euler-column/) for the same lesson in one
+  dimension.
+- **Temperature steals the margin.** Creep at high temperature and brittleness at low temperature
+  both erode $\sigma_y$-based margins silently; thermal gradients through a thick wall add their
+  own Lamé-like stress field on top of the pressure's.
