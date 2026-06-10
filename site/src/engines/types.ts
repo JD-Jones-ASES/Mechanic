@@ -28,6 +28,14 @@ export interface Guard {
   auto?: boolean;
   /** symbols the predicate reads — evaluable iff all are finite in the env */
   needs?: string[];
+  /**
+   * Scoped refusal: when present on an invalid-severity envelope, only these
+   * derived variables are poisoned; the rest of the evaluation stands. This is
+   * how two models with complementary envelopes share one page (model
+   * hand-off — Euler/Johnson is the reference case). Absent = the refusal is
+   * global, as before.
+   */
+  scope?: string[];
 }
 
 export interface RelationMeta {
@@ -42,7 +50,20 @@ export interface RelationMeta {
 
 export type PlanStep =
   | { type: "eval"; target: string; fn?: string; branch_fns?: Record<string, string>; latex: unknown }
-  | { type: "solve1d"; target: string; residual_fn: string; bracket: [number, number] };
+  | {
+      type: "solve1d";
+      target: string;
+      /** the relation residual driven to zero — cited like any relation */
+      residual_fn: string;
+      /**
+       * Bracket ENDPOINT FUNCTIONS of the already-evaluated env (e.g. the
+       * eccentric column brackets P_y inside (0, P_E), and P_E moves with
+       * material and geometry — a static bracket cannot express that). The
+       * build proves a sign change between them at every verification sample.
+       */
+      bracket_fns: [string, string];
+      latex: string;
+    };
 
 export interface Configuration {
   id: string;
@@ -74,6 +95,12 @@ export interface ValidityMessage {
 export interface EvalResult {
   values: VarRecord;
   messages: ValidityMessage[];
-  /** true when an 'invalid'-severity guard fired: values are not trustworthy */
+  /** true when an unscoped 'invalid' guard fired: NO value is trustworthy */
   invalid: boolean;
+  /**
+   * Variables poisoned by scope-carrying invalid envelopes. Readouts and sims
+   * must treat these exactly like a global refusal, but only for the named
+   * symbols — every other value remains verified and honest.
+   */
+  invalidVars: string[];
 }

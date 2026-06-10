@@ -200,7 +200,15 @@ test("euler column: yield strength moves the envelope, never the load", async ({
   expect(errors).toEqual([]);
 });
 
-test("euler column: end conditions are configurations; the inelastic region refuses to answer", async ({ page }) => {
+/**
+ * The model hand-off (scoped refusal): at λ = 64 < λ_T the Euler readouts are
+ * refused while the Johnson readouts go live — on ONE page, with the sim still
+ * drawing. A36 at L = 0.8 m, d = 50 mm: λ = 64, σ_J = 248.2 − (248.2·64/2π)²/
+ * 199950 = 216.2 MPa, P_J = σ_J·A = 424.6 kN. At the slender default (λ = 160)
+ * the verdicts swap: Johnson refused, Euler live.
+ */
+test("euler column: end conditions are configurations; the inelastic region hands off to Johnson", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
   await page.goto("things/euler-column/");
   await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
   await page.getByTestId("material-select").selectOption("steel-a36");
@@ -211,12 +219,41 @@ test("euler column: end conditions are configurations; the inelastic region refu
 
   await page.getByTestId("config-select").selectOption("pinned-pinned");
   await page.getByTestId("material-select").selectOption("steel-a36");
+
+  // slender default (λ = 160): Euler readouts live, Johnson readouts refused
+  expect(await readOutput(page, "P_cr")).toBeCloseTo(151.4, 0);
+  await expect(page.locator('[data-output="P_J"] output')).toHaveText("—");
+  await expect(page.locator(".sim figcaption")).toContainText(/Euler \(elastic\) governs/i);
+
   await page.locator("#knob-L").fill("0.8"); // λ = 64 < λ_T: intermediate column
+  // the hand-off: a scoped invalid banner names the governing model...
   await expect(page.locator(".validity-invalid").first()).toBeVisible();
-  await expect(page.locator(".validity")).toContainText(/intermediate|Johnson/i);
-  // and no confident mode-shape drawing beside the refusal banner — this
-  // invalid fires with every value finite (the engine's verdict, not NaN)
-  await expect(page.locator(".sim figcaption")).toContainText(/nothing honest/i);
+  await expect(page.locator(".validity")).toContainText(/Johnson .*governs|Johnson parabola governs/i);
+  // ...the Euler readouts are refused (every value finite — the engine's
+  // scoped verdict, not NaN, is what blanks them)...
+  await expect(page.locator('[data-output="P_cr"] output')).toHaveText("—");
+  await expect(page.locator('[data-output="SF_b"] output')).toHaveText("—");
+  // ...while the Johnson readouts carry verified numbers on the same page
+  expect(await readOutput(page, "sigma_J")).toBeCloseTo(216.2, 0); // MPa
+  expect(await readOutput(page, "P_J")).toBeCloseTo(424.6, 0); // kN
+  // and the sim keeps drawing, naming the governing model instead of refusing
+  await expect(page.locator(".sim figcaption")).toContainText(/Johnson \(inelastic\) governs/i);
+  expect(errors).toEqual([]);
+});
+
+test("euler column: in Johnson territory the stronger steel finally carries more", async ({ page }) => {
+  await page.goto("things/euler-column/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+  // λ = 48 — inside Johnson territory for BOTH steels (λ_T: A36 ≈ 126, 4340 ≈ 51)
+  await page.locator("#knob-L").fill("0.6");
+
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  const pJA36 = await readOutput(page, "P_J"); // kN — A36: σ_J = 230.2 MPa → 452 kN
+  expect(pJA36).toBeCloseTo(452, 0);
+  await page.getByTestId("material-select").selectOption("steel-4340");
+  // same E, ~6× the yield: in EULER territory the load would not move — here it must
+  const pJ4340 = await readOutput(page, "P_J");
+  expect(pJ4340).toBeGreaterThan(pJA36 * 2);
 });
 
 test("verification page discloses authorship and the audit surface", async ({ page }) => {
@@ -225,9 +262,59 @@ test("verification page discloses authorship and the audit surface", async ({ pa
   await expect(page.getByText(/built end to end by an AI/i).first()).toBeVisible();
   await expect(page.getByText(/No human reviews the content/i).first()).toBeVisible();
   // every THING appears with its audit block (count is a deliberate change detector)
-  expect(await page.locator("section.relation-block").count()).toBe(14);
+  expect(await page.locator("section.relation-block").count()).toBe(15);
   await expect(page.getByText(/Where physics enters/i).first()).toBeVisible();
   expect(errors).toEqual([]);
+});
+
+/**
+ * Eccentric column (defaults P=100 kN, L=1 m, d=50 mm, e=5 mm → ec/r² = 0.8):
+ *   A36 (E=199.95 GPa, σ_y=248.21 MPa): P_E=605.4 kN, σ_max=101.67 MPa,
+ *   δ=1.226 mm, and the SOLVE1D number: P_y=209.42 kN (the browser's Brent on
+ *   the secant equation, parity-checked against 60-digit bisection).
+ *   SF_σ=2.441 > SF_P=2.094 — the margins disagree; only the load one is honest.
+ */
+test("eccentric column: the page solves the secant equation live, and the margins disagree", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/eccentric-column/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  expect(await readOutput(page, "P_E")).toBeCloseTo(605.4, 0); // kN
+  expect(await readOutput(page, "sigma_max")).toBeCloseTo(101.67, 1); // MPa
+  expect(await readOutput(page, "delta_mid")).toBeCloseTo(1.226, 2); // mm
+  expect(await readOutput(page, "P_y")).toBeCloseTo(209.42, 1); // kN — the live root
+  const sfLoad = await readOutput(page, "SF_y");
+  const sfStress = await readOutput(page, "SF_sig");
+  expect(sfLoad).toBeCloseTo(2.094, 2);
+  expect(sfStress).toBeCloseTo(2.441, 2);
+  expect(sfStress).toBeGreaterThan(sfLoad); // the deceptive margin always reads higher
+
+  // same E, ~6x the yield: the ELASTIC readouts must not move, the yield load must
+  await page.getByTestId("material-select").selectOption("steel-4340");
+  expect(await readOutput(page, "sigma_max")).toBeCloseTo(101.67, 1); // stiffness-only
+  expect(await readOutput(page, "P_y")).toBeGreaterThan(2 * 209.42); // strength is back
+  expect(errors).toEqual([]);
+});
+
+test("eccentric column: past first yield and past P_E the elastic readouts refuse, the load margin survives", async ({ page }) => {
+  await page.goto("things/eccentric-column/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+  await page.getByTestId("material-select").selectOption("steel-a36");
+
+  // P = 300 kN: σ_max would be 426 MPa > σ_y — elastic fiction, refused (scoped)
+  await page.locator("#knob-P").fill("300");
+  await expect(page.locator(".validity-invalid").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/extreme fiber/i);
+  await expect(page.locator('[data-output="sigma_max"] output')).toHaveText("—");
+  expect(await readOutput(page, "SF_y")).toBeCloseTo(0.698, 2); // still exact, and honest
+
+  // P = 700 kN > P_E: no bent equilibrium at all — and SF_P still reads
+  await page.locator("#knob-P").fill("700");
+  await expect(page.locator(".validity")).toContainText(/no bent equilibrium/i);
+  await expect(page.locator('[data-output="delta_mid"] output')).toHaveText("—");
+  expect(await readOutput(page, "SF_y")).toBeCloseTo(0.299, 2);
+  await expect(page.locator(".sim figcaption")).toContainText(/load .*margin|SF_P/i);
 });
 
 /**

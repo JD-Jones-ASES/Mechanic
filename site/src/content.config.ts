@@ -31,6 +31,9 @@ const validitySchema = z.object({
   severity: z.enum(["warn", "invalid"]),
   message: z.string(),
   citation: z.string().optional(),
+  // scoped refusal: an invalid envelope may poison only the named derived
+  // variables (model hand-off) instead of refusing the whole evaluation
+  scope: z.array(identifier).optional(),
 });
 
 const relationSchema = z.object({
@@ -43,12 +46,25 @@ const relationSchema = z.object({
   validity: z.array(validitySchema).default([]),
 });
 
+// a solve1d target: solve a DECLARED relation for this symbol inside an
+// authored [lo, hi] bracket of expressions (ADR-0002; the pipeline proves the
+// sign change at every verification sample)
+const solve1dSolutionSchema = z.object({
+  solve1d: z.object({
+    relation: z.string(),
+    bracket: z.tuple([z.string(), z.string()]),
+  }),
+});
+
 const configurationSchema = z.object({
   id: z.string(),
   label: z.string().optional(),
   constraints: z.record(identifier, z.union([z.number(), z.string()])).default({}),
   inputs: z.array(identifier),
-  solutions: z.record(identifier, z.union([z.string(), z.record(z.string(), z.string())])),
+  solutions: z.record(
+    identifier,
+    z.union([z.string(), solve1dSolutionSchema, z.record(z.string(), z.string())]),
+  ),
   expected_branches: z.number().int().default(1),
   branches: z
     .object({
@@ -133,7 +149,10 @@ const planStep = z.discriminatedUnion("type", [
     type: z.literal("solve1d"),
     target: identifier,
     residual_fn: z.string(),
-    bracket: z.tuple([z.number(), z.number()]),
+    // bracket endpoints are FUNCTIONS of the evaluated env (fns.ts keys) —
+    // sign change between them is proven at every verification sample
+    bracket_fns: z.tuple([z.string(), z.string()]),
+    latex: z.string(),
   }),
 ]);
 
@@ -145,6 +164,7 @@ const guardSchema = z.object({
   citation: z.string().nullable().optional(),
   auto: z.boolean().optional(),
   needs: z.array(identifier).optional(),
+  scope: z.array(identifier).optional(),
 });
 
 const compiled = defineCollection({

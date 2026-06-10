@@ -46,9 +46,12 @@ The Zod schema in `site/src/content.config.ts` IS the THING template. Authoring 
 `site/src/content/things/<slug>/thing.yaml` + `overview.mdx` + `failure.mdx` per `docs/authoring-things.md`.
 The Python pipeline **verifies, never derives blind**: authors supply solved forms per knob configuration;
 SymPy checks them against the relations (symbolic + numeric sampling). There is NO blind `solve()` anywhere
-in the pipeline — it verifiably hangs on raw loop-closure trig systems; authored closed forms (and, future,
-bracketed `solve1d`) are the only paths. Multi-branch solutions (four-bar open/crossed) are each verified
-independently against every relation. The build fails loudly, naming the THING/step/relation/branch, on:
+in the pipeline — it verifiably hangs on raw loop-closure trig systems; authored closed forms and bracketed
+`solve1d` (sign-change-certified per sample, rooted by 60-dps bisection, roots parity-checked against the
+browser's Brent) are the only paths. Multi-branch solutions (four-bar open/crossed) are each verified
+independently against every relation. Invalid-severity envelopes may carry a `scope` naming the derived
+variables they poison (scoped refusal — how Euler and Johnson share one page); unscoped invalids refuse
+the whole evaluation as before. The build fails loudly, naming the THING/step/relation/branch, on:
 dimension inhomogeneity, DOF mismatch, unverifiable derivation step, solution residual ≠ 0, branch-count
 mismatch, unrenderable LaTeX, or a display unit missing from the site's conversion table
 (`check-units.mjs`). Compilation is incremental: unchanged THINGs (fingerprint = thing.yaml + pipeline
@@ -94,11 +97,13 @@ coupler-curve inverse · custom domain · analytics (none, stated policy) · acc
 `docs/architecture.md` — pipeline + the unified compiled-artifact schema (single source of truth).
 `docs/authoring-things.md` — how to write a THING. `docs/data-provenance.md` — citation tiers + legal frame.
 `docs/decisions/` — ADRs (read before re-litigating a choice; ADR-0007 = the verification model).
-`docs/roadmap.md` — the phased plan toward the final product (Phase 2 in progress — machine-elements
-and structures batches shipped; pause for owner direction between phases). Build: `pnpm build` in `site/` runs the
+`docs/roadmap.md` — the phased plan toward the final product (Phase 3 items 1–2 shipped 2026-06-10:
+Johnson hand-off + scoped refusal + solve1d/eccentric column; item 3 = ADR-0008, PROPOSED, needs owner
+sign-off. Phase 2's radial-field and spur-gear batches remain deliberately unshipped; pause for owner
+direction between phases). Build: `pnpm build` in `site/` runs the
 Python pipeline first; `uv run pytest` in `pipeline/` for math-layer tests. A cold build takes ≈ 3–4
 minutes — four-bar branch verification dominates; it is slow, not hung — but unchanged THINGs are
 cache-reused, so warm rebuilds take seconds plus the astro step. The repo is public and the site deploys
 from CI on every push to main — there is no review step between merge and the public site:
-https://jd-jones-ases.github.io/Mechanic/ (catalog state: 14 THINGs; the live `/verification/` page is
+https://jd-jones-ases.github.io/Mechanic/ (catalog state: 15 THINGs; the live `/verification/` page is
 the public statement of what is and isn't machine-proven).

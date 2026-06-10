@@ -101,6 +101,70 @@ def test_dof_mismatch_fails_build(things_dir, tmp_path):
         compile_all(things_dir, tmp_path / "generated")
 
 
+SCOPED_VALIDITY = """
+    validity:
+      - condition: omega_s > omega_c
+        severity: invalid
+        message: "model envelope: the carrier outruns the sun here"
+        citation: norton
+        scope: [omega_c]"""
+
+
+def test_scoped_validity_passes_through_to_the_artifact(things_dir, tmp_path):
+    """A scope-carrying envelope must land in the artifact naming exactly the
+    poisoned variables — the engine's model-hand-off contract depends on it.
+    (omega_c is solved-for in the fixture config, so role stays 'free' in the
+    declaration; mark it derived for the scope rule.)"""
+    yaml_text = PLANETARY_YAML.replace(
+        '- {symbol: omega_c, name: Carrier speed, latex: \\omega_c, unit: rad/s, quantity_kind: angular_velocity, default: 3, bounds: [-100, 100]}',
+        '- {symbol: omega_c, name: Carrier speed, latex: \\omega_c, unit: rad/s, quantity_kind: angular_velocity, default: 3, bounds: [-100, 100], role: derived}',
+    ).replace(
+        'assumptions: ["rigid gears, no slip"]\n    citation: norton',
+        'assumptions: ["rigid gears, no slip"]\n    citation: norton' + SCOPED_VALIDITY,
+    )
+    (things_dir / "planetary-fixture" / "thing.yaml").write_text(yaml_text, encoding="utf-8")
+    out = tmp_path / "generated"
+    compile_all(things_dir, out)
+    artifact = json.loads((out / "planetary-fixture.compiled.json").read_text(encoding="utf-8"))
+    validity = artifact["relations"][0]["validity"]
+    assert validity[0]["scope"] == ["omega_c"]
+    assert validity[0]["severity"] == "invalid"
+    # unscoped envelopes must NOT grow a scope key (absent = global refusal)
+    assert all("scope" not in v for r in artifact["relations"][1:] for v in r["validity"])
+
+
+def test_scope_on_warn_severity_fails_build(things_dir, tmp_path):
+    bad = PLANETARY_YAML.replace(
+        'assumptions: ["rigid gears, no slip"]\n    citation: norton',
+        'assumptions: ["rigid gears, no slip"]\n    citation: norton'
+        + SCOPED_VALIDITY.replace("severity: invalid", "severity: warn"),
+    )
+    (things_dir / "planetary-fixture" / "thing.yaml").write_text(bad, encoding="utf-8")
+    with pytest.raises(BuildError, match="scope only applies to severity 'invalid'"):
+        compile_all(things_dir, tmp_path / "generated")
+
+
+def test_scope_naming_unknown_or_input_variable_fails_build(things_dir, tmp_path):
+    bad = PLANETARY_YAML.replace(
+        'assumptions: ["rigid gears, no slip"]\n    citation: norton',
+        'assumptions: ["rigid gears, no slip"]\n    citation: norton'
+        + SCOPED_VALIDITY.replace("scope: [omega_c]", "scope: [nope]"),
+    )
+    (things_dir / "planetary-fixture" / "thing.yaml").write_text(bad, encoding="utf-8")
+    with pytest.raises(BuildError, match="unknown variable 'nope'"):
+        compile_all(things_dir, tmp_path / "generated")
+
+    # a knob cannot be 'poisoned' — scoped refusal is about outputs
+    bad = PLANETARY_YAML.replace(
+        'assumptions: ["rigid gears, no slip"]\n    citation: norton',
+        'assumptions: ["rigid gears, no slip"]\n    citation: norton'
+        + SCOPED_VALIDITY.replace("scope: [omega_c]", "scope: [omega_s]"),
+    )
+    (things_dir / "planetary-fixture" / "thing.yaml").write_text(bad, encoding="utf-8")
+    with pytest.raises(BuildError, match="poisons derived outputs"):
+        compile_all(things_dir, tmp_path / "generated")
+
+
 def test_inhomogeneous_relation_fails_build(things_dir, tmp_path):
     bad = PLANETARY_YAML.replace(
         "residual: N_r - N_s - 2*N_p", "residual: N_r - N_s - 2*omega_s"

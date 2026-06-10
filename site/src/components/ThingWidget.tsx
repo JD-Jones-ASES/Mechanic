@@ -18,6 +18,7 @@ import { BeamSim } from "./sims/BeamSim";
 import { BeltSim } from "./sims/BeltSim";
 import { ColumnSim } from "./sims/ColumnSim";
 import { CombinedShaftSim } from "./sims/CombinedShaftSim";
+import { EccentricColumnSim } from "./sims/EccentricColumnSim";
 import { CylinderSim } from "./sims/CylinderSim";
 import { FlywheelSim } from "./sims/FlywheelSim";
 import { FourbarSim } from "./sims/FourbarSim";
@@ -30,16 +31,21 @@ import { TubeSim } from "./sims/TubeSim";
 import { VesselSim } from "./sims/VesselSim";
 
 const fnsModules = import.meta.glob("../generated/things/*.fns.ts");
-// Sims receive the engine's refusal verdict alongside the values: `invalid`
-// is the ONLY authoritative signal (a refusal can leave values omitted,
-// present-as-NaN, or fully finite when a validity predicate fires) — sims
-// must not draw a confident figure from a state the engine refused.
-const SIMS: Record<string, (p: { values: VarRecord; invalid?: boolean }) => JSX.Element> = {
+// Sims receive the engine's refusal verdicts alongside the values: `invalid`
+// (global) and `invalidVars` (scoped, model hand-off) are the ONLY
+// authoritative signals (a refusal can leave values omitted, present-as-NaN,
+// or fully finite when a validity predicate fires) — sims must not draw a
+// confident figure from a state, or a variable, the engine refused.
+const SIMS: Record<
+  string,
+  (p: { values: VarRecord; invalid?: boolean; invalidVars?: string[] }) => JSX.Element
+> = {
   planetary: PlanetarySim,
   "cantilever-beam": BeamSim,
   "pressure-vessel": VesselSim,
   "torsion-shaft": ShaftSim,
   "euler-column": ColumnSim,
+  "eccentric-column": EccentricColumnSim,
   fourbar: FourbarSim,
   "flywheel-disk": FlywheelSim,
   "thick-walled-cylinder": CylinderSim,
@@ -164,6 +170,7 @@ export default function ThingWidget({ artifact, materials, sim }: Props) {
             variables={artifact.variables}
             values={result?.values ?? {}}
             invalid={result?.invalid ?? true}
+            invalidVars={result?.invalidVars ?? []}
             displayUnits={displayUnits}
             onUnitChange={(sym, u) => setDisplayUnits((d) => ({ ...d, [sym]: u }))}
           />
@@ -172,7 +179,11 @@ export default function ThingWidget({ artifact, materials, sim }: Props) {
       </div>
 
       {SimComponent && result ? (
-        <SimComponent values={{ ...result.values }} invalid={result.invalid} />
+        <SimComponent
+          values={{ ...result.values }}
+          invalid={result.invalid}
+          invalidVars={result.invalidVars}
+        />
       ) : null}
     </section>
   );
