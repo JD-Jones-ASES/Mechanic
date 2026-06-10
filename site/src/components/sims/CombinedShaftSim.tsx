@@ -8,6 +8,7 @@
  * engine's `invalid` verdict is the authoritative refusal signal.
  */
 import type { VarRecord } from "../../engines/types";
+import { toDisplay } from "../../engines/units";
 import { SimRefusal } from "./SimRefusal";
 
 export function CombinedShaftSim({ values, invalid = false }: { values: VarRecord; invalid?: boolean }) {
@@ -71,7 +72,7 @@ export function CombinedShaftSim({ values, invalid = false }: { values: VarRecor
         {/* the circle */}
         <circle cx={cX} cy={cy0} r={r} class={danger ? "mohr-circle-hot" : "mohr-circle"} />
         {/* center + radius to τ_max (top of circle) */}
-        <circle cx={cX} cy={cy0} r={2.5} class="link-pivot" />
+        <circle cx={cX} cy={cy0} r={2.5} class="mohr-point" />
         <line x1={cX} y1={cy0} x2={cX} y2={cy0 - r} class="mohr-radius" />
         <text x={cX + 6} y={cy0 - r / 2} class="sim-label">
           τ_max
@@ -80,7 +81,12 @@ export function CombinedShaftSim({ values, invalid = false }: { values: VarRecor
         <line x1={faceX} y1={faceY} x2={face2X} y2={face2Y} class="mohr-chord" />
         <circle cx={faceX} cy={faceY} r={4} class="mohr-point" />
         <circle cx={face2X} cy={face2Y} r={4} class="mohr-point" />
-        <text x={faceX + 7} y={faceY + 4} class="sim-label">
+        <text
+          x={faceX > 250 ? faceX - 7 : faceX + 7}
+          y={faceY + 4}
+          text-anchor={faceX > 250 ? "end" : "start"}
+          class="sim-label"
+        >
           (σ_b, τ_t)
         </text>
         {/* von Mises tick on the σ axis */}
@@ -94,9 +100,9 @@ export function CombinedShaftSim({ values, invalid = false }: { values: VarRecor
         ) : null}
       </svg>
       <figcaption>
-        Mohr's circle, live: center σ_b/2 = {Number.isFinite(sigma_b) ? (sigma_b / 2e6).toFixed(1) : "—"} MPa,
-        radius τ_max = {Number.isFinite(tau_max) ? (tau_max / 1e6).toFixed(1) : "—"} MPa; the dots are the
-        element's two faces, and σ′ = {Number.isFinite(sigma_vm) ? (sigma_vm / 1e6).toFixed(1) : "—"} MPa is
+        Mohr's circle, live: center σ_b/2 = {Number.isFinite(sigma_b) ? toDisplay(sigma_b / 2, "MPa").toFixed(1) : "—"} MPa,
+        radius τ_max = {Number.isFinite(tau_max) ? toDisplay(tau_max, "MPa").toFixed(1) : "—"} MPa; the dots are the
+        element's two faces, and σ′ = {Number.isFinite(sigma_vm) ? toDisplay(sigma_vm, "MPa").toFixed(1) : "—"} MPa is
         the von Mises tick.
         {danger ? " Shown red: past first yield on at least one criterion." : ""}
       </figcaption>

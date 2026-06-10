@@ -345,14 +345,17 @@ sources:
       2026-06-10: problem 4-9 integrates the simply-supported center-load case from scratch
       (y_max = Fl³/48EI, symmetry slope condition at midspan — the same derivation our test
       re-runs), and problems 4-10 … 4-12 cite "Table A-9" by name and case number ("use beams
-      5 and 6 of Table A-9", "by superposition of beams 6 and 7") with the Fl³/48EI term
-      appearing verbatim. Both deflection rows are independently re-derived by integrating
-      EI·v″ = M(x) in pipeline/tests/test_ssbeam_physics.py.
+      5 and 6 of Table A-9", "by superposition of beams 6 and 7"), the center-load form
+      recurring as F₂l³/48EI in 4-11. The uniform-load row's 5wl⁴/384EI coefficient was not
+      itself sighted in the manual pages read; both deflection rows are independently
+      re-derived by integrating EI·v″ = M(x) in pipeline/tests/test_ssbeam_physics.py.
   - id: gere
     citation: >-
       Gere, J. M., & Goodno, B. J., Mechanics of Materials, 9th ed., Cengage, 2018 — flexure
       formula (§5.5), shear-deflection and small-deflection limits, App. E section properties.
     verification: >-
-      Topic-level citation, same sections the cantilever-beam THING cites (not section-pinned);
-      the flexure formula and section property are re-derived in
-      pipeline/tests/test_ssbeam_physics.py and test_beam_physics.py.
+      Topic-level citation, not section-pinned; §5.5 and App. E match the cantilever-beam
+      THING's citation, and the shear/small-deflection validity limits are topic-level only.
+      The flexure formula and I = bh³/12 are re-derived from first principles (I by area
+      integration, σ = Mc/I from linear bending strain and moment equilibrium) in
+      pipeline/tests/test_ssbeam_physics.py.

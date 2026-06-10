@@ -44,6 +44,17 @@ def test_criteria_bracket():
     assert abs(float(sp.sqrt(sp.Rational(4, 3))) - 2 / math.sqrt(3)) < 1e-12
 
 
+def test_round_section_flexure_from_first_principles():
+    """The 32M/πd³ this THING uses is derived, not quoted: I = ∫y²dA over the
+    disk by polar integration = πd⁴/64, then σ_max = M(d/2)/I."""
+    r, th = sp.symbols("r theta_p", positive=True)
+    y = r * sp.sin(th)
+    I_disk = sp.integrate(sp.integrate(y**2 * r, (r, 0, d / 2)), (th, 0, 2 * sp.pi))
+    assert sp.simplify(I_disk - sp.pi * d**4 / 64) == 0
+    sigma_max = M * (d / 2) / I_disk
+    assert sp.simplify(sigma_max - 32 * M / (sp.pi * d**3)) == 0
+
+
 def test_equivalent_torque_form():
     """With σ = 32M/πd³ and τ = 16T/πd³, the worst shear collapses to
     (16/πd³)·√(M² + T²) — the equivalent-torque shortcut."""

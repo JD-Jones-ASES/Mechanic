@@ -99,7 +99,7 @@ variables:
     unit: rad
     quantity_kind: angle
     default: 0.03125
-    bounds: [0, 60]
+    bounds: [0, 6.3]
     positive: true
     role: derived
     display_units: [deg, rad]
@@ -152,8 +152,10 @@ relations:
         severity: warn
         message: >-
           The wall is no longer thin next to the section's size (t exceeds a fifth of the
-          characteristic radius 2A_m/S) — Bredt's uniform-stress-through-the-wall picture is
-          degrading, and the inner fiber actually carries less than this τ.
+          characteristic radius 2A_m/S) — Bredt's uniform-stress picture is degrading: the true
+          stress varies through the wall, the OUTER fiber carrying roughly t/(2r) more than
+          this mid-wall τ (≈9 % at this boundary), so the displayed τ and SF are becoming
+          optimistic.
         citation: gere
   - id: bredt-twist
     group: stress
@@ -237,9 +239,9 @@ derivation:
     - expr: Eq(tau, T/(2*A_m*t))
       prose: >-
         Combine the two: Bredt's first formula. Thickness enters only linearly, and enclosed
-        area does the heavy lifting — double A_m at the same wall and perimeter and the stress
-        halves. Compare the solid shaft, where stress fights for d³: enclosing air is the
-        cheapest strength there is.
+        area does the heavy lifting — double A_m at the same wall (growing the perimeter as the
+        shape demands) and the stress halves. Compare the solid shaft, where stress fights for
+        d³: enclosing air is the cheapest strength there is.
       rule: "Bredt's first formula"
     - expr: Eq(theta, T*S*L/(4*A_m**2*G*t))
       prose: >-
@@ -261,19 +263,22 @@ sources:
       "Thin-Walled Tubes": shear flow, Bredt's torsion formulas τ = T/(2tA_m) and the torsion
       constant J = 4A_m²t/(∮ds/t), validity limits of the thin-wall approximation.
     verification: >-
-      Section number and title pinned against the publisher's own edition-comparison table of
-      contents (Cengage, "3.11 Thin-Walled Tubes", unchanged 7e→8e and carried in 9e listings),
-      2026-06-10. Both Bredt formulas are independently re-derived — the swept-area moment
-      integral ∮r⊥ds = 2A evaluated for an ellipse and a rectangle, and the twist by
-      Castigliano on the shear strain energy — in pipeline/tests/test_tube_physics.py.
+      Section number and title pinned for the 7th/8th editions against the publisher's own
+      edition-comparison table of contents (Cengage, "3.11 Thin-Walled Tubes"), 2026-06-10; a
+      9th-edition listing shows the topic carried, but the 9e itself was not opened — its
+      section number is inferred from edition continuity, not sighted. Both Bredt formulas are
+      independently re-derived — the swept-area moment integral ∮r⊥ds = 2A evaluated for an
+      ellipse and a rectangle, and the twist by Castigliano on the shear strain energy — in
+      pipeline/tests/test_tube_physics.py.
   - id: shigley
     citation: >-
       Budynas, R. G., & Nisbett, J. K., Shigley's Mechanical Engineering Design, 10th ed.,
       McGraw-Hill, 2015 — §5-4 (maximum-shear-stress theory, S_sy = 0.5 S_y).
     verification: >-
-      Same section already cited by the torsion-shaft and cylinder THINGs; the MSS form
+      Same §5-4 already cited by the torsion-shaft and cylinder THINGs; the MSS form
       n = S_y/(σ₁−σ₃) is confirmed against the 10th-edition ch. 5 solutions manual (Oakland
-      mirror), 2026-06-10.
+      mirror), 2026-06-10 — the §5-4 number and the S_sy = 0.5 S_y statement come from the
+      chapter's known structure, not sighted in the manual pages read.
   - id: isoperimetric
     citation: >-
       The classical isoperimetric inequality — every simple closed plane curve satisfies
@@ -281,7 +286,8 @@ sources:
       Problem", American Mathematical Monthly 112 (2005), 526–566.
     verification: >-
       Classical mathematical result (antiquity; first rigorous proofs 19th century), used here
-      as a hard existence envelope on the (A_m, S) knob pair. Machine-exercised in
-      pipeline/tests/test_tube_physics.py: the stadium-section family realizes any (A, S) with
-      S² ≥ 4πA and its construction goes complex exactly when the inequality fails — the same
-      construction the sim draws.
+      as a hard existence envelope on the (A_m, S) knob pair. The Blåsjö survey is a reader
+      pointer cited from the literature, not consulted or independently pinned this session.
+      Machine-exercised in pipeline/tests/test_tube_physics.py: the stadium-section family
+      realizes any (A, S) with S² ≥ 4πA and its construction goes complex exactly when the
+      inequality fails — the same construction the sim draws.

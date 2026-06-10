@@ -85,11 +85,11 @@ export function SSBeamSim({ values, invalid = false }: { values: VarRecord; inva
         {/* distributed load */}
         {udl.map((x, i) => (
           <g key={i}>
-            <line x1={x} y1={beamY - 38} x2={x} y2={beamY - 12} class="load-arrow" stroke-width={1.2} />
-            <path d={`M ${x - 3} ${beamY - 17} L ${x} ${beamY - 12} L ${x + 3} ${beamY - 17}`} class="load-arrow" fill="none" stroke-width={1.2} />
+            <line x1={x} y1={beamY - 38} x2={x} y2={beamY - 12} class="load-arrow-light" />
+            <path d={`M ${x - 3} ${beamY - 17} L ${x} ${beamY - 12} L ${x + 3} ${beamY - 17}`} class="load-arrow-light" />
           </g>
         ))}
-        {nUdl > 0 ? <line x1={x0} y1={beamY - 38} x2={x1} y2={beamY - 38} class="load-arrow" stroke-width={1.2} /> : null}
+        {nUdl > 0 ? <line x1={x0} y1={beamY - 38} x2={x1} y2={beamY - 38} class="load-arrow-light" /> : null}
         {nUdl > 0 ? (
           <text x={x0 - 4} y={beamY - 44} class="sim-label">
             w
@@ -113,9 +113,11 @@ export function SSBeamSim({ values, invalid = false }: { values: VarRecord; inva
       <figcaption>
         Midspan sag {Number.isFinite(delta) ? toDisplay(delta, "mm").toFixed(2) : "—"} mm — the point load's{" "}
         {Number.isFinite(delta_P) ? toDisplay(delta_P, "mm").toFixed(2) : "—"} mm plus the distributed load's{" "}
-        {Number.isFinite(delta_w) ? toDisplay(delta_w, "mm").toFixed(2) : "—"} mm, drawn superposed and exaggerated ~
-        {delta > 0 ? Math.max(1, Math.round(sagMax / (delta * (span / L)))).toFixed(0) : "—"}× (the true sag
-        would be invisible at this scale).
+        {Number.isFinite(delta_w) ? toDisplay(delta_w, "mm").toFixed(2) : "—"} mm, drawn superposed and{" "}
+        {delta > 0 && sagMax / (delta * (span / L)) >= 1
+          ? `exaggerated ~${Math.round(sagMax / (delta * (span / L)))}× (the true sag would be invisible at this scale)`
+          : `compressed ~${delta > 0 ? (sagMax / (delta * (span / L))).toFixed(1) : "—"}× to fit the frame`}
+        .
         {danger ? " Shown red: the outer fiber is past first yield." : ""}
       </figcaption>
     </figure>

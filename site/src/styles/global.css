@@ -109,6 +109,7 @@ a { color: var(--accent); }
 .beam-yielding { stroke: #dc2626; }
 .beam-ghost { stroke: var(--line); stroke-dasharray: 4 4; }
 .load-arrow { stroke: var(--ink); stroke-width: 2; }
+.load-arrow-light { stroke: var(--ink); stroke-width: 1.2; fill: none; }
 .load-arrow-head { fill: var(--ink); }
 .sim-label { font-size: 12px; fill: var(--ink); }
 /* four-bar linkage: one color per link so the prose can say "the amber crank" */

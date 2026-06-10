@@ -11,7 +11,8 @@ has richer ways to die:
   retaining-ring grooves, and press-fitted hubs; each multiplies the local stress by 1.5–3×.
   Combined with fatigue, the failure address is almost always a feature, not the smooth
   mid-span this model analyzes.
-- **The criteria gap is small next to the load uncertainty.** Tresca vs von Mises differ ≤15 %;
+- **The criteria gap is small next to the load uncertainty.** Tresca vs von Mises differ ≈15 %
+  at most;
   belt-tension estimates, shock factors, and misalignment loads routinely differ by more. The
   bracket the two criteria draw is tight compared to how poorly $M$ and $T$ are usually known —
   which is why service factors exist.
@@ -19,7 +20,10 @@ has richer ways to die:
   meshes and chew bearings — and at the speed where rotation meets the shaft's lateral natural
   frequency (critical speed), deflection grows without new load. Stiffness ($E$, absent from
   this page on purpose) and bearing spacing decide that, not strength.
-- **Combined is worse than the sum suggests.** A point worth teaching: adding a modest torque
-  to a bending-critical shaft barely moves $\sigma_b$ but can swing the worst-plane shear
-  substantially — interaction is geometric ($\sqrt{M^2+T^2}$), so the last 20 % of torque is
-  cheaper to carry than the first. Intuition trained on single loads under-predicts the pair.
+- **Combined is worse than either load *alone* suggests.** $\tau_{max}$ under $M$ and $T$
+  together exceeds the worst stress of either load by itself — but the interaction is geometric
+  ($\sqrt{M^2+T^2}$), so the cross-load enters *quadratically*: the first bit of torque on a
+  bending-critical shaft is nearly free (20 % of $M$ as torque raises $\tau_{max}$ only 2 %),
+  and each further increment costs more than the last. Checking bending and torsion separately
+  under-predicts the pair; adding their stresses over-predicts it. The Pythagorean middle is
+  the truth.

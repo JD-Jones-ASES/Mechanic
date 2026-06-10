@@ -9,13 +9,14 @@ $$\delta_P = \frac{P L^3}{48\,EI} \qquad \delta_w = \frac{5\,w L^4}{384\,EI} \qq
 Three things to notice, one per formula:
 
 - **Each load case is a table row.** Engineers almost never integrate the beam equation at the
-  desk; they look up the case (Shigley's Table A-9 holds a dozen) and trust the row. The widget
+  desk; they look up the case (Shigley's Table A-9 holds sixteen) and trust the row. The widget
   shows both rows separately — $\delta_P$ and $\delta_w$ are live readouts, not hidden
   intermediates — so you can watch which load owns the deflection as you trade $P$ against $w$.
 - **The span exponents disagree.** The point load deflects with $L^3$ but the distributed load
   with $L^4$ — stretch the span and the UDL always wins eventually, which is why long roofs
-  fear snow (a $w$) more than equipment (a $P$). At the default state the UDL already does
-  ~70 % of the deflecting with only ~80 % of the load.
+  fear snow (a $w$) more than equipment (a $P$). (Newton for newton, spread load actually
+  deflects only 5/8 as much as a centered point load — the UDL wins on span, not on
+  efficiency.)
 - **Adding answers is a theorem, not a habit.** $\delta = \delta_P + \delta_w$ works because
   $EI\,v'' = M(x)$ is *linear* — double the cause, double the effect, causes add. The moment
   the beam yields, buckles, or deflects enough to change its own geometry, superposition dies

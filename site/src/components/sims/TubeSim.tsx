@@ -93,9 +93,9 @@ export function TubeSim({ values, invalid = false }: { values: VarRecord; invali
         A section built from your knobs: this stadium's median line encloses exactly{" "}
         {Number.isFinite(A_m) ? toDisplay(A_m, "cm^2").toFixed(1) : "—"} cm² with exactly{" "}
         {Number.isFinite(S) ? toDisplay(S, "mm").toFixed(0) : "—"} mm of perimeter (corner radius{" "}
-        {Number.isFinite(r) ? (r * 1000).toFixed(1) : "—"} mm — a circle when the isoperimetric bound is
+        {Number.isFinite(r) ? toDisplay(r, "mm").toFixed(1) : "—"} mm — a circle when the isoperimetric bound is
         tight). Arrows: the constant shear flow; wall shear{" "}
-        {Number.isFinite(tau) ? (tau / 1e6).toFixed(1) : "—"} MPa.
+        {Number.isFinite(tau) ? toDisplay(tau, "MPa").toFixed(1) : "—"} MPa.
         {danger ? " Shown red: the wall is past shear yield." : ""}
       </figcaption>
     </figure>

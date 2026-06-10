@@ -2,7 +2,8 @@ The widget's margin is first yield at the midspan outer fiber, under static load
 girders find other ways:
 
 - **Serviceability governs before strength.** Most real beams are sized by deflection limits
-  (L/240 for plaster ceilings, L/360 for floors people notice bouncing), not by yield — a beam
+  (L/360 live-load for floors and plastered ceilings, L/240 for less crack-sensitive finishes —
+  the stricter number exists because plaster cracks), not by yield — a beam
   at SF = 3 against yield can still feel like a trampoline. The two-knob widget makes the split
   visible: stiffness is $EI$'s business, strength is $\sigma_y$'s.
 - **Lateral-torsional buckling.** A deep, narrow beam bent about its strong axis can roll
@@ -18,8 +19,9 @@ girders find other ways:
   every design code. The model's knife-edge supports are a fiction the hardware has to survive.
 - **The superposition trap.** Adding load cases is exact only while the structure stays linear.
   Two classic violations: cables and membranes (geometry changes with load — stiffening), and
-  beams on yielding supports (reactions redistribute). Use table rows outside their linear home
-  and the sum is fiction with confident digits.
+  beam-columns (an axial load *multiplies* the lateral deflection, so axial and lateral cases
+  cannot be added). Use table rows outside their linear home and the sum is fiction with
+  confident digits.
 - **Vibration.** A beam is a spring with distributed mass; footfall near its natural frequency
   is how a structurally sound footbridge becomes infamous. Stiffness-per-mass, not strength,
   sets the tune — another reason $E$ and $\rho$ team up in the Ashby charts.

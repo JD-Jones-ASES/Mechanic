@@ -52,6 +52,22 @@ def test_superposition_is_a_theorem_about_linearity():
     assert sp.simplify(deflection(M_w + a * M_w) - (1 + a) * deflection(M_w)) == 0
 
 
+def test_flexure_formula_from_first_principles():
+    """Not just applied: derive it. Linear bending strain ε = κy with Hooke
+    gives σ = Eκy; moment equilibrium M = ∫y·σ dA defines EI·κ with
+    I = ∫y² dA (computed for the rectangle by actual area integration); the
+    outer-fiber stress follows as σ_max = M(h/2)/I ≡ 6M/(bh²)."""
+    b, h, y, z, kappa, Em, Mb = sp.symbols("b h y z kappa E_m M_b", positive=True)
+    I_rect = sp.integrate(sp.integrate(y**2, (y, -h / 2, h / 2)), (z, -b / 2, b / 2))
+    assert sp.simplify(I_rect - b * h**3 / 12) == 0
+    sigma_of_y = Em * kappa * y
+    M_of_kappa = sp.integrate(sp.integrate(y * sigma_of_y, (y, -h / 2, h / 2)), (z, -b / 2, b / 2))
+    kappa_of_M = sp.solve(sp.Eq(M_of_kappa, Mb), kappa)[0]
+    sigma_max = sp.simplify(sigma_of_y.subs({kappa: kappa_of_M, y: h / 2}))
+    assert sp.simplify(sigma_max - Mb * (h / 2) / I_rect) == 0
+    assert sp.simplify(sigma_max - 6 * Mb / (b * h**2)) == 0
+
+
 def test_maxima_coincide_at_midspan():
     """dM/dx = 0 at x = L/2 for the UDL parabola, and the point-load triangle
     peaks there by symmetry — only this coincidence makes M_max = PL/4 + wL²/8
@@ -68,7 +84,7 @@ def test_numeric_golden_and_size_depth():
     """Hand-checkable at the declared defaults (P = 1 kN, w = 2 kN/m, L = 2 m,
     b = 40 mm, h = 80 mm, E = 200 GPa, σ_y = 250 MPa, ρ = 7850):
       I = 1.7067e-6 m⁴;  δ_P = 0.4883 mm;  δ_w = 1.2207 mm;  δ = 1.7090 mm
-      M_max = 250 + 1000 ... = PL/4 + wL²/8 = 500 + 1000 = 1500 N·m
+      M_max = PL/4 + wL²/8 = 500 + 1000 = 1500 N·m
       σ = 35.16 MPa;  SF = 7.11;  m = 50.24 kg
     Size-depth at SF = 4: σ = 62.5 MPa → h = √(6·1500/(0.04·62.5e6)) = 60.0 mm."""
     P_, w_, L_, b_, h_ = 1000.0, 2000.0, 2.0, 0.04, 0.08

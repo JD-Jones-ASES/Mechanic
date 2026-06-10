@@ -260,7 +260,8 @@ derivation:
       prose: >-
         The distortion-energy criterion measures the same element differently: not the worst
         shear plane, but the energy of shape-change, σ' = √(σ_b² + 3τ_t²). It enters by
-        citation here; the test pipeline re-derives it from the deviatoric stress invariant.
+        citation here; the test pipeline proves it equivalent to the principal-stress form
+        σ₁² − σ₁σ₂ + σ₂² for this element.
       rule: 'distortion energy: von Mises equivalent stress'
       check: definition
     - expr: Eq(SF_vm/SF_t, 2*tau_max/sigma_vm)
@@ -288,16 +289,20 @@ sources:
       Criterion forms pinned against the 10th-edition ch. 5 solutions manual (Oakland
       University mirror), 2026-06-10: problems 5-1 … 5-3 apply MSS as n = S_y/(σ₁−σ₃) and DE
       as σ' = (σ_x² − σ_xσ_y + σ_y² + 3τ_xy²)^½ with the principal-stress radical verbatim.
-      Ch. 3 section numbers are from the chapter's structure, not independently pinned. Both
-      criteria are re-derived from the stress tensor itself (eigenvalue half-spread; deviatoric
-      invariant) and their bracketing ratio [1, 2/√3] proven, in
-      pipeline/tests/test_combined_physics.py.
+      The pages read print no section or equation numbers for these, so the §5-4/§5-5 numbers
+      and the ch. 3 attribution are from the book's structure, not independently pinned. Both
+      criteria are cross-checked against the stress tensor — max shear as the eigenvalue
+      half-spread, and the plane-stress von Mises form proven equivalent to the
+      principal-stress form σ_A² − σ_Aσ_B + σ_B² (the form the manual applies) — and the
+      bracketing ratio [1, 2/√3] proven, in pipeline/tests/test_combined_physics.py.
   - id: gere
     citation: >-
       Gere, J. M., & Goodno, B. J., Mechanics of Materials, 9th ed., Cengage, 2018 — flexure
       formula (§5.5) and circular-shaft torsion (§3.3–3.5), the two single-load formulas this
       THING combines.
     verification: >-
-      Topic-level citation, the same sections the cantilever-beam and torsion-shaft THINGs
-      cite; both formulas are re-derived in the existing test pipeline
-      (test_beam_physics.py, test_shaft_physics.py).
+      Topic-level citation, not section-pinned; §5.5 and §3.3–3.5 match the cantilever-beam
+      and torsion-shaft THINGs' citations exactly. The torsion formula is re-derived from the
+      stress distribution in test_shaft_physics.py, and the round-section flexure form
+      32M/πd³ is re-derived (I = πd⁴/64 by polar integration, σ = Mc/I) in
+      pipeline/tests/test_combined_physics.py.
