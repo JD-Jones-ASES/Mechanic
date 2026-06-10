@@ -21,7 +21,7 @@ export function KnobPanel({ inputs, variables, values, displayUnits, onChange, o
       <legend>Inputs</legend>
       {inputs.map((sym) => {
         const v = variables[sym]!;
-        const unit = displayUnits[sym] ?? v.si_unit;
+        const unit = displayUnits[sym] ?? v.display_units[0] ?? v.si_unit;
         const display = toDisplay(values[sym] ?? v.default, unit);
         const [lo, hi] = v.bounds ?? [0, 100];
         const step = v.integer ? 1 : (hi - lo) / 200;

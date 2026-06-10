@@ -1,0 +1,22 @@
+Fix a beam into a wall, hang a load off the free end: this is the cantilever — balcony, diving
+board, wing spar, atomic-force-microscope probe, bookshelf bracket. It is the simplest structure
+that exhibits the full chain every structures course is built on: **load → internal moment →
+stress → deflection → margin against failure**.
+
+The reason it's a reference THING here is the **material cascade**. Pick a material in the widget
+and three independent properties fan out through different relations:
+
+- **Young's modulus $E$** drives the tip deflection $\delta = \dfrac{PL^3}{3EI}$ — and *only* the
+  deflection.
+- **Yield strength $\sigma_y$** drives the safety factor $\mathrm{SF} = \sigma_y/\sigma$ — and
+  *only* the safety factor.
+- **Density $\rho$** drives the mass — and *only* the mass.
+
+Try it: switch from A36 structural steel to Ti-6Al-4V titanium. The "stronger, fancier" material
+**deflects almost twice as much** (E falls from 200 to 110 GPa) while the safety factor **more than
+triples** (σ_y jumps from 250 to 869 MPa) and the mass nearly halves. Stiffness is not strength.
+If you want less deflection, titanium is the wrong upgrade — change the section instead: stress
+falls with $h^2$ and deflection with $h^3$, which is why I-beams put material far from the neutral
+axis.
+
+The [materials page](../../materials/) plots this independence for the whole database, Ashby-style.

@@ -4,16 +4,19 @@
  * reports severity-tagged messages (invariant 5: violations surface as
  * banners, never as silent NaN or plausible wrong numbers).
  */
-import { brent } from "./brent";
-import type { CompiledThing, Configuration, EvalResult, Fn, ValidityMessage, VarRecord } from "./types";
+import { brent } from "./brent.ts";
+import type { CompiledThing, Configuration, EvalResult, Fn, ValidityMessage, VarRecord } from "./types.ts";
 
 const EPS_NONZERO = 1e-12;
 
 export class RelationEngine {
-  constructor(
-    private artifact: CompiledThing,
-    private fns: Record<string, Fn>,
-  ) {}
+  private artifact: CompiledThing;
+  private fns: Record<string, Fn>;
+
+  constructor(artifact: CompiledThing, fns: Record<string, Fn>) {
+    this.artifact = artifact;
+    this.fns = fns;
+  }
 
   config(id: string): Configuration {
     const cfg = this.artifact.configurations.find((c) => c.id === id);

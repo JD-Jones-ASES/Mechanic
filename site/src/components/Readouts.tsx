@@ -20,12 +20,12 @@ export function Readouts({ targets, variables, values, invalid, displayUnits, on
     <dl class="readouts">
       {targets.map((sym) => {
         const v = variables[sym]!;
-        const unit = displayUnits[sym] ?? v.si_unit;
+        const unit = displayUnits[sym] ?? v.display_units[0] ?? v.si_unit;
         const val = values[sym];
         const shown =
           invalid || val === undefined || !Number.isFinite(val)
             ? "—"
-            : Number(toDisplay(val, unit).toPrecision(5)).toLocaleString();
+            : Number(toDisplay(val, unit).toPrecision(5)).toString();
         return (
           <div class="readout" key={sym}>
             <dt>{v.name}</dt>

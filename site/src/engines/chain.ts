@@ -3,7 +3,7 @@
  * enforces forward-only (rejects cycles), not the schema — adding a cyclic
  * solver later is a new planner, zero THING rewrites (ADR-0002).
  */
-import { connectionLegal, type Port } from "./units";
+import { connectionLegal, type Port } from "./units.ts";
 
 export interface ChainNode {
   id: string;

@@ -1,0 +1,90 @@
+# CI: math pipeline -> site build (KaTeX + parity gates) -> engine unit tests
+# -> Playwright e2e + axe -> uploadable site artifact.
+#
+# DEPLOY IS DORMANT (ADR-0004): the repo is private on a Free plan, which
+# cannot publish GitHub Pages. To go live later: make the repo public, enable
+# Pages (source: GitHub Actions) in Settings, and set the repository variable
+# DEPLOY_PAGES=true. No code change needed.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      # --- Python math pipeline (uv-pinned; identical to local per uv.lock) ---
+      - uses: astral-sh/setup-uv@v8
+      - name: Sync Python environment
+        run: uv sync --locked
+        working-directory: pipeline
+      - name: Math-layer tests (verify/dims/emit/ingest + goldens)
+        run: uv run pytest -q
+        working-directory: pipeline
+
+      # --- Site (Node pinned to 24.x: node:sqlite is RC; type stripping) ---
+      - uses: pnpm/action-setup@v6
+        with:
+          package_json_file: site/package.json
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: pnpm
+          cache-dependency-path: site/pnpm-lock.yaml
+      - name: Install site dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: site
+      - name: Build (pipeline gen -> KaTeX gate -> parity gate -> astro -> pagefind)
+        run: pnpm run build
+        working-directory: site
+      - name: Engine unit tests (chaining type system, Brent)
+        run: pnpm run test:unit
+        working-directory: site
+      - name: Install Playwright chromium
+        run: pnpm exec playwright install --with-deps chromium
+        working-directory: site
+      - name: E2E invariants + axe smoke (vs built dist)
+        run: pnpm exec playwright test
+        working-directory: site
+
+      - name: Upload built site artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: site-dist
+          path: site/dist
+          retention-days: 14
+
+      # staged for the Pages deploy job; cheap to produce now
+      - name: Upload Pages artifact
+        if: vars.DEPLOY_PAGES == 'true'
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: site/dist
+
+  deploy:
+    # DORMANT until the repo is public and DEPLOY_PAGES=true (see header note)
+    if: vars.DEPLOY_PAGES == 'true' && github.ref == 'refs/heads/main'
+    needs: build-test
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

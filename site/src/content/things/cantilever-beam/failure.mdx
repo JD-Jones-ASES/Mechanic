@@ -1,0 +1,19 @@
+The widget's safety factor guards one failure mode — first yield at the outer fiber, at the wall.
+Real cantilevers have several more exits:
+
+- **Yielding at the support.** The moment peaks at the wall, so that's where it lets go first. The
+  sharp corner where beam meets support concentrates stress beyond the nominal $Mc/I$ — real
+  designs add fillets; fatigue cracks start exactly there.
+- **Fatigue.** A cantilever that vibrates (and they all do — it's a tuning fork) accumulates
+  bending cycles at the wall. Fatigue strength is far below static yield for most metals, and the
+  relations on this page say nothing about it.
+- **Lateral-torsional buckling.** A tall, narrow section ($h \gg b$) loaded on its strong axis can
+  twist and flop sideways before it yields — the failure is geometric, governed by stiffness, not
+  strength.
+- **Excessive deflection as "failure".** A machine spindle or optical mount can be ruined by a
+  deflection a thousand times smaller than what yields it. Serviceability limits often govern.
+- **Shear at the support** for very short, deep beams — the regime the L > 10h validity warning
+  flags, where Euler–Bernoulli theory itself stops applying.
+- **Brittle materials break, not yield.** For gray cast iron (in the materials list) there is no
+  yield plateau; rate the section against the ultimate strength instead, with a generous factor —
+  and note its tensile and compressive strengths differ by ~3.6×.

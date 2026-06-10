@@ -1,0 +1,219 @@
+id: planetary-gearset
+title: Planetary (Epicyclic) Gearset
+summary: >-
+  Three coaxial members — sun, ring, planet carrier — share one gear mesh law. With two degrees of
+  freedom, it has no single "ratio": fix a different member and the same hardware becomes a different
+  transmission.
+facets: [kinematics, torque-power]
+
+variables:
+  - symbol: omega_s
+    name: Sun speed
+    latex: '\omega_s'
+    unit: rad/s
+    quantity_kind: angular_velocity
+    default: 10
+    bounds: [-50, 50]
+    display_units: [rad/s, rpm]
+  - symbol: omega_r
+    name: Ring speed
+    latex: '\omega_r'
+    unit: rad/s
+    quantity_kind: angular_velocity
+    default: 0
+    bounds: [-50, 50]
+    display_units: [rad/s, rpm]
+  - symbol: omega_c
+    name: Carrier speed
+    latex: '\omega_c'
+    unit: rad/s
+    quantity_kind: angular_velocity
+    default: 3
+    bounds: [-50, 50]
+    display_units: [rad/s, rpm]
+    role: derived
+  - symbol: N_s
+    name: Sun teeth
+    latex: 'N_s'
+    unit: '1'
+    quantity_kind: count
+    default: 24
+    bounds: [12, 48]
+    integer: true
+    positive: true
+  - symbol: N_p
+    name: Planet teeth
+    latex: 'N_p'
+    unit: '1'
+    quantity_kind: count
+    default: 18
+    bounds: [10, 36]
+    integer: true
+    positive: true
+  - symbol: N_r
+    name: Ring teeth
+    latex: 'N_r'
+    unit: '1'
+    quantity_kind: count
+    default: 60
+    bounds: [32, 120]
+    integer: true
+    positive: true
+    role: derived
+  - symbol: T_s
+    name: Sun torque
+    latex: 'T_s'
+    unit: N*m
+    quantity_kind: torque
+    default: 100
+    bounds: [-500, 500]
+  - symbol: T_r
+    name: Ring torque
+    latex: 'T_r'
+    unit: N*m
+    quantity_kind: torque
+    default: 0
+    bounds: [-2000, 2000]
+    role: derived
+  - symbol: T_c
+    name: Carrier torque
+    latex: 'T_c'
+    unit: N*m
+    quantity_kind: torque
+    default: 0
+    bounds: [-3000, 3000]
+    role: derived
+
+relations:
+  - id: willis
+    group: kinematics
+    latex: '\frac{\omega_s - \omega_c}{\omega_r - \omega_c} = -\frac{N_r}{N_s}'
+    residual: (omega_s - omega_c)*N_s + (omega_r - omega_c)*N_r
+    assumptions:
+      - rigid gears, no backlash or slip
+      - all axes parallel; planets are idlers (their count and speed drop out of the speed relation)
+    citation: norton-dom
+  - id: tooth-consistency
+    group: kinematics
+    latex: 'N_r = N_s + 2 N_p'
+    residual: N_r - N_s - 2*N_p
+    assumptions:
+      - sun, planets, and ring share one module (tooth size) and standard external/internal meshing
+    citation: norton-dom
+  - id: torque-balance
+    group: torque-power
+    latex: 'T_s + T_r + T_c = 0'
+    residual: T_s + T_r + T_c
+    assumptions:
+      - static equilibrium of the gearset as a free body (externally applied shaft torques)
+    citation: shigley
+  - id: power-balance
+    group: torque-power
+    latex: 'T_s\,\omega_s + T_r\,\omega_r + T_c\,\omega_c = 0'
+    residual: T_s*omega_s + T_r*omega_r + T_c*omega_c
+    assumptions:
+      - ideal gearset — no friction losses (real planetary stages run ~96–99% efficient per mesh)
+    citation: shigley
+  - id: ring-mesh-torque
+    group: torque-power
+    latex: 'T_r = \frac{N_r}{N_s} T_s'
+    residual: T_r - T_s*N_r/N_s
+    assumptions:
+      - follows from tangential force balance at the sun–planet and planet–ring meshes
+    citation: shigley
+  - id: carrier-torque
+    group: torque-power
+    latex: 'T_c = -\frac{N_s + N_r}{N_s} T_s'
+    residual: T_c + T_s*(N_s + N_r)/N_s
+    assumptions:
+      - combination of the torque balance and the mesh force balance
+    citation: shigley
+
+configurations:
+  - id: ring-fixed
+    label: Ring fixed — sun in, carrier out (reduction)
+    constraints: { omega_r: 0 }
+    inputs: [N_s, N_p, omega_s, T_s]
+    solutions:
+      N_r: N_s + 2*N_p
+      omega_c: omega_s*N_s/(N_s + N_r)
+      T_r: T_s*N_r/N_s
+      T_c: -T_s*(N_s + N_r)/N_s
+  - id: sun-fixed
+    label: Sun fixed — ring in, carrier out
+    constraints: { omega_s: 0 }
+    inputs: [N_s, N_p, omega_r, T_s]
+    solutions:
+      N_r: N_s + 2*N_p
+      omega_c: omega_r*N_r/(N_s + N_r)
+      T_r: T_s*N_r/N_s
+      T_c: -T_s*(N_s + N_r)/N_s
+  - id: carrier-fixed
+    label: Carrier fixed — star gear (reversing)
+    constraints: { omega_c: 0 }
+    inputs: [N_s, N_p, omega_s, T_s]
+    solutions:
+      N_r: N_s + 2*N_p
+      omega_r: -omega_s*N_s/N_r
+      T_r: T_s*N_r/N_s
+      T_c: -T_s*(N_s + N_r)/N_s
+  - id: general
+    label: General — two speed inputs (differential action)
+    constraints: {}
+    inputs: [N_s, N_p, omega_s, omega_r, T_s]
+    solutions:
+      N_r: N_s + 2*N_p
+      omega_c: (omega_s*N_s + omega_r*N_r)/(N_s + N_r)
+      T_r: T_s*N_r/N_s
+      T_c: -T_s*(N_s + N_r)/N_s
+
+derivation:
+  verifies_configuration: ring-fixed
+  steps:
+    - expr: Eq((omega_s - omega_c)*N_s, -(omega_r - omega_c)*N_r)
+      prose: >-
+        Ride on the carrier. In that rotating frame the gearset is an ordinary two-gear train from
+        sun to ring (through the planet idlers), so the relative speeds are locked by the tooth
+        ratio, with a sign flip because an internal mesh reverses once. This is the Willis equation,
+        cross-multiplied.
+      rule: change to the carrier frame
+    - expr: Eq(omega_s*N_s, omega_c*(N_s + N_r))
+      prose: Hold the ring still (ω_r = 0) and collect the carrier terms on one side.
+      rule: apply the constraint and rearrange
+    - expr: Eq(omega_c, omega_s*N_s/(N_s + N_r))
+      prose: >-
+        Solve for the carrier. The carrier always turns the same way as the sun, slower by the
+        factor 1 + N_r/N_s — this configuration is a torque-multiplying reduction.
+      rule: solve
+    - expr: Eq(omega_s/omega_c, (N_s + N_r)/N_s)
+      prose: >-
+        The speed ratio of the stage. With the default teeth (N_s = 24, N_r = 60) the ratio is
+        3.5:1 — and notice it depends only on tooth counts you can read off the hardware.
+      rule: form the ratio
+    - expr: Eq(T_r, T_s*N_r/N_s)
+      prose: >-
+        The same tangential tooth force acts at the sun radius and (through each planet) at the ring
+        radius, and radii are proportional to tooth counts — so the ring reaction torque scales by
+        N_r/N_s.
+      rule: mesh force balance
+    - expr: Eq(T_c, -T_s*(N_s + N_r)/N_s)
+      prose: >-
+        Equilibrium of the whole gearset: the carrier shaft reacts the sum. Check the ideal power
+        books balance: T_s ω_s + T_c ω_c = 0 exactly when the ring is stationary.
+      rule: torque balance
+
+sim:
+  engine: kinematic-rotation
+  config:
+    draw: planetary
+
+sources:
+  - id: norton-dom
+    citation: >-
+      Norton, R. L., Design of Machinery: An Introduction to the Synthesis and Analysis of
+      Mechanisms and Machines, 5th ed., McGraw-Hill, 2012 — ch. 9 (gear trains; epicyclic/Willis
+      analysis).
+  - id: shigley
+    citation: >-
+      Budynas, R. G., & Nisbett, J. K., Shigley's Mechanical Engineering Design, 10th ed.,
+      McGraw-Hill, 2015 — §13-13 (planetary gear trains: force, torque, and power flow).

@@ -21,6 +21,9 @@ const DISPLAY_FACTORS: Record<string, { factor: number; label: string }> = {
   GPa: { factor: 1e9, label: "GPa" },
   "N*m": { factor: 1, label: "N·m" },
   "kg/m^3": { factor: 1, label: "kg/m³" },
+  "kg/m**3": { factor: 1, label: "kg/m³" },
+  "m**4": { factor: 1, label: "m⁴" },
+  "m**2": { factor: 1, label: "m²" },
   kg: { factor: 1, label: "kg" },
   g: { factor: 1e-3, label: "g" },
   W: { factor: 1, label: "W" },
@@ -30,16 +33,22 @@ const DISPLAY_FACTORS: Record<string, { factor: number; label: string }> = {
   deg: { factor: Math.PI / 180, label: "°" },
 };
 
-export function toDisplay(valueSi: number, unit: string): number {
+// Unknown units fall back to identity: the engine computes in SI, so showing
+// the SI value with the raw unit string is correct-if-ugly — never crash the
+// widget over a label. (The warning keeps typos from hiding forever.)
+function lookup(unit: string): { factor: number; label: string } {
   const u = DISPLAY_FACTORS[unit];
-  if (!u) throw new Error(`unknown display unit '${unit}' — add it to units.ts`);
-  return valueSi / u.factor;
+  if (u) return u;
+  console.warn(`units.ts: no display entry for '${unit}', showing SI value as-is`);
+  return { factor: 1, label: unit };
+}
+
+export function toDisplay(valueSi: number, unit: string): number {
+  return valueSi / lookup(unit).factor;
 }
 
 export function fromDisplay(valueDisplay: number, unit: string): number {
-  const u = DISPLAY_FACTORS[unit];
-  if (!u) throw new Error(`unknown display unit '${unit}' — add it to units.ts`);
-  return valueDisplay * u.factor;
+  return valueDisplay * lookup(unit).factor;
 }
 
 export function unitLabel(unit: string): string {

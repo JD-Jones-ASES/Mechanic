@@ -1,0 +1,20 @@
+Planetary stages are compact because three or more planets share the load — and most of their
+failure modes come from that sharing being imperfect.
+
+- **Unequal load sharing.** Manufacturing errors (planet pin position, tooth spacing) make one
+  planet carry more than its share; design standards apply a mesh load factor rather than assuming
+  a perfect split. Floating suns or flexible pins are common fixes.
+- **Gear tooth bending fatigue and pitting.** The same Lewis-bending and Hertzian-contact failure
+  modes as any gear pair (see AGMA 2001 methodology), but planet teeth see *more load cycles per
+  revolution* — each planet tooth meshes with both sun and ring.
+- **Assembly constraint violations.** If $(N_s + N_r)$ isn't divisible by the planet count, the set
+  physically cannot assemble with equal spacing; forcing unequal spacing changes phasing and
+  vibration behavior.
+- **Carrier and pin deflection.** At high torque the carrier windup misaligns planets, concentrating
+  load at tooth edges.
+- **Lubrication starvation in the planet bearings.** Planet bearings orbit at carrier speed while
+  spinning on their pins — a hard duty cycle that often limits stage life before the teeth do.
+
+The torque relations in this entry assume an ideal, lossless, rigid gearset — real stages run
+roughly 96–99% efficient per mesh, and the lost few percent become heat in exactly the components
+listed above.

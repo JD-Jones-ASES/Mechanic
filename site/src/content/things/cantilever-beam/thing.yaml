@@ -1,0 +1,259 @@
+id: cantilever-beam
+title: Cantilever Beam (End Load)
+summary: >-
+  A beam fixed at one end, loaded at the other — the fruit-fly of structures. One widget shows why
+  stiffness (E) and strength (σ_y) are independent axes: swap steel for titanium and deflection goes
+  UP while the safety factor also goes up.
+facets: [stress, mass-cost]
+
+variables:
+  - symbol: P
+    name: End load
+    latex: P
+    unit: N
+    quantity_kind: force
+    default: 500
+    bounds: [0, 5000]
+    positive: true
+    display_units: [N, kN]
+  - symbol: L
+    name: Length
+    latex: L
+    unit: m
+    quantity_kind: length
+    default: 1.0
+    bounds: [0.1, 3.0]
+    positive: true
+    display_units: [m, mm]
+  - symbol: b
+    name: Section width
+    latex: b
+    unit: m
+    quantity_kind: length
+    default: 0.03
+    bounds: [0.005, 0.2]
+    positive: true
+    display_units: [mm, m]
+  - symbol: h
+    name: Section height
+    latex: h
+    unit: m
+    quantity_kind: length
+    default: 0.05
+    bounds: [0.005, 0.2]
+    positive: true
+    display_units: [mm, m]
+  - symbol: E
+    name: Young's modulus
+    latex: E
+    unit: Pa
+    quantity_kind: elastic_modulus
+    default: 200.0e9
+    bounds: [1.0e9, 400.0e9]
+    positive: true
+    role: material
+    display_units: [GPa, Pa]
+  - symbol: sigma_y
+    name: Yield strength
+    latex: '\sigma_y'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 250.0e6
+    bounds: [10.0e6, 2.0e9]
+    positive: true
+    role: material
+    display_units: [MPa, Pa]
+  - symbol: rho
+    name: Density
+    latex: '\rho'
+    unit: kg/m**3
+    quantity_kind: density
+    default: 7800
+    bounds: [400, 9000]
+    positive: true
+    role: material
+    display_units: ["kg/m^3"]
+  - symbol: I
+    name: Second moment of area
+    latex: I
+    unit: m**4
+    quantity_kind: second_moment_of_area
+    default: 3.125e-7
+    bounds: [1.0e-10, 1.0e-3]
+    positive: true
+    role: derived
+  - symbol: delta
+    name: Tip deflection
+    latex: '\delta'
+    unit: m
+    quantity_kind: length
+    default: 0.001
+    bounds: [0, 1]
+    positive: true
+    role: derived
+    display_units: [mm, m]
+  - symbol: sigma
+    name: Max bending stress
+    latex: '\sigma'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 1.0e6
+    bounds: [0, 5.0e9]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: SF
+    name: Safety factor (yield)
+    latex: '\mathrm{SF}'
+    unit: '1'
+    quantity_kind: safety_factor
+    default: 2
+    bounds: [0, 100]
+    positive: true
+    role: derived
+  - symbol: m_beam
+    name: Beam mass
+    latex: m
+    unit: kg
+    quantity_kind: mass
+    default: 10
+    bounds: [0, 1000]
+    positive: true
+    role: derived
+    display_units: [kg, g]
+
+materials:
+  binds:
+    E: youngs_modulus
+    sigma_y: yield_strength
+    rho: density
+
+relations:
+  - id: rect-section
+    group: stress
+    latex: 'I = \frac{b h^3}{12}'
+    residual: I - b*h**3/12
+    assumptions:
+      - solid rectangular cross-section, bending about the strong axis
+    citation: gere
+  - id: tip-deflection
+    group: stress
+    latex: '\delta = \frac{P L^3}{3 E I}'
+    residual: delta - P*L**3/(3*E*I)
+    assumptions:
+      - linear elastic material
+      - small deflections
+      - Euler–Bernoulli kinematics (shear deflection neglected)
+      - load applied exactly at the free end; fixed support is perfectly rigid
+    citation: gere
+    validity:
+      - condition: delta < L/10
+        severity: warn
+        message: >-
+          Tip deflection exceeds L/10 — the small-deflection assumption is breaking down, and the
+          true behavior is stiffer than this formula predicts.
+        citation: gere
+      - condition: L > 10*h
+        severity: warn
+        message: >-
+          This is a short, deep beam (L < 10h): shear deflection, neglected by Euler–Bernoulli
+          theory, is no longer small.
+        citation: gere
+  - id: flexure
+    group: stress
+    latex: '\sigma = \frac{M_{max}\,c}{I} = \frac{P L (h/2)}{I}'
+    residual: sigma - P*L*(h/2)/I
+    assumptions:
+      - maximum bending stress at the wall, at the outer fiber
+      - stress concentration at the support ignored
+    citation: gere
+    validity:
+      - condition: sigma < sigma_y
+        severity: warn
+        message: >-
+          Bending stress exceeds the yield strength — the material has yielded and every
+          linear-elastic number here stops being the truth.
+        citation: gere
+  - id: safety-factor
+    group: stress
+    latex: '\mathrm{SF} = \frac{\sigma_y}{\sigma}'
+    residual: SF*sigma - sigma_y
+    assumptions:
+      - safety factor against first yield at the outer fiber (not against collapse)
+    citation: gere
+  - id: mass
+    group: mass-cost
+    latex: 'm = \rho\, b\, h\, L'
+    residual: m_beam - rho*b*h*L
+    assumptions:
+      - prismatic beam, uniform density
+    citation: gere
+
+configurations:
+  - id: default
+    label: Geometry and load in — deflection, stress, safety factor, mass out
+    constraints: {}
+    inputs: [P, L, b, h]
+    solutions:
+      I: b*h**3/12
+      delta: P*L**3/(3*E*I)
+      sigma: P*L*(h/2)/I
+      SF: sigma_y/sigma
+      m_beam: rho*b*h*L
+
+derivation:
+  verifies_configuration: default
+  locals:
+    - symbol: x
+      unit: m
+      positive: true
+      bounds: [0.01, 3.0]
+    - symbol: M_x
+      unit: N*m
+      define: P*(L - x)
+    - symbol: c
+      unit: m
+      define: h/2
+  steps:
+    - expr: Eq(M_x, P*(L - x))
+      prose: >-
+        Cut the beam at a distance x from the wall and balance the free body beyond the cut: the
+        internal bending moment must carry the load P acting on the remaining arm (L − x). It is
+        largest at the wall, M_max = PL.
+      rule: 'statics: method of sections'
+      check: definition
+    - expr: Eq(delta, P*L**3/(3*E*I))
+      prose: >-
+        Euler–Bernoulli theory says curvature is proportional to moment, EI·v″ = M(x). Integrating
+        twice with the clamped-end conditions v(0) = v′(0) = 0 and evaluating at the tip gives the
+        classic result. (The build's test suite re-derives this integral with a computer algebra
+        system as an independent physics check.)
+      rule: integrate the moment–curvature relation
+    - expr: Eq(sigma, P*L*c/I)
+      prose: >-
+        Bending stress varies linearly through the depth, peaking at the outer fiber, a distance
+        c = h/2 from the neutral axis — the flexure formula σ = Mc/I evaluated where the moment is
+        largest, M(0) = PL at the wall.
+      rule: flexure formula
+    - expr: Eq(sigma, 6*P*L/(b*h**2))
+      prose: >-
+        Substitute I = bh³/12 and c = h/2. Notice what this says: doubling the height h cuts the
+        stress by 4× — section shape is a stronger lever than material strength.
+      rule: substitute the rectangular section
+    - expr: Eq(SF, sigma_y/sigma)
+      prose: >-
+        The safety factor compares the material's yield strength to the working stress. E is
+        nowhere in this line — and σ_y is nowhere in the deflection line. Stiffness and strength
+        are independent axes; that's the whole lesson of this THING.
+      rule: definition of safety factor against yield
+
+sim:
+  engine: statics-cascade
+  config:
+    draw: cantilever-beam
+
+sources:
+  - id: gere
+    citation: >-
+      Gere, J. M., & Goodno, B. J., Mechanics of Materials, 9th ed., Cengage, 2018 — §5.5 (flexure
+      formula), §9.3 (cantilever deflections by integration), App. E (section properties).

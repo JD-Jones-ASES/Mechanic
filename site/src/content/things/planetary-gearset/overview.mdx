@@ -1,0 +1,17 @@
+A planetary (epicyclic) gearset packs three coaxial connection points into one compact, concentric
+stage: a central **sun** gear, an internally-toothed **ring** gear, and a **carrier** that holds two
+or more **planet** gears meshing with both. You have one in every automatic transmission, most EV
+reduction gearboxes, wind-turbine speed increasers, cordless-drill gearboxes, and bicycle hub gears.
+
+What makes it worth studying first: it is the simplest mechanism that **has no single gear ratio**.
+The speed relation (the Willis equation) links *three* speeds, so the gearset has **two kinematic
+degrees of freedom** — you must pick two speeds before the third is determined. Fix the ring and
+it's a ~3.5:1 reduction; fix the sun and the same hardware gives a different ratio; fix the carrier
+and the output reverses; drive two members at once and it adds speeds like a differential. The
+widget below stores the *relation*, not a one-way formula — switching configurations just changes
+which variables you're allowed to turn.
+
+Two practical notes baked into the relations: the planets are idlers (their tooth count cancels out
+of the speed law, though it sets the ring size via $N_r = N_s + 2N_p$), and an assembled set also
+needs $(N_s + N_r)$ divisible by the number of equally-spaced planets — with three planets, the
+default 24/60 set passes: $(24+60)/3 = 28$.

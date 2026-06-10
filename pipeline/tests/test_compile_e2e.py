@@ -93,9 +93,11 @@ def test_wrong_solution_fails_build(things_dir, tmp_path):
 
 
 def test_dof_mismatch_fails_build(things_dir, tmp_path):
+    # too few inputs: omega_s is then neither input, constraint, nor solved —
+    # the structural completeness check fires before the rank-based DOF check
     bad = PLANETARY_YAML.replace("inputs: [N_s, N_p, omega_s]", "inputs: [N_s, N_p]")
     (things_dir / "planetary-fixture" / "thing.yaml").write_text(bad, encoding="utf-8")
-    with pytest.raises(BuildError, match="DOF mismatch"):
+    with pytest.raises(BuildError, match="no solution authored|DOF mismatch"):
         compile_all(things_dir, tmp_path / "generated")
 
 

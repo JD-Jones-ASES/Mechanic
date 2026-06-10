@@ -23,6 +23,7 @@ from .kinds import QUANTITY_KINDS
 from .verify import (
     VarSpec,
     dof_check,
+    manifold_points,
     resolve_solutions,
     tiered_zero,
     verify_derivation_step,
@@ -200,10 +201,6 @@ class ThingCompiler:
                 if i_sym in constraints:
                     raise BuildError(f"{c}: '{i_sym}' is both input and constrained")
 
-            residual_exprs = [r for _, r in self.residuals]
-            residual_exprs += [sym - val for sym, val in constraints.items()]
-            dof_check(non_material, residual_exprs, inputs, self.specs, c)
-
             expected_branches = int(cfg.get("expected_branches", 1))
             branches_meta = cfg.get("branches")
             if expected_branches > 1 and not branches_meta:
@@ -251,6 +248,15 @@ class ThingCompiler:
             # NOTE: multi-branch resolve uses each branch independently; v1 things
             # are single-branch, and the four-bar case lands as branch-per-solution.
             resolved = resolve_solutions(ordered, constraints, c)
+
+            # DOF check on the solution manifold (off-manifold sampling overcounts
+            # the rank when a relation is implied by the others — see verify.py)
+            material_syms = [s for s in self.specs if self.specs[s].role == "material"]
+            residual_exprs = [r for _, r in self.residuals]
+            residual_exprs += [sym - val for sym, val in constraints.items()]
+            pts = manifold_points(inputs, material_syms, resolved, self.specs, seed=c)
+            dof_check(non_material, residual_exprs, inputs, pts, c)
+
             verify_solutions_against_relations(self.residuals, resolved, self.specs, c)
             self.resolved_by_cfg[cid] = resolved
 

@@ -150,24 +150,50 @@ def verify_derivation_step(
     tiered_zero(diff, specs, context, seed=context)
 
 
+def manifold_points(
+    inputs: list[sp.Symbol],
+    material_syms: list[sp.Symbol],
+    resolved: dict[sp.Symbol, sp.Expr],
+    specs: dict[sp.Symbol, VarSpec],
+    seed: str,
+    n: int = 3,
+) -> list[dict[sp.Symbol, sp.Expr]]:
+    """Exact rational points ON the solution manifold: sample the independents,
+    derive everything else through the verified solutions."""
+    rng = random.Random(seed)
+    pts = []
+    for _ in range(n):
+        pt = {s: _sample_value(specs[s], rng) for s in [*inputs, *material_syms]}
+        for target, expr in resolved.items():
+            pt[target] = sp.nsimplify(expr.subs(pt))
+        pts.append(pt)
+    return pts
+
+
 def dof_check(
     unknowns: list[sp.Symbol],
     residuals: list[sp.Expr],
     inputs: list[sp.Symbol],
-    specs: dict[sp.Symbol, VarSpec],
+    points: list[dict[sp.Symbol, sp.Expr]],
     context: str,
 ) -> None:
-    """DOF = unknowns - rank(Jacobian). Rank is computed EXACTLY over rationals
-    at random sample points (max over 3 points guards against degenerate samples).
+    """DOF = unknowns - rank(Jacobian). The rank MUST be evaluated at points
+    that satisfy the relations: a relation implied by the others (e.g. the
+    planetary power balance, a polynomial combination of Willis + the torque
+    relations) has a dependent gradient only ON the manifold — at random
+    off-manifold points it looks independent and the count comes out wrong.
+    Rank is exact (rational arithmetic); max over points guards against
+    coefficients vanishing at an unlucky sample.
     """
     if not residuals:
         raise BuildError(f"{context}: no relations")
     jac = sp.Matrix([[sp.diff(r, v) for v in unknowns] for r in residuals])
-    rng = random.Random(context)
     rank = 0
-    for _ in range(3):
-        subs = {s: _sample_value(specs[s], rng) for s in jac.free_symbols if s in specs}
-        rank = max(rank, jac.subs(subs).rank())
+    for pt in points:
+        missing = [s for s in jac.free_symbols if s not in pt]
+        if missing:
+            raise BuildError(f"{context}: manifold point lacks {sorted(map(str, missing))}")
+        rank = max(rank, jac.subs(pt).rank())
     dof = len(unknowns) - rank
     if len(inputs) != dof:
         raise BuildError(

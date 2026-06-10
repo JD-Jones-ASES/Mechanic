@@ -4,7 +4,7 @@ import sympy as sp
 from mech_pipeline import BuildError
 from mech_pipeline.dims import parse_unit
 from mech_pipeline.verify import (
-    VarSpec, dof_check, resolve_solutions, tiered_zero,
+    VarSpec, dof_check, manifold_points, resolve_solutions, tiered_zero,
     verify_solutions_against_relations,
 )
 
@@ -90,8 +90,44 @@ def test_dof_check():
     specs, residuals = willis_setup()
     exprs = [r for _, r in residuals] + [omega_r]  # ring-fixed constraint
     unknowns = list(WILLIS_SYMS)
-    dof_check(unknowns, exprs, [N_s, N_p, omega_s], specs, "ok")  # DOF = 6-3 = 3
+    resolved = resolve_solutions(
+        [(N_r, N_s + 2 * N_p), (omega_c, omega_s * N_s / (N_s + N_r))],
+        constraints={omega_r: sp.S.Zero},
+        context="t",
+    )
+    pts = manifold_points([N_s, N_p, omega_s], [], resolved, specs, seed="t")
+    dof_check(unknowns, exprs, [N_s, N_p, omega_s], pts, "ok")  # DOF = 6-3 = 3
     with pytest.raises(BuildError, match="DOF mismatch"):
-        dof_check(unknowns, exprs, [N_s, N_p], specs, "too-few")
+        dof_check(unknowns, exprs, [N_s, N_p], pts, "too-few")
     with pytest.raises(BuildError, match="DOF mismatch"):
-        dof_check(unknowns, exprs, [N_s, N_p, omega_s, omega_c], specs, "too-many")
+        dof_check(unknowns, exprs, [N_s, N_p, omega_s, omega_c], pts, "too-many")
+
+
+def test_dof_check_dependent_relation_on_manifold():
+    """A relation implied by the others (planetary power balance) must NOT
+    raise the rank — this is the trap that off-manifold sampling falls into."""
+    omega_s, omega_r, omega_c, N_s, N_p, N_r = WILLIS_SYMS
+    T_s, T_r, T_c = sp.symbols("T_s T_r T_c", real=True)
+    specs, residuals = willis_setup()
+    for t in (T_s, T_r, T_c):
+        specs[t] = spec(t, "N*m", (-500.0, 500.0))
+    exprs = [r for _, r in residuals] + [
+        T_s + T_r + T_c,
+        T_s * omega_s + T_r * omega_r + T_c * omega_c,  # implied by the others
+        T_r - T_s * N_r / N_s,
+        omega_r,  # ring fixed
+    ]
+    resolved = resolve_solutions(
+        [
+            (N_r, N_s + 2 * N_p),
+            (omega_c, omega_s * N_s / (N_s + N_r)),
+            (T_r, T_s * N_r / N_s),
+            (T_c, -T_s * (N_s + N_r) / N_s),
+        ],
+        constraints={omega_r: sp.S.Zero},
+        context="t",
+    )
+    unknowns = [omega_s, omega_r, omega_c, N_s, N_p, N_r, T_s, T_r, T_c]
+    pts = manifold_points([N_s, N_p, omega_s, T_s], [], resolved, specs, seed="t")
+    # 9 unknowns, rank 5 on the manifold (power balance dependent) -> DOF 4
+    dof_check(unknowns, exprs, [N_s, N_p, omega_s, T_s], pts, "planetary-torque")
