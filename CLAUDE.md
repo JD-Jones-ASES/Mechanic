@@ -50,7 +50,9 @@ in the pipeline — it verifiably hangs on raw loop-closure trig systems; author
 bracketed `solve1d`) are the only paths. Multi-branch solutions (four-bar open/crossed) are each verified
 independently against every relation. The build fails loudly, naming the THING/step/relation/branch, on:
 dimension inhomogeneity, DOF mismatch, unverifiable derivation step, solution residual ≠ 0, branch-count
-mismatch, or unrenderable LaTeX.
+mismatch, unrenderable LaTeX, or a display unit missing from the site's conversion table
+(`check-units.mjs`). Compilation is incremental: unchanged THINGs (fingerprint = thing.yaml + pipeline
+source + SymPy version) are reused from cache, locally and in CI.
 
 ## Data provenance rules (full text: `docs/data-provenance.md`)
 
@@ -91,7 +93,11 @@ coupler-curve inverse · custom domain · analytics (none, stated policy) · acc
 
 `docs/architecture.md` — pipeline + the unified compiled-artifact schema (single source of truth).
 `docs/authoring-things.md` — how to write a THING. `docs/data-provenance.md` — citation tiers + legal frame.
-`docs/decisions/` — ADRs (read before re-litigating a choice). Build: `pnpm build` in `site/` runs the
-Python pipeline first; `uv run pytest` in `pipeline/` for math-layer tests. The full build takes ≈ 3–4
-minutes — four-bar branch verification dominates the compile; it is slow, not hung. The repo is public and
-the site deploys from CI on every push to main: https://jd-jones-ases.github.io/Mechanic/
+`docs/decisions/` — ADRs (read before re-litigating a choice; ADR-0007 = the verification model).
+`docs/roadmap.md` — the phased plan toward the final product (Phase 1 complete; pause for owner direction
+between phases). Build: `pnpm build` in `site/` runs the Python pipeline first; `uv run pytest` in
+`pipeline/` for math-layer tests. A cold build takes ≈ 3–4 minutes — four-bar branch verification
+dominates; it is slow, not hung — but unchanged THINGs are cache-reused, so warm rebuilds take seconds
+plus the astro step. The repo is public and the site deploys from CI on every push to main — there is no
+review step between merge and the public site: https://jd-jones-ases.github.io/Mechanic/ (catalog state:
+8 THINGs; the live `/verification/` page is the public statement of what is and isn't machine-proven).

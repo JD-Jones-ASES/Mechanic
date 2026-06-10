@@ -58,6 +58,16 @@ step before `astro build`).
 7. **LaTeX gate**: a Node script (`site/scripts/check-katex.mjs`) runs `katex.renderToString` over every
    LaTeX string in every artifact; unrenderable math fails the build. SymPy printing uses
    `inv_trig_style='full'`.
+8. **Display-unit gate**: `site/scripts/check-units.mjs` — every `display_units` entry (and the bare
+   `si_unit` fallback when `display_units` is empty) must resolve in `units.ts` `DISPLAY_FACTORS`, or the
+   build fails naming thing/symbol/unit. (A missing entry would silently show SI values under prefixed
+   labels — a 10^n error guarded only by a console.warn; this gate caught a live `kPa` case on its first run.)
+
+Compilation is **incremental**: `compile_all` fingerprints each THING (thing.yaml bytes + all pipeline
+source + the pinned SymPy version) and reuses unchanged artifacts via `.hashes.json` inside the
+gitignored generated tree; artifacts of deleted THINGs are removed so the site cannot render orphans.
+Sound because compilation is deterministic (seeded sampling). CI persists the artifact directory with
+`actions/cache` keyed on the same inputs — warm builds skip the four-bar re-verification entirely.
 
 ## Compiled-artifact schema (`<slug>.compiled.json`) — single source of truth
 
@@ -107,7 +117,8 @@ step before `astro build`).
   "derivation": [{ "latex": "…", "prose": "…", "rule": "…" }],   // pre-verified; rendered build-time
   "material_binding": null,                // or { "E": "youngs_modulus", "sigma_y": "yield_strength", … }
   "sim": { "engine": "kinematic-rotation", "config": { } },
-  "sources": [{ "id": "…", "citation": "…" }]
+  "sources": [{ "id": "…", "citation": "…",
+                "verification": "how the citation was pinned (optional; rendered on /verification/)" }]
 }
 ```
 
@@ -139,3 +150,11 @@ native controls, `import.meta.env.BASE_URL` discipline everywhere (project page 
 postbuild with `data-pagefind-body` scoping (KaTeX/widget markup excluded), `prefers-reduced-motion`
 honored by all sims, axe smoke test in CI. Page-weight budget: a THING page ships ≤ ~40 kB JS gz
 (Preact runtime + engine + island) — KaTeX/Pyodide stay out of the client bundle.
+
+**Sim contract (invariant 5):** ThingWidget passes sims `{ values, invalid }`, where `invalid` is the
+engine's authoritative refusal verdict — a refusal can leave values omitted, present-as-NaN, or fully
+finite (a validity predicate over good numbers), so NaN-sniffing alone is never sufficient. Refused
+states render the shared `SimRefusal` figure, never default geometry. Shared presentational helpers in
+`site/src/components/sims/`: `useSimClock` (rAF + reduced-motion; stops while refused), `StressBands`
+(the heat-ramp field encoding), `SimRefusal`. Exception by design: FourbarSim draws crank-only partial
+geometry for non-assembling poses (its inputs are always honest) with a caption saying so.

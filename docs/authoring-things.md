@@ -92,6 +92,9 @@ sources:
 5. Every LaTeX string must render in KaTeX.
 6. Material-bound variables can never appear in `inputs` or as solution targets.
 7. Every relation and every validity envelope carries a citation that resolves in `sources`.
+8. Every `display_units` entry (and the bare `si_unit` when `display_units` is empty) must resolve in
+   `site/src/engines/units.ts` `DISPLAY_FACTORS` — `check-units.mjs` fails the build otherwise. Add the
+   conversion entry in the same change as the unit.
 
 ## Multi-branch configurations (the four-bar pattern)
 
@@ -139,5 +142,10 @@ What the build does with this:
   renders INVISIBLE and every functional test still passes (the four-bar shipped that way once). When you
   add a draw component, define its classes in `site/src/styles/global.css` in the same change — and look
   at the page.
+- New sims must consume the widget's `invalid` prop and render the shared `SimRefusal` for refused
+  states. Destructuring defaults (`const { R = 0.15 } = values`) draw a confident default figure over a
+  refused state — and the engine can refuse with values omitted, present-as-NaN, OR fully finite, so the
+  `invalid` verdict is the only sufficient signal (see the sim contract in `docs/architecture.md`). Use
+  the shared `useSimClock` for animation and `StressBands` for radial-field shading instead of copies.
 - Editing `thing.yaml` with PowerShell `Get-Content`/`Set-Content` round-trips: PS 5.1 reads BOM-less
   UTF-8 as ANSI and silently mojibakes every em-dash and Greek letter. Use a UTF-8-safe editor path.

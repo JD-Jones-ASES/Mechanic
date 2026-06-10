@@ -27,8 +27,9 @@ pnpm preview                                     # serve the built site locally
 pnpm exec playwright test                        # end-to-end invariants vs the built site
 ```
 
-The full build takes ≈ 3–4 minutes; verifying the four-bar linkage's two solution branches against
-the loop-closure relations dominates the compile step.
+A cold build takes ≈ 3–4 minutes — verifying the four-bar linkage's two solution branches dominates —
+but compiled THINGs are cached by content fingerprint, so warm rebuilds reuse unchanged THINGs in
+seconds (locally and in CI).
 
 ## Orientation
 
@@ -36,6 +37,7 @@ the loop-closure relations dominates the compile step.
 - `docs/architecture.md` — pipeline + the compiled-artifact schema (single source of truth).
 - `docs/authoring-things.md` — how to add a THING.
 - `docs/data-provenance.md` — citation tiers and the legal frame for material data.
-- `docs/decisions/` — ADRs for every load-bearing choice.
+- `docs/decisions/` — ADRs for every load-bearing choice (ADR-0007 = the verification model).
+- `docs/roadmap.md` — the phased plan toward the final product.
 
 Licensing: MIT (code) + CC BY 4.0 (content & dataset) — see `LICENSE`, `LICENSE-content.md`.
