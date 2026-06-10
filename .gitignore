@@ -1,0 +1,22 @@
+# Node / Astro
+node_modules/
+site/dist/
+site/.astro/
+
+# Generated build artifacts — never committed; produced by the Python pipeline
+site/src/generated/
+data/build/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Playwright
+site/test-results/
+site/playwright-report/
+
+# OS / editor
+Thumbs.db
+.DS_Store
