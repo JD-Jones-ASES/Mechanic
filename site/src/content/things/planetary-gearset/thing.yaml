@@ -83,6 +83,15 @@ variables:
     default: 0
     bounds: [-3000, 3000]
     role: derived
+  - symbol: T_out
+    name: Torque delivered to the load
+    latex: 'T_{out}'
+    unit: N*m
+    quantity_kind: torque
+    default: 350
+    bounds: [-6000, 6000]
+    role: derived
+    display_units: ["N*m"]
 
 relations:
   - id: willis
@@ -128,6 +137,15 @@ relations:
     assumptions:
       - combination of the torque balance and the mesh force balance
     citation: shigley
+  - id: load-reaction
+    group: torque-power
+    latex: 'T_{out} = -T_c'
+    residual: T_out + T_c
+    assumptions:
+      - action–reaction across the output shaft interface — T_c is the torque the carrier shaft
+        exerts ON the gear set; the gear set exerts −T_c back on the shaft, and that is what the
+        shaft delivers to the load
+    citation: shigley
 
 configurations:
   - id: ring-fixed
@@ -139,6 +157,7 @@ configurations:
       omega_c: omega_s*N_s/(N_s + N_r)
       T_r: T_s*N_r/N_s
       T_c: -T_s*(N_s + N_r)/N_s
+      T_out: T_s*(N_s + N_r)/N_s
   - id: sun-fixed
     label: Sun fixed — ring in, carrier out
     constraints: { omega_s: 0 }
@@ -148,6 +167,7 @@ configurations:
       omega_c: omega_r*N_r/(N_s + N_r)
       T_r: T_s*N_r/N_s
       T_c: -T_s*(N_s + N_r)/N_s
+      T_out: T_s*(N_s + N_r)/N_s
   - id: carrier-fixed
     label: Carrier fixed — star gear (reversing)
     constraints: { omega_c: 0 }
@@ -157,6 +177,7 @@ configurations:
       omega_r: -omega_s*N_s/N_r
       T_r: T_s*N_r/N_s
       T_c: -T_s*(N_s + N_r)/N_s
+      T_out: T_s*(N_s + N_r)/N_s
   - id: general
     label: General — two speed inputs (differential action)
     constraints: {}
@@ -166,6 +187,7 @@ configurations:
       omega_c: (omega_s*N_s + omega_r*N_r)/(N_s + N_r)
       T_r: T_s*N_r/N_s
       T_c: -T_s*(N_s + N_r)/N_s
+      T_out: T_s*(N_s + N_r)/N_s
 
 derivation:
   verifies_configuration: ring-fixed

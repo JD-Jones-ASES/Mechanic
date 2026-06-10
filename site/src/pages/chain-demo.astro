@@ -1,0 +1,115 @@
+---
+/**
+ * The one v1 chaining demo (full chaining UI is out of scope, by decision):
+ * a planetary reduction driving a torsion shaft. The legality table below is
+ * computed at BUILD time by the same connectionLegal() the runtime planner
+ * uses — the rejections shown are real engine verdicts, not prose.
+ */
+import { getCollection, getEntry } from "astro:content";
+import ChainDemo from "../components/ChainDemo";
+import { connectionLegal } from "../engines/units";
+import Base from "../layouts/Base.astro";
+import { withBase } from "../lib/url";
+
+const gear = (await getEntry("compiled", "planetary-gearset"))!.data;
+const shaft = (await getEntry("compiled", "torsion-shaft"))!.data;
+const fourbar = (await getEntry("compiled", "fourbar-linkage"))!.data;
+const column = (await getEntry("compiled", "euler-column"))!.data;
+
+const boundKeys = Object.values(shaft.material_binding ?? {});
+const materials = (await getCollection("materials"))
+  .map((m) => m.data)
+  .filter((m) => boundKeys.every((k) => m.properties.some((p) => p.key === k)));
+
+type Compiled = typeof gear;
+const port = (a: Compiled, s: string) => ({
+  dim: a.variables[s]!.dim,
+  quantity_kind: a.variables[s]!.quantity_kind,
+});
+
+const checks = [
+  {
+    from: "planetary T_out — torque, N·m",
+    to: "shaft T — torque, N·m",
+    res: connectionLegal(port(gear, "T_out"), port(shaft, "T")),
+  },
+  {
+    from: "planetary ω_c — angular velocity, rad/s",
+    to: "shaft ω — angular velocity, rad/s",
+    res: connectionLegal(port(gear, "omega_c"), port(shaft, "omega")),
+  },
+  {
+    from: "planetary ω_c — angular velocity, rad/s",
+    to: "shaft T — torque, N·m",
+    res: connectionLegal(port(gear, "omega_c"), port(shaft, "T")),
+  },
+  {
+    from: "four-bar θ₄ — angle, dimensionless",
+    to: "column K — ratio, dimensionless",
+    res: connectionLegal(port(fourbar, "theta4"), port(column, "K")),
+  },
+];
+---
+
+<Base
+  title="Chaining demo"
+  description="Two verified THINGs wired together: a planetary reduction driving a torsion shaft, with type-checked port bindings."
+>
+  <h1>Chaining: gearbox → output shaft</h1>
+  <p>
+    Every machine is THINGs wired together. Here a ring-fixed planetary reduction drives a solid
+    shaft: the gearset's <em>torque delivered to the load</em> and <em>carrier speed</em> are bound
+    to the shaft's <em>torque</em> and <em>speed</em> inputs. Turn the sun torque up, or trade
+    tooth counts, and watch the consequences propagate into a different THING's stress, twist, and
+    safety factor — then swap the shaft's material, which the gearbox upstream rightly never
+    notices.
+  </p>
+  <p>
+    Two numbers worth watching: the gearbox multiplies torque by 1 + N_r/N_s (3.5× at the default
+    teeth) while dividing speed by the same factor — so the shaft's transmitted power
+    <strong>P = Tω equals the input power T_s·ω_s exactly</strong> (ideal, lossless relations on
+    both sides). Conservation laws survive the wiring; that is the point of verified chaining.
+  </p>
+
+  <div data-pagefind-ignore>
+    <ChainDemo client:load gear={gear} shaft={shaft} materials={materials} />
+  </div>
+
+  <h2>Connections are type-checked</h2>
+  <p>
+    A binding is legal iff the SI dimension 7-vector <strong>and</strong> the quantity kind both
+    match (invariant 2). Dimensions alone are not enough: an angle and a Poisson ratio are both
+    dimensionless, and torque shares dimensions with energy. The verdicts below are produced by the
+    same <code>connectionLegal()</code> the demo's planner runs — including the two rejections:
+  </p>
+  <div class="table-scroll">
+    <table class="material-props">
+      <thead>
+        <tr><th scope="col">From port</th><th scope="col">To port</th><th scope="col">Engine verdict</th></tr>
+      </thead>
+      <tbody>
+        {
+          checks.map((c) => (
+            <tr>
+              <td>{c.from}</td>
+              <td>{c.to}</td>
+              <td>
+                {c.res.ok ? (
+                  <span class="chain-ok">legal</span>
+                ) : (
+                  <span class="chain-no">rejected — {c.res.reason}</span>
+                )}
+              </td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+  <p class="citation">
+    The planner also rejects any binding that would close a feedback loop — cyclic solving is out
+    of scope in v1 (the relations are stored undirected, so a cyclic solver can be added later
+    without rewriting THINGs; see the <a href={withBase("about/")}>about page</a> for scope).
+    This page is the one chaining demo v1 ships; a full drag-and-wire UI is future work.
+  </p>
+</Base>
