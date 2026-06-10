@@ -27,7 +27,7 @@ jobs:
       - uses: actions/checkout@v6
 
       # --- Python math pipeline (uv-pinned; identical to local per uv.lock) ---
-      - uses: astral-sh/setup-uv@v8
+      - uses: astral-sh/setup-uv@v8.2.0  # no floating v8 tag exists
       - name: Sync Python environment
         run: uv sync --locked
         working-directory: pipeline
