@@ -6,6 +6,7 @@
  */
 import { getCollection } from "astro:content";
 import Base from "../../layouts/Base.astro";
+import { withBase } from "../../lib/url";
 
 const rows = (await getCollection("materials")).map((m) => m.data);
 
@@ -110,6 +111,6 @@ const classes = [...new Set(points.map((p) => p.m.class))];
   </table>
   <p class="citation">
     Strength values shown in GPa where applicable read as fractions (e.g. 0.25 GPa = 250 MPa).
-    Full citations on the <a href={`${import.meta.env.BASE_URL}about/#attributions`}>attributions page</a>.
+    Full citations on the <a href={withBase("about/#attributions")}>attributions page</a>.
   </p>
 </Base>
