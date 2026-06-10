@@ -136,6 +136,10 @@ What the build does with this:
   branch-count check.
 - Inventing material property values inline. Materials come from `data/materials/` only (see
   `data-provenance.md`).
+- Incoherent declared defaults: every derived variable's `default:` must be computed from the
+  free-variable AND material-variable defaults declared *in the same file* (compute with the
+  declared G, not the material you happened to be thinking about). Two real bugs shipped to
+  review this way; recompute the whole derived set whenever any default changes.
 - Writing a "derivation" that's just the final formula. Steps should be the 3–8 lines a good TA would put
   on the board; prose carries the why.
 - New sim components with CSS classes that don't exist yet: SVG defaults to `stroke: none`, so the shape
