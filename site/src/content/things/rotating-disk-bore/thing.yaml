@@ -1,0 +1,400 @@
+id: rotating-disk-bore
+title: Rotating Disk with a Central Bore
+summary: >-
+  Drill the smallest possible shaft hole through a spinning disk and the peak stress exactly
+  doubles — not "roughly increases": doubles, in the limit of a vanishing bore. The solid
+  flywheel's optimistic numbers meet the hole every real rotor needs.
+facets: [stress, energy-storage, mass-cost]
+
+variables:
+  - symbol: R
+    name: Outer radius
+    latex: R
+    unit: m
+    quantity_kind: length
+    default: 0.15
+    bounds: [0.02, 0.6]
+    positive: true
+    display_units: [mm, m]
+  - symbol: a
+    name: Bore radius
+    latex: a
+    unit: m
+    quantity_kind: length
+    default: 0.03
+    bounds: [0.001, 0.55]
+    positive: true
+    display_units: [mm, m]
+  - symbol: t
+    name: Disk thickness
+    latex: t
+    unit: m
+    quantity_kind: length
+    default: 0.025
+    bounds: [0.005, 0.2]
+    positive: true
+    display_units: [mm, m]
+  - symbol: omega
+    name: Spin speed
+    latex: '\omega'
+    unit: rad/s
+    quantity_kind: angular_velocity
+    default: 300
+    bounds: [10, 6000]
+    positive: true
+    display_units: [rad/s, rpm]
+  - symbol: E_k
+    name: Stored kinetic energy
+    latex: E_k
+    unit: J
+    quantity_kind: energy
+    default: 7012
+    bounds: [100, 1.0e8]
+    positive: true
+    display_units: [kJ, J, Wh]
+  - symbol: nu
+    name: "Poisson's ratio"
+    latex: '\nu'
+    unit: '1'
+    quantity_kind: poisson_ratio
+    default: 0.29
+    bounds: [0.05, 0.49]
+    positive: true
+    role: material
+  - symbol: rho
+    name: Density
+    latex: '\rho'
+    unit: kg/m**3
+    quantity_kind: density
+    default: 7850
+    bounds: [400, 9000]
+    positive: true
+    role: material
+    display_units: ["kg/m^3"]
+  - symbol: sigma_y
+    name: Yield strength
+    latex: '\sigma_y'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 250.0e6
+    bounds: [10.0e6, 2.0e9]
+    positive: true
+    role: material
+    display_units: [MPa, Pa]
+  - symbol: m_disk
+    name: Disk mass
+    latex: m
+    unit: kg
+    quantity_kind: mass
+    default: 13.317
+    bounds: [0.01, 5000]
+    role: derived
+    display_units: [kg]
+  - symbol: I_z
+    name: Moment of inertia (spin axis)
+    latex: I_z
+    unit: kg*m**2
+    quantity_kind: moment_of_inertia
+    default: 0.15581
+    bounds: [1.0e-7, 1.0e4]
+    role: derived
+    display_units: ["kg*m^2"]
+  - symbol: e_m
+    name: Specific energy
+    latex: e
+    unit: J/kg
+    quantity_kind: specific_energy
+    default: 526.5
+    bounds: [0.1, 1.0e6]
+    role: derived
+    display_units: ["J/kg", "Wh/kg"]
+  - symbol: sigma_t_max
+    name: Peak hoop stress (bore edge)
+    latex: '\sigma_{\theta,max}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 1.3188e7
+    bounds: [0, 5.0e9]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: sigma_r_max
+    name: Peak radial stress (mid-annulus)
+    latex: '\sigma_{r,max}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 4.1839e6
+    bounds: [0, 5.0e9]
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: f_bore
+    name: Bore penalty vs solid disk
+    latex: 'f_{bore}'
+    unit: '1'
+    quantity_kind: ratio
+    default: 2.0173
+    bounds: [1, 4]
+    positive: true
+    role: derived
+  - symbol: SF
+    name: Safety factor (first yield)
+    latex: '\mathrm{SF}'
+    unit: '1'
+    quantity_kind: safety_factor
+    default: 18.957
+    bounds: [0, 1.0e4]
+    positive: true
+    role: derived
+  - symbol: omega_y
+    name: Yield-onset speed
+    latex: '\omega_y'
+    unit: rad/s
+    quantity_kind: angular_velocity
+    default: 1306.2
+    bounds: [1, 1.0e5]
+    positive: true
+    role: derived
+    display_units: [rad/s, rpm]
+
+materials:
+  binds:
+    nu: poisson_ratio
+    rho: density
+    sigma_y: yield_strength
+
+relations:
+  - id: disk-mass
+    group: mass-cost
+    latex: 'm = \rho\,\pi\,(R^2 - a^2)\,t'
+    residual: m_disk - rho*pi*(R**2 - a**2)*t
+    assumptions:
+      - uniform annular disk — constant thickness, free bore surface, free rim
+    citation: hibbeler-dyn
+    validity:
+      - condition: a < R
+        severity: invalid
+        message: >-
+          The bore has met (or passed) the rim — no disk remains. Every readout on this page is
+          refused until a < R again.
+        citation: timoshenko
+  - id: moment-of-inertia
+    group: energy-storage
+    latex: 'I_z = \tfrac{1}{2} m\,(R^2 + a^2)'
+    residual: 2*I_z - m_disk*(R**2 + a**2)
+    assumptions:
+      - rigid uniform annulus spinning about its axis of symmetry
+    citation: hibbeler-dyn
+  - id: kinetic-energy
+    group: energy-storage
+    latex: 'E_k = \tfrac{1}{2} I_z \omega^2'
+    residual: 2*E_k - I_z*omega**2
+    assumptions:
+      - rigid body in pure spin about a fixed axis — no wobble, no translation
+    citation: hibbeler-dyn
+  - id: specific-energy
+    group: energy-storage
+    latex: 'e = \frac{E_k}{m}'
+    residual: e_m*m_disk - E_k
+    assumptions:
+      - energy stored per kilogram carried — note the bore RAISES this at a given speed
+        (the removed centre mass was barely storing anything) while lowering the speed limit
+    citation: ashby
+  - id: bore-hoop-stress
+    group: stress
+    latex: '\sigma_{\theta,max} = \frac{\rho\,\omega^2}{4}\left[(3+\nu)\,R^2 + (1-\nu)\,a^2\right]'
+    residual: 4*sigma_t_max - rho*omega**2*((3+nu)*R**2 + (1-nu)*a**2)
+    assumptions:
+      - linear elastic, isotropic, uniform-thickness annulus in plane stress (thin next to its radius)
+      - both surfaces free — no shaft pressing in the bore, no shrink-fitted hub (that story is
+        the compound cylinder's)
+      - the hoop stress peaks at the bore edge, where the radial stress is zero
+    citation: timoshenko
+    validity:
+      - condition: sigma_t_max < sigma_y
+        severity: warn
+        message: >-
+          The bore edge has reached yield — beyond this speed the elastic field (and every number
+          built on it) stops being the truth. First yield is NOT burst: a ductile disk
+          redistributes stress and survives well past this line, but this model ends here.
+        citation: shigley
+      - condition: t < R/4
+        severity: warn
+        message: >-
+          Thickness is no longer small next to the radius — the plane-stress thin-disk solution
+          is fading; a disk this chunky wants the axisymmetric thick-disk treatment.
+        citation: timoshenko
+  - id: peak-radial-stress
+    group: stress
+    latex: '\sigma_{r,max} = \frac{3+\nu}{8}\,\rho\,\omega^2\,(R-a)^2 \quad \text{at } r=\sqrt{aR}'
+    residual: 8*sigma_r_max - (3+nu)*rho*omega**2*(R - a)**2
+    assumptions:
+      - the radial stress vanishes at BOTH free surfaces and peaks between them, at the geometric
+        mean radius r = √(aR)
+      - always smaller than the bore hoop stress — the hoop direction governs everywhere
+    citation: timoshenko
+  - id: bore-factor
+    group: stress
+    latex: 'f_{bore} = \frac{\sigma_{\theta,max}}{\sigma_{solid}} = 2 + \frac{2\,(1-\nu)\,a^2}{(3+\nu)\,R^2}'
+    residual: f_bore*(3+nu)*R**2 - 2*(3+nu)*R**2 - 2*(1-nu)*a**2
+    assumptions:
+      - ratio to the SOLID disk's centre stress (3+ν)ρω²R²/8 at the same geometry, speed, material
+      - the vanishing-bore limit is exactly 2 — the equibiaxial hole concentration factor, not a
+        gradual transition
+    citation: timoshenko
+  - id: yield-margin
+    group: stress
+    latex: '\mathrm{SF} = \frac{\sigma_y}{\sigma_{\theta,max}}'
+    residual: SF*sigma_t_max - sigma_y
+    assumptions:
+      - margin against first yield at the bore edge, not against burst — burst arrives later,
+        governed by ultimate strength and crack behaviour
+    citation: shigley
+  - id: yield-onset-speed
+    group: stress
+    latex: '\sigma_y = \frac{\rho\,\omega_y^2}{4}\left[(3+\nu)\,R^2 + (1-\nu)\,a^2\right]'
+    residual: 4*sigma_y - rho*omega_y**2*((3+nu)*R**2 + (1-nu)*a**2)
+    assumptions:
+      - the spin speed at which the bore edge first reaches yield — 1/√2 of the solid disk's
+        yield-onset speed in the small-bore limit
+    citation: timoshenko
+
+configurations:
+  - id: speed-in
+    label: Geometry and speed in — energy, stress, margin out
+    constraints: {}
+    inputs: [R, a, t, omega]
+    solutions:
+      m_disk: rho*pi*(R**2 - a**2)*t
+      I_z: m_disk*(R**2 + a**2)/2
+      E_k: I_z*omega**2/2
+      e_m: E_k/m_disk
+      sigma_t_max: rho*omega**2*((3+nu)*R**2 + (1-nu)*a**2)/4
+      sigma_r_max: (3+nu)*rho*omega**2*(R - a)**2/8
+      f_bore: 2 + 2*(1-nu)*a**2/((3+nu)*R**2)
+      SF: sigma_y/sigma_t_max
+      omega_y: 2*sqrt(sigma_y/(rho*((3+nu)*R**2 + (1-nu)*a**2)))
+  - id: energy-in
+    label: Target energy in — the speed that stores it, and what the bore charges for it
+    constraints: {}
+    inputs: [E_k, R, a, t]
+    solutions:
+      m_disk: rho*pi*(R**2 - a**2)*t
+      I_z: m_disk*(R**2 + a**2)/2
+      omega: sqrt(2*E_k/I_z)
+      e_m: E_k/m_disk
+      sigma_t_max: rho*omega**2*((3+nu)*R**2 + (1-nu)*a**2)/4
+      sigma_r_max: (3+nu)*rho*omega**2*(R - a)**2/8
+      f_bore: 2 + 2*(1-nu)*a**2/((3+nu)*R**2)
+      SF: sigma_y/sigma_t_max
+      omega_y: 2*sqrt(sigma_y/(rho*((3+nu)*R**2 + (1-nu)*a**2)))
+
+derivation:
+  verifies_configuration: speed-in
+  locals:
+    - symbol: r
+      unit: m
+      positive: true
+      bounds: [0.001, 0.6]
+    - symbol: sigma_r
+      unit: Pa
+      define: (3+nu)*rho*omega**2*(R**2 + a**2 - a**2*R**2/r**2 - r**2)/8
+    - symbol: sigma_t
+      unit: Pa
+      define: rho*omega**2*((3+nu)*(R**2 + a**2 + a**2*R**2/r**2) - (1+3*nu)*r**2)/8
+  steps:
+    - expr: Eq(sigma_r, (3+nu)*rho*omega**2*(R**2 + a**2 - a**2*R**2/r**2 - r**2)/8)
+      prose: >-
+        The modeling step: same equilibrium-plus-compatibility ODE as the solid flywheel, but the
+        bore changes which solutions are admissible. The solid disk had to DISCARD the 1/r² term
+        to stay finite at the centre; with material removed there, that term returns, and the two
+        integration constants are now fixed by TWO free surfaces — σ_r(a) = 0 and σ_r(R) = 0.
+        This is the classical rotating-annulus field. (The test suite re-solves the boundary-value
+        problem independently.)
+      rule: 'elasticity: radial equilibrium + compatibility, free bore and free rim'
+      check: definition
+    - expr: Eq(sigma_t, rho*omega**2*((3+nu)*(R**2 + a**2 + a**2*R**2/r**2) - (1+3*nu)*r**2)/8)
+      prose: >-
+        The same solution's hoop component. The 1/r² term that the solid disk forbade is exactly
+        the term that bites: it ADDS to the hoop stress as r shrinks, so the maximum now lives at
+        the bore edge, not the centre — there is no centre anymore.
+      rule: 'elasticity: hoop component of the same field'
+      check: definition
+    - expr: Eq(rho*omega**2*((3+nu)*(2*R**2 + a**2) - (1+3*nu)*a**2)/8, sigma_t_max)
+      prose: >-
+        Evaluate the hoop field at the bore edge, r = a (the a²R²/r² term becomes R², so the
+        bracket reads (3+ν)(2R² + a²) − (1+3ν)a², which tidies to 2(3+ν)R² + 2(1−ν)a²): the
+        page's governing stress, σ_θ(a) = ρω²[(3+ν)R² + (1−ν)a²]/4. The radial stress is zero
+        there (free surface), so the bore edge sits in pure uniaxial hoop tension — the simplest
+        possible yield check, at the worst possible place.
+      rule: evaluate the hoop field at r = a
+    - expr: Eq((3+nu)*rho*omega**2*(R**2 + a**2 - 2*a*R)/8, sigma_r_max)
+      prose: >-
+        The radial stress must vanish at both free surfaces and bulge between them; setting its
+        derivative to zero lands the peak exactly at the geometric mean radius r = √(aR), where
+        the a²R²/r² and r² terms both equal aR and the bracket collapses to (R−a)². It never
+        catches the bore hoop stress — the hoop direction governs this THING everywhere, just as
+        it governed the thick-walled cylinder. (The calculus locating √(aR) is re-run in the
+        test suite.)
+      rule: maximize the radial field — peak at the geometric mean radius
+    - expr: Eq(f_bore*(3+nu)*rho*omega**2*R**2/8, sigma_t_max)
+      prose: >-
+        Divide the bore-edge stress by the SOLID disk's centre value (3+ν)ρω²R²/8. The ratio is
+        f = 2 + 2(1−ν)a²/((3+ν)R²) — and as the bore shrinks to nothing, f goes to exactly 2,
+        not to 1. An arbitrarily small hole doubles the stress: this is the equibiaxial
+        stress-concentration factor of a circular hole, K = 2, hiding inside the rotating disk
+        (the solid disk's centre sits in equal biaxial tension, and the vanishing bore is a hole
+        punched in exactly that field). The discontinuity is real and the test suite pins it.
+      rule: 'the vanishing-hole limit: f → 2 as a → 0'
+    - expr: Eq(omega_y**2*(3+nu)*R**2 + omega_y**2*(1-nu)*a**2, 4*sigma_y/rho)
+      prose: >-
+        Run the bore stress up to yield and read it as a speed: in the small-bore limit
+        ω_y ≈ √(4σ_y/((3+ν)ρR²)) — exactly 1/√2 ≈ 70.7% of the solid disk's yield-onset speed.
+        Halving the limit speed quarters... no: the energy at the limit falls by half. The
+        flywheel page's specific-energy ceiling e = 2σ_y/((3+ν)ρ) was a SOLID-disk privilege;
+        the bored rotor pays for its shaft hole in stored energy.
+      rule: yield-onset speed — the 1/√2 penalty
+sim:
+  engine: statics-cascade
+  config:
+    draw: rotating-disk-bore
+
+sources:
+  - id: timoshenko
+    citation: >-
+      Timoshenko, S. P., & Goodier, J. N., Theory of Elasticity, 3rd ed., McGraw-Hill, 1970 —
+      ch. 4 (two-dimensional problems in polar coordinates), §32 "Rotating Disks": the
+      plane-stress annulus with free bore and free rim, peak hoop stress at the bore edge, and
+      the small-hole limit of twice the solid disk's central stress.
+    verification: >-
+      Article number and title pinned against the 3rd-edition full text (Internet Archive scan)
+      during the flywheel-disk session, 2026-06-10 — §32 treats the bored disk in the same
+      article as the solid one. The annulus field is independently re-derived from equilibrium +
+      compatibility with free-free boundary conditions in pipeline/tests/test_disk_physics.py.
+  - id: hibbeler-dyn
+    citation: >-
+      Hibbeler, R. C., Engineering Mechanics: Dynamics, 14th ed., Pearson, 2016 — §17.1 (mass
+      moments of inertia; the annulus I = m(R² + a²)/2) and ch. 18 (planar kinetics, work and
+      energy: E = ½Iω² for rotation about a fixed axis).
+    verification: >-
+      §17.1 and chapter-18 titles confirmed against published 14th-edition chapter listings
+      during the flywheel-disk session, 2026-06-10; the annulus inertia integral is re-run in
+      pipeline/tests/test_disk_physics.py.
+  - id: shigley
+    citation: >-
+      Budynas, R. G., & Nisbett, J. K., Shigley's Mechanical Engineering Design, 10th ed.,
+      McGraw-Hill, 2015 — ch. 16 (flywheels: energy exchange and sizing) and ch. 1 (design
+      factor against first yield).
+    verification: >-
+      Ch. 16 title ("Clutches, Brakes, Couplings and Flywheels") confirmed via 10th-edition
+      course materials during the flywheel-disk session, 2026-06-10; the flywheel section number
+      within the chapter is not pinned.
+  - id: ashby
+    citation: >-
+      Ashby, M. F., Materials Selection in Mechanical Design, 4th ed., Butterworth-Heinemann,
+      2011 — the "materials for flywheels" case study: kinetic energy per unit mass governed by
+      the material index σ_y/ρ; the bored rotor keeps the index but loses a factor on the
+      coefficient.
+    verification: >-
+      Case-study title and §6.6 numbering confirmed via a published reference index during the
+      flywheel-disk session, 2026-06-10; correspondence of that numbering to the 4th edition is
+      not pinned.

@@ -1,0 +1,30 @@
+The widget's margin is first yield at the bore edge of a free-free annulus under steady spin.
+Real bored rotors inherit every failure mode of the [solid flywheel](../flywheel-disk/) — burst
+sectors leaving at rim speed, brittle materials skipping the warning yield entirely, overspeed
+scaling as $\omega^2$ — plus the ones the bore brings itself:
+
+- **The bore edge is where cracks are born.** It carries the peak stress, it is machined (tool
+  marks, keyways, snap-ring grooves all concentrate further), and in a charge–discharge flywheel
+  or a start–stop turbine it is stress-cycled at full amplitude every cycle. Bore-edge fatigue
+  initiation is the canonical life-limiter of bored rotors — which is why critical turbine and
+  compressor disks get their bores honed, cold-worked, and inspected with particular paranoia.
+- **A keyway in the bore stacks concentrations.** The factor-of-2 here assumes a smooth circular
+  hole. Cut a square keyway into it and the corner adds its own concentration on top of the
+  already-doubled field — geometric factors multiply. Real high-speed designs avoid keyed bores
+  entirely (friction drives, curvic couplings, integral shafts) for exactly this reason.
+- **First yield at the bore is even less like burst than it was for the solid disk.** The
+  overstressed region is a thin annulus at the bore; yielding there redistributes load outward
+  into a large mass of cooler material, and ductile rotors run far past first bore yield before
+  average-stress burst criteria matter. The margin here is honest about what it measures: the
+  end of the elastic model, not the end of the disk.
+- **A pressed-in shaft changes the sign of the problem.** This page's bore is free. An
+  interference-fitted shaft or hub presses *outward* on the bore — a Lamé pressure field
+  superposes on the rotation field, raising bore hoop stress at standstill and, paradoxically,
+  *relieving* contact as speed grows (the disk grows away from the shaft). The fit that is tight
+  enough at speed and not yielded at standstill is a genuine two-sided design problem — the
+  shrink-fit compound cylinder THING, where this page and the
+  [thick-walled cylinder](../thick-walled-cylinder/) meet.
+- **The thin-disk assumption fails for chunky hubs.** Plane stress wants $t \ll R$. Thick
+  bored disks (gear blanks, turbine wheels with deep hubs) develop axial stress variation and
+  need the axisymmetric treatment; the widget's thickness warning marks where this model starts
+  fading, not where the part fails.
