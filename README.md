@@ -1,9 +1,14 @@
 # Mechanic — Engineering Reference Portal
 
-A browsable, citation-backed database of mechanical and physical THINGS — gears, linkages, beams, pressure
-vessels — for engineering undergraduates. Every THING ships its governing equations **with machine-verified
-derivations**, an interactive simulation, material selection with visible provenance, and a how-it-fails
-note. Pure static site (GitHub Pages); all math is verified and compiled at build time by SymPy.
+**Live site: https://jd-jones-ases.github.io/Mechanic/**
+
+A browsable, citation-backed database of mechanical and physical THINGS — currently a planetary
+gearset, cantilever beam, thin-walled pressure vessel, torsion shaft, Euler column, and four-bar
+linkage, plus a [chaining demo](https://jd-jones-ases.github.io/Mechanic/chain-demo/) that wires a
+gearbox into a shaft with type-checked port bindings. Every THING ships its governing equations
+**with machine-verified derivations**, an interactive simulation, material selection with visible
+provenance, and a how-it-fails note. Pure static site (GitHub Pages); all math is verified and
+compiled at build time by SymPy.
 
 > **Educational material — not for design use.**
 
@@ -17,6 +22,9 @@ pnpm build                                       # runs the Python pipeline, the
 pnpm preview                                     # serve the built site locally
 pnpm exec playwright test                        # end-to-end invariants vs the built site
 ```
+
+The full build takes ≈ 3–4 minutes; verifying the four-bar linkage's two solution branches against
+the loop-closure relations dominates the compile step.
 
 ## Orientation
 

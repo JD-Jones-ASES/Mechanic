@@ -41,10 +41,12 @@ Violating any of these requires an ADR in `docs/decisions/` and explicit human s
 The Zod schema in `site/src/content.config.ts` IS the THING template. Authoring = writing
 `site/src/content/things/<slug>/thing.yaml` + `overview.mdx` + `failure.mdx` per `docs/authoring-things.md`.
 The Python pipeline **verifies, never derives blind**: authors supply solved forms per knob configuration;
-SymPy checks them against the relations (symbolic + numeric sampling). Blind `solve()` is fallback-only
-under a hard timeout — it verifiably hangs on raw loop-closure trig systems. The build fails loudly, naming
-the THING/step/relation, on: dimension inhomogeneity, DOF mismatch, unverifiable derivation step, solution
-residual ≠ 0, branch-count mismatch, or unrenderable LaTeX.
+SymPy checks them against the relations (symbolic + numeric sampling). There is NO blind `solve()` anywhere
+in the pipeline — it verifiably hangs on raw loop-closure trig systems; authored closed forms (and, future,
+bracketed `solve1d`) are the only paths. Multi-branch solutions (four-bar open/crossed) are each verified
+independently against every relation. The build fails loudly, naming the THING/step/relation/branch, on:
+dimension inhomogeneity, DOF mismatch, unverifiable derivation step, solution residual ≠ 0, branch-count
+mismatch, or unrenderable LaTeX.
 
 ## Data provenance rules (full text: `docs/data-provenance.md`)
 
@@ -76,14 +78,16 @@ Generated artifacts (`site/src/generated/`, `data/build/`) are **never committed
 
 ## Out of scope (v1)
 
-Feedback loops / cyclic solving (schema is ready; solver is not built) · full chaining UI (one demo only) ·
-Materials Project integration · fluids & time-integration dynamics engines · Pyodide sandbox · integer
-tooth-count synthesis · eccentric-column solve-for-P (transcendental) · coupler-curve inverse · custom
-domain · analytics (none, stated policy) · accounts/comments (static site).
+Feedback loops / cyclic solving (schema is ready; solver is not built) · full chaining UI (`/chain-demo/`
+is the one shipped demo) · Materials Project integration · fluids & time-integration dynamics engines ·
+Pyodide sandbox · integer tooth-count synthesis · eccentric-column solve-for-P (transcendental) ·
+coupler-curve inverse · custom domain · analytics (none, stated policy) · accounts/comments (static site).
 
 ## Where things live
 
 `docs/architecture.md` — pipeline + the unified compiled-artifact schema (single source of truth).
 `docs/authoring-things.md` — how to write a THING. `docs/data-provenance.md` — citation tiers + legal frame.
 `docs/decisions/` — ADRs (read before re-litigating a choice). Build: `pnpm build` in `site/` runs the
-Python pipeline first; `uv run pytest` in `pipeline/` for math-layer tests.
+Python pipeline first; `uv run pytest` in `pipeline/` for math-layer tests. The full build takes ≈ 3–4
+minutes — four-bar branch verification dominates the compile; it is slow, not hung. The repo is public and
+the site deploys from CI on every push to main: https://jd-jones-ases.github.io/Mechanic/

@@ -29,9 +29,17 @@ step before `astro build`).
 4. **Verify** (`verify.py`):
    - *Solutions*: substitute each authored solution into every relation residual (and constraints) and
      require zero — tiered: `simplify(d)==0` → `d.equals(0)` → `simplify(d.rewrite(exp))==0` → ≥30 mpmath
-     samples at 50 dps over declared bounds (tolerance 1e-40). Any `False`/undecided ⇒ build failure naming
-     thing/configuration/target. Blind `sympy.solve()` is fallback ONLY, under a hard wall-clock timeout
-     (verified 2026-06: raw four-bar loop closure hangs `solve()` >5 min).
+     samples at 50 dps over declared bounds (tolerance 1e-40). ALL symbolic tiers are skipped above
+     `count_ops > 200` — `simplify`/`equals` effectively hang on loop-closure-sized expressions — and the
+     numeric tier decides alone. Complex/singular samples are *domain holes* (a four-bar geometry that
+     does not assemble), resampled rather than failed, but a minimum quota of real samples must be found
+     or the identity is uncertified ⇒ build failure. Multi-branch configurations: EVERY branch label is
+     independently resolved, DOF-checked on its own manifold (exact rational rank where the manifold
+     point is rational; 50-dps numeric rank with a 1e-30 chop on transcendental manifolds), verified
+     against EVERY relation, and given its own parity samples. There is NO blind `sympy.solve()` anywhere
+     in v1 (verified 2026-06: raw four-bar loop closure hangs `solve()` >5 min); authored closed forms
+     and future bracketed `solve1d` are the only paths. Any `False`/undecided ⇒ build failure naming
+     thing/configuration/branch/target.
    - *Derivation steps*: each step is an equation in the THING's variables; after substituting the verified
      solutions of the step's declared configuration it must reduce to an identity (same tiered checker).
      This proves each displayed line is *true*, not that the chain is pedagogically minimal — prose carries
@@ -72,7 +80,10 @@ step before `astro build`).
     "residual_fn": "rel_willis",           // key into fns.ts — callable residual (Brent/feedback on-ramp)
     "srepr": "…",                          // provenance: exact SymPy form that was verified
     "assumptions": ["rigid bodies"],
-    "validity": [{ "guard_fn": "g1", "severity": "warn|invalid", "message": "…", "citation": "…" }],
+    "validity": [{ "guard_fn": "g1", "severity": "warn|invalid", "message": "…", "citation": "…",
+                   "needs": ["delta","L"] }],   // symbols the predicate reads — the engine evaluates it
+                                                // whenever all are finite, even after evaluation was
+                                                // refused ("cannot assemble" must not be masked)
     "citation": "source-id"
   }],
   "configurations": [{

@@ -1,6 +1,8 @@
 # ADR-0004: Private repo now; Pages deploy job written but dormant
 
-**Status:** accepted (user-approved 2026-06-10)
+**Status:** accepted (user-approved 2026-06-10) — **enacted 2026-06-10**: repo flipped public,
+Pages enabled (build type: workflow), repo variable `DEPLOY_PAGES=true`; the deploy job now runs on
+every push to main. Live: https://jd-jones-ases.github.io/Mechanic/
 
 **Decision.** The repo is private on a Free personal plan. CI builds the full site, runs the entire test
 pyramid, and uploads `dist/` as a workflow artifact on every push. The Pages deploy job exists in

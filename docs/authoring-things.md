@@ -65,8 +65,10 @@ derivation:                                # every line is machine-verified agai
     rule: "double integration"
 
 sim:
-  engine: statics-cascade                  # must exist in site/src/engines/registry.ts
-  config: { sweep: P, draw: beam-cantilever }
+  engine: statics-cascade                  # informational facet; the DRAW key below is what binds
+  config: { sweep: P, draw: beam-cantilever }   # draw must be registered in the SIMS map
+                                                # (site/src/components/ThingWidget.tsx) with a component
+                                                # in site/src/components/sims/
 
 sources:
   - id: gere-goodno
@@ -128,3 +130,9 @@ What the build does with this:
   `data-provenance.md`).
 - Writing a "derivation" that's just the final formula. Steps should be the 3–8 lines a good TA would put
   on the board; prose carries the why.
+- New sim components with CSS classes that don't exist yet: SVG defaults to `stroke: none`, so the shape
+  renders INVISIBLE and every functional test still passes (the four-bar shipped that way once). When you
+  add a draw component, define its classes in `site/src/styles/global.css` in the same change — and look
+  at the page.
+- Editing `thing.yaml` with PowerShell `Get-Content`/`Set-Content` round-trips: PS 5.1 reads BOM-less
+  UTF-8 as ANSI and silently mojibakes every em-dash and Greek letter. Use a UTF-8-safe editor path.
