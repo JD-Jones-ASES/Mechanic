@@ -1,0 +1,38 @@
+The [solid flywheel](../flywheel-disk/) ended on a fine print: *no central hole*. But nearly every
+real rotor needs one — a shaft has to get through. This page pays that bill, and the price is
+startling. Drill the smallest bore you can machine through the disk's centre and the peak stress
+does not creep up by a few percent. It **doubles**.
+
+$$\sigma_{\theta,max} = \frac{\rho\,\omega^2}{4}\Big[(3+\nu)\,R^2 + (1-\nu)\,a^2\Big] \qquad f_{bore} = 2 + \frac{2\,(1-\nu)\,a^2}{(3+\nu)\,R^2}$$
+
+The widget's *bore penalty* readout $f_{bore}$ is that stress divided by the solid disk's centre
+value at identical geometry, speed, and material. Drag the bore radius $a$ down toward nothing
+and watch it settle on **2.0** — not 1.0. The limit is a genuine discontinuity: a disk with an
+infinitesimal hole carries twice the stress of a disk with no hole. The resolution is a classic
+of elasticity: the solid disk's centre sits in *equal biaxial tension* ($\sigma_r = \sigma_\theta$
+there), and punching a circular hole into an equibiaxial field multiplies the stress at its edge
+by exactly the hole's concentration factor, $K = 2$. The "paradox" is just stress concentration
+wearing rotational clothes — and it is why the field in the derivation below has a $1/r^2$ term
+the solid disk was forced to discard: with material removed at the centre, nothing forbids it
+anymore, and it bites hardest exactly at the bore edge.
+
+Three consequences worth turning the knobs for:
+
+- **The speed limit drops by $1/\sqrt{2}$.** Stress doubles at fixed speed, and stress goes as
+  $\omega^2$ — so the yield-onset speed $\omega_y$ falls to about 70.7% of the solid disk's.
+  The [flywheel page](../flywheel-disk/)'s specific-energy ceiling was a solid-disk privilege;
+  the bored rotor loses roughly half its energy capacity at the limit. That is the real cost of
+  a shaft hole, and why high-end flywheels use integral shafts or profiled hubs instead.
+- **At a fixed speed, the bore is almost free — even helpful.** $e = E_k/m$ *rises* when you
+  bore the disk (526 vs 506 J/kg at this page's defaults), because the centre you removed was
+  the part storing almost nothing ($r^2$ weighting). Energy lives at the rim; stress lives at
+  the bore. The knobs let you feel both truths at once.
+- **The radial stress never competes.** It must vanish at *both* free surfaces, so it bulges to
+  a modest peak at the geometric-mean radius $r = \sqrt{aR}$ and stays below the hoop stress
+  everywhere — same verdict as the [thick-walled cylinder](../thick-walled-cylinder/), and for
+  the same reason: hoop directions carry the burden in every radial-field THING.
+
+One boundary this page deliberately leaves quiet: the bore here is **free** — nothing presses on
+it. Put a shaft *into* that bore with an interference fit and the contact pressure adds a Lamé
+field on top of this one. That story — the shrink-fit compound rotor — is the next THING in the
+radial-field family, and it is secretly a chaining story.

@@ -262,7 +262,7 @@ test("verification page discloses authorship and the audit surface", async ({ pa
   await expect(page.getByText(/built end to end by an AI/i).first()).toBeVisible();
   await expect(page.getByText(/No human reviews the content/i).first()).toBeVisible();
   // every THING appears with its audit block (count is a deliberate change detector)
-  expect(await page.locator("section.relation-block").count()).toBe(15);
+  expect(await page.locator("section.relation-block").count()).toBe(16);
   await expect(page.getByText(/Where physics enters/i).first()).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -736,4 +736,58 @@ test("flywheel: overspeed warns at first yield; brittle materials are visibly ab
   await page.locator("#knob-omega").fill("6000"); // rad/s: 400× the default stress
   await expect(page.locator(".validity-warn").first()).toBeVisible();
   await expect(page.locator(".validity")).toContainText(/yield/i);
+});
+
+/**
+ * Rotating disk with a central bore (defaults R=150, a=30, t=25 mm, ω=300):
+ *   A36 (ν=0.30, ρ=7805.7, σ_y=248.21 MPa): m=13.24 kg, E_k=6.972 kJ,
+ *   e=526.5 J/kg, σ_θ,max=13.15 MPa, σ_r,max=4.17 MPa, f_bore=2.017,
+ *   ω_y=1303 rad/s (the solid flywheel's A36 numbers at the SAME knobs were
+ *   σ=6.52 MPa, ω_y=1851, e=506.25 — the bore doubles one and trims the other
+ *   while RAISING the per-kg storage at fixed speed).
+ *   Vanishing bore a=1 mm: f_bore → 2.000 — the discontinuity, pinned.
+ */
+test("bored disk: the vanishing hole doubles the stress, and the goldens hold", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/rotating-disk-bore/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  // same exclusion as the flywheel: 10 of 13 materials publish ν, ρ AND σ_y
+  expect(await page.getByTestId("material-select").locator("option").count()).toBe(10);
+
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  expect(await readOutput(page, "m_disk")).toBeCloseTo(13.24, 1);
+  expect(await readOutput(page, "E_k")).toBeCloseTo(6.972, 2); // kJ
+  expect(await readOutput(page, "e_m")).toBeCloseTo(526.5, 0); // J/kg — ABOVE the solid disk's 506.25
+  expect(await readOutput(page, "sigma_t_max")).toBeCloseTo(13.15, 1); // MPa ≈ 2.017 × solid 6.52
+  expect(await readOutput(page, "sigma_r_max")).toBeCloseTo(4.17, 1); // MPa — hoop governs
+  expect(await readOutput(page, "f_bore")).toBeCloseTo(2.017, 2);
+  expect(await readOutput(page, "omega_y")).toBeCloseTo(1303, 0); // rad/s ≈ solid 1851/√2
+
+  // THE pin: shrink the bore to 1 mm and the penalty refuses to fall below 2
+  await page.locator("#knob-a").fill("1"); // mm
+  expect(await readOutput(page, "f_bore")).toBeCloseTo(2.0, 3);
+  expect(await readOutput(page, "sigma_t_max")).toBeCloseTo(13.04, 1); // exactly 2 × 6.52
+  expect(errors).toEqual([]);
+});
+
+test("bored disk: energy-in runs backwards, and a bore that eats the rim refuses", async ({ page }) => {
+  await page.goto("things/rotating-disk-bore/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+  await page.getByTestId("material-select").selectOption("steel-a36");
+
+  // same relations backwards: name the energy, get the speed that stores it
+  await page.getByTestId("config-select").selectOption("energy-in");
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  await expect(page.locator("#knob-E_k")).toBeVisible();
+  await page.locator("#knob-E_k").fill("6.9719"); // kJ
+  expect(await readOutput(page, "omega")).toBeCloseTo(300, 0); // rad/s round trip
+
+  // geometric nonsense refuses loudly: bore radius past the rim
+  await page.getByTestId("config-select").selectOption("speed-in");
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  await page.locator("#knob-a").fill("200"); // mm > R = 150 mm
+  await expect(page.locator(".validity-invalid").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/no disk remains/i);
+  await expect(page.locator(".sim figcaption")).toContainText(/nothing honest/i);
 });

@@ -18,8 +18,9 @@ import { BeamSim } from "./sims/BeamSim";
 import { BeltSim } from "./sims/BeltSim";
 import { ColumnSim } from "./sims/ColumnSim";
 import { CombinedShaftSim } from "./sims/CombinedShaftSim";
-import { EccentricColumnSim } from "./sims/EccentricColumnSim";
 import { CylinderSim } from "./sims/CylinderSim";
+import { DiskBoreSim } from "./sims/DiskBoreSim";
+import { EccentricColumnSim } from "./sims/EccentricColumnSim";
 import { FlywheelSim } from "./sims/FlywheelSim";
 import { FourbarSim } from "./sims/FourbarSim";
 import { PlanetarySim } from "./sims/PlanetarySim";
@@ -48,6 +49,7 @@ const SIMS: Record<
   "eccentric-column": EccentricColumnSim,
   fourbar: FourbarSim,
   "flywheel-disk": FlywheelSim,
+  "rotating-disk-bore": DiskBoreSim,
   "thick-walled-cylinder": CylinderSim,
   "helical-spring": SpringSim,
   "power-screw": ScrewSim,

@@ -141,7 +141,8 @@ a { color: var(--accent); }
 /* filled stress distribution (EccentricColumnSim): bar from σ_min to σ_max */
 .stress-fill { fill: var(--accent); opacity: 0.55; }
 .stress-fill-over { fill: #dc2626; opacity: 0.8; }
-/* flywheel-specific */
+/* flywheel-specific (fw-* shared by the bored disk) */
+.disk-bore { fill: var(--paper); stroke: var(--ink); stroke-width: 1.5; }
 .fw-scribe { stroke: var(--ink); stroke-width: 2; stroke-linecap: round; }
 .fw-tick { stroke: var(--muted); stroke-width: 2; }
 .fw-hub { fill: var(--ink); }
