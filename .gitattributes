@@ -1,0 +1,5 @@
+# Normalize to LF everywhere (Windows dev / Linux CI asymmetry guard)
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.woff2 binary
