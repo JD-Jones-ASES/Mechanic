@@ -49,10 +49,10 @@ def _wahl(c):
     return (4 * c - 1) / (4 * c - 4) + sp.Rational(615, 1000) / c
 
 
-def test_wahl_factor_limits_and_published_values():
-    """K_W → 1 as C → ∞ (a straight torsion bar needs no correction); at the
-    classic table points it reproduces the published magnitudes: ≈ +25 % at
-    C = 6 and ≈ +40 % at C = 4 (the values Shigley's ch. 10 text quotes)."""
+def test_wahl_factor_limits_and_structure():
+    """K_W → 1 as C → ∞ (a straight torsion bar needs no correction); spot
+    evaluations of the formula at the classic index points (1.2525 at C = 6,
+    1.40375 at C = 4 — i.e. ≈ +25 % and ≈ +40 % inner-fiber stress)."""
     assert sp.limit(_wahl(C), C, sp.oo) == 1
     assert abs(float(_wahl(6)) - 1.2525) < 1e-4
     assert abs(float(_wahl(4)) - 1.40375) < 1e-5

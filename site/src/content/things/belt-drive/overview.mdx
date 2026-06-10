@@ -11,14 +11,15 @@ Three things to notice, one per formula:
 - **Friction compounds.** Each element of wrap multiplies the tension ratio by a little more
   than its neighbor did, because friction grows with the tension that friction has already
   built — the compound-interest condition, integrated into $e^{\mu\theta}$. The numbers get
-  silly fast: at $\mu = 0.3$, one turn holds 6.6×, two turns 44×, four turns ~1900×. A capstan
+  silly fast: at $\mu = 0.3$, one turn holds 6.6×, two turns 43×, four turns ~1900×. A capstan
   is a force amplifier with no moving parts, and the *wrap angle knob* in the widget is the
   whole machine.
 - **Power is sold by the tension *drop*.** The belt pulls with $T_1 - T_2$, not with $T_1$ —
   the slack side rides along at $T_2$ ≥ its centrifugal floor, un-droppable. More wrap lets the
-  drive convert more of its headroom ($1 - e^{-\mu\theta}$ of it); past a couple of radians the
-  returns diminish to nothing, which is why idler pulleys that add wrap help small drives and
-  bore big ones.
+  drive convert more of its headroom ($1 - e^{-\mu\theta}$ of it, 61 % at a half-turn for
+  $\mu = 0.3$, 98 % by two turns) — each added radian captures less than the one before, which
+  is why an idler that adds wrap transforms a small drive and barely registers on one that's
+  already well wrapped.
 - **Speed gives, then takes away.** At fixed tension the power rises with $v$ — until the
   centrifugal slice $T_c = m'v^2$, which presses the belt onto nothing and transmits nothing,
   eats the headroom. The peak sits at $v^* = \sqrt{T_1/3m'}$ (exactly one-third of the

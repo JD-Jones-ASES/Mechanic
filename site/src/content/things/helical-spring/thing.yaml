@@ -56,7 +56,7 @@ variables:
     latex: G
     unit: Pa
     quantity_kind: elastic_modulus
-    default: 79.0e9
+    default: 80.0e9
     bounds: [0.5e9, 200.0e9]
     positive: true
     role: material
@@ -76,7 +76,7 @@ variables:
     latex: '\sigma_y'
     unit: Pa
     quantity_kind: pressure_stress
-    default: 250.0e6
+    default: 410.0e6
     bounds: [10.0e6, 2.0e9]
     positive: true
     role: material
@@ -86,7 +86,7 @@ variables:
     latex: '\rho'
     unit: kg/m**3
     quantity_kind: density
-    default: 7850
+    default: 7870
     bounds: [400, 9000]
     positive: true
     role: material
@@ -97,7 +97,7 @@ variables:
     unit: '1'
     quantity_kind: ratio
     default: 8
-    bounds: [1.2, 30]
+    bounds: [1.0, 320]
     positive: true
     role: derived
   - symbol: k
@@ -115,7 +115,7 @@ variables:
     unit: '1'
     quantity_kind: ratio
     default: 1.18
-    bounds: [1.0, 2.5]
+    bounds: [1.0, 50]
     positive: true
     role: derived
   - symbol: tau
@@ -185,6 +185,13 @@ relations:
         and the stress correction all depend on geometry only through C
     citation: shigley
     validity:
+      - condition: C > 1
+        severity: invalid
+        message: >-
+          Mean coil diameter must exceed the wire diameter — at C ≤ 1 there is no inner
+          clearance and nothing here describes a windable coil. Every formula on this page is
+          meaningless in this region.
+        citation: shigley
       - condition: C >= 4
         severity: warn
         message: >-
@@ -204,8 +211,8 @@ relations:
     residual: k*8*D**3*N_a - G*d**4
     assumptions:
       - linear elastic; the wire works in torsion, so G (not E) sets the rate
-      - direct-shear contribution to deflection dropped — Shigley's eq. (10-9) approximation,
-        under 1 % for C ≥ 7
+      - direct-shear contribution to deflection dropped — Shigley's eq. (10-9) approximation;
+        the dropped term is 1/(2C²), ≈ 1 % at C = 7 and shrinking with C²
       - ends seated so that only the N_a active coils deflect
     citation: shigley
     validity:
@@ -271,6 +278,10 @@ relations:
     assumptions:
       - maximum-shear-stress (Tresca) criterion against the bulk tensile yield strength — the
         same convention as the torsion shaft
+      - deliberately conservative — the margin keeps the full Wahl curvature factor, where
+        Shigley's static-service practice drops the curvature part (K_s only) on the grounds
+        that the first load locally strain-strengthens it away; this page flags first local
+        yield at the inner fiber, ~11 % earlier at C = 8
       - honest caveat — real spring wire (music wire, hard-drawn, chrome-silicon) is cold-drawn
         far stronger than any bulk bar of the same alloy, and its strength grows as the wire
         gets thinner; catalog spring design uses wire-size-dependent allowables this database
@@ -392,10 +403,11 @@ sources:
       (maximum-shear-stress criterion, S_sy = 0.5 S_y).
     verification: >-
       Equation and table numbers pinned against the publisher's official ch. 10 lecture-slide
-      deck (Istanbul Technical University mirror) and cross-checked against the 10th-edition
-      ch. 10 chapter outline (§10-1 p. 518 … §10-5 p. 522), 2026-06-10. The rate formula is
-      independently re-derived from Castigliano's theorem (both energy terms), and the Wahl
-      factor's limits and table values cross-checked, in pipeline/tests/test_spring_physics.py.
+      deck (Istanbul Technical University mirror), whose chapter-outline page also fixes the
+      10th-edition section pagination (§10-1 p. 518 … §10-5 p. 522), 2026-06-10. The rate
+      formula is independently re-derived from Castigliano's theorem (both energy terms), and
+      the Wahl factor's C → ∞ limit, its ordering above the direct-shear-only factor, and the
+      ≤ ~1.4 % Wahl–Bergsträsser gap are proven, in pipeline/tests/test_spring_physics.py.
   - id: wahl
     citation: >-
       Wahl, A. M., Mechanical Springs, 2nd ed., McGraw-Hill, 1963 — the curvature-correction
@@ -410,6 +422,6 @@ sources:
       Gere, J. M., & Goodno, B. J., Mechanics of Materials, 9th ed., Cengage, 2018 — circular
       shafts in torsion (the wire's stress state, §3.3–3.5) and prismatic volume/mass.
     verification: >-
-      Topic-level citation, same sections already pinned by the torsion-shaft THING; the
-      torsion formula this spring reuses is re-derived there and in
-      pipeline/tests/test_shaft_physics.py.
+      Topic-level citation — the same Gere sections the torsion-shaft THING cites (not
+      section-pinned there either); the torsion formula this spring reuses is independently
+      re-derived from the stress distribution in pipeline/tests/test_shaft_physics.py.

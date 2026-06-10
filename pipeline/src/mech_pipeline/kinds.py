@@ -12,7 +12,8 @@ QUANTITY_KINDS: frozenset[str] = frozenset({
     # dimensionless, mutually incompatible on purpose
     "angle",
     "ratio",
-    "count",
+    "count",  # count-like quantity; integerness is the variable's `integer` flag, not the
+              # kind's (active spring coils are a legitimate 8.5)
     "poisson_ratio",
     "strain",
     "safety_factor",

@@ -62,7 +62,16 @@ export function BeltSim({ values, invalid = false }: { values: VarRecord; invali
   };
   const [t1x, t1y] = tan(a1);
   const [t2x, t2y] = tan(a2);
-  const span = 150;
+  // at extreme wraps the tangents leave near-vertically: shorten each span so
+  // it (and its label) stays inside the frame instead of drawing off-canvas
+  const spanFor = (ex: number, ey: number, ty: number): number => {
+    let s = 150;
+    if (ty < -1e-6) s = Math.min(s, (ey - 14) / -ty);
+    if (ty > 1e-6) s = Math.min(s, (192 - ey) / ty);
+    return Math.max(34, s);
+  };
+  const span1 = spanFor(e1x, e1y, t1y);
+  const span2 = spanFor(e2x, e2y, t2y);
 
   const wTight = 6;
   const wSlack = Math.max(1.5, 6 * (T_2 / T_1));
@@ -108,12 +117,20 @@ export function BeltSim({ values, invalid = false }: { values: VarRecord; invali
           stroke-width={wTight}
         />
         {/* slack span leaves the lower endpoint, tight span the upper */}
-        <line x1={e1x} y1={e1y} x2={e1x + span * t1x} y2={e1y + span * t1y} class="belt-slack" stroke-width={wSlack} />
-        <line x1={e2x} y1={e2y} x2={e2x + span * t2x} y2={e2y + span * t2y} class="belt-tight" stroke-width={wTight} />
-        <text x={e2x + 0.6 * span * t2x} y={e2y + 0.6 * span * t2y - 8} class="sim-label">
+        <line x1={e1x} y1={e1y} x2={e1x + span1 * t1x} y2={e1y + span1 * t1y} class="belt-slack" stroke-width={wSlack} />
+        <line x1={e2x} y1={e2y} x2={e2x + span2 * t2x} y2={e2y + span2 * t2y} class="belt-tight" stroke-width={wTight} />
+        <text
+          x={Math.min(250, e2x + 0.6 * span2 * t2x)}
+          y={Math.max(14, Math.min(226, e2y + 0.6 * span2 * t2y - 8))}
+          class="sim-label"
+        >
           T₁ (tight)
         </text>
-        <text x={e1x + 0.6 * span * t1x} y={e1y + 0.6 * span * t1y + 14} class="sim-label">
+        <text
+          x={Math.min(250, e1x + 0.6 * span1 * t1x)}
+          y={Math.max(14, Math.min(226, e1y + 0.6 * span1 * t1y + 14))}
+          class="sim-label"
+        >
           T₂ (slack)
         </text>
         <text x={cx} y={cy - r - 8} text-anchor="middle" class="sim-label">

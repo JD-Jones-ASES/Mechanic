@@ -22,9 +22,11 @@ Three things to notice, one per formula:
 - **The envelopes are part of the model.** A spring is only honest between its limits: compress
   it to the solid height $L_s$ and the coils stack into a rigid slug (the widget *refuses* past
   coil bind — the linear model has nothing true to say there); make $L_0$ too tall relative to
-  $D$ and it buckles sideways like a [column](../euler-column/) — a limit that depends on the
-  material through $E$ and $G$, so the banner moves when the material does; wind $C$ outside
-  4–12 and you have something a spring works either can't make or you can't use.
+  $D$ and it buckles sideways like a [column](../euler-column/) — and since the stability bound
+  depends on $E$ and $G$ only through their ratio (essentially Poisson's ν), it lands near
+  $L_0 \lesssim 5.2\,D$ for *every* isotropic material, a rare nearly-universal number in this
+  catalog; wind $C$ outside 4–12 and you have something a spring works either can't make or
+  you can't use.
 
 The *wind-to-rate* configuration runs the same relations backwards: name the rate you need and
 the widget finds the coil count to wind — then immediately tells you what that choice costs in

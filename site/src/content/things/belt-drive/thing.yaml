@@ -72,12 +72,13 @@ variables:
     role: derived
     display_units: [N, kN]
   - symbol: P_t
-    name: Transmitted power
+    name: Transmitted power (at the slip limit)
     latex: P
     unit: W
     quantity_kind: power
     default: 3147
-    bounds: [0, 1.0e6]
+    bounds: [1, 1.0e6]
+    positive: true
     display_units: [kW, W]
   - symbol: v_star
     name: Max-power belt speed
@@ -119,7 +120,7 @@ relations:
           speed the belt is spending all of itself staying on its circle and can transmit
           nothing. This is the belt's hard speed ceiling; slow down, lighten the belt, or
           raise the allowable tension.
-        citation: khurmi
+        citation: shigley
   - id: power
     group: torque-power
     latex: 'P = (T_1 - T_2)\,v'
@@ -183,9 +184,10 @@ derivation:
         friction dT = μ·dN = μ(T − m'v²)·dφ. The growth of tension is proportional to the
         tension excess itself — the compound-interest condition — and integrating from the
         slack side (T_2 at φ = 0) to the tight side (T_1 at φ = θ) gives exponential growth
-        of the excess: T_1 − T_c = (T_2 − T_c)·e^{μθ}. Euler wrote this for ships' ropes in
-        1762. (The build cannot integrate; the test pipeline solves the same ODE with a
-        computer algebra system as the independent check.)
+        of the excess: T_1 − T_c = (T_2 − T_c)·e^{μθ}. Euler published this exponential in
+        1762 — it is the capstan equation a sailor exploits. (The build cannot integrate; the
+        test pipeline solves the same ODE with a computer algebra system as the independent
+        check.)
       rule: 'element equilibrium: tangential direction, integrated'
       check: definition
     - expr: Eq(P_t, (T_1 - T_c)*(1 - exp(-mu*theta_w))*v)
@@ -229,7 +231,8 @@ sources:
       Rope and Chain Drives), art. "Condition for the Transmission of Maximum Power":
       P is maximum when T_c = T/3, i.e. v* = √(T/3m).
     verification: >-
-      Article title and the T_c = T/3 result confirmed against indexed course reproductions
-      of ch. 11, 2026-06-10 (not page-pinned to a specific printing); the result itself is
-      independently re-derived by calculus (sp.diff, sp.solve on the cubic) in
-      pipeline/tests/test_belt_physics.py.
+      Article title and the T_c = T/3 result confirmed only against third-party course
+      reproductions and search-index snippets of ch. 11, 2026-06-10 — the book itself was not
+      consulted, so no page or article number is pinned. The result is independently
+      re-derived by calculus (sp.diff, sp.solve on the cubic) in
+      pipeline/tests/test_belt_physics.py, which carries the real weight here.

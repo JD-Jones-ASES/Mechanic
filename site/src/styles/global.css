@@ -142,13 +142,11 @@ a { color: var(--accent); }
 .screw-incline { fill: var(--line); opacity: 0.45; stroke: var(--ink); }
 .screw-block { fill: var(--accent); stroke: var(--ink); }
 .screw-block-slipping { fill: #dc2626; stroke: var(--ink); }
-.screw-thread { stroke: var(--ink); stroke-width: 2; fill: none; }
 /* belt drive */
 .belt-pulley { fill: var(--line); stroke: var(--ink); stroke-width: 2; }
 .belt-tight { stroke: var(--ink); stroke-linecap: round; fill: none; }
 .belt-slack { stroke: var(--muted); stroke-linecap: round; fill: none; }
 .belt-wrap { stroke: var(--accent); fill: none; }
-.belt-over { stroke: #dc2626; }
 
 /* derivation + equations */
 .derivation { border-left: 3px solid var(--line); padding-left: 1rem; }

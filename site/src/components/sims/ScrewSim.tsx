@@ -35,8 +35,12 @@ export function ScrewSim({ values, invalid = false }: { values: VarRecord; inval
 
   const baseY = 168;
   const x0 = 26;
-  const run = 264;
-  const rise = Math.min(120, run * Math.tan(lam));
+  const fullRun = 264;
+  // the angle is NEVER falsified: when λ is steep, shrink the drawn run so the
+  // rise fits the frame — the slope stays true and the base label says so
+  const run = Math.min(fullRun, 120 / Math.tan(lam));
+  const truncated = run < fullRun;
+  const rise = run * Math.tan(lam);
   const x1 = x0 + run;
   const topY = baseY - rise;
 
@@ -60,8 +64,8 @@ export function ScrewSim({ values, invalid = false }: { values: VarRecord; inval
         </desc>
         {/* the unwrapped thread */}
         <path d={`M ${x0} ${baseY} L ${x1} ${baseY} L ${x1} ${topY} Z`} class="screw-incline" />
-        <text x={x0 + run / 2} y={baseY + 14} text-anchor="middle" class="sim-label">
-          π·d_m (one turn)
+        <text x={truncated ? W / 2 : x0 + run / 2} y={baseY + 14} text-anchor="middle" class="sim-label">
+          {truncated ? "π·d_m runs off-frame — slope still true" : "π·d_m (one turn)"}
         </text>
         <text x={x1 + 2} y={(baseY + topY) / 2 + 4} class="sim-label">
           l

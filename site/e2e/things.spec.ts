@@ -414,7 +414,7 @@ test("spring: rate goldens, and the stiffness/strength axes split across materia
   await page.getByTestId("material-select").selectOption("steel-a36");
   const kA36 = await readOutput(page, "k");
   const sfA36 = await readOutput(page, "SF");
-  expect(Math.abs(kA36 / k1045 - 1)).toBeLessThan(0.01); // steels share one G
+  expect(Math.abs(kA36 / k1045 - 1)).toBeLessThan(0.015); // steels share one G (11.5 Msi vs 80 GPa)
   expect(sfA36).toBeLessThan(sf1045 * 0.65);
 
   // titanium: the spring inversion — softer AND safer at the same load

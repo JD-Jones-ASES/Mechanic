@@ -48,7 +48,7 @@ variables:
     unit: rad
     quantity_kind: angle
     default: 0.0568
-    bounds: [0, 1.0]
+    bounds: [0, 1.3]
     positive: true
     role: derived
     display_units: [deg, rad]
@@ -66,7 +66,7 @@ variables:
     latex: T_L
     unit: N*m
     quantity_kind: torque
-    default: 4.2
+    default: 1.61
     bounds: [-5000, 5000]
     role: derived
     display_units: ["N*m"]
