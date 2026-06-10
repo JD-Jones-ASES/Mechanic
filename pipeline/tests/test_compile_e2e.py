@@ -108,3 +108,33 @@ def test_inhomogeneous_relation_fails_build(things_dir, tmp_path):
     (things_dir / "planetary-fixture" / "thing.yaml").write_text(bad, encoding="utf-8")
     with pytest.raises(BuildError):
         compile_all(things_dir, tmp_path / "generated")
+
+
+def test_cache_reuses_unchanged_things(things_dir, tmp_path):
+    """Unchanged yaml + unchanged pipeline ⇒ artifacts are reused, not
+    re-verified (compilation is deterministic, so this is sound); touching the
+    yaml invalidates the cache."""
+    out = tmp_path / "generated"
+    compile_all(things_dir, out)
+    artifact = out / "planetary-fixture.compiled.json"
+    first_mtime = artifact.stat().st_mtime_ns
+    assert compile_all(things_dir, out) == ["planetary-fixture"]  # reused, still reported
+    assert artifact.stat().st_mtime_ns == first_mtime  # not rewritten
+    yaml_path = things_dir / "planetary-fixture" / "thing.yaml"
+    yaml_path.write_text(yaml_path.read_text(encoding="utf-8") + "\n# touched\n", encoding="utf-8")
+    compile_all(things_dir, out)
+    assert artifact.stat().st_mtime_ns != first_mtime  # recompiled
+
+
+def test_cache_removes_artifacts_of_deleted_things(things_dir, tmp_path):
+    """A deleted THING's artifacts must not linger — the site would render an
+    orphan page from them."""
+    import shutil
+
+    out = tmp_path / "generated"
+    compile_all(things_dir, out)
+    assert (out / "planetary-fixture.compiled.json").exists()
+    shutil.rmtree(things_dir / "planetary-fixture")
+    assert compile_all(things_dir, out) == []
+    assert not (out / "planetary-fixture.compiled.json").exists()
+    assert not (out / "planetary-fixture.fns.ts").exists()

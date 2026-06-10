@@ -5,9 +5,17 @@
  * (never silently mislead; invariant 5).
  */
 import type { VarRecord } from "../../engines/types";
+import { SimRefusal } from "./SimRefusal";
 
-export function BeamSim({ values }: { values: VarRecord }) {
-  const { L = 1, delta = 0, SF = Infinity } = values;
+export function BeamSim({ values, invalid = false }: { values: VarRecord; invalid?: boolean }) {
+  // the engine's `invalid` verdict is authoritative — no default-geometry
+  // drawing over a refused state (invariant 5)
+  const L = values.L ?? NaN;
+  const delta = values.delta ?? NaN;
+  const SF = values.SF ?? Infinity;
+  if (invalid || !Number.isFinite(L) || !Number.isFinite(delta) || L <= 0) {
+    return <SimRefusal ariaLabel="Cantilever beam diagram (undefined state)" height={150} />;
+  }
   const W = 320;
   const H = 150;
   const x0 = 30;

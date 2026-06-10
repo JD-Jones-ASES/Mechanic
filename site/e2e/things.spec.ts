@@ -126,6 +126,9 @@ test("pressure vessel: thin-wall envelope refuses thick-wall inputs", async ({ p
   await page.locator("#knob-t").fill("200"); // mm → r/t = 2.5, far past the envelope
   await expect(page.locator(".validity-invalid").first()).toBeVisible();
   await expect(page.locator(".validity")).toContainText(/thick-walled/i);
+  // the SIM refuses too — this invalid fires with every value finite, so only
+  // the engine's verdict (not NaN-sniffing) can catch it
+  await expect(page.locator(".sim figcaption")).toContainText(/nothing honest/i);
 });
 
 /**
@@ -211,6 +214,20 @@ test("euler column: end conditions are configurations; the inelastic region refu
   await page.locator("#knob-L").fill("0.8"); // λ = 64 < λ_T: intermediate column
   await expect(page.locator(".validity-invalid").first()).toBeVisible();
   await expect(page.locator(".validity")).toContainText(/intermediate|Johnson/i);
+  // and no confident mode-shape drawing beside the refusal banner — this
+  // invalid fires with every value finite (the engine's verdict, not NaN)
+  await expect(page.locator(".sim figcaption")).toContainText(/nothing honest/i);
+});
+
+test("verification page discloses authorship and the audit surface", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("verification/");
+  await expect(page.getByText(/built end to end by an AI/i).first()).toBeVisible();
+  await expect(page.getByText(/No human reviews the content/i).first()).toBeVisible();
+  // every THING appears with its audit block (count is a deliberate change detector)
+  expect(await page.locator("section.relation-block").count()).toBe(8);
+  await expect(page.getByText(/Where physics enters/i).first()).toBeVisible();
+  expect(errors).toEqual([]);
 });
 
 /**

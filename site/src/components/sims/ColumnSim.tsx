@@ -5,6 +5,7 @@
  * amplitude is schematic (invariant 5: never silently mislead).
  */
 import type { VarRecord } from "../../engines/types";
+import { SimRefusal } from "./SimRefusal";
 
 function endGlyphs(K: number): { top: "pin" | "fixed" | "free"; bottom: "pin" | "fixed" } {
   if (Math.abs(K - 2) < 1e-9) return { top: "free", bottom: "fixed" };
@@ -13,8 +14,15 @@ function endGlyphs(K: number): { top: "pin" | "fixed" | "free"; bottom: "pin" | 
   return { top: "pin", bottom: "pin" };
 }
 
-export function ColumnSim({ values }: { values: VarRecord }) {
-  const { K = 1, SF_b = Infinity } = values;
+export function ColumnSim({ values, invalid = false }: { values: VarRecord; invalid?: boolean }) {
+  // the engine's `invalid` verdict is authoritative (the inelastic region
+  // λ < λ_T refuses with every value finite) — no confident mode-shape
+  // drawing over a refused state (invariant 5)
+  const K = values.K ?? NaN;
+  const SF_b = values.SF_b ?? Infinity;
+  if (invalid || !Number.isFinite(K)) {
+    return <SimRefusal ariaLabel="Euler column diagram (undefined state)" height={210} />;
+  }
   const W = 320;
   const H = 210;
   const cx = W / 2;

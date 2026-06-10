@@ -1,10 +1,10 @@
-# CI: math pipeline -> site build (KaTeX + parity gates) -> engine unit tests
-# -> Playwright e2e + axe -> uploadable site artifact.
+# CI: math pipeline -> site build (KaTeX + parity + units gates) -> engine
+# unit tests -> Playwright e2e + axe -> deploy to GitHub Pages on main.
 #
-# DEPLOY IS DORMANT (ADR-0004): the repo is private on a Free plan, which
-# cannot publish GitHub Pages. To go live later: make the repo public, enable
-# Pages (source: GitHub Actions) in Settings, and set the repository variable
-# DEPLOY_PAGES=true. No code change needed.
+# Deploy is LIVE (ADR-0004 rollout completed 2026-06): the repo is public,
+# Pages is enabled (source: GitHub Actions), DEPLOY_PAGES=true. Every push to
+# main publishes https://jd-jones-ases.github.io/Mechanic/ — there is no
+# review step between merge and the public site (ADR-0007).
 name: CI
 
 on:
@@ -47,7 +47,19 @@ jobs:
       - name: Install site dependencies
         run: pnpm install --frozen-lockfile
         working-directory: site
-      - name: Build (pipeline gen -> KaTeX gate -> parity gate -> astro -> pagefind)
+
+      # Compiled-THING artifact cache: compile.py reuses artifacts whose
+      # thing.yaml + pipeline fingerprint are unchanged (the build is
+      # deterministic), so warm runs skip the expensive re-verification
+      # (four-bar branch proving dominates a cold build).
+      - name: Cache compiled THING artifacts
+        uses: actions/cache@v4
+        with:
+          path: site/src/generated/things
+          key: things-${{ hashFiles('site/src/content/things/**/thing.yaml', 'pipeline/src/**/*.py', 'pipeline/uv.lock') }}
+          restore-keys: things-
+
+      - name: Build (pipeline gen -> KaTeX gate -> parity gate -> units gate -> astro -> pagefind)
         run: pnpm run build
         working-directory: site
       - name: Engine unit tests (chaining type system, Brent)

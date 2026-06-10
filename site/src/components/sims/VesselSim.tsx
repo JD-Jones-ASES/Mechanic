@@ -5,9 +5,18 @@
  * ratio (never silently mislead; invariant 5).
  */
 import type { VarRecord } from "../../engines/types";
+import { SimRefusal } from "./SimRefusal";
 
-export function VesselSim({ values }: { values: VarRecord }) {
-  const { r = 0.5, t = 0.01, SF = Infinity } = values;
+export function VesselSim({ values, invalid = false }: { values: VarRecord; invalid?: boolean }) {
+  // the engine's `invalid` verdict is authoritative (it can fire with all
+  // values finite, e.g. the r/t < 5 thick-wall refusal) — no default-geometry
+  // drawing over a refused state (invariant 5)
+  const r = values.r ?? NaN;
+  const t = values.t ?? NaN;
+  const SF = values.SF ?? Infinity;
+  if (invalid || !Number.isFinite(r) || !Number.isFinite(t) || r <= 0) {
+    return <SimRefusal ariaLabel="Pressure vessel diagram (undefined state)" height={190} />;
+  }
   const W = 320;
   const H = 190;
   const cx = W / 2;

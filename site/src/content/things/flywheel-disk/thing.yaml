@@ -320,18 +320,34 @@ sources:
       ch. 4 (two-dimensional problems in polar coordinates), §32 "Rotating Disks":
       plane-stress field of a solid uniform disk, σ_r = σ_θ = (3+ν)ρω²R²/8 at the centre,
       σ_r(R) = 0 at the free rim.
+    verification: >-
+      Article number and title pinned against the 3rd-edition full text (Internet Archive
+      scan), 2026-06-10; the field itself is independently re-derived from equilibrium +
+      compatibility in pipeline/tests/test_flywheel_physics.py.
   - id: hibbeler-dyn
     citation: >-
       Hibbeler, R. C., Engineering Mechanics: Dynamics, 14th ed., Pearson, 2016 — §17.1 (mass
       moments of inertia; the uniform solid disk I = mR²/2) and ch. 18 (planar kinetics, work
       and energy: E = ½Iω² for rotation about a fixed axis).
+    verification: >-
+      §17.1 and chapter-18 titles confirmed against published 14th-edition chapter listings,
+      2026-06-10; the disk inertia integral is re-run in the test pipeline.
   - id: shigley
     citation: >-
       Budynas, R. G., & Nisbett, J. K., Shigley's Mechanical Engineering Design, 10th ed.,
       McGraw-Hill, 2015 — ch. 16 (flywheels: energy exchange and sizing) and ch. 1 (design
       factor against first yield).
+    verification: >-
+      Ch. 16 title ("Clutches, Brakes, Couplings and Flywheels") confirmed via 10th-edition
+      course materials, 2026-06-10; the flywheel section number within the chapter is not
+      pinned.
   - id: ashby
     citation: >-
       Ashby, M. F., Materials Selection in Mechanical Design, 4th ed., Butterworth-Heinemann,
       2011 — the "materials for flywheels" case study: maximum kinetic energy per unit mass is
       governed by the material index σ_y/ρ, independent of the disk's size.
+    verification: >-
+      Case-study title and §6.6 numbering confirmed via a published reference index,
+      2026-06-10; correspondence of that numbering to the 4th edition is not pinned. The index
+      claim itself (geometry cancels; e_max ∝ σ_y/ρ) is machine-proven in the derivation and
+      re-derived in the test pipeline.
