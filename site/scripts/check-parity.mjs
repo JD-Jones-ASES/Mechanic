@@ -29,8 +29,13 @@ for (const f of files) {
         if (typeof v === "number") env[k] = v;
       }
       for (const step of cfg.plan) {
-        if (step.type !== "eval" || !step.fn) continue; // branch steps compared per-branch below
-        env[step.target] = fns[step.fn](env);
+        if (step.type !== "eval") continue;
+        // multi-branch steps evaluate the branch this sample was generated on
+        const fnId = step.branch_fns
+          ? step.branch_fns[sample.branch ?? cfg.branches?.labels[0]]
+          : step.fn;
+        if (!fnId) continue;
+        env[step.target] = fns[fnId](env);
       }
       for (const [target, expected] of Object.entries(sample.outputs)) {
         if (!(target in env)) continue;

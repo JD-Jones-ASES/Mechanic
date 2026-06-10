@@ -135,6 +135,7 @@ const guardSchema = z.object({
   message: z.string(),
   citation: z.string().nullable().optional(),
   auto: z.boolean().optional(),
+  needs: z.array(identifier).optional(),
 });
 
 const compiled = defineCollection({
@@ -190,6 +191,7 @@ const compiled = defineCollection({
           z.object({
             inputs: z.record(identifier, z.number()),
             outputs: z.record(identifier, z.number()),
+            branch: z.string().optional(),
           }),
         ),
       }),

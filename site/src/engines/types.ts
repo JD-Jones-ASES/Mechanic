@@ -26,6 +26,8 @@ export interface Guard {
   message: string;
   citation?: string | null;
   auto?: boolean;
+  /** symbols the predicate reads — evaluable iff all are finite in the env */
+  needs?: string[];
 }
 
 export interface RelationMeta {
@@ -50,7 +52,7 @@ export interface Configuration {
   plan: PlanStep[];
   branches: { selector: string; labels: string[]; continuity: string } | null;
   guards: Guard[];
-  samples: { inputs: VarRecord; outputs: VarRecord }[];
+  samples: { inputs: VarRecord; outputs: VarRecord; branch?: string }[];
 }
 
 export interface CompiledThing {

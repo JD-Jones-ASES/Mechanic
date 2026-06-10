@@ -27,7 +27,14 @@ const Overview = overviewEntry ? (await render(overviewEntry)).Content : null;
 const Failure = failureEntry ? (await render(failureEntry)).Content : null;
 
 const needsMaterials = compiled.data.material_binding != null;
-const materials = needsMaterials ? (await getCollection("materials")).map((m) => m.data) : [];
+// only offer materials with published values for every bound property —
+// a missing G must read as "no data", never as a silently wrong number
+const boundKeys = Object.values(compiled.data.material_binding ?? {});
+const allMaterials = needsMaterials ? (await getCollection("materials")).map((m) => m.data) : [];
+const materials = allMaterials.filter((m) =>
+  boundKeys.every((k) => m.properties.some((p) => p.key === k)),
+);
+const materialsExcluded = allMaterials.length - materials.length;
 
 const tex = (s: string) => katex.renderToString(s, { displayMode: true, throwOnError: true });
 const a = compiled.data;
@@ -43,6 +50,15 @@ const a = compiled.data;
     <h2>Try it</h2>
     <div data-pagefind-ignore>
       <ThingWidget client:load artifact={a} materials={materials} sim={a.sim} />
+      {
+        materialsExcluded > 0 && (
+          <p class="citation">
+            {materialsExcluded} material{materialsExcluded === 1 ? "" : "s"} in the database{" "}
+            {materialsExcluded === 1 ? "is" : "are"} not listed here: no published value in our
+            cited sources for every property this THING needs.
+          </p>
+        )
+      }
     </div>
 
     <h2>Governing relations</h2>

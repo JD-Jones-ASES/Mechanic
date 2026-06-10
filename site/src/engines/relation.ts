@@ -78,15 +78,19 @@ export class RelationEngine {
       }
     }
 
-    // relation-attached validity envelopes (predicates over the full env)
-    if (!invalid) {
-      for (const rel of this.artifact.relations) {
-        for (const v of rel.validity) {
-          const ok = this.fns[v.guard_fn]!(env);
-          if (ok === false) {
-            messages.push({ severity: v.severity, message: v.message, citation: v.citation });
-            if (v.severity === "invalid") invalid = true;
-          }
+    // Relation-attached validity envelopes (predicates over the full env).
+    // These run even when evaluation was refused: a banner like "the links
+    // cannot assemble" is exactly what the user needs alongside the generic
+    // undefined-value guard, and it is computable from the inputs alone.
+    // A predicate is only evaluated when every symbol it reads is finite —
+    // NaN comparisons would otherwise fire spurious banners.
+    for (const rel of this.artifact.relations) {
+      for (const v of rel.validity) {
+        if (v.needs && !v.needs.every((s) => Number.isFinite(env[s]))) continue;
+        const ok = this.fns[v.guard_fn]!(env);
+        if (ok === false) {
+          messages.push({ severity: v.severity, message: v.message, citation: v.citation });
+          if (v.severity === "invalid") invalid = true;
         }
       }
     }
