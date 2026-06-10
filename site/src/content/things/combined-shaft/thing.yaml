@@ -1,0 +1,303 @@
+id: combined-shaft
+title: Shaft under Combined Bending + Torsion
+summary: >-
+  Real shafts never get to choose: the belt that twists them also bends them. Bending and
+  torsion land on the same surface element, Mohr's circle finds the worst plane, and two
+  failure criteria — Tresca and von Mises — disagree by up to 15 % about how bad it is.
+facets: [stress, mass-cost]
+
+variables:
+  - symbol: M
+    name: Bending moment
+    latex: M
+    unit: N*m
+    quantity_kind: bending_moment
+    default: 200
+    bounds: [0, 20000]
+    positive: true
+    display_units: ["N*m"]
+  - symbol: T
+    name: Torque
+    latex: T
+    unit: N*m
+    quantity_kind: torque
+    default: 500
+    bounds: [0, 20000]
+    positive: true
+    display_units: ["N*m"]
+  - symbol: d
+    name: Diameter
+    latex: d
+    unit: m
+    quantity_kind: length
+    default: 0.04
+    bounds: [0.005, 0.3]
+    positive: true
+    display_units: [mm, m]
+  - symbol: L
+    name: Length
+    latex: L
+    unit: m
+    quantity_kind: length
+    default: 1.0
+    bounds: [0.05, 5.0]
+    positive: true
+    display_units: [m, mm]
+  - symbol: sigma_y
+    name: Yield strength
+    latex: '\sigma_y'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 250.0e6
+    bounds: [10.0e6, 2.0e9]
+    positive: true
+    role: material
+    display_units: [MPa, Pa]
+  - symbol: rho
+    name: Density
+    latex: '\rho'
+    unit: kg/m**3
+    quantity_kind: density
+    default: 7850
+    bounds: [400, 9000]
+    positive: true
+    role: material
+    display_units: ["kg/m^3"]
+  - symbol: sigma_b
+    name: Bending stress (outer fiber)
+    latex: '\sigma_b'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 3.183e7
+    bounds: [0, 5.0e9]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: tau_t
+    name: Torsional shear (surface)
+    latex: '\tau_t'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 3.979e7
+    bounds: [0, 5.0e9]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: tau_max
+    name: Max shear stress (worst plane)
+    latex: '\tau_{max}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 4.285e7
+    bounds: [0, 5.0e9]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: sigma_vm
+    name: Von Mises stress
+    latex: "\\sigma'"
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 7.591e7
+    bounds: [0, 5.0e9]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: SF_t
+    name: Safety factor (Tresca / MSS)
+    latex: '\mathrm{SF}_{T}'
+    unit: '1'
+    quantity_kind: safety_factor
+    default: 2.917
+    bounds: [0, 100]
+    positive: true
+  - symbol: SF_vm
+    name: Safety factor (von Mises / DE)
+    latex: '\mathrm{SF}_{DE}'
+    unit: '1'
+    quantity_kind: safety_factor
+    default: 3.293
+    bounds: [0, 100]
+    positive: true
+    role: derived
+  - symbol: m_shaft
+    name: Shaft mass
+    latex: m
+    unit: kg
+    quantity_kind: mass
+    default: 9.86
+    bounds: [0, 5000]
+    positive: true
+    role: derived
+    display_units: [kg]
+
+materials:
+  binds:
+    sigma_y: yield_strength
+    rho: density
+
+relations:
+  - id: bending-stress
+    group: stress
+    latex: '\sigma_b = \frac{32\,M}{\pi d^3}'
+    residual: sigma_b*pi*d**3 - 32*M
+    assumptions:
+      - flexure formula on a solid circular section, c = d/2, I = πd⁴/64
+      - static snapshot — if the shaft ROTATES under a fixed-direction M, every surface point
+        sees this stress fully reversed each turn, and the real design problem is fatigue
+        (Shigley ch. 7), which this page does not model; treat these margins as the
+        first-cycle check
+    citation: gere
+  - id: torsion-stress
+    group: stress
+    latex: '\tau_t = \frac{16\,T}{\pi d^3}'
+    residual: tau_t*pi*d**3 - 16*T
+    assumptions:
+      - the torsion-shaft THING's formula, reused verbatim on the same element
+    citation: gere
+  - id: max-shear
+    group: stress
+    latex: '\tau_{max} = \sqrt{\left(\frac{\sigma_b}{2}\right)^2 + \tau_t^2}'
+    residual: tau_max**2 - ((sigma_b/2)**2 + tau_t**2)
+    assumptions:
+      - plane stress at the shaft surface — σ_x = σ_b along the axis, τ_xy = τ_t around it,
+        nothing across it; the extreme-shear plane comes from the stress transformation
+        (Mohr's circle radius)
+    citation: shigley
+  - id: von-mises
+    group: stress
+    latex: "\\sigma' = \\sqrt{\\sigma_b^2 + 3\\,\\tau_t^2}"
+    residual: sigma_vm**2 - (sigma_b**2 + 3*tau_t**2)
+    assumptions:
+      - distortion-energy equivalent stress for the same plane-stress element (the
+        σ' = (σ_x² − σ_xσ_y + σ_y² + 3τ_xy²)^½ form with σ_y = 0)
+    citation: shigley
+  - id: tresca-margin
+    group: stress
+    latex: '\mathrm{SF}_{T} = \frac{\sigma_y}{2\,\tau_{max}}'
+    residual: SF_t*2*tau_max - sigma_y
+    assumptions:
+      - maximum-shear-stress (Tresca) criterion, σ₁ − σ₃ = 2τ_max at yield — the conservative
+        one of the pair, same convention as the torsion-shaft and cylinder THINGs
+    citation: shigley
+    validity:
+      - condition: 2*tau_max < sigma_y
+        severity: warn
+        message: >-
+          The worst-oriented plane has reached shear yield (Tresca) — first yield has arrived
+          at the surface and the elastic stress state here stops being the truth.
+        citation: shigley
+  - id: vm-margin
+    group: stress
+    latex: "\\mathrm{SF}_{DE} = \\frac{\\sigma_y}{\\sigma'}"
+    residual: SF_vm*sigma_vm - sigma_y
+    assumptions:
+      - distortion-energy (von Mises) criterion — the better fit to ductile test data; always
+        at or above the Tresca margin, by up to 15 %
+    citation: shigley
+  - id: mass
+    group: mass-cost
+    latex: 'm = \rho \frac{\pi d^2}{4} L'
+    residual: m_shaft*4 - rho*pi*d**2*L
+    assumptions:
+      - prismatic solid shaft, uniform density
+    citation: gere
+
+configurations:
+  - id: analyze
+    label: M, T, and geometry in — both criteria's verdicts out
+    constraints: {}
+    inputs: [M, T, d, L]
+    solutions:
+      sigma_b: 32*M/(pi*d**3)
+      tau_t: 16*T/(pi*d**3)
+      tau_max: sqrt((sigma_b/2)**2 + tau_t**2)
+      sigma_vm: sqrt(sigma_b**2 + 3*tau_t**2)
+      SF_t: sigma_y/(2*tau_max)
+      SF_vm: sigma_y/sigma_vm
+      m_shaft: rho*pi*d**2*L/4
+  - id: size-diameter
+    label: Loads and a Tresca margin in — the diameter that achieves it
+    constraints: {}
+    inputs: [M, T, L, SF_t]
+    solutions:
+      tau_max: sigma_y/(2*SF_t)
+      d: (16*sqrt(M**2 + T**2)/(pi*tau_max))**(Rational(1,3))
+      sigma_b: 32*M/(pi*d**3)
+      tau_t: 16*T/(pi*d**3)
+      sigma_vm: sqrt(sigma_b**2 + 3*tau_t**2)
+      SF_vm: sigma_y/sigma_vm
+      m_shaft: rho*pi*d**2*L/4
+
+derivation:
+  verifies_configuration: analyze
+  steps:
+    - expr: Eq(sigma_b, 32*M/(pi*d**3))
+      prose: >-
+        The modeling step: two THINGs this catalog has already proven land on the same surface
+        element. Bending puts σ_b = Mc/I = 32M/πd³ along the axis (the cantilever page's
+        flexure formula on a round section); torsion puts τ_t = 16T/πd³ around it (the
+        torsion-shaft page's formula, verbatim). Nothing pushes across the surface — a clean
+        plane-stress state with one normal stress and one shear.
+      rule: 'assemble the element: flexure + torsion on one square of surface'
+      check: definition
+    - expr: Eq(tau_max**2, (sigma_b/2)**2 + tau_t**2)
+      prose: >-
+        Rotate the element and the stresses transform; Mohr's circle is the bookkeeping. Its
+        center sits at σ_b/2 and its radius — the largest shear any orientation sees — is
+        R = √((σ_b/2)² + τ_t²). The worst plane is never the one you drew. (The test pipeline
+        re-derives this as the eigenvalue half-spread of the stress tensor, no circle needed.)
+      rule: 'plane-stress transformation: Mohr''s circle radius'
+      check: definition
+    - expr: Eq(tau_max*pi*d**3, 16*sqrt(M**2 + T**2))
+      prose: >-
+        Substitute the hardware: τ_max = (16/πd³)·√(M² + T²). The shaft fails in shear as if
+        it carried a single "equivalent torque" T_e = √(M² + T²) — the old designers' shortcut
+        drops out of the algebra. The size-diameter configuration runs exactly this line
+        backwards.
+      rule: the equivalent-torque form
+    - expr: Eq(sigma_vm**2, sigma_b**2 + 3*tau_t**2)
+      prose: >-
+        The distortion-energy criterion measures the same element differently: not the worst
+        shear plane, but the energy of shape-change, σ' = √(σ_b² + 3τ_t²). It enters by
+        citation here; the test pipeline re-derives it from the deviatoric stress invariant.
+      rule: 'distortion energy: von Mises equivalent stress'
+      check: definition
+    - expr: Eq(SF_vm/SF_t, 2*tau_max/sigma_vm)
+      prose: >-
+        Divide the two margins and σ_y cancels: SF_DE/SF_T = 2τ_max/σ'. Pure bending (T = 0)
+        gives exactly 1 — the criteria agree. Pure torsion (M = 0) gives 2/√3 ≈ 1.155 — Tresca
+        is 15 % more conservative, the criteria's maximum disagreement, and your answer to
+        "which safety factor is right?" is: they bracket it, and Tresca errs safe. Slide the
+        M and T knobs and watch the gap breathe between those limits.
+      rule: the two criteria bracket the truth
+sim:
+  engine: statics-cascade
+  config:
+    draw: combined-shaft
+
+sources:
+  - id: shigley
+    citation: >-
+      Budynas, R. G., & Nisbett, J. K., Shigley's Mechanical Engineering Design, 10th ed.,
+      McGraw-Hill, 2015 — ch. 3 (plane-stress transformation and Mohr's circle: the principal
+      stresses σ_A,B = (σ_x+σ_y)/2 ± √(((σ_x−σ_y)/2)² + τ_xy²) and the max-shear radius),
+      §5-4 (maximum-shear-stress theory), §5-5 (distortion-energy theory, the plane-stress
+      von Mises form).
+    verification: >-
+      Criterion forms pinned against the 10th-edition ch. 5 solutions manual (Oakland
+      University mirror), 2026-06-10: problems 5-1 … 5-3 apply MSS as n = S_y/(σ₁−σ₃) and DE
+      as σ' = (σ_x² − σ_xσ_y + σ_y² + 3τ_xy²)^½ with the principal-stress radical verbatim.
+      Ch. 3 section numbers are from the chapter's structure, not independently pinned. Both
+      criteria are re-derived from the stress tensor itself (eigenvalue half-spread; deviatoric
+      invariant) and their bracketing ratio [1, 2/√3] proven, in
+      pipeline/tests/test_combined_physics.py.
+  - id: gere
+    citation: >-
+      Gere, J. M., & Goodno, B. J., Mechanics of Materials, 9th ed., Cengage, 2018 — flexure
+      formula (§5.5) and circular-shaft torsion (§3.3–3.5), the two single-load formulas this
+      THING combines.
+    verification: >-
+      Topic-level citation, the same sections the cantilever-beam and torsion-shaft THINGs
+      cite; both formulas are re-derived in the existing test pipeline
+      (test_beam_physics.py, test_shaft_physics.py).

@@ -17,6 +17,7 @@ import { ValidityBanner } from "./ValidityBanner";
 import { BeamSim } from "./sims/BeamSim";
 import { BeltSim } from "./sims/BeltSim";
 import { ColumnSim } from "./sims/ColumnSim";
+import { CombinedShaftSim } from "./sims/CombinedShaftSim";
 import { CylinderSim } from "./sims/CylinderSim";
 import { FlywheelSim } from "./sims/FlywheelSim";
 import { FourbarSim } from "./sims/FourbarSim";
@@ -24,6 +25,8 @@ import { PlanetarySim } from "./sims/PlanetarySim";
 import { ScrewSim } from "./sims/ScrewSim";
 import { ShaftSim } from "./sims/ShaftSim";
 import { SpringSim } from "./sims/SpringSim";
+import { SSBeamSim } from "./sims/SSBeamSim";
+import { TubeSim } from "./sims/TubeSim";
 import { VesselSim } from "./sims/VesselSim";
 
 const fnsModules = import.meta.glob("../generated/things/*.fns.ts");
@@ -43,6 +46,9 @@ const SIMS: Record<string, (p: { values: VarRecord; invalid?: boolean }) => JSX.
   "helical-spring": SpringSim,
   "power-screw": ScrewSim,
   "belt-drive": BeltSim,
+  "simply-supported-beam": SSBeamSim,
+  "combined-shaft": CombinedShaftSim,
+  "thin-tube-torsion": TubeSim,
 };
 
 interface Props {

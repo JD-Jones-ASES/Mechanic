@@ -1,0 +1,32 @@
+Look at anything that resists twist while trying to be light — driveshafts, bicycle frames,
+aircraft fuselages, racing-car torsion boxes — and you will find a closed thin-walled tube. The
+[solid shaft](../torsion-shaft/) taught that the middle of a section barely works in torsion;
+Bredt's formulas take the lesson to its limit by deleting the middle entirely:
+
+$$\tau = \frac{T}{2\,A_m\,t} \qquad \theta = \frac{T\,S\,L}{4\,A_m^2\,G\,t} \qquad
+S^2 \ge 4\pi A_m$$
+
+Three things to notice, one per formula:
+
+- **You are buying enclosed area, not metal.** The stress depends on the section *only* through
+  $A_m$ — the area the wall's median line encloses — and the wall thickness. Shape is almost
+  irrelevant: circle, box, airfoil, all obey the same two-knob formula, because the shear flow
+  $q = \tau t$ runs the perimeter like current in a loop and its torque is $2qA_m$ for any
+  closed curve. Double the enclosed air, halve the stress. This is why a tube beats a rod at
+  equal mass so decisively.
+- **Stiffness loves area even more.** The twist falls with $A_m^2$ — and rises with perimeter
+  $S$, so for a *fixed* enclosed area the stiffest shape is the one with the least perimeter:
+  the circle, again. A flattened tube (same $S$, shrinking $A_m$) loses stiffness
+  quadratically, which you can feel by twisting a drinking straw before and after stepping on
+  it.
+- **Mathematics polices the knobs.** Not every $(A_m, S)$ pair is a section: the isoperimetric
+  inequality $S^2 \ge 4\pi A_m$ — the circle encloses the most area any perimeter can — is a
+  hard existence boundary, and the widget *refuses* beyond it. The sim draws a stadium
+  (straight-sided oval) that realizes your exact $A_m$ and $S$; the refusal fires at precisely
+  the moment no such shape exists to draw. A validity envelope enforced by a 2,000-year-old
+  theorem.
+
+One warning the formulas whisper: all of this is for *closed* cells. Slit the tube lengthwise —
+turn the loop into an open 'C' — and the shear flow loses its return path; torsional stiffness
+collapses by orders of magnitude (the solid-shaft page's failure notes already promised this).
+Closedness is not a detail. It is the entire product.

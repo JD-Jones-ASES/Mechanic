@@ -1,0 +1,287 @@
+id: thin-tube-torsion
+title: Thin-Walled Tube in Torsion (Bredt)
+summary: >-
+  Why driveshafts, airframes, and bike frames are closed tubes: in torsion, what matters is not
+  how much metal you have but how much AREA the wall encloses. Bredt's shear flow makes any
+  closed section solvable with two knobs — and the isoperimetric inequality polices which
+  sections can exist at all.
+facets: [stress, mass-cost]
+
+variables:
+  - symbol: T
+    name: Torque
+    latex: T
+    unit: N*m
+    quantity_kind: torque
+    default: 500
+    bounds: [1, 20000]
+    positive: true
+    display_units: ["N*m"]
+  - symbol: A_m
+    name: Enclosed (median-line) area
+    latex: A_m
+    unit: m**2
+    quantity_kind: area
+    default: 0.002
+    bounds: [1.0e-5, 0.5]
+    positive: true
+    display_units: ["cm^2", "m**2"]
+  - symbol: S
+    name: Median-line perimeter
+    latex: S
+    unit: m
+    quantity_kind: length
+    default: 0.16
+    bounds: [0.01, 3.0]
+    positive: true
+    display_units: [mm, m]
+  - symbol: t
+    name: Wall thickness
+    latex: t
+    unit: m
+    quantity_kind: length
+    default: 0.002
+    bounds: [0.0005, 0.02]
+    positive: true
+    display_units: [mm, m]
+  - symbol: L
+    name: Length
+    latex: L
+    unit: m
+    quantity_kind: length
+    default: 1.0
+    bounds: [0.05, 5.0]
+    positive: true
+    display_units: [m, mm]
+  - symbol: G
+    name: Shear modulus
+    latex: G
+    unit: Pa
+    quantity_kind: elastic_modulus
+    default: 80.0e9
+    bounds: [0.5e9, 200.0e9]
+    positive: true
+    role: material
+    display_units: [GPa, Pa]
+  - symbol: sigma_y
+    name: Yield strength (tension)
+    latex: '\sigma_y'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 410.0e6
+    bounds: [10.0e6, 2.0e9]
+    positive: true
+    role: material
+    display_units: [MPa, Pa]
+  - symbol: rho
+    name: Density
+    latex: '\rho'
+    unit: kg/m**3
+    quantity_kind: density
+    default: 7870
+    bounds: [400, 9000]
+    positive: true
+    role: material
+    display_units: ["kg/m^3"]
+  - symbol: tau
+    name: Wall shear stress
+    latex: '\tau'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 6.25e7
+    bounds: [0, 5.0e9]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: theta
+    name: Angle of twist
+    latex: '\theta'
+    unit: rad
+    quantity_kind: angle
+    default: 0.03125
+    bounds: [0, 60]
+    positive: true
+    role: derived
+    display_units: [deg, rad]
+  - symbol: SF
+    name: Safety factor (shear yield)
+    latex: '\mathrm{SF}'
+    unit: '1'
+    quantity_kind: safety_factor
+    default: 3.28
+    bounds: [0, 100]
+    positive: true
+  - symbol: m_tube
+    name: Tube mass
+    latex: m
+    unit: kg
+    quantity_kind: mass
+    default: 2.52
+    bounds: [0, 5000]
+    positive: true
+    role: derived
+    display_units: [kg]
+
+materials:
+  binds:
+    G: shear_modulus
+    sigma_y: yield_strength
+    rho: density
+
+relations:
+  - id: bredt-shear
+    group: stress
+    latex: '\tau = \frac{T}{2\,A_m\,t}'
+    residual: tau*2*A_m*t - T
+    assumptions:
+      - closed single-cell thin-walled section — the shear flow q = τt is constant around the
+        cell, and the torque is its moment, T = 2qA_m (Bredt's first formula)
+      - wall thin enough that the stress is uniform through it; A_m and S measured on the wall
+        median line
+      - any closed shape — circle, box, airfoil; the section enters only through A_m and t
+    citation: gere
+    validity:
+      - condition: S**2 >= 4*pi*A_m
+        severity: invalid
+        message: >-
+          No closed curve encloses this much area with this little perimeter — the circle is
+          the absolute best (isoperimetric inequality, S² ≥ 4πA_m with equality only for the
+          circle). This section cannot exist; there is nothing to analyze.
+        citation: isoperimetric
+      - condition: 5*t*S < 2*A_m
+        severity: warn
+        message: >-
+          The wall is no longer thin next to the section's size (t exceeds a fifth of the
+          characteristic radius 2A_m/S) — Bredt's uniform-stress-through-the-wall picture is
+          degrading, and the inner fiber actually carries less than this τ.
+        citation: gere
+  - id: bredt-twist
+    group: stress
+    latex: '\theta = \frac{T\,S\,L}{4\,A_m^2\,G\,t}'
+    residual: theta*4*A_m**2*G*t - T*S*L
+    assumptions:
+      - uniform wall thickness (the general form integrates ∮ds/t around the cell)
+      - linear elastic; ends free to warp (closed thin tubes warp very little — this is the
+        section family where Saint-Venant torsion is most honest)
+    citation: gere
+  - id: shear-margin
+    group: stress
+    latex: '\mathrm{SF} = \frac{\sigma_y/2}{\tau}'
+    residual: SF*tau - sigma_y/2
+    assumptions:
+      - maximum-shear-stress (Tresca) criterion — pure shear in the wall, same convention as
+        the torsion-shaft
+    citation: shigley
+    validity:
+      - condition: tau < sigma_y/2
+        severity: warn
+        message: >-
+          Wall shear stress exceeds the shear yield strength (σ_y/2, maximum-shear-stress
+          criterion) — the wall has yielded and the elastic shear flow stops being the truth.
+        citation: shigley
+  - id: tube-mass
+    group: mass-cost
+    latex: 'm = \rho\,S\,t\,L'
+    residual: m_tube - rho*S*t*L
+    assumptions:
+      - thin wall — cross-section area ≈ S·t
+    citation: gere
+
+configurations:
+  - id: analyze
+    label: Torque and section in — stress, twist, margin out
+    constraints: {}
+    inputs: [T, A_m, S, t, L]
+    solutions:
+      tau: T/(2*A_m*t)
+      theta: T*S*L/(4*A_m**2*G*t)
+      SF: sigma_y/(2*tau)
+      m_tube: rho*S*t*L
+  - id: size-wall
+    label: Torque, section, and margin in — the wall that achieves it
+    constraints: {}
+    inputs: [T, A_m, S, L, SF]
+    solutions:
+      tau: sigma_y/(2*SF)
+      t: T/(2*A_m*tau)
+      theta: T*S*L/(4*A_m**2*G*t)
+      m_tube: rho*S*t*L
+
+derivation:
+  verifies_configuration: analyze
+  locals:
+    - symbol: q
+      unit: N/m
+      positive: true
+      define: T/(2*A_m)
+  steps:
+    - expr: Eq(q, tau*t)
+      prose: >-
+        The modeling step: cut a small rectangle out of the wall and balance it along the
+        tube's axis. The longitudinal shear forces on its two cut edges must cancel, so the
+        product q = τt — the shear FLOW — is the same everywhere around the cell, like
+        current in a loop of wire: where the wall thins, the stress rises to keep q constant.
+        Thin spots are hot spots.
+      rule: 'equilibrium of a wall element: shear flow is constant'
+      check: definition
+    - expr: Eq(T, 2*q*A_m)
+      prose: >-
+        Sum the moment of that flow about any interior point: T = ∮ q·r⊥ ds = q·∮ r⊥ ds. The
+        leftover integral is pure geometry — r⊥ds is twice the area of the sliver swept from
+        the moment center, so the loop integral counts the enclosed area twice, ∮ r⊥ ds = 2A_m,
+        for ANY closed shape. That is why a torsion tube is rated by the area it encloses, not
+        the metal it contains. (The build cannot do line integrals; the test pipeline evaluates
+        ∮ r⊥ ds for an ellipse and a rectangle and gets 2A both times.)
+      rule: 'moment resultant: the swept-area identity'
+      check: definition
+    - expr: Eq(tau, T/(2*A_m*t))
+      prose: >-
+        Combine the two: Bredt's first formula. Thickness enters only linearly, and enclosed
+        area does the heavy lifting — double A_m at the same wall and perimeter and the stress
+        halves. Compare the solid shaft, where stress fights for d³: enclosing air is the
+        cheapest strength there is.
+      rule: "Bredt's first formula"
+    - expr: Eq(theta, T*S*L/(4*A_m**2*G*t))
+      prose: >-
+        Stiffness by strain energy: U = ∮∫ τ²/(2G) dV = (q²L/2G)·∮ds/t, and Castigliano's
+        θ = ∂U/∂T delivers Bredt's second formula — twist grows with perimeter but falls with
+        the SQUARE of enclosed area. (Re-derived by exactly that energy route in the test
+        pipeline.)
+      rule: "Bredt's second formula, by Castigliano"
+      check: definition
+sim:
+  engine: statics-cascade
+  config:
+    draw: thin-tube-torsion
+
+sources:
+  - id: gere
+    citation: >-
+      Gere, J. M., & Goodno, B. J., Mechanics of Materials, 9th ed., Cengage, 2018 — §3.11
+      "Thin-Walled Tubes": shear flow, Bredt's torsion formulas τ = T/(2tA_m) and the torsion
+      constant J = 4A_m²t/(∮ds/t), validity limits of the thin-wall approximation.
+    verification: >-
+      Section number and title pinned against the publisher's own edition-comparison table of
+      contents (Cengage, "3.11 Thin-Walled Tubes", unchanged 7e→8e and carried in 9e listings),
+      2026-06-10. Both Bredt formulas are independently re-derived — the swept-area moment
+      integral ∮r⊥ds = 2A evaluated for an ellipse and a rectangle, and the twist by
+      Castigliano on the shear strain energy — in pipeline/tests/test_tube_physics.py.
+  - id: shigley
+    citation: >-
+      Budynas, R. G., & Nisbett, J. K., Shigley's Mechanical Engineering Design, 10th ed.,
+      McGraw-Hill, 2015 — §5-4 (maximum-shear-stress theory, S_sy = 0.5 S_y).
+    verification: >-
+      Same section already cited by the torsion-shaft and cylinder THINGs; the MSS form
+      n = S_y/(σ₁−σ₃) is confirmed against the 10th-edition ch. 5 solutions manual (Oakland
+      mirror), 2026-06-10.
+  - id: isoperimetric
+    citation: >-
+      The classical isoperimetric inequality — every simple closed plane curve satisfies
+      S² ≥ 4πA, with equality only for the circle. See e.g. Blåsjö, V., "The Isoperimetric
+      Problem", American Mathematical Monthly 112 (2005), 526–566.
+    verification: >-
+      Classical mathematical result (antiquity; first rigorous proofs 19th century), used here
+      as a hard existence envelope on the (A_m, S) knob pair. Machine-exercised in
+      pipeline/tests/test_tube_physics.py: the stadium-section family realizes any (A, S) with
+      S² ≥ 4πA and its construction goes complex exactly when the inequality fails — the same
+      construction the sim draws.

@@ -1,0 +1,358 @@
+id: simply-supported-beam
+title: Simply Supported Beam (Center Load + UDL)
+summary: >-
+  The floor joist under you right now: pinned at both ends, carrying a point load and a
+  distributed load at once. Because the governing equation is linear, the two answers simply
+  add — superposition, the single most-used trick in structural analysis, made visible.
+facets: [stress, mass-cost]
+
+variables:
+  - symbol: P
+    name: Center point load
+    latex: P
+    unit: N
+    quantity_kind: force
+    default: 1000
+    bounds: [0, 10000]
+    positive: true
+    display_units: [N, kN]
+  - symbol: w
+    name: Distributed load
+    latex: w
+    unit: N/m
+    quantity_kind: line_load
+    default: 2000
+    bounds: [0, 50000]
+    positive: true
+    display_units: ["kN/m", "N/m"]
+  - symbol: L
+    name: Span
+    latex: L
+    unit: m
+    quantity_kind: length
+    default: 2.0
+    bounds: [0.5, 6.0]
+    positive: true
+    display_units: [m, mm]
+  - symbol: b
+    name: Section width
+    latex: b
+    unit: m
+    quantity_kind: length
+    default: 0.04
+    bounds: [0.005, 0.3]
+    positive: true
+    display_units: [mm, m]
+  - symbol: h
+    name: Section height
+    latex: h
+    unit: m
+    quantity_kind: length
+    default: 0.08
+    bounds: [0.005, 0.4]
+    positive: true
+    display_units: [mm, m]
+  - symbol: E
+    name: Young's modulus
+    latex: E
+    unit: Pa
+    quantity_kind: elastic_modulus
+    default: 200.0e9
+    bounds: [1.0e9, 400.0e9]
+    positive: true
+    role: material
+    display_units: [GPa, Pa]
+  - symbol: sigma_y
+    name: Yield strength
+    latex: '\sigma_y'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 250.0e6
+    bounds: [10.0e6, 2.0e9]
+    positive: true
+    role: material
+    display_units: [MPa, Pa]
+  - symbol: rho
+    name: Density
+    latex: '\rho'
+    unit: kg/m**3
+    quantity_kind: density
+    default: 7850
+    bounds: [400, 9000]
+    positive: true
+    role: material
+    display_units: ["kg/m^3"]
+  - symbol: I
+    name: Second moment of area
+    latex: I
+    unit: m**4
+    quantity_kind: second_moment_of_area
+    default: 1.7067e-6
+    bounds: [1.0e-10, 1.0e-2]
+    positive: true
+    role: derived
+  - symbol: delta_P
+    name: Midspan deflection from P alone
+    latex: '\delta_P'
+    unit: m
+    quantity_kind: length
+    default: 4.88e-4
+    bounds: [0, 1]
+    positive: true
+    role: derived
+    display_units: [mm, m]
+  - symbol: delta_w
+    name: Midspan deflection from w alone
+    latex: '\delta_w'
+    unit: m
+    quantity_kind: length
+    default: 1.221e-3
+    bounds: [0, 1]
+    positive: true
+    role: derived
+    display_units: [mm, m]
+  - symbol: delta
+    name: Total midspan deflection
+    latex: '\delta'
+    unit: m
+    quantity_kind: length
+    default: 1.709e-3
+    bounds: [0, 2]
+    positive: true
+    role: derived
+    display_units: [mm, m]
+  - symbol: M_max
+    name: Max bending moment (midspan)
+    latex: M_{max}
+    unit: N*m
+    quantity_kind: bending_moment
+    default: 1500
+    bounds: [0, 1.0e6]
+    positive: true
+    role: derived
+    display_units: ["N*m"]
+  - symbol: sigma
+    name: Max bending stress
+    latex: '\sigma'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 3.516e7
+    bounds: [0, 5.0e9]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: SF
+    name: Safety factor (yield)
+    latex: '\mathrm{SF}'
+    unit: '1'
+    quantity_kind: safety_factor
+    default: 7.11
+    bounds: [0, 100]
+    positive: true
+    display_units: []
+  - symbol: m_beam
+    name: Beam mass
+    latex: m
+    unit: kg
+    quantity_kind: mass
+    default: 50.2
+    bounds: [0, 5000]
+    positive: true
+    role: derived
+    display_units: [kg]
+
+materials:
+  binds:
+    E: youngs_modulus
+    sigma_y: yield_strength
+    rho: density
+
+relations:
+  - id: rect-section
+    group: stress
+    latex: 'I = \frac{b h^3}{12}'
+    residual: I - b*h**3/12
+    assumptions:
+      - solid rectangular cross-section, bending about the strong axis
+    citation: gere
+  - id: center-load-deflection
+    group: stress
+    latex: '\delta_P = \frac{P L^3}{48\,E I}'
+    residual: delta_P*48*E*I - P*L**3
+    assumptions:
+      - simply supported (pinned-roller), point load exactly at midspan
+      - linear elastic, small deflections, Euler–Bernoulli kinematics
+    citation: shigley
+  - id: udl-deflection
+    group: stress
+    latex: '\delta_w = \frac{5\,w L^4}{384\,E I}'
+    residual: delta_w*384*E*I - 5*w*L**4
+    assumptions:
+      - uniform load over the full span, same support and kinematic assumptions
+    citation: shigley
+  - id: superposition
+    group: stress
+    latex: '\delta = \delta_P + \delta_w'
+    residual: delta - (delta_P + delta_w)
+    assumptions:
+      - THE method relation — the beam equation EI·v″ = M(x) is linear in the loads, so the
+        response to both loads together is exactly the sum of the responses to each alone;
+        legal only while everything stays linear (elastic material, small deflections, no
+        contact or buckling)
+    citation: shigley
+    validity:
+      - condition: delta < L/10
+        severity: warn
+        message: >-
+          Total midspan deflection exceeds L/10 — the small-deflection assumption is breaking
+          down, and with it the linearity that superposition itself depends on.
+        citation: gere
+      - condition: L > 10*h
+        severity: warn
+        message: >-
+          This is a short, deep beam (L < 10h): shear deflection, neglected by Euler–Bernoulli
+          theory, is no longer small.
+        citation: gere
+  - id: max-moment
+    group: stress
+    latex: 'M_{max} = \frac{P L}{4} + \frac{w L^2}{8}'
+    residual: M_max - (P*L/4 + w*L**2/8)
+    assumptions:
+      - both load cases put their maximum moment at midspan, so the maxima add legitimately —
+        superposing maxima is NOT generally legal; it works here only because the peaks
+        coincide
+    citation: shigley
+  - id: flexure
+    group: stress
+    latex: '\sigma = \frac{M_{max}\,(h/2)}{I}'
+    residual: sigma*I - M_max*(h/2)
+    assumptions:
+      - flexure formula at the outer fiber, midspan
+    citation: gere
+    validity:
+      - condition: sigma < sigma_y
+        severity: warn
+        message: >-
+          Bending stress exceeds the yield strength — the outer fiber has yielded and every
+          linear-elastic number here (superposition included) stops being the truth.
+        citation: gere
+  - id: safety-factor
+    group: stress
+    latex: '\mathrm{SF} = \frac{\sigma_y}{\sigma}'
+    residual: SF*sigma - sigma_y
+    assumptions:
+      - margin against first yield at the outer fiber, not against collapse
+    citation: gere
+  - id: mass
+    group: mass-cost
+    latex: 'm = \rho\, b\, h\, L'
+    residual: m_beam - rho*b*h*L
+    assumptions:
+      - prismatic beam, uniform density
+    citation: gere
+
+configurations:
+  - id: analyze
+    label: Loads and geometry in — each deflection, their sum, stress, margin out
+    constraints: {}
+    inputs: [P, w, L, b, h]
+    solutions:
+      I: b*h**3/12
+      delta_P: P*L**3/(48*E*I)
+      delta_w: 5*w*L**4/(384*E*I)
+      delta: delta_P + delta_w
+      M_max: P*L/4 + w*L**2/8
+      sigma: M_max*(h/2)/I
+      SF: sigma_y/sigma
+      m_beam: rho*b*h*L
+  - id: size-depth
+    label: Loads, span, and margin in — the section depth that achieves it
+    constraints: {}
+    inputs: [P, w, L, b, SF]
+    solutions:
+      M_max: P*L/4 + w*L**2/8
+      sigma: sigma_y/SF
+      h: sqrt(6*M_max/(b*sigma))
+      I: b*h**3/12
+      delta_P: P*L**3/(48*E*I)
+      delta_w: 5*w*L**4/(384*E*I)
+      delta: delta_P + delta_w
+      m_beam: rho*b*h*L
+
+derivation:
+  verifies_configuration: analyze
+  locals:
+    - symbol: x
+      unit: m
+      positive: true
+      bounds: [0.01, 6.0]
+    - symbol: M_P
+      unit: N*m
+      define: P*x/2
+    - symbol: M_w
+      unit: N*m
+      define: w*x*(L - x)/2
+  steps:
+    - expr: Eq(M_P, P*x/2)
+      prose: >-
+        The modeling step, load case one: by symmetry each support carries P/2, so a cut at
+        x (left of midspan) sees the internal moment M_P = (P/2)·x — a triangle peaking at
+        midspan with value PL/4.
+      rule: 'statics: method of sections, point load'
+      check: definition
+    - expr: Eq(M_w, w*x*(L - x)/2)
+      prose: >-
+        Load case two: each support carries wL/2, and the load already passed contributes
+        −wx·(x/2), leaving M_w = wx(L−x)/2 — a parabola, also peaking at midspan, with value
+        wL²/8.
+      rule: 'statics: method of sections, distributed load'
+      check: definition
+    - expr: Eq(M_max, P*L/4 + w*L**2/8)
+      prose: >-
+        Evaluate both at x = L/2 and add. Adding the MAXIMA is legal here only because both
+        diagrams peak at the same place — superpose two off-center loads and the combined peak
+        sits somewhere new, smaller than the sum of the individual peaks. The fields always
+        add; their maxima only sometimes do.
+      rule: superpose the moment diagrams at their shared peak
+    - expr: Eq(delta, delta_P + delta_w)
+      prose: >-
+        The headline act: EI·v″ = M_P(x) + M_w(x) is linear, and integration is linear, so
+        the deflection under both loads is exactly the deflection under each, added.
+        δ_P = PL³/48EI and δ_w = 5wL⁴/384EI are the two most-quoted rows of every beam table
+        (Shigley Table A-9); the build cannot integrate, so the test pipeline re-derives both
+        rows from EI·v″ = M(x) with a computer algebra system, constants and all.
+      rule: 'superposition: linear ODE ⇒ responses add'
+    - expr: Eq(sigma, 6*M_max/(b*h**2))
+      prose: >-
+        Flexure formula with the rectangular section folded in: σ = 6M/(bh²). Depth enters
+        squared — the size-depth configuration runs this backwards to find the joist that
+        meets a code margin, which is how every floor over your head was actually chosen.
+      rule: flexure formula, rectangular section
+sim:
+  engine: statics-cascade
+  config:
+    draw: simply-supported-beam
+
+sources:
+  - id: shigley
+    citation: >-
+      Budynas, R. G., & Nisbett, J. K., Shigley's Mechanical Engineering Design, 10th ed.,
+      McGraw-Hill, 2015 — ch. 4 (Deflection and Stiffness): deflections by integration and by
+      superposition, and Table A-9 (beam deflection cases; the simply-supported center-load
+      and uniform-load rows used here).
+    verification: >-
+      Pinned against the 10th-edition ch. 4 solutions manual (Oakland University mirror),
+      2026-06-10: problem 4-9 integrates the simply-supported center-load case from scratch
+      (y_max = Fl³/48EI, symmetry slope condition at midspan — the same derivation our test
+      re-runs), and problems 4-10 … 4-12 cite "Table A-9" by name and case number ("use beams
+      5 and 6 of Table A-9", "by superposition of beams 6 and 7") with the Fl³/48EI term
+      appearing verbatim. Both deflection rows are independently re-derived by integrating
+      EI·v″ = M(x) in pipeline/tests/test_ssbeam_physics.py.
+  - id: gere
+    citation: >-
+      Gere, J. M., & Goodno, B. J., Mechanics of Materials, 9th ed., Cengage, 2018 — flexure
+      formula (§5.5), shear-deflection and small-deflection limits, App. E section properties.
+    verification: >-
+      Topic-level citation, same sections the cantilever-beam THING cites (not section-pinned);
+      the flexure formula and section property are re-derived in
+      pipeline/tests/test_ssbeam_physics.py and test_beam_physics.py.
