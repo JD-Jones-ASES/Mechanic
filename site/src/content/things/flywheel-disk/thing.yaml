@@ -315,7 +315,7 @@ sources:
   - id: timoshenko
     citation: >-
       Timoshenko, S. P., & Goodier, J. N., Theory of Elasticity, 3rd ed., McGraw-Hill, 1970 —
-      ch. 4 (two-dimensional problems in polar coordinates), the rotating-disk problem:
+      ch. 4 (two-dimensional problems in polar coordinates), §32 "Rotating Disks":
       plane-stress field of a solid uniform disk, σ_r = σ_θ = (3+ν)ρω²R²/8 at the centre,
       σ_r(R) = 0 at the free rim.
   - id: hibbeler-dyn

@@ -12,7 +12,14 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import type { VarRecord } from "../../engines/types";
 
 export function FlywheelSim({ values }: { values: VarRecord }) {
-  const { R = 0.15, omega = 0, omega_y = Infinity, SF = Infinity, nu = 0.3 } = values;
+  // No destructuring defaults for load-bearing values: a refused evaluation
+  // OMITS them, and defaults would draw a healthy default disk instead of
+  // refusing (invariant 5). Missing → NaN → the refusal figure below.
+  const R = values.R ?? NaN;
+  const omega = values.omega ?? NaN;
+  const omega_y = values.omega_y ?? NaN;
+  const SF = values.SF ?? Infinity;
+  const nu = values.nu ?? 0.3; // cosmetic only (band shape)
   const reduced =
     typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
   const [playing, setPlaying] = useState(!reduced);
@@ -42,6 +49,23 @@ export function FlywheelSim({ values }: { values: VarRecord }) {
   const W = 320;
   const cx = W / 2;
   const cy = 102;
+
+  // after the hooks (rules of hooks): refuse to draw a state the engine refused
+  if (!Number.isFinite(R) || !Number.isFinite(omega) || R <= 0) {
+    return (
+      <figure class="sim">
+        <svg viewBox={`0 0 ${W} 240`} role="img" aria-label="Flywheel diagram (undefined)" width="100%">
+          <title>Flywheel (undefined state)</title>
+          <desc>The engine refused this state; there is no honest disk to draw.</desc>
+          <circle cx={cx} cy={cy} r={80} class="beam-ghost" fill="none" />
+          <text x={cx} y={cy + 4} text-anchor="middle" class="sim-label">
+            undefined here
+          </text>
+        </svg>
+        <figcaption>This state was refused by the engine — nothing honest to draw.</figcaption>
+      </figure>
+    );
+  }
   const rVis = Math.min(30 + 160 * R, 92); // disk drawn to (clamped) radius scale
   const danger = Number.isFinite(SF) && SF < 1;
 
