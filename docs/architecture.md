@@ -69,7 +69,12 @@ step before `astro build`).
    conversion tests. Basis (`spec_minimum`/`design_minimum`/`typical`) is first-class.
 7. **LaTeX gate**: a Node script (`site/scripts/check-katex.mjs`) runs `katex.renderToString` over every
    LaTeX string in every artifact; unrenderable math fails the build. SymPy printing uses
-   `inv_trig_style='full'`.
+   `inv_trig_style='full'`. MDX **prose** math takes a different path (remark-math at astro build) and
+   has its own two gates: `check-mdx-math.mjs` rejects structurally misparsed display blocks (anything
+   that is not single-line `$$…$$` or a bare-`$$` fence — the wrapped form silently swallows the rest of
+   the file; four live pages shipped that way once), and `rehype-katex` runs `throwOnError: true` so bad
+   TeX fails `astro build` instead of rendering a red error block. `e2e/prose.spec.ts` sweeps every
+   built THING page for `.katex-error` and leaked `$$` as the belt-and-suspenders pin.
 8. **Display-unit gate**: `site/scripts/check-units.mjs` — every `display_units` entry (and the bare
    `si_unit` fallback when `display_units` is empty) must resolve in `units.ts` `DISPLAY_FACTORS`, or the
    build fails naming thing/symbol/unit. (A missing entry would silently show SI values under prefixed

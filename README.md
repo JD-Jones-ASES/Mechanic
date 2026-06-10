@@ -7,7 +7,7 @@ A browsable, citation-backed database of mechanical and physical THINGS — gear
 springs, belts, pressure vessels, linkages — for engineering undergraduates. Every THING ships
 its governing equations **with machine-verified derivations**, an interactive simulation,
 material selection with visible provenance, and a how-it-fails note. The
-[catalog](https://jd-jones-ases.github.io/Mechanic/things/) currently holds 14 THINGs spanning
+[catalog](https://jd-jones-ases.github.io/Mechanic/things/) currently holds 15 THINGs spanning
 statics, mechanics of materials, and machine design, plus a
 [chaining demo](https://jd-jones-ases.github.io/Mechanic/chain-demo/) that wires a gearbox into a
 shaft through type-checked port bindings.
@@ -50,7 +50,10 @@ verification systems; the AI authors everything under them ([ADR-0007](docs/deci
 - **No blind solving.** Authors supply closed-form solutions; SymPy *verifies* them against the
   declared relations (symbolic tiers + 50-digit numeric sampling), checks degree-of-freedom
   arithmetic on the solution manifold, and proves every displayed derivation step. Multi-branch
-  solutions (a four-bar's two circuits) are each verified independently.
+  solutions (a four-bar's two circuits) are each verified independently. Where no closed form
+  exists at all (the eccentric column's secant equation), the build certifies an authored
+  *bracket* instead — a proven sign change containing exactly one root — and checks the
+  browser's live root-finder against 60-digit bisection on every build.
 - **A declared audit surface.** Steps where physics *enters* (modeling steps) are labeled as
   such on every page; each gets an independent first-principles cross-check in
   [`pipeline/tests/`](pipeline/tests/) — beam rows re-derived by integrating the ODE, the
