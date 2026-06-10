@@ -1,0 +1,179 @@
+---
+/**
+ * The verification page: exactly what the build proves, per THING, and what
+ * rests on citation (ADR-0007). This page is the project's honesty contract —
+ * AI-authored content, programmatic gates, no human review, stated plainly.
+ */
+import { getCollection } from "astro:content";
+import katex from "katex";
+import Base from "../layouts/Base.astro";
+import { withBase } from "../lib/url";
+
+const compiled = (await getCollection("compiled"))
+  .map((c) => c.data)
+  .sort((a, b) => a.title.localeCompare(b.title));
+
+const tex = (s: string) => katex.renderToString(s, { displayMode: false, throwOnError: true });
+
+const rows = compiled.map((a) => {
+  const identities = a.derivation.filter((d) => d.check === "identity").length;
+  const modeling = a.derivation.filter((d) => d.check === "definition");
+  const envelopes = a.relations.flatMap((r) =>
+    r.validity.map((v) => ({ severity: v.severity, message: v.message })),
+  );
+  const samples = a.configurations.reduce((n, c) => n + c.samples.length, 0);
+  const guards = a.configurations.reduce((n, c) => n + c.guards.length, 0);
+  const sourceById = new Map(a.sources.map((s) => [s.id, s]));
+  return { a, identities, modeling, envelopes, samples, guards, sourceById };
+});
+
+const totals = {
+  things: rows.length,
+  relations: rows.reduce((n, r) => n + r.a.relations.length, 0),
+  identities: rows.reduce((n, r) => n + r.identities, 0),
+  modeling: rows.reduce((n, r) => n + r.modeling.length, 0),
+  samples: rows.reduce((n, r) => n + r.samples, 0),
+};
+---
+
+<Base
+  title="Verification"
+  description="What the build proves, per THING, and what rests on citation. AI-authored; no human review."
+>
+  <article>
+    <h1>What is verified here — and what isn't</h1>
+
+    <p>
+      This site is <strong>built end to end by an AI</strong> (Anthropic's Claude) operating
+      documentation and verification systems designed by the project owner.
+      <strong>No human reviews the content.</strong> What stands between you and a wrong number is
+      the machinery on this page — stated plainly so you can judge it. Everything here is
+      educational material, <a href={withBase("about/")}>not for design use</a>.
+    </p>
+
+    <h2>What the build proves, every time</h2>
+    <p class="citation">
+      A page cannot deploy unless every one of these gates passes; a failure names the THING, the
+      relation, and the step.
+    </p>
+    <ul>
+      <li>
+        <strong>Dimensional homogeneity</strong> — every relation's terms carry identical SI
+        dimension 7-vectors; transcendental functions take dimensionless arguments only.
+      </li>
+      <li>
+        <strong>Degree-of-freedom arithmetic</strong> — each configuration's knob count equals
+        variables minus independent relations, with independence established by Jacobian rank
+        <em>on the solution manifold</em>.
+      </li>
+      <li>
+        <strong>Solution verification</strong> — every authored closed form is substituted back
+        into <em>every</em> relation and must vanish: a tiered symbolic prover, then ≥30
+        high-precision (50-digit) numeric samples across the declared domain, per solution branch.
+      </li>
+      <li>
+        <strong>Derivation identities</strong> — every derivation line not badged as a modeling
+        step is proven to follow from the verified solutions by computer algebra.
+      </li>
+      <li>
+        <strong>Independent physics cross-checks</strong> — the test pipeline re-derives cited
+        results from first principles where possible (integrating stress distributions, re-solving
+        boundary-value problems from equilibrium + compatibility, taking limiting cases), plus a
+        hand-checkable numeric golden per THING.
+      </li>
+      <li>
+        <strong>Display integrity</strong> — generated JavaScript is checked against
+        SymPy-computed reference values (parity oracle); every display unit must resolve in the
+        conversion table; all LaTeX must render; envelope violations surface as banners and
+        refused values, never silent numbers.
+      </li>
+      <li>
+        <strong>End-to-end goldens</strong> — a browser test suite checks hand-derived numbers,
+        material-cascade behavior, and refusal states against the built site, plus an
+        accessibility smoke test.
+      </li>
+    </ul>
+
+    <h2>What the machine cannot prove</h2>
+    <p>
+      Computer algebra proves <em>consequence</em>, not <em>physics</em>. Each THING's derivation
+      begins from steps where physics enters by citation — a constitutive law, a boundary
+      condition, a classical field solution. Those are badged
+      <span class="step-definition">modeling step</span> on every page, and they are the complete
+      list of places where this site asks you to trust a book instead of a proof. Citations are
+      pinned against accessible documents where possible, and the pinning method is recorded
+      below; a citation that says <em>topic-level</em> was not pinned to a section. Corrections
+      land in the <a href={withBase("about/#errata")}>errata log</a> — dated, never silent.
+    </p>
+
+    <p class="citation">
+      Catalog totals: {totals.things} THINGs · {totals.relations} relations (each cited) ·
+      {totals.identities} derivation identities machine-proven · {totals.modeling} modeling steps
+      (the audit surface) · {totals.samples} parity samples.
+    </p>
+
+    {
+      rows.map(({ a, identities, modeling, envelopes, samples, guards, sourceById }) => (
+        <section class="relation-block">
+          <h3>
+            <a href={withBase(`things/${a.thing}/`)}>{a.title}</a>
+          </h3>
+          <p class="citation">
+            {a.relations.length} relations · {identities} identities proven ·{" "}
+            {`${modeling.length} modeling step${modeling.length === 1 ? "" : "s"}`} ·{" "}
+            {`${envelopes.length} validity envelope${envelopes.length === 1 ? "" : "s"}`} ·{" "}
+            {`${guards} domain guard${guards === 1 ? "" : "s"}`} · {samples} parity samples
+          </p>
+          {modeling.length ? (
+            <div>
+              <p>
+                <strong>Where physics enters</strong> (everything else on that page follows by
+                machine-proven algebra):
+              </p>
+              <ul>
+                {modeling.map((m) => (
+                  <li>
+                    <Fragment set:html={tex(m.latex)} /> — <em>{m.rule}</em>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <p>
+              No modeling steps: this THING's derivation is identities all the way down (its
+              physics enters through the relations' cited assumptions instead).
+            </p>
+          )}
+          <p>
+            <strong>Sources & how they were checked:</strong>
+          </p>
+          <ul>
+            {a.sources.map((s) => (
+              <li class="citation">
+                {s.citation}
+                {s.verification ? (
+                  <>
+                    {" "}
+                    — <strong>checked:</strong> {s.verification}
+                  </>
+                ) : (
+                  <>
+                    {" "}
+                    — <strong>checked:</strong> not section-pinned; cited from general knowledge of
+                    the text.
+                  </>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+
+    <p>
+      Material property values carry their own per-value provenance (source, locator, original
+      units, statistical basis) on the <a href={withBase("materials/")}>materials page</a>, under
+      the rules in the repository's <code>docs/data-provenance.md</code>.
+    </p>
+  </article>
+</Base>

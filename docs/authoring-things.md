@@ -73,6 +73,11 @@ sim:
 sources:
   - id: gere-goodno
     citation: "Gere & Goodno, Mechanics of Materials, 9th ed., ch. 9."
+    verification: "§9.x pinned against the publisher TOC, YYYY-MM-DD."  # optional but expected:
+                                       # HOW the citation was checked (TOC, indexed full text, …)
+                                       # — rendered on /verification/; omitting it displays as
+                                       # "not section-pinned" (ADR-0007). Never invent precision
+                                       # you didn't verify.
 ```
 
 ## Rules the build enforces (fail loudly, by design)

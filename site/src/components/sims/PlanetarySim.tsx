@@ -5,8 +5,9 @@
  * Planet spin comes from the sun-planet mesh relation
  * (ω_s − ω_c)·N_s = −(ω_p − ω_c)·N_p — same Willis form, planet as the ring.
  */
-import { useEffect, useRef, useState } from "preact/hooks";
 import type { VarRecord } from "../../engines/types";
+import { SimRefusal } from "./SimRefusal";
+import { useSimClock } from "./useSimClock";
 
 function gearTicks(cx: number, cy: number, r: number, n: number, angle: number): string {
   const ticks: string[] = [];
@@ -20,28 +21,22 @@ function gearTicks(cx: number, cy: number, r: number, n: number, angle: number):
   return ticks.join(" ");
 }
 
-export function PlanetarySim({ values }: { values: VarRecord }) {
-  const { N_s = 24, N_p = 18, N_r = 60, omega_s = 0, omega_c = 0, omega_r = 0 } = values;
-  const reduced =
-    typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const [playing, setPlaying] = useState(!reduced);
-  const [t, setT] = useState(0);
-  const raf = useRef(0);
-  const last = useRef(0);
+export function PlanetarySim({ values, invalid = false }: { values: VarRecord; invalid?: boolean }) {
+  // the engine's `invalid` verdict is authoritative (e.g. the ratio-undefined
+  // guard at ω_r = ω_c) — no default gearset over a refused state (invariant 5)
+  const N_s = values.N_s ?? NaN;
+  const N_p = values.N_p ?? NaN;
+  const N_r = values.N_r ?? NaN;
+  const omega_s = values.omega_s ?? 0;
+  const omega_c = values.omega_c ?? 0;
+  const omega_r = values.omega_r ?? 0;
+  const refused =
+    invalid || !Number.isFinite(N_s) || !Number.isFinite(N_p) || !Number.isFinite(N_r);
+  const { t, playing, setPlaying } = useSimClock(!refused);
 
-  useEffect(() => {
-    if (!playing) return;
-    const tick = (now: number) => {
-      if (last.current) setT((t) => t + Math.min(now - last.current, 100) / 1000);
-      last.current = now;
-      raf.current = requestAnimationFrame(tick);
-    };
-    raf.current = requestAnimationFrame(tick);
-    return () => {
-      cancelAnimationFrame(raf.current);
-      last.current = 0;
-    };
-  }, [playing]);
+  if (refused) {
+    return <SimRefusal ariaLabel="Planetary gearset diagram (undefined state)" height={280} />;
+  }
 
   // visual time scale: full speed is hypnotic but unreadable
   const SLOW = 0.15;

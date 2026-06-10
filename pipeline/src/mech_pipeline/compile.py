@@ -415,18 +415,66 @@ class ThingCompiler:
         return self.artifact, render_fns_ts(self.fns, self.thing_id)
 
 
+def _build_fingerprint() -> str:
+    """Hash of everything that determines a compiled artifact besides the
+    thing.yaml itself: the pipeline source and the (pinned) SymPy version.
+    Compilation is deterministic (seeded sampling), so an unchanged
+    fingerprint + unchanged yaml means byte-identical artifacts — safe to
+    reuse instead of re-verifying (four-bar branch verification dominates
+    full builds)."""
+    import hashlib
+
+    h = hashlib.sha256()
+    for p in sorted(Path(__file__).resolve().parent.glob("*.py")):
+        h.update(p.read_bytes())
+    h.update(sp.__version__.encode())
+    return h.hexdigest()
+
+
 def compile_all(things_dir: Path, out_dir: Path) -> list[str]:
+    """Compile every THING, reusing cached artifacts for THINGs whose yaml and
+    build fingerprint are unchanged (manifest: out_dir/.hashes.json, which is
+    inside the gitignored generated tree). Returns all current slugs."""
+    import hashlib
+
     out_dir.mkdir(parents=True, exist_ok=True)
-    compiled = []
-    for yaml_path in sorted(things_dir.glob("*/thing.yaml")):
+    manifest_path = out_dir / ".hashes.json"
+    try:
+        manifest: dict[str, str] = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        manifest = {}
+    fingerprint = _build_fingerprint()
+
+    yaml_paths = sorted(things_dir.glob("*/thing.yaml"))
+    current = {p.parent.name for p in yaml_paths}
+    # drop artifacts of deleted THINGs so the site can't render orphans
+    for stale in out_dir.glob("*.compiled.json"):
+        if stale.name.removesuffix(".compiled.json") not in current:
+            stale.unlink()
+            stale.with_name(stale.name.replace(".compiled.json", ".fns.ts")).unlink(missing_ok=True)
+    manifest = {k: v for k, v in manifest.items() if k in current}
+
+    compiled, reused = [], []
+    for yaml_path in yaml_paths:
+        slug_dir = yaml_path.parent.name
+        key = hashlib.sha256(fingerprint.encode() + yaml_path.read_bytes()).hexdigest()
+        json_out = out_dir / f"{slug_dir}.compiled.json"
+        fns_out = out_dir / f"{slug_dir}.fns.ts"
+        if manifest.get(slug_dir) == key and json_out.exists() and fns_out.exists():
+            reused.append(slug_dir)
+            continue
         artifact, fns_ts = ThingCompiler(yaml_path.parent).compile()
         slug = artifact["thing"]
         (out_dir / f"{slug}.compiled.json").write_text(
             json.dumps(artifact, indent=2), encoding="utf-8", newline="\n"
         )
         (out_dir / f"{slug}.fns.ts").write_text(fns_ts, encoding="utf-8", newline="\n")
+        manifest[slug] = key
         compiled.append(slug)
-    return compiled
+    manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True), encoding="utf-8")
+    if reused:
+        print(f"reused {len(reused)} cached thing(s): {', '.join(reused)}")
+    return [*compiled, *reused]
 
 
 def main() -> None:
@@ -440,7 +488,7 @@ def main() -> None:
     except BuildError as e:
         print(f"BUILD FAILED: {e}", file=sys.stderr)
         sys.exit(1)
-    print(f"compiled {len(compiled)} thing(s): {', '.join(compiled)}")
+    print(f"{len(compiled)} thing(s) ready: {', '.join(compiled)}")
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import Base from "../layouts/Base.astro";
+import { withBase } from "../lib/url";
 
 const materials = (await getCollection("materials")).map((m) => m.data);
 const things = await getCollection("things");
@@ -26,12 +27,25 @@ const errata = materials.flatMap((m) => m.errata.map((e) => ({ material: m.name,
     ASTM/ASME standards, supplier certifications) under qualified engineering judgment.
   </p>
 
+  <h2 id="authorship">Who makes this</h2>
+  <p>
+    This site is built end to end by an AI (Anthropic's Claude) — the THINGs, derivations, prose,
+    simulations, and tests — operating documentation and verification systems designed by the
+    project owner. <strong>No human reviews the content.</strong> Accuracy rests on programmatic
+    verification: a build that proves every derivation identity, refuses unverifiable math, and
+    discloses exactly where physics enters by citation rather than proof. The
+    <a href={withBase("verification/")}>verification page</a> lists what the machine proves, per
+    THING, and what it cannot. Corrections land in the <a href="#errata">errata log</a> — dated,
+    never silent.
+  </p>
+
   <h2 id="how">How the numbers are made trustworthy (for learning)</h2>
   <ul>
     <li>Every relation is dimensionally checked and carries a citation and validity envelope.</li>
     <li>Every derivation line is verified by a computer algebra system at build time — lines where
-      physics enters (free-body statements, boundary conditions) are explicitly marked as modeling
-      steps and human-reviewed.</li>
+      physics enters (free-body statements, boundary conditions, cited field solutions) are
+      explicitly badged as modeling steps, and the test pipeline independently re-derives them
+      from first principles where possible.</li>
     <li>Every widget value is computed by code generated from the same verified math, and checked
       against high-precision reference values before deploy.</li>
     <li>Every material value records its source, exact locator, original units, and basis

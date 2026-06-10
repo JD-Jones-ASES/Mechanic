@@ -5,6 +5,11 @@
  */
 import type { VarRecord } from "../../engines/types";
 
+// This sim deliberately does NOT use the blanket SimRefusal pattern: a
+// non-assembling four-bar is its invalid state, and drawing the crank and
+// ground from the (always-present) input lengths while omitting the
+// coupler/rocker is the honest partial picture — the caption says exactly
+// what is and isn't drawn. theta3/theta4 default to NaN, never to a pose.
 export function FourbarSim({ values }: { values: VarRecord }) {
   const { a = 0.04, b = 0.12, c = 0.08, d = 0.1, theta2 = 0.7, theta3 = NaN, theta4 = NaN } = values;
   const W = 340;

@@ -320,13 +320,24 @@ sources:
       ch. 4 (two-dimensional problems in polar coordinates), §28 "Stress Distribution
       Symmetrical about an Axis": the hollow cylinder under uniform pressure — the Lamé
       field σ = A ∓ B/r², boundary conditions, bore maximum.
+    verification: >-
+      Article number and title pinned against the 3rd-edition full text (Internet Archive
+      scan), 2026-06-10; the Lamé family is independently re-derived from equilibrium +
+      compatibility (and the boundary conditions re-solved) in
+      pipeline/tests/test_cylinder_physics.py.
   - id: shigley
     citation: >-
       Budynas, R. G., & Nisbett, J. K., Shigley's Mechanical Engineering Design, 10th ed.,
       McGraw-Hill, 2015 — §3-14 (stresses in pressurized cylinders) and §5-4
       (maximum-shear-stress theory, S_sy = 0.5 S_y).
+    verification: >-
+      §3-14 "Stresses in Pressurized Cylinders" confirmed against 10th-edition section
+      listings, 2026-06-10; §5-4 matches the citation already used by the torsion-shaft THING.
   - id: gere
     citation: >-
       Gere, J. M., & Goodno, B. J., Mechanics of Materials, 9th ed., Cengage, 2018 — prismatic
       members and section properties (annular area, mass per length); thin-walled pressure
       vessels (the k → 1 limit this THING hands off to).
+    verification: >-
+      Topic-level citation, not section-pinned; the k → 1 hand-off limit itself is
+      machine-verified (sp.limit) in the test pipeline.

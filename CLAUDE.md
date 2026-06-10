@@ -11,7 +11,7 @@ this is wrong by definition.
 
 ## The five invariants
 
-Violating any of these requires an ADR in `docs/decisions/` and explicit human sign-off.
+Violating any of these requires an ADR in `docs/decisions/` and explicit owner sign-off.
 
 1. **Relational core.** A THING declares variables and undirected relations (residual expressions), never
    fixed input→output functions. Knob count per configuration = DOF = independent variables − independent
@@ -33,8 +33,12 @@ Violating any of these requires an ADR in `docs/decisions/` and explicit human s
 5. **Credibility spine.** Every emitted number traces to: a relation (with citation), its assumptions and
    validity envelope (violations surface as warn/invalid banners, never silent), and a passed unit check.
    Every material value carries source + basis. The whole site is labeled educational — not for design use.
-   SymPy verifies derivation-step *equivalence*, not physics: every THING also needs a textbook
-   worked-example golden test and human review before merge.
+   SymPy verifies derivation-step *equivalence*, not physics: modeling steps (where physics enters by
+   citation) are the declared audit surface, so every THING also needs an independent first-principles
+   cross-check in `pipeline/tests/`, a hand-checkable numeric golden, and citations pinned against
+   accessible sources where possible (recorded in `sources[].verification`). **There is no human review
+   gate** — this project is AI-authored under owner-designed verification systems (ADR-0007), the site
+   says so on `/verification/`, and corrections flow through the errata path.
 
 ## The factory pattern
 

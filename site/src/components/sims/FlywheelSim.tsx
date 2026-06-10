@@ -4,48 +4,28 @@
  * to the free rim, heating up as the speed approaches first yield (red past
  * it). The bar underneath places ω against the yield-onset speed ω_y. Spin
  * rate is compressed for readability and the caption says so with the true
- * numbers alongside (invariant 5: never silently mislead). rAF runs only
- * while playing; autoplay is disabled under prefers-reduced-motion
- * (ADR-0006).
+ * numbers alongside (invariant 5: never silently mislead). Animation clock
+ * and band rendering are the shared implementations (useSimClock,
+ * StressBands); the engine's `invalid` verdict is the authoritative refusal
+ * signal — a refusal can leave values omitted, present-as-NaN, or fully
+ * finite (a validity predicate over good numbers).
  */
-import { useEffect, useRef, useState } from "preact/hooks";
 import type { VarRecord } from "../../engines/types";
 import { toDisplay } from "../../engines/units";
+import { SimRefusal } from "./SimRefusal";
+import { StressBands } from "./StressBands";
+import { useSimClock } from "./useSimClock";
 
 export function FlywheelSim({ values, invalid = false }: { values: VarRecord; invalid?: boolean }) {
-  // The engine's `invalid` verdict is the authoritative refusal signal — a
-  // refusal can leave values omitted, present-as-NaN, or fully finite (a
-  // validity predicate over good numbers). No destructuring defaults for
-  // load-bearing values either: drawing a healthy default disk over a
-  // refused state is exactly what invariant 5 forbids.
+  // no destructuring defaults for load-bearing values: drawing a healthy
+  // default disk over a refused state is exactly what invariant 5 forbids
   const R = values.R ?? NaN;
   const omega = values.omega ?? NaN;
   const omega_y = values.omega_y ?? NaN;
   const SF = values.SF ?? Infinity;
   const nu = values.nu ?? 0.3; // cosmetic only (band shape)
   const refused = invalid || !Number.isFinite(R) || !Number.isFinite(omega) || R <= 0;
-  const reduced =
-    typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const [playing, setPlaying] = useState(!reduced);
-  const [t, setT] = useState(0);
-  const raf = useRef(0);
-  const last = useRef(0);
-
-  useEffect(() => {
-    // no animation loop while refused: re-rendering a static refusal figure
-    // at 60 fps is pure battery burn
-    if (!playing || refused) return;
-    const tick = (now: number) => {
-      if (last.current) setT((t) => t + Math.min(now - last.current, 100) / 1000);
-      last.current = now;
-      raf.current = requestAnimationFrame(tick);
-    };
-    raf.current = requestAnimationFrame(tick);
-    return () => {
-      cancelAnimationFrame(raf.current);
-      last.current = 0;
-    };
-  }, [playing, refused]);
+  const { t, playing, setPlaying } = useSimClock(!refused);
 
   // ω spans 10–6000 rad/s: a fixed slow-down factor is unreadable at both
   // ends, so the visual rate is log-compressed (≈1.6 rad/s at the default).
@@ -58,33 +38,10 @@ export function FlywheelSim({ values, invalid = false }: { values: VarRecord; in
 
   // after the hooks (rules of hooks): refuse to draw a state the engine refused
   if (refused) {
-    return (
-      <figure class="sim">
-        <svg viewBox={`0 0 ${W} 240`} role="img" aria-label="Flywheel diagram (undefined)" width="100%">
-          <title>Flywheel (undefined state)</title>
-          <desc>The engine refused this state; there is no honest disk to draw.</desc>
-          <circle cx={cx} cy={cy} r={80} class="beam-ghost" fill="none" />
-          <text x={cx} y={cy + 4} text-anchor="middle" class="sim-label">
-            undefined here
-          </text>
-        </svg>
-        <figcaption>This state was refused by the engine — nothing honest to draw.</figcaption>
-      </figure>
-    );
+    return <SimRefusal ariaLabel="Flywheel diagram (undefined state)" />;
   }
   const rVis = Math.min(30 + 160 * R, 92); // disk drawn to (clamped) radius scale
   const danger = Number.isFinite(SF) && SF < 1;
-
-  // stress bands: σ_θ(r)/σ_max = ((3+ν) − (1+3ν)(r/R)²)/(3+ν), opacity also
-  // scaled by proximity to yield so the disk visibly "heats up" as SF → 1
-  const N_BANDS = 6;
-  const heat = 0.25 + 0.65 * Math.min(1, Number.isFinite(SF) && SF > 0 ? 1 / SF : 0);
-  const bandW = rVis / N_BANDS;
-  const bands = Array.from({ length: N_BANDS }, (_, i) => {
-    const f = (i + 0.5) / N_BANDS;
-    const s = (3 + nu - (1 + 3 * nu) * f * f) / (3 + nu);
-    return { r: rVis * f, alpha: Math.max(0, Math.min(1, s * heat)) };
-  });
 
   // rim ticks + a scribed radius make the rotation visible
   const ticks = Array.from({ length: 8 }, (_, i) => th + (i * Math.PI) / 4);
@@ -107,18 +64,16 @@ export function FlywheelSim({ values, invalid = false }: { values: VarRecord; in
           centre and falls to zero at the free rim. The shading turns red past first yield. A bar
           below compares the spin speed to the yield-onset speed.
         </desc>
-        {bands.map((b) => (
-          <circle
-            cx={cx}
-            cy={cy}
-            r={b.r}
-            class={danger ? "fw-stress-hot" : "fw-stress"}
-            stroke-width={bandW}
-            stroke-opacity={b.alpha}
-            key={b.r}
-          />
-        ))}
-        <circle cx={cx} cy={cy} r={rVis} class="fw-rim" />
+        {/* σ_θ(r)/σ_max = ((3+ν) − (1+3ν)(r/R)²)/(3+ν), peak at the centre */}
+        <StressBands
+          cx={cx}
+          cy={cy}
+          rInner={0}
+          rOuter={rVis}
+          profile={(f) => (3 + nu - (1 + 3 * nu) * f * f) / (3 + nu)}
+          SF={SF}
+        />
+        <circle cx={cx} cy={cy} r={rVis} class="sim-outline" />
         {ticks.map((a, i) => (
           <line
             x1={cx + 0.9 * rVis * Math.cos(a)}

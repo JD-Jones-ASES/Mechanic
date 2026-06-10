@@ -11,6 +11,7 @@ for (const path of [
   "things/flywheel-disk/",
   "things/thick-walled-cylinder/",
   "materials/",
+  "verification/",
   "",
 ]) {
   test(`axe smoke: /${path}`, async ({ page }) => {

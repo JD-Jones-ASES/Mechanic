@@ -11,7 +11,10 @@ shaft with type-checked port bindings. Every THING ships its governing equations
 provenance, and a how-it-fails note. Pure static site (GitHub Pages); all math is verified and
 compiled at build time by SymPy.
 
-> **Educational material — not for design use.**
+> **Educational material — not for design use.** The site is AI-authored end to end under
+> owner-designed verification systems — no human review applies; the live
+> [verification page](https://jd-jones-ases.github.io/Mechanic/verification/) lists exactly what
+> the build proves and what rests on citation (ADR-0007).
 
 ## Develop
 

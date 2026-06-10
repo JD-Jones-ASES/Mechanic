@@ -1,21 +1,22 @@
 /**
  * Thick-walled cylinder: cross-section drawn to the true radius ratio k
  * (outer radius fills the frame, so the wall you see IS the k you dialed).
- * Hoop-stress field σ_θ(r) shaded as concentric bands — the 1/r² decay is
- * the visible lesson: the metal near the bore works, the outside loafs.
- * Bands heat toward first yield and turn red past it. When the design
- * configuration diverges (no finite wall), the figure refuses along with
- * the readouts instead of drawing a lie (invariant 5).
+ * Hoop-stress field σ_θ(r) shaded as concentric bands (shared StressBands
+ * implementation) — the 1/r² decay is the visible lesson: the metal near
+ * the bore works, the outside loafs. Bands heat toward first yield and turn
+ * red past it. The engine's `invalid` verdict is the authoritative refusal
+ * signal; when the design configuration diverges (no finite wall), the
+ * figure refuses along with the readouts instead of drawing a lie
+ * (invariant 5).
  */
 import type { VarRecord } from "../../engines/types";
 import { toDisplay } from "../../engines/units";
+import { SimRefusal } from "./SimRefusal";
+import { StressBands } from "./StressBands";
 
 export function CylinderSim({ values, invalid = false }: { values: VarRecord; invalid?: boolean }) {
-  // The engine's `invalid` verdict is the authoritative refusal signal — a
-  // refusal can leave values omitted, present-as-NaN, or fully finite (a
-  // validity predicate over good numbers). No destructuring defaults either:
-  // drawing a healthy default wall over a refused state is exactly what
-  // invariant 5 forbids.
+  // no destructuring defaults: drawing a healthy default wall over a refused
+  // state is exactly what invariant 5 forbids
   const r_i = values.r_i ?? NaN;
   const r_o = values.r_o ?? NaN;
   const t = values.t ?? NaN;
@@ -30,19 +31,12 @@ export function CylinderSim({ values, invalid = false }: { values: VarRecord; in
 
   if (!geometryOk) {
     return (
-      <figure class="sim">
-        <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Thick-walled cylinder diagram" width="100%">
-          <title>Thick-walled cylinder cross-section (undefined)</title>
-          <desc>The requested wall geometry does not exist; no cross-section can be drawn.</desc>
-          <circle cx={cx} cy={cy} r={88} class="beam-ghost" fill="none" />
-          <text x={cx} y={cy + 4} text-anchor="middle" class="sim-label">
-            no finite wall
-          </text>
-        </svg>
-        <figcaption>
-          The required outer radius diverges here — there is nothing honest to draw.
-        </figcaption>
-      </figure>
+      <SimRefusal
+        ariaLabel="Thick-walled cylinder diagram (undefined)"
+        label="no finite wall"
+        caption="The required outer radius diverges here — there is nothing honest to draw."
+        height={H}
+      />
     );
   }
 
@@ -51,19 +45,15 @@ export function CylinderSim({ values, invalid = false }: { values: VarRecord; in
   const rInVis = rOutVis / k;
   const danger = Number.isFinite(SF) && SF < 1;
 
-  // hoop field σ_θ(r) = A + B/r², normalized to its bore value; bands heat as SF → 1
+  // hoop field σ_θ(r) = A + B/r², normalized to its bore value
   const delta = r_o * r_o - r_i * r_i;
   const A = (r_i * r_i) / delta; // per unit p — only ratios matter here
   const B = (r_i * r_i * r_o * r_o) / delta;
   const sigmaBore = A + B / (r_i * r_i);
-  const heat = 0.25 + 0.65 * Math.min(1, Number.isFinite(SF) && SF > 0 ? 1 / SF : 0);
-  const N_BANDS = 6;
-  const bandWallW = (rOutVis - rInVis) / N_BANDS;
-  const bands = Array.from({ length: N_BANDS }, (_, i) => {
-    const rb = r_i + ((i + 0.5) / N_BANDS) * (r_o - r_i);
-    const s = (A + B / (rb * rb)) / sigmaBore;
-    return { r: rInVis + (i + 0.5) * bandWallW, alpha: Math.max(0, Math.min(1, s * heat)) };
-  });
+  const hoopProfile = (f: number) => {
+    const rb = r_i + f * (r_o - r_i);
+    return (A + B / (rb * rb)) / sigmaBore;
+  };
 
   // pressure arrows pushing outward on the bore
   const arrows = [0, Math.PI / 2, Math.PI, (3 * Math.PI) / 2];
@@ -79,19 +69,9 @@ export function CylinderSim({ values, invalid = false }: { values: VarRecord; in
           stress concentrating at the bore and decaying outward as one over r squared; it turns
           red past first yield. Arrows show the internal pressure on the bore.
         </desc>
-        {bands.map((b) => (
-          <circle
-            cx={cx}
-            cy={cy}
-            r={b.r}
-            class={danger ? "fw-stress-hot" : "fw-stress"}
-            stroke-width={bandWallW}
-            stroke-opacity={b.alpha}
-            key={b.r}
-          />
-        ))}
-        <circle cx={cx} cy={cy} r={rOutVis} class="fw-rim" />
-        <circle cx={cx} cy={cy} r={rInVis} class="fw-rim" />
+        <StressBands cx={cx} cy={cy} rInner={rInVis} rOuter={rOutVis} profile={hoopProfile} SF={SF} />
+        <circle cx={cx} cy={cy} r={rOutVis} class="sim-outline" />
+        <circle cx={cx} cy={cy} r={rInVis} class="sim-outline" />
         {arrows.map((a, i) => (
           <g key={i}>
             <line

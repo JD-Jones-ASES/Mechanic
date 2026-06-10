@@ -5,9 +5,16 @@
  * (invariant 5: never silently mislead).
  */
 import type { VarRecord } from "../../engines/types";
+import { SimRefusal } from "./SimRefusal";
 
-export function ShaftSim({ values }: { values: VarRecord }) {
-  const { theta = 0, SF = Infinity } = values;
+export function ShaftSim({ values, invalid = false }: { values: VarRecord; invalid?: boolean }) {
+  // the engine's `invalid` verdict is authoritative — no untwisted default
+  // shaft over a refused state (invariant 5)
+  const theta = values.theta ?? NaN;
+  const SF = values.SF ?? Infinity;
+  if (invalid || !Number.isFinite(theta)) {
+    return <SimRefusal ariaLabel="Torsion shaft diagram (undefined state)" height={130} />;
+  }
   const W = 320;
   const H = 130;
   const x0 = 40;

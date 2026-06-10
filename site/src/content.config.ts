@@ -99,7 +99,16 @@ const things = defineCollection({
       })
       .optional(),
     sim: z.object({ engine: z.string(), config: z.record(z.string(), z.unknown()).default({}) }),
-    sources: z.array(z.object({ id: z.string(), citation: z.string(), url: z.string().optional() })),
+    sources: z.array(
+      z.object({
+        id: z.string(),
+        citation: z.string(),
+        url: z.string().optional(),
+        // how the citation was pinned (TOC, indexed full text, …) — rendered
+        // on /verification/; absent means "not section-pinned" (ADR-0007)
+        verification: z.string().optional(),
+      }),
+    ),
   }),
 });
 
@@ -206,7 +215,14 @@ const compiled = defineCollection({
     ),
     material_binding: z.record(identifier, z.string()).nullable(),
     sim: z.object({ engine: z.string(), config: z.record(z.string(), z.unknown()).default({}) }).nullable(),
-    sources: z.array(z.object({ id: z.string(), citation: z.string(), url: z.string().optional() })),
+    sources: z.array(
+      z.object({
+        id: z.string(),
+        citation: z.string(),
+        url: z.string().optional(),
+        verification: z.string().optional(),
+      }),
+    ),
   }),
 });
 
