@@ -35,4 +35,7 @@ QUANTITY_KINDS: frozenset[str] = frozenset({
     "elastic_modulus",
     "density",
     "linear_density",
+    # rotational dynamics / energy storage
+    "moment_of_inertia",  # mass moment, kg*m^2 — same dims as torque/energy, different meaning
+    "specific_energy",  # J/kg = m^2/s^2 — energy per unit mass, not velocity-squared
 })

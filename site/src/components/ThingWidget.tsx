@@ -16,6 +16,7 @@ import { Readouts } from "./Readouts";
 import { ValidityBanner } from "./ValidityBanner";
 import { BeamSim } from "./sims/BeamSim";
 import { ColumnSim } from "./sims/ColumnSim";
+import { FlywheelSim } from "./sims/FlywheelSim";
 import { FourbarSim } from "./sims/FourbarSim";
 import { PlanetarySim } from "./sims/PlanetarySim";
 import { ShaftSim } from "./sims/ShaftSim";
@@ -29,6 +30,7 @@ const SIMS: Record<string, (p: { values: VarRecord }) => JSX.Element> = {
   "torsion-shaft": ShaftSim,
   "euler-column": ColumnSim,
   fourbar: FourbarSim,
+  "flywheel-disk": FlywheelSim,
 };
 
 interface Props {

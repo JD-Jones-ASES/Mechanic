@@ -1,0 +1,335 @@
+id: flywheel-disk
+title: Flywheel (Solid Rotating Disk)
+summary: >-
+  The machine that stores work as spin — and loads itself doing it. Centrifugal self-loading
+  grows with ρω²R², so the energy a flywheel can hold per kilogram is capped not by its size
+  but by one material index: strength over density.
+facets: [energy-storage, stress, mass-cost]
+
+variables:
+  - symbol: R
+    name: Disk radius
+    latex: R
+    unit: m
+    quantity_kind: length
+    default: 0.15
+    bounds: [0.02, 0.6]
+    positive: true
+    display_units: [mm, m]
+  - symbol: t
+    name: Disk thickness
+    latex: t
+    unit: m
+    quantity_kind: length
+    default: 0.025
+    bounds: [0.005, 0.2]
+    positive: true
+    display_units: [mm, m]
+  - symbol: omega
+    name: Spin speed
+    latex: '\omega'
+    unit: rad/s
+    quantity_kind: angular_velocity
+    default: 300
+    bounds: [10, 6000]
+    positive: true
+    display_units: [rad/s, rpm]
+  - symbol: E_k
+    name: Stored kinetic energy
+    latex: E_k
+    unit: J
+    quantity_kind: energy
+    default: 7000
+    bounds: [100, 1.0e8]
+    positive: true
+    display_units: [kJ, J, Wh]
+  - symbol: nu
+    name: "Poisson's ratio"
+    latex: '\nu'
+    unit: '1'
+    quantity_kind: poisson_ratio
+    default: 0.29
+    bounds: [0.05, 0.49]
+    positive: true
+    role: material
+  - symbol: rho
+    name: Density
+    latex: '\rho'
+    unit: kg/m**3
+    quantity_kind: density
+    default: 7850
+    bounds: [400, 9000]
+    positive: true
+    role: material
+    display_units: ["kg/m^3"]
+  - symbol: sigma_y
+    name: Yield strength
+    latex: '\sigma_y'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 250.0e6
+    bounds: [10.0e6, 2.0e9]
+    positive: true
+    role: material
+    display_units: [MPa, Pa]
+  - symbol: m_disk
+    name: Disk mass
+    latex: m
+    unit: kg
+    quantity_kind: mass
+    default: 13.9
+    bounds: [0.01, 5000]
+    positive: true
+    role: derived
+    display_units: [kg]
+  - symbol: I_z
+    name: Moment of inertia (spin axis)
+    latex: I_z
+    unit: kg*m**2
+    quantity_kind: moment_of_inertia
+    default: 0.156
+    bounds: [1.0e-7, 1.0e4]
+    positive: true
+    role: derived
+    display_units: ["kg*m^2"]
+  - symbol: e_m
+    name: Specific energy
+    latex: e
+    unit: J/kg
+    quantity_kind: specific_energy
+    default: 506
+    bounds: [0.1, 1.0e6]
+    positive: true
+    role: derived
+    display_units: ["J/kg", "Wh/kg"]
+  - symbol: sigma_max
+    name: Peak stress (disk centre)
+    latex: '\sigma_{max}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 6.5e6
+    bounds: [0, 5.0e9]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: SF
+    name: Safety factor (first yield)
+    latex: '\mathrm{SF}'
+    unit: '1'
+    quantity_kind: safety_factor
+    default: 38
+    bounds: [0, 1.0e4]
+    positive: true
+    role: derived
+  - symbol: omega_y
+    name: Yield-onset speed
+    latex: '\omega_y'
+    unit: rad/s
+    quantity_kind: angular_velocity
+    default: 1855
+    bounds: [1, 1.0e5]
+    positive: true
+    role: derived
+    display_units: [rpm, rad/s]
+
+materials:
+  binds:
+    nu: poisson_ratio
+    rho: density
+    sigma_y: yield_strength
+
+relations:
+  - id: disk-mass
+    group: mass-cost
+    latex: 'm = \rho\,\pi R^2 t'
+    residual: m_disk - rho*pi*R**2*t
+    assumptions:
+      - uniform solid disk — constant thickness, no hub, no rim band, no central hole
+    citation: hibbeler-dyn
+  - id: moment-of-inertia
+    group: energy-storage
+    latex: 'I_z = \tfrac{1}{2} m R^2'
+    residual: 2*I_z - m_disk*R**2
+    assumptions:
+      - rigid uniform disk spinning about its axis of symmetry
+    citation: hibbeler-dyn
+  - id: kinetic-energy
+    group: energy-storage
+    latex: 'E_k = \tfrac{1}{2} I_z \omega^2'
+    residual: 2*E_k - I_z*omega**2
+    assumptions:
+      - rigid body in pure spin about a fixed axis — no wobble, no translation
+    citation: hibbeler-dyn
+  - id: specific-energy
+    group: energy-storage
+    latex: 'e = \frac{E_k}{m}'
+    residual: e_m*m_disk - E_k
+    assumptions:
+      - the flywheel figure of merit — energy stored per kilogram carried
+    citation: ashby
+  - id: disk-stress
+    group: stress
+    latex: '\sigma_{max} = \frac{3+\nu}{8}\,\rho\,\omega^2 R^2'
+    residual: 8*sigma_max - (3+nu)*rho*omega**2*R**2
+    assumptions:
+      - linear elastic, isotropic, uniform-thickness disk in plane stress (thin next to its radius)
+      - free outer rim, solid centre — NO central hole (even a small bore roughly doubles the peak)
+      - radial and hoop stress are equal and maximal at the centre, falling monotonically to the rim
+    citation: timoshenko
+    validity:
+      - condition: sigma_max < sigma_y
+        severity: warn
+        message: >-
+          The centre of the disk has reached yield — beyond this speed the elastic field (and
+          every number built on it) stops being the truth. First yield is NOT burst: a ductile
+          disk redistributes stress and survives well past this line, but this model ends here.
+        citation: shigley
+      - condition: t < R/4
+        severity: warn
+        message: >-
+          Thickness is no longer small next to the radius — the plane-stress thin-disk solution
+          is fading; a disk this chunky wants the axisymmetric thick-disk treatment.
+        citation: timoshenko
+  - id: yield-margin
+    group: stress
+    latex: '\mathrm{SF} = \frac{\sigma_y}{\sigma_{max}}'
+    residual: SF*sigma_max - sigma_y
+    assumptions:
+      - margin against first yield at the disk centre, not against burst — burst arrives later,
+        governed by ultimate strength and crack behaviour
+    citation: shigley
+  - id: yield-onset-speed
+    group: stress
+    latex: '\sigma_y = \frac{3+\nu}{8}\,\rho\,\omega_y^2 R^2'
+    residual: 8*sigma_y - (3+nu)*rho*omega_y**2*R**2
+    assumptions:
+      - the spin speed at which the centre first reaches yield — the elastic model's own ceiling
+    citation: timoshenko
+
+configurations:
+  - id: speed-in
+    label: Geometry and speed in — energy, stress, margin out
+    constraints: {}
+    inputs: [R, t, omega]
+    solutions:
+      m_disk: rho*pi*R**2*t
+      I_z: m_disk*R**2/2
+      E_k: I_z*omega**2/2
+      e_m: E_k/m_disk
+      sigma_max: (3+nu)*rho*omega**2*R**2/8
+      SF: sigma_y/sigma_max
+      omega_y: sqrt(8*sigma_y/((3+nu)*rho))/R
+  - id: energy-in
+    label: Target energy in — the speed that stores it, and what it costs in stress
+    constraints: {}
+    inputs: [E_k, R, t]
+    solutions:
+      m_disk: rho*pi*R**2*t
+      I_z: m_disk*R**2/2
+      omega: sqrt(2*E_k/I_z)
+      e_m: E_k/m_disk
+      sigma_max: (3+nu)*rho*omega**2*R**2/8
+      SF: sigma_y/sigma_max
+      omega_y: sqrt(8*sigma_y/((3+nu)*rho))/R
+
+derivation:
+  verifies_configuration: speed-in
+  locals:
+    - symbol: r
+      unit: m
+      positive: true
+      bounds: [0.001, 0.6]
+    - symbol: sigma_r
+      unit: Pa
+      define: (3+nu)*rho*omega**2*(R**2 - r**2)/8
+    - symbol: sigma_t
+      unit: Pa
+      define: rho*omega**2*((3+nu)*R**2 - (1+3*nu)*r**2)/8
+  steps:
+    - expr: Eq(sigma_r, (3+nu)*rho*omega**2*(R**2 - r**2)/8)
+      prose: >-
+        The modeling step: every annulus of a spinning disk needs a net inward pull of ρω²r per
+        unit volume to stay on its circle — the disk is its own load. Radial equilibrium plus
+        strain compatibility (plane stress, thin uniform disk) is a solvable ODE in σ_r; the two
+        integration constants are fixed by σ_r staying finite at the centre and the rim being
+        free, σ_r(R) = 0. This is the classical rotating-disk field. (The build's test suite
+        re-substitutes it into the equilibrium ODE with a computer algebra system as an
+        independent check.)
+      rule: 'elasticity: radial equilibrium + compatibility, plane stress'
+      check: definition
+    - expr: Eq(sigma_t, rho*omega**2*((3+nu)*R**2 - (1+3*nu)*r**2)/8)
+      prose: >-
+        The same solution's hoop component. Both stresses are tensile everywhere — spinning
+        stretches the disk in every in-plane direction at once, which is why a flywheel cracks
+        radially when it lets go.
+      rule: 'elasticity: hoop component of the same field'
+      check: definition
+    - expr: Eq(sigma_t - sigma_r, (1-nu)*rho*omega**2*r**2/4)
+      prose: >-
+        Subtract: the hoop stress leads the radial stress by (1−ν)ρω²r²/4 ≥ 0 everywhere, so the
+        hoop direction always governs, and the gap closes to zero at the centre where the two
+        components meet.
+      rule: algebra on the field
+    - expr: Eq(sigma_max, (3+nu)*rho*omega**2*R**2/8)
+      prose: >-
+        Evaluate either component at r = 0: the peak sits at the centre, where σ_r = σ_θ =
+        (3+ν)ρω²R²/8. Read it as ρ(ωR)² times a number near ½ — the stress is set by the rim
+        speed ωR, squared. Note what moved compared to the torsion shaft: there the stress
+        ignored the material; here density IS the load, so the stress moves when the material
+        does.
+      rule: evaluate the field at the centre
+    - expr: Eq(I_z, m_disk*R**2/2)
+      prose: >-
+        The energy side needs the spin inertia: I = ∫r² dm over the uniform disk gives
+        ∫₀ᴿ r²·ρt·2πr dr = ρtπR⁴/2 = mR²/2. The r² weighting means the outer half of the radius
+        does almost all the storing — which is why real flywheels are rim-heavy. (The test suite
+        re-runs this integral too.)
+      rule: mass moment of inertia by integration
+    - expr: Eq(E_k, m_disk*(omega*R)**2/4)
+      prose: >-
+        E = ½I_zω² in rim-speed form: a uniform disk stores ¼·m·(ωR)² — exactly half of what the
+        same mass would carry moving in a straight line at rim speed. Energy, like stress, is a
+        rim-speed-squared quantity. The collision is coming.
+      rule: rotational kinetic energy
+    - expr: Eq(e_m, 2*sigma_max/((3+nu)*rho))
+      prose: >-
+        The collision: eliminate ω between energy and stress. Radius and thickness cancel
+        completely — the energy per kilogram is locked to the peak stress by e = 2σ/((3+ν)ρ).
+        No geometry can beat this. Run the disk up to its strength limit σ_y and every flywheel
+        of a given material, any size, stores the same e_max = 2σ_y/((3+ν)ρ): energy per mass is
+        a pure material index, σ_y/ρ. This is why grid-storage flywheels are carbon-fibre, not
+        steel.
+      rule: eliminate ω — the material merit index
+    - expr: Eq(omega_y*R, sqrt(8*sigma_y/((3+nu)*rho)))
+      prose: >-
+        The same elimination read as a speed limit: yield onset happens at a fixed RIM SPEED,
+        ω_y R = √(8σ_y/((3+ν)ρ)) — a material constant with units of m/s. A big slow disk and a
+        small fast one hit the same wall. Spin speed in rpm is negotiable; rim speed is not.
+      rule: yield-onset rim speed
+sim:
+  engine: statics-cascade
+  config:
+    draw: flywheel-disk
+
+sources:
+  - id: timoshenko
+    citation: >-
+      Timoshenko, S. P., & Goodier, J. N., Theory of Elasticity, 3rd ed., McGraw-Hill, 1970 —
+      ch. 4 (two-dimensional problems in polar coordinates), §32 "Rotating Disks":
+      plane-stress field of a solid uniform disk, σ_r = σ_θ = (3+ν)ρω²R²/8 at the centre,
+      σ_r(R) = 0 at the free rim.
+  - id: hibbeler-dyn
+    citation: >-
+      Hibbeler, R. C., Engineering Mechanics: Dynamics, 14th ed., Pearson, 2016 — §17.1 (mass
+      moments of inertia; the uniform solid disk I = mR²/2) and ch. 18 (planar kinetics, work
+      and energy: E = ½Iω² for rotation about a fixed axis).
+  - id: shigley
+    citation: >-
+      Budynas, R. G., & Nisbett, J. K., Shigley's Mechanical Engineering Design, 10th ed.,
+      McGraw-Hill, 2015 — ch. 16 (flywheels: energy exchange and sizing) and ch. 1 (design
+      factor against first yield).
+  - id: ashby
+    citation: >-
+      Ashby, M. F., Materials Selection in Mechanical Design, 4th ed., Butterworth-Heinemann,
+      2011 — the "materials for flywheels" case study: maximum kinetic energy per unit mass is
+      governed by the material index σ_y/ρ, independent of the disk's size.

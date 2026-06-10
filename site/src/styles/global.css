@@ -118,6 +118,17 @@ a { color: var(--accent); }
 .link-pivot { fill: var(--ink); }
 .link-pin { fill: var(--paper); stroke: var(--ink); stroke-width: 2; }
 .shaft-body { stroke: var(--accent); stroke-width: 3; }
+/* flywheel: stress-field bands shade toward the centre; red past first yield */
+.fw-rim { fill: none; stroke: var(--ink); stroke-width: 2.5; }
+.fw-stress { fill: none; stroke: var(--accent); }
+.fw-stress-hot { fill: none; stroke: #dc2626; }
+.fw-scribe { stroke: var(--ink); stroke-width: 2; stroke-linecap: round; }
+.fw-tick { stroke: var(--muted); stroke-width: 2; }
+.fw-hub { fill: var(--ink); }
+.fw-bar-track { fill: var(--line); }
+.fw-bar-fill { fill: var(--accent); }
+.fw-bar-over { fill: #dc2626; }
+.fw-bar-mark { stroke: var(--ink); stroke-dasharray: 3 3; }
 
 /* derivation + equations */
 .derivation { border-left: 3px solid var(--line); padding-left: 1rem; }

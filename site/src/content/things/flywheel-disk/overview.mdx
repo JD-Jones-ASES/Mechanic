@@ -1,0 +1,31 @@
+A flywheel is a battery made of motion: spin mass up to store work, let it back down to release
+it. Punch presses bank energy between strokes, engines smooth the gaps between cylinder firings,
+satellites trade spin with reaction wheels to point themselves, and grid-scale flywheel farms
+soak up seconds-long power surges. The catch is that the flywheel loads *itself* — every gram
+needs a centripetal pull of $\rho\omega^2 r$ per unit volume to stay on its circle, and that pull
+has to come through the disk as stress:
+
+$$E_k = \tfrac{1}{2} I_z\,\omega^2 \qquad \sigma_{max} = \frac{3+\nu}{8}\,\rho\,\omega^2 R^2 \qquad e_{max} = \frac{2\,\sigma_y}{(3+\nu)\,\rho}$$
+
+Three things to notice, one per formula:
+
+- **Energy and stress are the same knob.** Both grow with the rim speed squared, $(\omega R)^2$.
+  Storing more energy in a given disk *means* stressing it harder — there is no way to have one
+  without the other, and the derivation below shows the exchange rate is fixed.
+- **The stress moves with the material here.** On the [torsion shaft](../torsion-shaft/) the
+  stress famously ignores the material; a flywheel is the opposite case, because density is the
+  load. Swap steel for Ti-6Al-4V in the widget and watch $\sigma_{max}$ *drop* by nearly half at
+  the same speed — the lighter disk pulls on itself less (and stores less too; nothing is free).
+- **Size cancels.** Eliminate $\omega$ between the first two formulas and $R$ and $t$ vanish:
+  energy per kilogram at the strength limit is $2\sigma_y/((3+\nu)\rho)$ — a pure material index,
+  essentially $\sigma_y/\rho$. You cannot build your way past it with a bigger disk; a big slow
+  flywheel and a small fast one of the same material store the same energy per kilogram when
+  pushed to the same margin. That is why modern storage flywheels are wound from carbon fibre
+  rather than machined from steel, and it is the flywheel's ticket into the
+  [Ashby chart](../../materials/) way of thinking.
+
+The *energy-in* configuration runs the same relations the other way: name the energy you need,
+and the widget finds the speed that stores it — then tells you what that speed costs in stress
+and margin. Watch $\omega_y$, the yield-onset speed: it is the model's own ceiling, and it
+corresponds to a fixed **rim speed** $\omega_y R = \sqrt{8\sigma_y/((3+\nu)\rho)}$, another pure
+material number.
