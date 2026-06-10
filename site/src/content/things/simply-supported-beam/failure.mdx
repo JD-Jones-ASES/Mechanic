@@ -1,0 +1,27 @@
+The widget's margin is first yield at the midspan outer fiber, under static loads. Floors and
+girders find other ways:
+
+- **Serviceability governs before strength.** Most real beams are sized by deflection limits
+  (L/360 live-load for floors and plastered ceilings, L/240 for less crack-sensitive finishes —
+  the stricter number exists because plaster cracks), not by yield — a beam
+  at SF = 3 against yield can still feel like a trampoline. The two-knob widget makes the split
+  visible: stiffness is $EI$'s business, strength is $\sigma_y$'s.
+- **Lateral-torsional buckling.** A deep, narrow beam bent about its strong axis can roll
+  sideways and twist long before the outer fiber yields — the compression flange is a column
+  ([Euler's problem](../euler-column/) in disguise) that buckles out of the loading plane.
+  This is why long unbraced steel beams get lateral bracing and why the flexure formula alone
+  cannot size them.
+- **Shear, the forgotten diagram.** Euler–Bernoulli ignores shear deflection (the L > 10h warn),
+  but shear *stress* also peaks at the supports — short heavy beams and notched wood beams fail
+  there, parallel to the grain in timber's case, while the bending formula was still smiling.
+- **Local crushing at supports and loads.** The reactions enter through small contact areas;
+  web crippling (steel) and bearing crushing (wood) at the supports are checked separately in
+  every design code. The model's knife-edge supports are a fiction the hardware has to survive.
+- **The superposition trap.** Adding load cases is exact only while the structure stays linear.
+  Two classic violations: cables and membranes (geometry changes with load — stiffening), and
+  beam-columns (an axial load *multiplies* the lateral deflection, so axial and lateral cases
+  cannot be added). Use table rows outside their linear home and the sum is fiction with
+  confident digits.
+- **Vibration.** A beam is a spring with distributed mass; footfall near its natural frequency
+  is how a structurally sound footbridge becomes infamous. Stiffness-per-mass, not strength,
+  sets the tune — another reason $E$ and $\rho$ team up in the Ashby charts.

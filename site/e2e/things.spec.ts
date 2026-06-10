@@ -225,7 +225,7 @@ test("verification page discloses authorship and the audit surface", async ({ pa
   await expect(page.getByText(/built end to end by an AI/i).first()).toBeVisible();
   await expect(page.getByText(/No human reviews the content/i).first()).toBeVisible();
   // every THING appears with its audit block (count is a deliberate change detector)
-  expect(await page.locator("section.relation-block").count()).toBe(11);
+  expect(await page.locator("section.relation-block").count()).toBe(14);
   await expect(page.getByText(/Where physics enters/i).first()).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -525,6 +525,114 @@ test("belt: capstan goldens, deliver runs backwards, and the speed ceiling refus
   await page.getByTestId("config-select").selectOption("deliver");
   await expect(page.locator("#knob-P_t")).toBeVisible();
   expect(await readOutput(page, "T_1")).toBeCloseTo(400, 0); // N — round trip of the default state
+  expect(errors).toEqual([]);
+});
+
+/**
+ * Simply supported beam (defaults P=1 kN, w=2 kN/m, L=2 m, b=40, h=80 mm →
+ * I=1.7067e-6 m⁴). A36 (E=199.95 GPa, σ_y=248.2 MPa): δ_P=0.488 mm,
+ * δ_w=1.221 mm, δ=1.709 mm; M_max=1500 N·m; σ=35.16 MPa (material-blind);
+ * SF=7.06. Size-depth at SF=4 → h=60.2 mm.
+ */
+test("ss-beam: both table rows visible, their sum, and size-depth runs backwards", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/simply-supported-beam/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  const dP = await readOutput(page, "delta_P"); // mm
+  const dw = await readOutput(page, "delta_w");
+  const dTot = await readOutput(page, "delta");
+  expect(dP).toBeCloseTo(0.488, 2);
+  expect(dw).toBeCloseTo(1.221, 2);
+  expect(dTot).toBeCloseTo(dP + dw, 3); // superposition, literally
+  expect(await readOutput(page, "M_max")).toBeCloseTo(1500, 1); // N·m
+  expect(await readOutput(page, "sigma")).toBeCloseTo(35.16, 1); // MPa
+  expect(await readOutput(page, "SF")).toBeCloseTo(7.06, 1);
+
+  // stiffness vs strength split again: titanium deflects more AND clears more margin
+  await page.getByTestId("material-select").selectOption("ti-6al-4v");
+  expect(await readOutput(page, "delta")).toBeGreaterThan(1.7 * dTot);
+  expect(await readOutput(page, "sigma")).toBeCloseTo(35.16, 1); // stress is material-blind
+  expect(await readOutput(page, "SF")).toBeGreaterThan(20);
+
+  // size-depth: name the margin, get the joist
+  await page.getByTestId("config-select").selectOption("size-depth");
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  await expect(page.locator("#knob-SF")).toBeVisible();
+  await page.locator("#knob-SF").fill("4");
+  expect(await readOutput(page, "h")).toBeCloseTo(60.2, 0); // mm
+  expect(errors).toEqual([]);
+});
+
+/**
+ * Combined shaft (defaults M=200, T=500 N·m, d=40 mm): σ_b=31.83, τ_t=39.79,
+ * τ_max=42.85, σ'=75.91 MPa — all material-blind. A36: SF_T=2.90, SF_DE=3.27
+ * (ratio 1.129). Pure torsion (M=0): ratio = 2/√3 = 1.1547 exactly.
+ */
+test("combined shaft: Mohr goldens, and the two criteria bracket the truth", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/combined-shaft/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  expect(await readOutput(page, "sigma_b")).toBeCloseTo(31.83, 1); // MPa
+  expect(await readOutput(page, "tau_t")).toBeCloseTo(39.79, 1);
+  expect(await readOutput(page, "tau_max")).toBeCloseTo(42.85, 1);
+  expect(await readOutput(page, "sigma_vm")).toBeCloseTo(75.91, 1);
+  const sfT = await readOutput(page, "SF_t");
+  const sfVM = await readOutput(page, "SF_vm");
+  expect(sfT).toBeCloseTo(2.9, 1);
+  expect(sfVM / sfT).toBeCloseTo(1.129, 2);
+  expect(sfVM).toBeGreaterThan(sfT); // Tresca always errs safe
+
+  // pure torsion: maximum disagreement, exactly 2/√3
+  await page.locator("#knob-M").fill("0");
+  const sfT0 = await readOutput(page, "SF_t");
+  const sfVM0 = await readOutput(page, "SF_vm");
+  expect(sfVM0 / sfT0).toBeCloseTo(1.1547, 3);
+
+  // size-diameter: name the Tresca margin, get the shaft
+  await page.getByTestId("config-select").selectOption("size-diameter");
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  await page.locator("#knob-SF_t").fill("3");
+  expect(await readOutput(page, "d")).toBeCloseTo(40.5, 0); // mm
+  expect(errors).toEqual([]);
+});
+
+/**
+ * Thin tube (defaults T=500 N·m, A_m=20 cm², S=160 mm, t=2 mm, 1045):
+ * τ=62.5 MPa, θ=1.79°, SF=3.28, m=2.52 kg. Isoperimetric ceiling for
+ * S=160 mm: S²/4π = 20.37 cm² — dialing A_m to 25 cm² asks for a section
+ * that cannot exist: every value finite, state refused (pin #3 of the
+ * finite-invalid family).
+ */
+test("thin tube: Bredt goldens, and the isoperimetric envelope refuses impossible sections", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/thin-tube-torsion/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  // 9 of 13 materials publish a shear modulus — same exclusion as shaft/spring
+  expect(await page.getByTestId("material-select").locator("option").count()).toBe(9);
+
+  await page.getByTestId("material-select").selectOption("steel-1045");
+  expect(await readOutput(page, "tau")).toBeCloseTo(62.5, 1); // MPa
+  expect(await readOutput(page, "theta")).toBeCloseTo(1.79, 1); // degrees
+  expect(await readOutput(page, "SF")).toBeCloseTo(3.28, 1);
+  expect(await readOutput(page, "m_tube")).toBeCloseTo(2.52, 1); // kg
+
+  // ask for more area than the perimeter can enclose: refused by a theorem
+  await page.locator("#knob-A_m").fill("25"); // cm²
+  await expect(page.locator(".validity-invalid").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/isoperimetric|cannot exist/i);
+  await expect(page.locator(".sim figcaption")).toContainText(/no closed curve|isoperimetric/i);
+
+  // size-wall: name the margin, get the thickness
+  await page.locator("#knob-A_m").fill("20"); // back inside the envelope
+  await page.getByTestId("config-select").selectOption("size-wall");
+  await page.getByTestId("material-select").selectOption("steel-1045");
+  await page.locator("#knob-SF").fill("2");
+  expect(await readOutput(page, "t")).toBeCloseTo(1.22, 1); // mm
   expect(errors).toEqual([]);
 });
 

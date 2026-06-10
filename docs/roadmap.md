@@ -31,8 +31,13 @@ factory capability, the way the flywheel exercised `poisson_ratio` and new quant
   belt/capstan (the catalog's first `exp()`; the speed ceiling as a finite-value refusal, e2e-
   pinned; max-power speed re-derived by calculus in tests). New kinds: `stiffness`,
   `friction_coefficient`, `efficiency`; new display units N/m, N/mm, m/s.
-- **Structures:** simply-supported beam (superposition story), combined bending + torsion shaft
-  (principal stress; bridges two existing THINGs), thin-walled tube torsion (Bredt).
+- **Structures** ✅ batch 2 shipped (2026-06-10): simply-supported beam (superposition as a
+  visible theorem — δ_P and δ_w are separate readouts that sum; new `line_load` kind), combined
+  bending + torsion shaft (live Mohr's-circle sim; Tresca and von Mises side by side, their
+  [1, 2/√3] bracket proven in tests; new `bending_moment` kind — the belt-tension bridge THING),
+  thin-walled tube torsion (Bredt shear flow; the isoperimetric inequality S² ≥ 4πA_m as an
+  invalid envelope — refusal by classical theorem, the sim's stadium construction goes complex
+  at exactly the same boundary).
 - **Radial-field family (already promised by existing failure notes):** rotating disk with a
   central bore, shrink-fit compound cylinder (the autofrettage story made interactive — and
   secretly a chaining story).

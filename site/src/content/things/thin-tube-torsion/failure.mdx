@@ -1,0 +1,28 @@
+The widget models a perfect closed cell with uniform thin walls. Real tubes leave the model in
+several directions:
+
+- **A slit is a catastrophe, not a detail.** Cut the cell open and the constant shear flow has
+  no closed loop to run; the section reverts to open-section torsion, with stiffness falling by
+  factors of hundreds to thousands and stress concentrating at the slit tips. A cracked weld
+  seam in a torsion box is therefore not a 10 % problem — it is a different, far worse THING.
+  Inspectability of seams is a design requirement, not paperwork.
+- **Thin walls buckle in shear.** Bredt computes the stress the wall must carry; it says
+  nothing about whether a thin panel *can* carry it. Past a slenderness limit the wall wrinkles
+  diagonally (shear buckling) well below the shear yield stress — the elegant skins of aircraft
+  get stringers and ribs precisely to break the panels into sizes that won't. The thinner you
+  exploit Bredt, the sooner stability, not strength, takes over.
+- **Thin spots are hot spots.** Shear flow is constant, so stress scales as $1/t$ locally —
+  a wall thinned 30 % by corrosion or by manufacturing tolerance runs 43 % hotter exactly
+  there. Drain holes and fastener lines, which interrupt the flow, concentrate it further.
+- **Warping restraint at the ends.** Saint-Venant torsion lets cross-sections warp freely;
+  weld a thin-walled tube to a rigid flange and the restrained end develops longitudinal
+  stresses the free-twist model never sees. Closed circular tubes barely warp (the kindest
+  case); boxes and airfoils warp more, and short boxes between stiff bulkheads can carry a
+  meaningful fraction of the torque through warping stresses.
+- **Multi-cell sections share the flow.** A wing box with two or three cells splits the shear
+  flow among them — statically indeterminate, solved by twist compatibility, and out of this
+  page's single-cell scope (and, for now, this catalog's: it is exactly the kind of problem
+  the roadmap's cyclic-solver phase exists for).
+- **Joints interrupt the loop.** Bolted or bonded seams must transmit the full shear flow
+  $q = T/2A_m$ as a running load (N per meter of seam) — a number this widget hands you
+  directly, and the first thing to check on any built-up box.

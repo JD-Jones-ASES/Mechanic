@@ -109,6 +109,7 @@ a { color: var(--accent); }
 .beam-yielding { stroke: #dc2626; }
 .beam-ghost { stroke: var(--line); stroke-dasharray: 4 4; }
 .load-arrow { stroke: var(--ink); stroke-width: 2; }
+.load-arrow-light { stroke: var(--ink); stroke-width: 1.2; fill: none; }
 .load-arrow-head { fill: var(--ink); }
 .sim-label { font-size: 12px; fill: var(--ink); }
 /* four-bar linkage: one color per link so the prose can say "the amber crank" */
@@ -147,6 +148,18 @@ a { color: var(--accent); }
 .belt-tight { stroke: var(--ink); stroke-linecap: round; fill: none; }
 .belt-slack { stroke: var(--muted); stroke-linecap: round; fill: none; }
 .belt-wrap { stroke: var(--accent); fill: none; }
+/* Mohr's circle (combined shaft) */
+.mohr-axis { stroke: var(--muted); stroke-width: 1.5; }
+.mohr-circle { fill: none; stroke: var(--accent); stroke-width: 2.5; }
+.mohr-circle-hot { fill: none; stroke: #dc2626; stroke-width: 2.5; }
+.mohr-radius { stroke: var(--ink); stroke-width: 2; stroke-dasharray: 4 3; }
+.mohr-chord { stroke: var(--muted); stroke-width: 1.5; }
+.mohr-point { fill: var(--ink); }
+.mohr-vm { stroke: #f59e0b; stroke-width: 3; }
+/* thin-walled tube */
+.tube-wall { fill: none; stroke: var(--accent); }
+.tube-wall-hot { fill: none; stroke: #dc2626; }
+.tube-flow { stroke: var(--ink); stroke-width: 1.5; fill: none; }
 
 /* derivation + equations */
 .derivation { border-left: 3px solid var(--line); padding-left: 1rem; }

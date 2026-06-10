@@ -23,7 +23,9 @@ export const DISPLAY_FACTORS: Record<string, { factor: number; label: string }> 
   kN: { factor: 1e3, label: "kN" },
   "N/m": { factor: 1, label: "N/m" },
   "N/mm": { factor: 1e3, label: "N/mm" }, // 1 N/mm = 1000 N/m — the metric spring-rate idiom
+  "kN/m": { factor: 1e3, label: "kN/m" },
   "m/s": { factor: 1, label: "m/s" },
+  "cm^2": { factor: 1e-4, label: "cm²" },
   Pa: { factor: 1, label: "Pa" },
   kPa: { factor: 1e3, label: "kPa" }, // was missing while pressure-vessel offered it: 1000× wrong-as-labeled (caught by check-units.mjs on its first run)
   MPa: { factor: 1e6, label: "MPa" },

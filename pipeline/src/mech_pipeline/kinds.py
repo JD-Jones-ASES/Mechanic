@@ -31,7 +31,9 @@ QUANTITY_KINDS: frozenset[str] = frozenset({
     # mechanics
     "mass",
     "force",
-    "torque",
+    "torque",  # twisting moment about the axis
+    "bending_moment",  # same dims as torque [2,1,-2,…]; a belt's torque must not chain into a bending port
+    "line_load",  # N/m distributed load — same dims as stiffness; the kind keeps them apart
     "energy",
     "power",
     "pressure_stress",

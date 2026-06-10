@@ -1,0 +1,29 @@
+Every floor you have ever stood on is this THING: a beam resting on two supports, carrying both
+a crowd of distributed weight and the occasional concentrated piano. The
+[cantilever](../cantilever-beam/) taught the flexure machinery; this page teaches the move that
+makes beam tables useful — *superposition*:
+
+$$\delta_P = \frac{P L^3}{48\,EI} \qquad \delta_w = \frac{5\,w L^4}{384\,EI} \qquad
+\delta = \delta_P + \delta_w$$
+
+Three things to notice, one per formula:
+
+- **Each load case is a table row.** Engineers almost never integrate the beam equation at the
+  desk; they look up the case (Shigley's Table A-9 holds sixteen) and trust the row. The widget
+  shows both rows separately — $\delta_P$ and $\delta_w$ are live readouts, not hidden
+  intermediates — so you can watch which load owns the deflection as you trade $P$ against $w$.
+- **The span exponents disagree.** The point load deflects with $L^3$ but the distributed load
+  with $L^4$ — stretch the span and the UDL always wins eventually, which is why long roofs
+  fear snow (a $w$) more than equipment (a $P$). (Newton for newton, spread load actually
+  deflects only 5/8 as much as a centered point load — the UDL wins on span, not on
+  efficiency.)
+- **Adding answers is a theorem, not a habit.** $\delta = \delta_P + \delta_w$ works because
+  $EI\,v'' = M(x)$ is *linear* — double the cause, double the effect, causes add. The moment
+  the beam yields, buckles, or deflects enough to change its own geometry, superposition dies
+  with the linearity (the warn banners are exactly that boundary). And a subtlety the widget's
+  $M_{max}$ relation flags: the *maxima* added only because both load cases peak at midspan —
+  fields always superpose, peak values only sometimes do.
+
+The *size-depth* configuration runs it backwards: name the loads, span, and the margin a code
+demands, and the widget returns the joist depth — then immediately reports the deflection that
+depth costs, because strength-sized beams are routinely stiffness-governed in practice.

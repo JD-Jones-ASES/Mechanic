@@ -1,0 +1,32 @@
+The [torsion shaft](../torsion-shaft/) lived in a polite world where shafts only twist. Real
+shafts carry pulleys and gears, and everything that twists them also pushes them sideways: the
+[belt](../belt-drive/) whose tensions $T_1 + T_2$ bend the shaft toward the pulley while their
+*difference* torques it, the gear whose separating force does the same. Bending and torsion
+arrive on the same surface element, and the question "which stress matters?" needs an honest
+answer:
+
+$$\tau_{max} = \sqrt{\left(\tfrac{\sigma_b}{2}\right)^2 + \tau_t^2}
+= \frac{16}{\pi d^3}\sqrt{M^2 + T^2} \qquad
+\sigma' = \sqrt{\sigma_b^2 + 3\tau_t^2}$$
+
+Three things to notice:
+
+- **The worst plane is one you didn't draw.** Neither the bending stress nor the torsion stress
+  alone is the danger — rotate the element (Mohr's circle is the bookkeeping) and the extreme
+  shear lives on a tilted plane, with magnitude $\sqrt{(\sigma_b/2)^2 + \tau_t^2}$. The widget's
+  circle is drawn live from your knobs; the radius IS $\tau_{max}$.
+- **Two criteria, one element, different verdicts.** Tresca asks "worst shear plane?", von Mises
+  asks "how much shape-changing energy?" — and they disagree by up to 15 %, worst in pure
+  torsion, agreeing exactly in pure bending. The widget shows both safety factors side by side;
+  watch their gap breathe as you trade $M$ against $T$. Which is right? Test data sides with
+  von Mises for ductile metals; Tresca errs safe. They bracket the truth, and the bracket is
+  the honest answer.
+- **The old shortcut falls out of the algebra.** $\tau_{max} \propto \sqrt{M^2+T^2}$ means the
+  shaft fails in shear as if carrying a single "equivalent torque" $T_e = \sqrt{M^2+T^2}$ —
+  pre-computer designers sized shafts with that one number, and the *size-diameter*
+  configuration runs the same line backwards today.
+
+One loud caveat, carried by the first relation's assumptions: this page is a static snapshot.
+A *rotating* shaft under a stationary bending moment sees $\sigma_b$ fully reversed every
+revolution — that problem is fatigue, it is the actual sizing problem for most shafts, and it
+belongs to a future THING. Treat these margins as the first-cycle check they are.

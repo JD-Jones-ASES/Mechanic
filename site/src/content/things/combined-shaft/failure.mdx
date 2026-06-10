@@ -1,0 +1,29 @@
+The widget compares two static yield criteria on a perfect surface element. Rotating machinery
+has richer ways to die:
+
+- **Rotation turns bending into fatigue — the headline.** Hold the bending moment still and
+  spin the shaft: every surface point rides $+\sigma_b \to -\sigma_b$ once per revolution while
+  the torsional stress sits steady. That combination — fully-reversed bending plus steady
+  torsion — is THE canonical fatigue problem (Shigley's ch. 7 exists almost entirely for it),
+  with allowables far below yield once cycles reach the millions. This page's static margins
+  are the first-cycle sanity check, never the life prediction.
+- **Stress concentrations own the failure site.** Real shafts carry keyways, shoulder fillets,
+  retaining-ring grooves, and press-fitted hubs; each multiplies the local stress by 1.5–3×.
+  Combined with fatigue, the failure address is almost always a feature, not the smooth
+  mid-span this model analyzes.
+- **The criteria gap is small next to the load uncertainty.** Tresca vs von Mises differ ≈15 %
+  at most;
+  belt-tension estimates, shock factors, and misalignment loads routinely differ by more. The
+  bracket the two criteria draw is tight compared to how poorly $M$ and $T$ are usually known —
+  which is why service factors exist.
+- **Deflection and whirl.** A shaft sized for stress can still deflect enough to misalign gear
+  meshes and chew bearings — and at the speed where rotation meets the shaft's lateral natural
+  frequency (critical speed), deflection grows without new load. Stiffness ($E$, absent from
+  this page on purpose) and bearing spacing decide that, not strength.
+- **Combined is worse than either load *alone* suggests.** $\tau_{max}$ under $M$ and $T$
+  together exceeds the worst stress of either load by itself — but the interaction is geometric
+  ($\sqrt{M^2+T^2}$), so the cross-load enters *quadratically*: the first bit of torque on a
+  bending-critical shaft is nearly free (20 % of $M$ as torque raises $\tau_{max}$ only 2 %),
+  and each further increment costs more than the last. Checking bending and torsion separately
+  under-predicts the pair; adding their stresses over-predicts it. The Pythagorean middle is
+  the truth.
