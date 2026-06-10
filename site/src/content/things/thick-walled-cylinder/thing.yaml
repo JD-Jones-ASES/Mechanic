@@ -1,0 +1,332 @@
+id: thick-walled-cylinder
+title: Thick-Walled Cylinder (Lamé)
+summary: >-
+  Where the thin-wall pressure vessel hands off: the exact elastic field for any wall thickness.
+  The stress piles up at the bore and decays as 1/r² — and the bore shear always exceeds the
+  pressure, so past p = σ_y/2 no amount of thickness can contain it elastically.
+facets: [stress, mass-cost]
+
+variables:
+  - symbol: p
+    name: Internal pressure
+    latex: p
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 20.0e6
+    bounds: [1.0e5, 200.0e6]
+    positive: true
+    display_units: [MPa, Pa]
+  - symbol: r_i
+    name: Inner radius (bore)
+    latex: r_i
+    unit: m
+    quantity_kind: length
+    default: 0.04
+    bounds: [0.005, 0.3]
+    positive: true
+    display_units: [mm, m]
+  - symbol: t
+    name: Wall thickness
+    latex: t
+    unit: m
+    quantity_kind: length
+    default: 0.02
+    bounds: [0.001, 0.2]
+    positive: true
+    display_units: [mm, m]
+  - symbol: SF
+    name: Safety factor (first yield, Tresca)
+    latex: '\mathrm{SF}'
+    unit: '1'
+    quantity_kind: safety_factor
+    default: 3.45
+    bounds: [1.0, 20]
+    positive: true
+  - symbol: sigma_y
+    name: Yield strength
+    latex: '\sigma_y'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 250.0e6
+    bounds: [10.0e6, 2.0e9]
+    positive: true
+    role: material
+    display_units: [MPa, Pa]
+  - symbol: rho
+    name: Density
+    latex: '\rho'
+    unit: kg/m**3
+    quantity_kind: density
+    default: 7850
+    bounds: [400, 9000]
+    positive: true
+    role: material
+    display_units: ["kg/m^3"]
+  - symbol: r_o
+    name: Outer radius
+    latex: r_o
+    unit: m
+    quantity_kind: length
+    default: 0.06
+    bounds: [0.006, 0.5]
+    positive: true
+    role: derived
+    display_units: [mm, m]
+  - symbol: k
+    name: Radius ratio
+    latex: k
+    unit: '1'
+    quantity_kind: ratio
+    default: 1.5
+    bounds: [1.001, 20]
+    positive: true
+    role: derived
+  - symbol: sigma_ti
+    name: Hoop stress at the bore
+    latex: '\sigma_{\theta,i}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 52.0e6
+    bounds: [0, 5.0e9]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: sigma_ri
+    name: Radial stress at the bore
+    latex: '\sigma_{r,i}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: -20.0e6
+    bounds: [-2.0e9, 0]
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: tau_max
+    name: Max shear stress (bore)
+    latex: '\tau_{max}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 36.0e6
+    bounds: [0, 5.0e9]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: mu_L
+    name: Wall mass per unit length
+    latex: '\mu'
+    unit: kg/m
+    quantity_kind: linear_density
+    default: 49.3
+    bounds: [0, 1.0e5]
+    positive: true
+    role: derived
+    display_units: ["kg/m"]
+
+materials:
+  binds:
+    sigma_y: yield_strength
+    rho: density
+
+relations:
+  - id: radius-ratio
+    group: stress
+    latex: 'k = \frac{r_o}{r_i}'
+    residual: k*r_i - r_o
+    assumptions:
+      - the Lamé parameter — every stress ratio in the wall depends on geometry only through k
+    citation: timoshenko
+  - id: wall-thickness
+    group: stress
+    latex: 't = r_o - r_i'
+    residual: t - (r_o - r_i)
+    assumptions:
+      - annular cross-section, concentric bore
+    citation: gere
+  - id: lame-hoop-bore
+    group: stress
+    latex: '\sigma_{\theta,i} = p\,\frac{r_o^2 + r_i^2}{r_o^2 - r_i^2}'
+    residual: sigma_ti*(r_o**2 - r_i**2) - p*(r_o**2 + r_i**2)
+    assumptions:
+      - linear elastic, isotropic, long cylinder away from the ends
+      - internal pressure only — external pressure is taken as zero (gauge)
+      - in-plane Lamé field; the axial stress (zero for open ends, intermediate for closed ends)
+        lies between σ_θ and σ_r, so it never governs the maximum shear
+    citation: timoshenko
+  - id: radial-at-bore
+    group: stress
+    latex: '\sigma_{r,i} = -p'
+    residual: sigma_ri + p
+    assumptions:
+      - the inner face carries the fluid pressure as direct compression
+    citation: timoshenko
+  - id: max-shear-bore
+    group: stress
+    latex: '\tau_{max} = \frac{\sigma_{\theta,i} - \sigma_{r,i}}{2} = p\,\frac{r_o^2}{r_o^2 - r_i^2}'
+    residual: tau_max*(r_o**2 - r_i**2) - p*r_o**2
+    assumptions:
+      - the worst point in the wall is the bore — hoop tension and radial compression peak at
+        the same place
+    citation: timoshenko
+    validity:
+      - condition: 2*tau_max < sigma_y
+        severity: warn
+        message: >-
+          The bore has reached first yield (Tresca, 2τ = σ_y) — the elastic Lamé field stops
+          being the truth there. A ductile wall redistributes (this is exactly what autofrettage
+          exploits on purpose); a brittle one cracks.
+        citation: shigley
+  - id: tresca-margin
+    group: stress
+    latex: '\mathrm{SF} = \frac{\sigma_y}{2\,\tau_{max}}'
+    residual: SF*2*tau_max - sigma_y
+    assumptions:
+      - maximum-shear-stress (Tresca) criterion against first yield at the bore — conservative
+        next to distortion energy, same convention as the torsion shaft
+    citation: shigley
+    validity:
+      - condition: 2*SF*p < sigma_y
+        severity: invalid
+        message: >-
+          No finite wall achieves this: the bore shear always exceeds the pressure, so at
+          p ≥ σ_y/(2·SF) the required outer radius diverges — thickness alone cannot buy this
+          margin. This is why autofrettage, compound (shrink-fitted) cylinders, and stronger
+          materials exist.
+        citation: timoshenko
+  - id: mass-per-length
+    group: mass-cost
+    latex: '\mu = \rho\,\pi\,(r_o^2 - r_i^2)'
+    residual: mu_L - rho*pi*(r_o**2 - r_i**2)
+    assumptions:
+      - prismatic annulus, uniform density
+    citation: gere
+
+configurations:
+  - id: analyze
+    label: Pressure and geometry in — bore stresses and margin out
+    constraints: {}
+    inputs: [p, r_i, t]
+    solutions:
+      r_o: r_i + t
+      k: r_o/r_i
+      sigma_ti: p*(r_o**2 + r_i**2)/(r_o**2 - r_i**2)
+      sigma_ri: -p
+      tau_max: p*r_o**2/(r_o**2 - r_i**2)
+      SF: sigma_y/(2*tau_max)
+      mu_L: rho*pi*(r_o**2 - r_i**2)
+  - id: design
+    label: Pressure and margin in — the wall that (maybe) achieves it
+    constraints: {}
+    inputs: [p, r_i, SF]
+    solutions:
+      tau_max: sigma_y/(2*SF)
+      r_o: r_i*sqrt(sigma_y/(sigma_y - 2*SF*p))
+      t: r_o - r_i
+      k: r_o/r_i
+      sigma_ti: p*(r_o**2 + r_i**2)/(r_o**2 - r_i**2)
+      sigma_ri: -p
+      mu_L: rho*pi*(r_o**2 - r_i**2)
+  - id: rate
+    label: Geometry and margin in — the pressure this wall is good for
+    constraints: {}
+    inputs: [r_i, t, SF]
+    solutions:
+      r_o: r_i + t
+      k: r_o/r_i
+      tau_max: sigma_y/(2*SF)
+      p: sigma_y*(r_o**2 - r_i**2)/(2*SF*r_o**2)
+      sigma_ti: p*(r_o**2 + r_i**2)/(r_o**2 - r_i**2)
+      sigma_ri: -p
+      mu_L: rho*pi*(r_o**2 - r_i**2)
+
+derivation:
+  verifies_configuration: analyze
+  locals:
+    - symbol: r
+      unit: m
+      positive: true
+      bounds: [0.001, 0.5]
+    - symbol: A
+      unit: Pa
+      define: p*r_i**2/(r_o**2 - r_i**2)
+    - symbol: B
+      unit: Pa*m**2
+      define: p*r_i**2*r_o**2/(r_o**2 - r_i**2)
+    - symbol: sigma_r
+      unit: Pa
+      define: A - B/r**2
+    - symbol: sigma_t
+      unit: Pa
+      define: A + B/r**2
+  steps:
+    - expr: Eq(sigma_r, A - B/r**2)
+      prose: >-
+        The modeling step: axisymmetric equilibrium with no body force, d(r·σ_r)/dr = σ_θ,
+        plus strain compatibility admits exactly a two-parameter family — the Lamé field.
+        The entire stress state of any pressurized cylinder is two constants, A and B. (The
+        build's test suite re-substitutes this family into the equilibrium ODE and the
+        compatibility condition as an independent check.)
+      rule: 'elasticity: equilibrium + compatibility, polar coordinates'
+      check: definition
+    - expr: Eq(sigma_t, A + B/r**2)
+      prose: >-
+        The hoop member of the same family. Note the difference σ_θ − σ_r = 2B/r²: the field
+        concentrates as 1/r², so the material near the bore does nearly all the work and metal
+        added far away mostly just rides along — thickness has diminishing returns built into
+        the mathematics.
+      rule: 'elasticity: hoop component of the same family'
+      check: definition
+    - expr: Eq(A - B/r_i**2, -p)
+      prose: >-
+        First boundary condition: the inner face carries the fluid pressure as compression,
+        σ_r(r_i) = −p. Together with the next line this pins A = p·r_i²/(r_o²−r_i²) and
+        B = p·r_i²r_o²/(r_o²−r_i²).
+      rule: 'boundary condition: pressurized bore'
+    - expr: Eq(A - B/r_o**2, 0)
+      prose: >-
+        Second boundary condition: the outer face is free, σ_r(r_o) = 0. Two constants, two
+        conditions — the field is now fully determined.
+      rule: 'boundary condition: free outer face'
+    - expr: Eq(sigma_ti, A + B/r_i**2)
+      prose: >-
+        Evaluate the hoop stress where it peaks — the bore: σ_θ,i = p(r_o²+r_i²)/(r_o²−r_i²),
+        or p(k²+1)/(k²−1) in ratio form. Compare the thin-wall page's pr/t: as k → 1 they
+        agree (the build's test suite takes that limit), but by k = 1.5 the thin-wall formula
+        is already underpredicting the bore stress.
+      rule: evaluate the field at the bore
+    - expr: Eq(2*tau_max, sigma_ti - sigma_ri)
+      prose: >-
+        Hoop tension and radial compression peak at the same point, so the bore owns the worst
+        shear in the wall: τ_max = (σ_θ,i − σ_r,i)/2. This biaxial pinch is what the Tresca
+        margin measures.
+      rule: maximum shear at the bore
+    - expr: Eq(tau_max - p, p*r_i**2/(r_o**2 - r_i**2))
+      prose: >-
+        The punchline: the gap τ_max − p = p·r_i²/(r_o²−r_i²) is positive for every finite wall
+        and only approaches zero as r_o → ∞. The bore shear ALWAYS exceeds the pressure. Since
+        first yield needs 2τ ≤ σ_y, no wall — however thick — elastically contains
+        p ≥ σ_y/2. The design configuration's r_o = r_i·√(σ_y/(σ_y − 2·SF·p)) diverges at
+        exactly that wall; the widget refuses rather than lie. High-pressure practice cheats
+        it instead: autofrettage pre-yields the bore into residual compression, and compound
+        cylinders shrink one tube over another for the same effect.
+      rule: the thickness ceiling
+sim:
+  engine: statics-cascade
+  config:
+    draw: thick-walled-cylinder
+
+sources:
+  - id: timoshenko
+    citation: >-
+      Timoshenko, S. P., & Goodier, J. N., Theory of Elasticity, 3rd ed., McGraw-Hill, 1970 —
+      ch. 4 (two-dimensional problems in polar coordinates), §28 "Stress Distribution
+      Symmetrical about an Axis": the hollow cylinder under uniform pressure — the Lamé
+      field σ = A ∓ B/r², boundary conditions, bore maximum.
+  - id: shigley
+    citation: >-
+      Budynas, R. G., & Nisbett, J. K., Shigley's Mechanical Engineering Design, 10th ed.,
+      McGraw-Hill, 2015 — §3-14 (stresses in pressurized cylinders) and §5-4
+      (maximum-shear-stress theory, S_sy = 0.5 S_y).
+  - id: gere
+    citation: >-
+      Gere, J. M., & Goodno, B. J., Mechanics of Materials, 9th ed., Cengage, 2018 — prismatic
+      members and section properties (annular area, mass per length); thin-walled pressure
+      vessels (the k → 1 limit this THING hands off to).

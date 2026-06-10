@@ -9,6 +9,7 @@ for (const path of [
   "things/cantilever-beam/",
   "things/fourbar-linkage/",
   "things/flywheel-disk/",
+  "things/thick-walled-cylinder/",
   "materials/",
   "",
 ]) {

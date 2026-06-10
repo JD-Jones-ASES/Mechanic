@@ -7,8 +7,13 @@
  * from cross-connecting.
  */
 
-/** value_display = value_si / factor; value_si = value_display * factor */
-const DISPLAY_FACTORS: Record<string, { factor: number; label: string }> = {
+/** value_display = value_si / factor; value_si = value_display * factor.
+ * Exported so the build gate (site/scripts/check-units.mjs) can verify every
+ * authored display_units / si_unit string resolves here — an unknown unit
+ * falls back to showing the SI value under the authored label, which for any
+ * prefixed unit is wrong-as-labeled (invariant 5: that must fail the build,
+ * not console.warn into the void). */
+export const DISPLAY_FACTORS: Record<string, { factor: number; label: string }> = {
   "rad/s": { factor: 1, label: "rad/s" },
   rpm: { factor: (2 * Math.PI) / 60, label: "rpm" },
   m: { factor: 1, label: "m" },
@@ -17,11 +22,13 @@ const DISPLAY_FACTORS: Record<string, { factor: number; label: string }> = {
   N: { factor: 1, label: "N" },
   kN: { factor: 1e3, label: "kN" },
   Pa: { factor: 1, label: "Pa" },
+  kPa: { factor: 1e3, label: "kPa" }, // was missing while pressure-vessel offered it: 1000× wrong-as-labeled (caught by check-units.mjs on its first run)
   MPa: { factor: 1e6, label: "MPa" },
   GPa: { factor: 1e9, label: "GPa" },
   "N*m": { factor: 1, label: "N·m" },
   "kg/m^3": { factor: 1, label: "kg/m³" },
   "kg/m**3": { factor: 1, label: "kg/m³" },
+  "kg/m": { factor: 1, label: "kg/m" },
   "m**4": { factor: 1, label: "m⁴" },
   "m**2": { factor: 1, label: "m²" },
   kg: { factor: 1, label: "kg" },
@@ -30,10 +37,8 @@ const DISPLAY_FACTORS: Record<string, { factor: number; label: string }> = {
   kW: { factor: 1e3, label: "kW" },
   J: { factor: 1, label: "J" },
   kJ: { factor: 1e3, label: "kJ" },
-  MJ: { factor: 1e6, label: "MJ" },
   Wh: { factor: 3600, label: "Wh" },
   "J/kg": { factor: 1, label: "J/kg" },
-  "kJ/kg": { factor: 1e3, label: "kJ/kg" },
   "Wh/kg": { factor: 3600, label: "Wh/kg" },
   "kg*m^2": { factor: 1, label: "kg·m²" },
   "kg*m**2": { factor: 1, label: "kg·m²" },

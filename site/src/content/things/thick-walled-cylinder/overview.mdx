@@ -1,0 +1,30 @@
+Hydraulic cylinders, gun barrels, waterjet intensifiers running at 4,000 bar, high-pressure
+chemistry vessels — anything that holds serious pressure stops being "thin-walled" fast. The
+[thin-wall vessel](../pressure-vessel/) page refuses to answer below $r/t = 10$; this page is
+where that refusal hands off. Lamé's exact elastic field works for *any* wall:
+
+$$\sigma_{\theta,i} = p\,\frac{k^2+1}{k^2-1}, \quad k = \frac{r_o}{r_i} \qquad \tau_{max} - p = \frac{p\,r_i^2}{r_o^2 - r_i^2} \;>\; 0 \qquad r_o = r_i\sqrt{\frac{\sigma_y}{\sigma_y - 2\,\mathrm{SF}\,p}}$$
+
+Three things to notice, one per formula:
+
+- **The stress is material-blind again.** Like the [torsion shaft](../torsion-shaft/) (and unlike
+  the [flywheel](../flywheel-disk/), where density is the load), the Lamé stresses are pure
+  geometry × pressure. Swap materials in the widget: $\sigma_{\theta,i}$ refuses to move while
+  the margin and the mass shuffle around it. And the field decays as $1/r^2$ — the metal near
+  the bore does almost all the work, so doubling an already-thick wall buys surprisingly little.
+- **The bore shear always exceeds the pressure.** $\tau_{max} - p > 0$ for every finite wall,
+  shrinking to zero only as $r_o \to \infty$. That innocent-looking inequality is a hard ceiling:
+  first yield (Tresca) needs $2\tau \le \sigma_y$, so **no thickness whatsoever elastically
+  contains $p \ge \sigma_y/2$**. That is about 124 MPa for A36 — and even the quenched-and-tempered
+  4340 in the dropdown, the strongest material in our database, caps near 750 MPa, so a 600 MPa
+  waterjet intensifier can never see a margin better than about 1.25 elastically, however thick its
+  wall. Such machines exist anyway because engineers cheat (see *How it fails*).
+- **The design formula has a wall built into it.** In the *design* configuration, watch $r_o$
+  climb gently as you raise the pressure — then diverge as $2\cdot\mathrm{SF}\cdot p$ approaches
+  $\sigma_y$. The widget refuses rather than print a 40-meter wall. The *rate* configuration runs
+  the same relations the third way: given a cylinder and a margin, what pressure is it good for?
+
+The thin-wall page isn't wrong, just licensed: as $k \to 1$ the bore hoop stress converges to
+$pr/t$ (the build verifies that limit symbolically). By $k = 1.5$ — the default here — the true
+bore stress $p(k^2+1)/(k^2-1) = 2.6\,p$ already runs 30% above the thin-wall $p\,r_i/t = 2\,p$,
+on the dangerous side. Envelopes are not pedantry.

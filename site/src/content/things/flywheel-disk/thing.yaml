@@ -130,7 +130,9 @@ variables:
     bounds: [1, 1.0e5]
     positive: true
     role: derived
-    display_units: [rpm, rad/s]
+    # rad/s first so the readout is directly comparable to the ω knob beside
+    # it (the margin story); rpm one click away, and the sim caption shows it
+    display_units: [rad/s, rpm]
 
 materials:
   binds:

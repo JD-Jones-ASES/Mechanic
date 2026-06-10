@@ -118,7 +118,8 @@ a { color: var(--accent); }
 .link-pivot { fill: var(--ink); }
 .link-pin { fill: var(--paper); stroke: var(--ink); stroke-width: 2; }
 .shaft-body { stroke: var(--accent); stroke-width: 3; }
-/* flywheel: stress-field bands shade toward the centre; red past first yield */
+/* stress-band sims (flywheel, thick cylinder): bands shade where the field
+   concentrates; red past first yield */
 .fw-rim { fill: none; stroke: var(--ink); stroke-width: 2.5; }
 .fw-stress { fill: none; stroke: var(--accent); }
 .fw-stress-hot { fill: none; stroke: #dc2626; }

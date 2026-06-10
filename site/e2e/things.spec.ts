@@ -249,7 +249,7 @@ test("four-bar: non-Grashof geometry warns, and impossible assemblies refuse", a
  *     m=13.794 kg, E_k=6.983 kJ, e=506.25 J/kg, σ_max=(3.3/8)ρω²R²=6.520 MPa,
  *     SF=38.07, ω_y=1851.0 rad/s = 17675 rpm.
  *   Ti-6Al-4V (ρ=4428.8, ν=0.31, σ_y=868.74 MPa): σ_max=3.711 MPa, SF=234.1,
- *     ω_y=43834 rpm — and e is IDENTICAL (e = R²ω²/4: the energy a geometry
+ *     ω_y=4590 rad/s — and e is IDENTICAL (e = R²ω²/4: the energy a geometry
  *     stores per kg at a given speed is material-blind; the LIMIT is not).
  */
 test("flywheel: self-loading stress goldens, and the energy-in config finds the speed", async ({ page }) => {
@@ -263,7 +263,7 @@ test("flywheel: self-loading stress goldens, and the energy-in config finds the 
   expect(await readOutput(page, "e_m")).toBeCloseTo(506.25, 1); // J/kg
   expect(await readOutput(page, "sigma_max")).toBeCloseTo(6.52, 2); // MPa
   expect(await readOutput(page, "SF")).toBeCloseTo(38.07, 1);
-  expect(await readOutput(page, "omega_y")).toBeCloseTo(17675, -1); // rpm
+  expect(await readOutput(page, "omega_y")).toBeCloseTo(1851, 0); // rad/s, comparable to the ω knob
 
   // same relations backwards: name the energy, get the speed that stores it
   await page.getByTestId("config-select").selectOption("energy-in");
@@ -297,6 +297,72 @@ test("flywheel material cascade: density IS the load, but the per-kg energy at a
   expect(omYTi).toBeGreaterThan(omYSteel * 2); //      yield-onset speed way up
   expect(eTi).toBeCloseTo(eSteel, 4); // e = R²ω²/4 — same geometry+speed, same J/kg, any material
   expect(errors).toEqual([]);
+});
+
+/**
+ * Thick-walled cylinder (defaults p=20 MPa, r_i=40 mm, t=20 mm → k=1.5, Δ=2e-3 m²):
+ *   σ_θi = 20·(3600+1600)/2000 = 52 MPa exactly — for EVERY material (Lamé is
+ *   geometry × pressure). τ_max = 20·3600/2000 = 36 MPa.
+ *   A36 (σ_y=248.21 MPa): SF = 248.21/72 = 3.447, μ_L = 7805.7·π·0.002 = 49.05 kg/m.
+ *   Design (A36, SF=2): r_o = 40·√(248.21/(248.21−80)) = 48.59 mm → t = 8.59 mm.
+ *   Design blowup: SF=6.5 ⇒ 2·SF·p = 260 > σ_y — no finite wall, refused.
+ *   Rate (A36, SF=2): p = 248.21·2000/(4·3600) = 34.47 MPa.
+ */
+test("thick cylinder: Lamé goldens, and the stress is material-blind again", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/thick-walled-cylinder/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  expect(await readOutput(page, "r_o")).toBeCloseTo(60, 2); // mm
+  expect(await readOutput(page, "sigma_ti")).toBeCloseTo(52, 3); // MPa, exact
+  expect(await readOutput(page, "sigma_ri")).toBeCloseTo(-20, 3);
+  expect(await readOutput(page, "tau_max")).toBeCloseTo(36, 3);
+  expect(await readOutput(page, "SF")).toBeCloseTo(3.447, 2);
+  expect(await readOutput(page, "mu_L")).toBeCloseTo(49.05, 1); // kg/m
+
+  const sigmaSteel = await readOutput(page, "sigma_ti");
+  await page.getByTestId("material-select").selectOption("ti-6al-4v");
+  expect(await readOutput(page, "sigma_ti")).toBeCloseTo(sigmaSteel, 5); // material-blind
+  expect(await readOutput(page, "SF")).toBeCloseTo(12.07, 1); // ...but the margin is not
+  expect(await readOutput(page, "mu_L")).toBeCloseTo(27.83, 1); // ...nor the mass
+  expect(errors).toEqual([]);
+});
+
+test("thick cylinder: design finds the wall, refuses past the ceiling; rate finds the pressure", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/thick-walled-cylinder/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  await page.getByTestId("config-select").selectOption("design");
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  await expect(page.locator("#knob-SF")).toBeVisible();
+  await page.locator("#knob-SF").fill("2");
+  expect(await readOutput(page, "r_o")).toBeCloseTo(48.59, 1); // mm
+  expect(await readOutput(page, "t")).toBeCloseTo(8.59, 1);
+
+  // the thickness ceiling: 2·SF·p ≥ σ_y ⇒ no finite wall — refuse, don't lie
+  await page.locator("#knob-SF").fill("6.5");
+  await expect(page.locator(".validity-invalid").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/finite wall|autofrettage/i);
+  // ...and the SIM refuses too — it must not draw a default-geometry wall
+  await expect(page.locator(".sim figcaption")).toContainText(/nothing honest|diverges/i);
+
+  // third direction through the same relations: rate the cylinder
+  await page.getByTestId("config-select").selectOption("rate");
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  await page.locator("#knob-SF").fill("2");
+  expect(await readOutput(page, "p")).toBeCloseTo(34.47, 1); // MPa
+  expect(errors).toEqual([]);
+});
+
+test("thick cylinder: overpressure warns at bore yield", async ({ page }) => {
+  await page.goto("things/thick-walled-cylinder/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  await page.locator("#knob-p").fill("200"); // MPa → 2τ = 720 MPa ≫ σ_y
+  await expect(page.locator(".validity-warn").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/yield/i);
 });
 
 test("flywheel: overspeed warns at first yield; brittle materials are visibly absent", async ({ page }) => {

@@ -20,3 +20,7 @@ site/playwright-report/
 # OS / editor
 Thumbs.db
 .DS_Store
+
+# local tooling / sync artifacts
+.claude/
+.tmp.driveupload/
