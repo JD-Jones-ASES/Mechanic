@@ -317,12 +317,13 @@ sources:
   - id: timoshenko
     citation: >-
       Timoshenko, S. P., & Goodier, J. N., Theory of Elasticity, 3rd ed., McGraw-Hill, 1970 —
-      ch. 4 (two-dimensional problems in polar coordinates), the thick-walled cylinder under
-      uniform pressure: the Lamé field σ = A ∓ B/r², boundary conditions, bore maximum.
+      ch. 4 (two-dimensional problems in polar coordinates), §28 "Stress Distribution
+      Symmetrical about an Axis": the hollow cylinder under uniform pressure — the Lamé
+      field σ = A ∓ B/r², boundary conditions, bore maximum.
   - id: shigley
     citation: >-
       Budynas, R. G., & Nisbett, J. K., Shigley's Mechanical Engineering Design, 10th ed.,
-      McGraw-Hill, 2015 — ch. 3 (stresses in pressurized cylinders) and §5-4
+      McGraw-Hill, 2015 — §3-14 (stresses in pressurized cylinders) and §5-4
       (maximum-shear-stress theory, S_sy = 0.5 S_y).
   - id: gere
     citation: >-

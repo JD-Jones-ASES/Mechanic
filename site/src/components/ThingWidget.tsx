@@ -24,7 +24,11 @@ import { ShaftSim } from "./sims/ShaftSim";
 import { VesselSim } from "./sims/VesselSim";
 
 const fnsModules = import.meta.glob("../generated/things/*.fns.ts");
-const SIMS: Record<string, (p: { values: VarRecord }) => JSX.Element> = {
+// Sims receive the engine's refusal verdict alongside the values: `invalid`
+// is the ONLY authoritative signal (a refusal can leave values omitted,
+// present-as-NaN, or fully finite when a validity predicate fires) — sims
+// must not draw a confident figure from a state the engine refused.
+const SIMS: Record<string, (p: { values: VarRecord; invalid?: boolean }) => JSX.Element> = {
   planetary: PlanetarySim,
   "cantilever-beam": BeamSim,
   "pressure-vessel": VesselSim,
@@ -155,7 +159,9 @@ export default function ThingWidget({ artifact, materials, sim }: Props) {
         </div>
       </div>
 
-      {SimComponent && result ? <SimComponent values={{ ...result.values }} /> : null}
+      {SimComponent && result ? (
+        <SimComponent values={{ ...result.values }} invalid={result.invalid} />
+      ) : null}
     </section>
   );
 }

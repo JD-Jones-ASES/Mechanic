@@ -55,8 +55,13 @@ def test_the_thickness_ceiling():
     gap = sp.simplify(tau_max - p - p * r_i**2 / (r_o**2 - r_i**2))
     assert gap == 0
     assert sp.limit(tau_max, r_o, sp.oo) == p
-    # and τ_max strictly decreases with wall: more metal always helps, just less and less
-    assert sp.simplify(sp.diff(tau_max, r_o)) != 0
+    # and τ_max strictly DECREASES with wall (more metal always helps, just
+    # less and less): assert the derivative's SIGN, not mere nonzero-ness.
+    # With r_o = r_i + t the numerator/denominator signs are SymPy-decidable.
+    t = sp.symbols("t", positive=True)
+    dtau = sp.cancel(sp.diff(tau_max, r_o).subs(r_o, r_i + t))
+    assert sp.expand(sp.numer(dtau)).is_negative
+    assert sp.expand(sp.denom(dtau)).is_positive
 
 
 def test_design_closed_form_round_trips_and_diverges():

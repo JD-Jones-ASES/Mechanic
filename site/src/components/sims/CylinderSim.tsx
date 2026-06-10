@@ -8,12 +8,21 @@
  * the readouts instead of drawing a lie (invariant 5).
  */
 import type { VarRecord } from "../../engines/types";
+import { toDisplay } from "../../engines/units";
 
-export function CylinderSim({ values }: { values: VarRecord }) {
-  const { r_i = 0.04, r_o = 0.06, t = 0.02, SF = Infinity } = values;
+export function CylinderSim({ values, invalid = false }: { values: VarRecord; invalid?: boolean }) {
+  // The engine's `invalid` verdict is the authoritative refusal signal — a
+  // refusal can leave values omitted, present-as-NaN, or fully finite (a
+  // validity predicate over good numbers). No destructuring defaults either:
+  // drawing a healthy default wall over a refused state is exactly what
+  // invariant 5 forbids.
+  const r_i = values.r_i ?? NaN;
+  const r_o = values.r_o ?? NaN;
+  const t = values.t ?? NaN;
+  const SF = values.SF ?? Infinity;
 
   const geometryOk =
-    Number.isFinite(r_i) && Number.isFinite(r_o) && r_o > r_i && r_i > 0;
+    !invalid && Number.isFinite(r_i) && Number.isFinite(r_o) && r_o > r_i && r_i > 0;
   const W = 320;
   const H = 210;
   const cx = W / 2;
@@ -107,8 +116,8 @@ export function CylinderSim({ values }: { values: VarRecord }) {
       </svg>
       <figcaption>
         Drawn to the true ratio k = {Number.isFinite(k) ? k.toFixed(2) : "—"} (wall{" "}
-        {Number.isFinite(t) ? (t * 1000).toFixed(1) : "—"} mm). Shading: hoop stress, peak at
-        the bore, decaying as 1/r².
+        {Number.isFinite(t) ? toDisplay(t, "mm").toFixed(1) : "—"} mm). Shading: hoop stress,
+        peak at the bore, decaying as 1/r².
         {danger ? " Shown red: the bore is past first yield." : ""}
       </figcaption>
     </figure>

@@ -10,16 +10,20 @@
  */
 import { useEffect, useRef, useState } from "preact/hooks";
 import type { VarRecord } from "../../engines/types";
+import { toDisplay } from "../../engines/units";
 
-export function FlywheelSim({ values }: { values: VarRecord }) {
-  // No destructuring defaults for load-bearing values: a refused evaluation
-  // OMITS them, and defaults would draw a healthy default disk instead of
-  // refusing (invariant 5). Missing → NaN → the refusal figure below.
+export function FlywheelSim({ values, invalid = false }: { values: VarRecord; invalid?: boolean }) {
+  // The engine's `invalid` verdict is the authoritative refusal signal — a
+  // refusal can leave values omitted, present-as-NaN, or fully finite (a
+  // validity predicate over good numbers). No destructuring defaults for
+  // load-bearing values either: drawing a healthy default disk over a
+  // refused state is exactly what invariant 5 forbids.
   const R = values.R ?? NaN;
   const omega = values.omega ?? NaN;
   const omega_y = values.omega_y ?? NaN;
   const SF = values.SF ?? Infinity;
   const nu = values.nu ?? 0.3; // cosmetic only (band shape)
+  const refused = invalid || !Number.isFinite(R) || !Number.isFinite(omega) || R <= 0;
   const reduced =
     typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
   const [playing, setPlaying] = useState(!reduced);
@@ -28,7 +32,9 @@ export function FlywheelSim({ values }: { values: VarRecord }) {
   const last = useRef(0);
 
   useEffect(() => {
-    if (!playing) return;
+    // no animation loop while refused: re-rendering a static refusal figure
+    // at 60 fps is pure battery burn
+    if (!playing || refused) return;
     const tick = (now: number) => {
       if (last.current) setT((t) => t + Math.min(now - last.current, 100) / 1000);
       last.current = now;
@@ -39,7 +45,7 @@ export function FlywheelSim({ values }: { values: VarRecord }) {
       cancelAnimationFrame(raf.current);
       last.current = 0;
     };
-  }, [playing]);
+  }, [playing, refused]);
 
   // ω spans 10–6000 rad/s: a fixed slow-down factor is unreadable at both
   // ends, so the visual rate is log-compressed (≈1.6 rad/s at the default).
@@ -51,7 +57,7 @@ export function FlywheelSim({ values }: { values: VarRecord }) {
   const cy = 102;
 
   // after the hooks (rules of hooks): refuse to draw a state the engine refused
-  if (!Number.isFinite(R) || !Number.isFinite(omega) || R <= 0) {
+  if (refused) {
     return (
       <figure class="sim">
         <svg viewBox={`0 0 ${W} 240`} role="img" aria-label="Flywheel diagram (undefined)" width="100%">
@@ -90,7 +96,7 @@ export function FlywheelSim({ values }: { values: VarRecord }) {
   const frac = Number.isFinite(omega_y) && omega_y > 0 ? omega / omega_y : 0;
   const fillW = barWidth * (Math.min(frac, 1.25) / 1.25);
   const markX = barX + barWidth / 1.25;
-  const rpm = (omega * 60) / (2 * Math.PI);
+  const rpm = toDisplay(omega, "rpm"); // same conversion table the readouts use
 
   return (
     <figure class="sim">

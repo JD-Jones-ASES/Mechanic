@@ -249,7 +249,7 @@ test("four-bar: non-Grashof geometry warns, and impossible assemblies refuse", a
  *     m=13.794 kg, E_k=6.983 kJ, e=506.25 J/kg, σ_max=(3.3/8)ρω²R²=6.520 MPa,
  *     SF=38.07, ω_y=1851.0 rad/s = 17675 rpm.
  *   Ti-6Al-4V (ρ=4428.8, ν=0.31, σ_y=868.74 MPa): σ_max=3.711 MPa, SF=234.1,
- *     ω_y=43834 rpm — and e is IDENTICAL (e = R²ω²/4: the energy a geometry
+ *     ω_y=4590 rad/s — and e is IDENTICAL (e = R²ω²/4: the energy a geometry
  *     stores per kg at a given speed is material-blind; the LIMIT is not).
  */
 test("flywheel: self-loading stress goldens, and the energy-in config finds the speed", async ({ page }) => {
@@ -263,7 +263,7 @@ test("flywheel: self-loading stress goldens, and the energy-in config finds the 
   expect(await readOutput(page, "e_m")).toBeCloseTo(506.25, 1); // J/kg
   expect(await readOutput(page, "sigma_max")).toBeCloseTo(6.52, 2); // MPa
   expect(await readOutput(page, "SF")).toBeCloseTo(38.07, 1);
-  expect(await readOutput(page, "omega_y")).toBeCloseTo(17675, -1); // rpm
+  expect(await readOutput(page, "omega_y")).toBeCloseTo(1851, 0); // rad/s, comparable to the ω knob
 
   // same relations backwards: name the energy, get the speed that stores it
   await page.getByTestId("config-select").selectOption("energy-in");
@@ -345,6 +345,8 @@ test("thick cylinder: design finds the wall, refuses past the ceiling; rate find
   await page.locator("#knob-SF").fill("6.5");
   await expect(page.locator(".validity-invalid").first()).toBeVisible();
   await expect(page.locator(".validity")).toContainText(/finite wall|autofrettage/i);
+  // ...and the SIM refuses too — it must not draw a default-geometry wall
+  await expect(page.locator(".sim figcaption")).toContainText(/nothing honest|diverges/i);
 
   // third direction through the same relations: rate the cylinder
   await page.getByTestId("config-select").selectOption("rate");
