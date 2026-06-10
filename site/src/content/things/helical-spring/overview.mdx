@@ -1,0 +1,34 @@
+Valve trains, pogo sticks, retractable pens, vehicle suspensions, mattress cores, mold ejectors —
+the helical compression spring is how machines store force in a small, cheap, reliable package.
+The trick is hidden in plain sight: push on the coil and the wire doesn't compress, it *twists*.
+A compression spring is the [torsion shaft](../torsion-shaft/) wound into a helix, and every
+formula on this page is that page's physics wearing a coil:
+
+$$k = \frac{d^4\,G}{8 D^3 N_a} \qquad \tau_{max} = K_W\,\frac{8 F D}{\pi d^3} \qquad L_s = d\,(N_a + 2)$$
+
+Three things to notice, one per formula:
+
+- **The rate is a stiffness property, so it belongs to $G$.** Yield strength appears nowhere in
+  $k$ — swap A36 for the far stronger 4340 in the widget and the rate barely twitches (every
+  steel shares essentially one $G$), while the safety factor more than doubles. Then pick
+  Ti-6Al-4V: the rate *drops* by almost half at the same geometry — a titanium spring is a
+  *softer* spring, which is exactly why it must be rewound, not substituted. Stiffness and
+  strength are different axes of the material, and the spring shows the split more sharply than
+  any other THING in the catalog.
+- **The geometry leverage is brutal.** Wire diameter enters the rate to the *fourth* power and
+  coil diameter to the inverse *third*; the stress sees $d^3$ and $C = D/d$ drags the Wahl factor
+  with it. A 10 % change in wire diameter moves the rate ~46 %. This is why springs are wound to
+  catalog wire gauges and you design *to* the geometry, not around it.
+- **The envelopes are part of the model.** A spring is only honest between its limits: compress
+  it to the solid height $L_s$ and the coils stack into a rigid slug (the widget *refuses* past
+  coil bind — the linear model has nothing true to say there); make $L_0$ too tall relative to
+  $D$ and it buckles sideways like a [column](../euler-column/) — and since the stability bound
+  depends on $E$ and $G$ only through their ratio (essentially Poisson's ν), it lands near
+  $L_0 \lesssim 5.2\,D$ for *every* isotropic material, a rare nearly-universal number in this
+  catalog; wind $C$ outside 4–12 and you have something a spring works either can't make or
+  you can't use.
+
+The *wind-to-rate* configuration runs the same relations backwards: name the rate you need and
+the widget finds the coil count to wind — then immediately tells you what that choice costs in
+stress, bind clearance, and buckling margin. Real spring catalogs are this exact loop with money
+attached.

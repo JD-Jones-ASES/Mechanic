@@ -225,7 +225,7 @@ test("verification page discloses authorship and the audit surface", async ({ pa
   await expect(page.getByText(/built end to end by an AI/i).first()).toBeVisible();
   await expect(page.getByText(/No human reviews the content/i).first()).toBeVisible();
   // every THING appears with its audit block (count is a deliberate change detector)
-  expect(await page.locator("section.relation-block").count()).toBe(8);
+  expect(await page.locator("section.relation-block").count()).toBe(11);
   await expect(page.getByText(/Where physics enters/i).first()).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -380,6 +380,152 @@ test("thick cylinder: overpressure warns at bore yield", async ({ page }) => {
   await page.locator("#knob-p").fill("200"); // MPa → 2τ = 720 MPa ≫ σ_y
   await expect(page.locator(".validity-warn").first()).toBeVisible();
   await expect(page.locator(".validity")).toContainText(/yield/i);
+});
+
+/**
+ * Helical spring (defaults d=4 mm, D=32 mm → C=8, N_a=8, F=100 N, L_0=80 mm):
+ *   AISI 1045 (G=80 GPa exactly, σ_y=410 MPa): k = 80e9·0.004⁴/(8·0.032³·8)
+ *   = 9765.625 N/m = 9.766 N/mm; δ=10.24 mm; K_W=1.184; τ=150.75 MPa;
+ *   SF=205/150.75=1.360; L_s=40 mm.
+ *   A36 (G=11.5 Msi=79.29 GPa, σ_y=36 ksi=248.2 MPa): k=9.679 N/mm (−0.9 %!),
+ *   SF=0.823. Ti-6Al-4V (G=6.2 Msi=42.75 GPa, σ_y=868.7 MPa): k=5.219 N/mm,
+ *   SF=2.881 — the spring inversion: softer AND safer at the same load.
+ */
+test("spring: rate goldens, and the stiffness/strength axes split across materials", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/helical-spring/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  // 9 of 13 seed materials publish a shear modulus — same exclusion as the shaft
+  expect(await page.getByTestId("material-select").locator("option").count()).toBe(9);
+
+  await page.getByTestId("material-select").selectOption("steel-1045");
+  expect(await readOutput(page, "C")).toBeCloseTo(8, 5);
+  const k1045 = await readOutput(page, "k"); // N/mm
+  expect(k1045).toBeCloseTo(9.766, 2);
+  expect(await readOutput(page, "delta")).toBeCloseTo(10.24, 1); // mm
+  expect(await readOutput(page, "K_w")).toBeCloseTo(1.184, 2);
+  expect(await readOutput(page, "tau")).toBeCloseTo(150.75, 1); // MPa
+  const sf1045 = await readOutput(page, "SF");
+  expect(sf1045).toBeCloseTo(1.36, 1);
+  expect(await readOutput(page, "L_s")).toBeCloseTo(40, 2); // mm
+
+  // same G family, very different strength: the rate barely moves, the margin halves
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  const kA36 = await readOutput(page, "k");
+  const sfA36 = await readOutput(page, "SF");
+  expect(Math.abs(kA36 / k1045 - 1)).toBeLessThan(0.015); // steels share one G (11.5 Msi vs 80 GPa)
+  expect(sfA36).toBeLessThan(sf1045 * 0.65);
+
+  // titanium: the spring inversion — softer AND safer at the same load
+  await page.getByTestId("material-select").selectOption("ti-6al-4v");
+  const kTi = await readOutput(page, "k");
+  const deltaTi = await readOutput(page, "delta");
+  const sfTi = await readOutput(page, "SF");
+  expect(kTi).toBeCloseTo(5.219, 2);
+  expect(deltaTi).toBeGreaterThan(1.8 * 10.24);
+  expect(sfTi).toBeGreaterThan(2 * sf1045);
+  expect(errors).toEqual([]);
+});
+
+test("spring: wind-to-rate finds the coils, and coil bind refuses with finite values", async ({ page }) => {
+  await page.goto("things/helical-spring/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+  await page.getByTestId("material-select").selectOption("steel-1045");
+
+  // same relations backwards: name the rate, get the coil count
+  await page.getByTestId("config-select").selectOption("wind-to-rate");
+  await page.getByTestId("material-select").selectOption("steel-1045");
+  await expect(page.locator("#knob-k")).toBeVisible();
+  await page.locator("#knob-k").fill("9.7656"); // N/mm
+  expect(await readOutput(page, "N_a")).toBeCloseTo(8, 2);
+
+  // drive the spring solid: δ = 61.4 mm > L_0 − L_s = 40 mm → coil bind
+  await page.getByTestId("config-select").selectOption("analyze");
+  await page.getByTestId("material-select").selectOption("steel-1045");
+  await page.locator("#knob-F").fill("600"); // N
+  await expect(page.locator(".validity-invalid").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/coil bind/i);
+  // every number is finite here — only the engine's verdict knows; the sim must refuse
+  await expect(page.locator(".sim figcaption")).toContainText(/nothing honest/i);
+});
+
+/**
+ * Power screw (defaults F=5 kN, d_m=28 mm, l=5 mm, f=0.08):
+ *   λ = atan(5/28π) = 3.25°; πf·d_m = 7.04 mm > 5 mm → self-locking;
+ *   T_R = 70·(0.0120372)/(0.0875646) = 9.623 N·m; T_L = +1.613 N·m;
+ *   e = 25/(2π·9.623) = 0.413. Capacity: T_R = 9.6228 N·m raises F = 5 kN.
+ */
+test("power screw: torque goldens, capacity runs backwards, and friction flips self-locking", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/power-screw/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  expect(await readOutput(page, "lam")).toBeCloseTo(3.25, 1); // degrees
+  expect(await readOutput(page, "T_R")).toBeCloseTo(9.62, 1); // N·m
+  expect(await readOutput(page, "T_L")).toBeCloseTo(1.61, 1);
+  expect(await readOutput(page, "eff")).toBeCloseTo(0.413, 2);
+
+  // drop the friction: T_L goes negative and the warning names the behavior
+  await page.locator("#knob-f").fill("0.03");
+  expect(await readOutput(page, "T_L")).toBeLessThan(0);
+  await expect(page.locator(".validity-warn").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/self-locking|back-drive/i);
+
+  // capacity: the same relations find the load a torque budget can raise
+  await page.getByTestId("config-select").selectOption("capacity");
+  await expect(page.locator("#knob-T_R")).toBeVisible();
+  await page.locator("#knob-T_R").fill("9.6228");
+  expect(await readOutput(page, "F")).toBeCloseTo(5.0, 1); // kN
+  expect(errors).toEqual([]);
+});
+
+test("power screw: the jammed wedge refuses — no finite torque to draw", async ({ page }) => {
+  await page.goto("things/power-screw/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  // f·l > π·d_m: 0.5·50 mm vs π·5 mm — the wedge self-jams against raising
+  await page.locator("#knob-d_m").fill("5"); // mm
+  await page.locator("#knob-l").fill("50"); // mm
+  await page.locator("#knob-f").fill("0.5");
+  await expect(page.locator(".validity-invalid").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/jam/i);
+  await expect(page.locator(".sim figcaption")).toContainText(/jammed wedge/i);
+});
+
+/**
+ * Belt drive (defaults T_1=400 N, μ=0.3, θ=π, v=15 m/s, m'=0.25 kg/m):
+ *   T_c=56.25 N; e^{μθ}=2.566; T_2=56.25+343.75/2.566=190.2 N;
+ *   P=(400−190.2)·15=3.147 kW; v*=√(400/0.75)=23.09 m/s.
+ *   At v=45: T_c=506.25 N > T_1 — every value finite, state refused (the
+ *   engine's verdict, not NaN, is what the sim must obey).
+ */
+test("belt: capstan goldens, deliver runs backwards, and the speed ceiling refuses", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/belt-drive/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  expect(await readOutput(page, "T_c")).toBeCloseTo(56.25, 1); // N
+  expect(await readOutput(page, "T_2")).toBeCloseTo(190.2, 0);
+  expect(await readOutput(page, "P_t")).toBeCloseTo(3.147, 2); // kW
+  expect(await readOutput(page, "v_star")).toBeCloseTo(23.09, 1); // m/s
+
+  // past the power peak: still valid, but the banner says you're on the wrong side
+  await page.locator("#knob-v").fill("30");
+  await expect(page.locator(".validity-warn").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/power peak|wrong side/i);
+
+  // the hard ceiling: T_c > T_1 with every value finite — refused, sim included
+  await page.locator("#knob-v").fill("45");
+  await expect(page.locator(".validity-invalid").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/ceiling|consumed/i);
+  await expect(page.locator(".sim figcaption")).toContainText(/no honest drive/i);
+
+  // deliver: name the power, get the tension the belt must carry
+  await page.getByTestId("config-select").selectOption("deliver");
+  await expect(page.locator("#knob-P_t")).toBeVisible();
+  expect(await readOutput(page, "T_1")).toBeCloseTo(400, 0); // N — round trip of the default state
+  expect(errors).toEqual([]);
 });
 
 test("flywheel: overspeed warns at first yield; brittle materials are visibly absent", async ({ page }) => {

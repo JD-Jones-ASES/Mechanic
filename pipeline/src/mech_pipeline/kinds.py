@@ -12,10 +12,13 @@ QUANTITY_KINDS: frozenset[str] = frozenset({
     # dimensionless, mutually incompatible on purpose
     "angle",
     "ratio",
-    "count",
+    "count",  # count-like quantity; integerness is the variable's `integer` flag, not the
+              # kind's (active spring coils are a legitimate 8.5)
     "poisson_ratio",
     "strain",
     "safety_factor",
+    "friction_coefficient",  # μ/f: not a geometric ratio — keep capstan exponents honest
+    "efficiency",  # power-out/power-in ∈ (0,1]; a gear ratio must not chain into it
     # kinematics
     "length",
     "area",
@@ -38,4 +41,6 @@ QUANTITY_KINDS: frozenset[str] = frozenset({
     # rotational dynamics / energy storage
     "moment_of_inertia",  # mass moment, kg*m^2 — dims [2,1,0,…], unlike torque/energy [2,1,-2,…]
     "specific_energy",  # J/kg = m^2/s^2 — same dims as velocity²; the kind keeps them apart
+    # machine elements
+    "stiffness",  # N/m — spring rate; dims [0,1,-2,…] (so it can't chain into a force)
 })

@@ -132,6 +132,21 @@ a { color: var(--accent); }
 .fw-bar-fill { fill: var(--accent); }
 .fw-bar-over { fill: #dc2626; }
 .fw-bar-mark { stroke: var(--ink); stroke-dasharray: 3 3; }
+/* helical spring */
+.spring-coil { fill: none; stroke: var(--accent); stroke-linecap: round; stroke-linejoin: round; }
+.spring-coil-hot { fill: none; stroke: #dc2626; stroke-linecap: round; stroke-linejoin: round; }
+.spring-plate { fill: var(--muted); }
+.spring-ghost { stroke: var(--line); stroke-dasharray: 4 4; }
+.spring-bind-line { stroke: #dc2626; stroke-dasharray: 3 3; opacity: 0.7; }
+/* power screw */
+.screw-incline { fill: var(--line); opacity: 0.45; stroke: var(--ink); }
+.screw-block { fill: var(--accent); stroke: var(--ink); }
+.screw-block-slipping { fill: #dc2626; stroke: var(--ink); }
+/* belt drive */
+.belt-pulley { fill: var(--line); stroke: var(--ink); stroke-width: 2; }
+.belt-tight { stroke: var(--ink); stroke-linecap: round; fill: none; }
+.belt-slack { stroke: var(--muted); stroke-linecap: round; fill: none; }
+.belt-wrap { stroke: var(--accent); fill: none; }
 
 /* derivation + equations */
 .derivation { border-left: 3px solid var(--line); padding-left: 1rem; }

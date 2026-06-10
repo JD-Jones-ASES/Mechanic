@@ -1,0 +1,427 @@
+id: helical-spring
+title: Helical Compression Spring
+summary: >-
+  A torsion bar wound into a package: push on the coil and the wire twists. G sets the rate,
+  σ_y sets the margin, and the geometry trades them against three envelopes — coil bind,
+  buckling, and a spring index you can actually wind.
+facets: [stiffness, stress, mass-cost]
+
+variables:
+  - symbol: d
+    name: Wire diameter
+    latex: d
+    unit: m
+    quantity_kind: length
+    default: 0.004
+    bounds: [0.0008, 0.016]
+    positive: true
+    display_units: [mm, m]
+  - symbol: D
+    name: Mean coil diameter
+    latex: D
+    unit: m
+    quantity_kind: length
+    default: 0.032
+    bounds: [0.006, 0.25]
+    positive: true
+    display_units: [mm, m]
+  - symbol: N_a
+    name: Active coils
+    latex: N_a
+    unit: '1'
+    quantity_kind: count
+    default: 8
+    bounds: [2, 40]
+    positive: true
+  - symbol: F
+    name: Axial load
+    latex: F
+    unit: N
+    quantity_kind: force
+    default: 100
+    bounds: [1, 2000]
+    positive: true
+    display_units: [N, kN]
+  - symbol: L_0
+    name: Free length
+    latex: L_0
+    unit: m
+    quantity_kind: length
+    default: 0.08
+    bounds: [0.01, 0.6]
+    positive: true
+    display_units: [mm, m]
+  - symbol: G
+    name: Shear modulus
+    latex: G
+    unit: Pa
+    quantity_kind: elastic_modulus
+    default: 80.0e9
+    bounds: [0.5e9, 200.0e9]
+    positive: true
+    role: material
+    display_units: [GPa, Pa]
+  - symbol: E
+    name: Young's modulus
+    latex: E
+    unit: Pa
+    quantity_kind: elastic_modulus
+    default: 200.0e9
+    bounds: [1.0e9, 500.0e9]
+    positive: true
+    role: material
+    display_units: [GPa, Pa]
+  - symbol: sigma_y
+    name: Yield strength (tension)
+    latex: '\sigma_y'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 410.0e6
+    bounds: [10.0e6, 2.0e9]
+    positive: true
+    role: material
+    display_units: [MPa, Pa]
+  - symbol: rho
+    name: Density
+    latex: '\rho'
+    unit: kg/m**3
+    quantity_kind: density
+    default: 7870
+    bounds: [400, 9000]
+    positive: true
+    role: material
+    display_units: ["kg/m^3"]
+  - symbol: C
+    name: Spring index
+    latex: C
+    unit: '1'
+    quantity_kind: ratio
+    default: 8
+    bounds: [1.0, 320]
+    positive: true
+    role: derived
+  - symbol: k
+    name: Spring rate
+    latex: k
+    unit: N/m
+    quantity_kind: stiffness
+    default: 9766
+    bounds: [10, 2.0e6]
+    positive: true
+    display_units: ["N/mm", "N/m"]
+  - symbol: K_w
+    name: Wahl factor
+    latex: K_W
+    unit: '1'
+    quantity_kind: ratio
+    default: 1.18
+    bounds: [1.0, 50]
+    positive: true
+    role: derived
+  - symbol: tau
+    name: Max shear stress (inner fiber)
+    latex: '\tau_{max}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 1.5e8
+    bounds: [0, 5.0e9]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: delta
+    name: Deflection
+    latex: '\delta'
+    unit: m
+    quantity_kind: length
+    default: 0.0102
+    bounds: [0, 0.5]
+    positive: true
+    role: derived
+    display_units: [mm, m]
+  - symbol: L_s
+    name: Solid height
+    latex: L_s
+    unit: m
+    quantity_kind: length
+    default: 0.04
+    bounds: [0.002, 0.7]
+    positive: true
+    role: derived
+    display_units: [mm, m]
+  - symbol: SF
+    name: Safety factor (shear yield)
+    latex: '\mathrm{SF}'
+    unit: '1'
+    quantity_kind: safety_factor
+    default: 1.36
+    bounds: [0, 100]
+    positive: true
+    role: derived
+  - symbol: m_w
+    name: Wire mass
+    latex: m
+    unit: kg
+    quantity_kind: mass
+    default: 0.099
+    bounds: [0, 50]
+    positive: true
+    role: derived
+    display_units: [kg, g]
+
+materials:
+  binds:
+    G: shear_modulus
+    E: youngs_modulus
+    sigma_y: yield_strength
+    rho: density
+
+relations:
+  - id: spring-index
+    group: stress
+    latex: 'C = \frac{D}{d}'
+    residual: C*d - D
+    assumptions:
+      - the one dimensionless number that controls everything else — curvature, windability,
+        and the stress correction all depend on geometry only through C
+    citation: shigley
+    validity:
+      - condition: C > 1
+        severity: invalid
+        message: >-
+          Mean coil diameter must exceed the wire diameter — at C ≤ 1 there is no inner
+          clearance and nothing here describes a windable coil. Every formula on this page is
+          meaningless in this region.
+        citation: shigley
+      - condition: C >= 4
+        severity: warn
+        message: >-
+          Spring index below 4 — the coil is curled so tightly that winding it is hard on
+          machine and wire alike, and the inner-fiber stress correction balloons. Practical
+          springs live between C = 4 and C = 12.
+        citation: shigley
+      - condition: C <= 12
+        severity: warn
+        message: >-
+          Spring index above 12 — the coil is so open it is flimsy, prone to tangling, and
+          wanders sideways under load. Practical springs live between C = 4 and C = 12.
+        citation: shigley
+  - id: spring-rate
+    group: stiffness
+    latex: 'k = \frac{d^4 G}{8 D^3 N_a}'
+    residual: k*8*D**3*N_a - G*d**4
+    assumptions:
+      - linear elastic; the wire works in torsion, so G (not E) sets the rate
+      - direct-shear contribution to deflection dropped — Shigley's eq. (10-9) approximation;
+        the dropped term is 1/(2C²), ≈ 1 % at C = 7 and shrinking with C²
+      - ends seated so that only the N_a active coils deflect
+    citation: shigley
+    validity:
+      - condition: L_0 < 2*pi*D*sqrt(2*(E - G)/(2*G + E))
+        severity: warn
+        message: >-
+          Free length exceeds the absolute-stability limit (squared-and-ground ends between
+          flat parallel plates, α = 0.5) — a spring this slender can buckle sideways like a
+          column once deflection grows. Guide it in a hole or over a rod, or use a fatter coil.
+        citation: shigley
+  - id: wahl-factor
+    group: stress
+    latex: 'K_W = \frac{4C - 1}{4C - 4} + \frac{0.615}{C}'
+    residual: K_w - (4*C - 1)/(4*C - 4) - 0.615/C
+    assumptions:
+      - Wahl's correction for the inner-fiber stress — direct shear plus coil curvature in one
+        factor; Bergsträsser's K_B = (4C+2)/(4C−3) sits at most ~1.4 % below it over C = 4–12
+    citation: shigley
+  - id: shear-stress
+    group: stress
+    latex: '\tau_{max} = K_W\,\frac{8 F D}{\pi d^3}'
+    residual: tau*pi*d**3 - K_w*8*F*D
+    assumptions:
+      - the wire cross-section carries torsion T = FD/2 plus direct shear; both peak on the
+        inside of the coil, which is where springs fail
+      - static loading — fatigue under cyclic load is governed by different (lower) allowables
+    citation: shigley
+    validity:
+      - condition: tau < sigma_y/2
+        severity: warn
+        message: >-
+          Inner-fiber shear stress exceeds the shear yield strength (σ_y/2, maximum-shear-stress
+          criterion) — the spring takes a permanent set and loses free length. Spring makers
+          exploit exactly this on purpose (set removal); in service it is failure.
+        citation: shigley
+  - id: load-deflection
+    group: stiffness
+    latex: '\delta = \frac{F}{k}'
+    residual: F - k*delta
+    assumptions:
+      - linear range — force is proportional to deflection until the coils touch
+    citation: shigley
+  - id: solid-height
+    group: stiffness
+    latex: 'L_s = d\,(N_a + 2) = d\,N_t'
+    residual: L_s - d*(N_a + 2)
+    assumptions:
+      - squared-and-ground ends — two inactive end coils, N_t = N_a + 2, stacked wire height d·N_t
+    citation: shigley
+    validity:
+      - condition: L_0 - delta > L_s
+        severity: invalid
+        message: >-
+          Coil bind: the spring has been pushed solid — every coil is touching its neighbor and
+          the load path is now wire-on-wire compression, not torsion. The linear model has
+          nothing true to say past this point; the force skyrockets and the spring (or whatever
+          compressed it) is about to be damaged.
+        citation: shigley
+  - id: tresca-margin
+    group: stress
+    latex: '\mathrm{SF} = \frac{\sigma_y / 2}{\tau_{max}}'
+    residual: SF*tau - sigma_y/2
+    assumptions:
+      - maximum-shear-stress (Tresca) criterion against the bulk tensile yield strength — the
+        same convention as the torsion shaft
+      - deliberately conservative — the margin keeps the full Wahl curvature factor, where
+        Shigley's static-service practice drops the curvature part (K_s only) on the grounds
+        that the first load locally strain-strengthens it away; this page flags first local
+        yield at the inner fiber, ~11 % earlier at C = 8
+      - honest caveat — real spring wire (music wire, hard-drawn, chrome-silicon) is cold-drawn
+        far stronger than any bulk bar of the same alloy, and its strength grows as the wire
+        gets thinner; catalog spring design uses wire-size-dependent allowables this database
+        does not yet carry
+    citation: shigley
+  - id: wire-mass
+    group: mass-cost
+    latex: 'm = \rho\,\frac{\pi d^2}{4}\,\pi D N_t'
+    residual: m_w*4 - rho*pi**2*d**2*D*(N_a + 2)
+    assumptions:
+      - wire length ≈ πD per coil (helix angle small), N_t = N_a + 2 total coils, uniform density
+    citation: gere
+
+configurations:
+  - id: analyze
+    label: Geometry and load in — rate, stress, and envelopes out
+    constraints: {}
+    inputs: [d, D, N_a, F, L_0]
+    solutions:
+      C: D/d
+      k: G*d**4/(8*D**3*N_a)
+      K_w: (4*C - 1)/(4*C - 4) + 0.615/C
+      tau: K_w*8*F*D/(pi*d**3)
+      delta: F/k
+      L_s: d*(N_a + 2)
+      SF: sigma_y/(2*tau)
+      m_w: rho*pi**2*d**2*D*(N_a + 2)/4
+  - id: wind-to-rate
+    label: Name the rate — the same relations find the coils to wind
+    constraints: {}
+    inputs: [d, D, k, F, L_0]
+    solutions:
+      N_a: G*d**4/(8*D**3*k)
+      C: D/d
+      K_w: (4*C - 1)/(4*C - 4) + 0.615/C
+      tau: K_w*8*F*D/(pi*d**3)
+      delta: F/k
+      L_s: d*(N_a + 2)
+      SF: sigma_y/(2*tau)
+      m_w: rho*pi**2*d**2*D*(N_a + 2)/4
+
+derivation:
+  verifies_configuration: analyze
+  locals:
+    - symbol: T_w
+      unit: N*m
+      positive: true
+      define: F*D/2
+    - symbol: tau_0
+      unit: Pa
+      positive: true
+      define: 8*F*D/(pi*d**3)
+    - symbol: L_w
+      unit: m
+      positive: true
+      define: pi*D*N_a
+    - symbol: J_w
+      unit: m**4
+      positive: true
+      define: pi*d**4/32
+    - symbol: theta_w
+      unit: rad
+      positive: true
+      define: T_w*L_w/(G*J_w)
+  steps:
+    - expr: Eq(T_w, F*D/2)
+      prose: >-
+        The modeling step: cut the wire anywhere and balance the cut piece. The axial force F,
+        acting up the coil axis a moment arm D/2 away, loads the wire cross-section with a
+        torque T = FD/2 (plus a direct shear F). A compression spring is not compressed — it is
+        a torsion bar wound into a package, and every coil carries the same torque.
+      rule: 'statics: cut the wire'
+      check: definition
+    - expr: Eq(tau_0, 16*T_w/(pi*d**3))
+      prose: >-
+        Apply the torsion-shaft formula to the wire: τ = 16T/(πd³) on a solid circular section.
+        Substituting T = FD/2 gives the uncorrected spring stress 8FD/(πd³). Everything the
+        torsion-shaft page proved is being reused here verbatim — that page's derivation is
+        this step's pedigree.
+      rule: torsion formula on the wire section
+    - expr: Eq(tau, K_w*tau_0)
+      prose: >-
+        Two corrections the straight shaft never needed, in one factor: the direct shear F/A
+        rides on top of the torsion, and the coil's curvature crowds the shear-strain lines
+        together on the inside of the coil. Wahl's factor bundles both; at C = 8 it adds ≈ 18 %,
+        and as C → ∞ (a straight bar) it falls back to 1. The inside fiber is where springs
+        crack first.
+      rule: 'Wahl (1929): direct shear + curvature correction'
+    - expr: Eq(delta, theta_w*D/2)
+      prose: >-
+        Stack up the twist: the active wire is L_w = πDN_a long and twists θ = TL_w/(GJ) end to
+        end, exactly as the torsion shaft would. The load point rides the moment arm D/2, so
+        the coil shortens by δ = θ·D/2 = 8FD³N_a/(Gd⁴). (The direct-shear term adds another
+        factor 1 + 1/(2C²) ≈ 1 % — dropped here, as in Shigley's eq. 10-9; the test pipeline
+        re-derives the full Castigliano result with both energy terms as an independent check.)
+      rule: accumulate the twist along the wire
+    - expr: Eq(k, F/delta)
+      prose: >-
+        Divide load by travel and F cancels: k = Gd⁴/(8D³N_a). Read what survived — wire
+        diameter to the fourth power, coil diameter cubed, and G. The yield strength appears
+        nowhere: rate is a stiffness property, margin is a strength property, and they are set
+        by different knobs of the material. Swap steels in the widget and the rate barely
+        moves while the margin swings — then try titanium.
+      rule: definition of rate
+sim:
+  engine: statics-cascade
+  config:
+    draw: helical-spring
+
+sources:
+  - id: shigley
+    citation: >-
+      Budynas, R. G., & Nisbett, J. K., Shigley's Mechanical Engineering Design, 10th ed.,
+      McGraw-Hill, 2015 — §10-1 (stresses in helical springs: eqs. 10-1 spring index, 10-2/10-3
+      direct-shear factor), §10-2 (curvature effect: eq. 10-4 Wahl factor K_W, eq. 10-5
+      Bergsträsser K_B), §10-3 (deflection by Castigliano: eqs. 10-8, 10-9 spring rate),
+      §10-4/Table 10-1 (end conditions; squared-and-ground: N_t = N_a + 2, L_s = d·N_t),
+      §10-5 (stability: eqs. 10-10 to 10-13, Table 10-2 end-condition constant α), and §5-4
+      (maximum-shear-stress criterion, S_sy = 0.5 S_y).
+    verification: >-
+      Equation and table numbers pinned against the publisher's official ch. 10 lecture-slide
+      deck (Istanbul Technical University mirror), whose chapter-outline page also fixes the
+      10th-edition section pagination (§10-1 p. 518 … §10-5 p. 522), 2026-06-10. The rate
+      formula is independently re-derived from Castigliano's theorem (both energy terms), and
+      the Wahl factor's C → ∞ limit, its ordering above the direct-shear-only factor, and the
+      ≤ ~1.4 % Wahl–Bergsträsser gap are proven, in pipeline/tests/test_spring_physics.py.
+  - id: wahl
+    citation: >-
+      Wahl, A. M., Mechanical Springs, 2nd ed., McGraw-Hill, 1963 — the curvature-correction
+      factor K_W = (4C−1)/(4C−4) + 0.615/C and the torsion-bar model of the helical spring.
+    verification: >-
+      Named-attribution source: the factor is universally attributed to Wahl (Shigley eq. 10-4
+      cites it as "the Wahl factor"); the 1963 monograph is the standard reference. Not
+      independently page-pinned — the formula itself is verified against Shigley eq. 10-4 and
+      exercised numerically in pipeline/tests/test_spring_physics.py.
+  - id: gere
+    citation: >-
+      Gere, J. M., & Goodno, B. J., Mechanics of Materials, 9th ed., Cengage, 2018 — circular
+      shafts in torsion (the wire's stress state, §3.3–3.5) and prismatic volume/mass.
+    verification: >-
+      Topic-level citation — the same Gere sections the torsion-shaft THING cites (not
+      section-pinned there either); the torsion formula this spring reuses is independently
+      re-derived from the stress distribution in pipeline/tests/test_shaft_physics.py.

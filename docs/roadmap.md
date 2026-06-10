@@ -19,14 +19,18 @@ authoritative `invalid` verdict (shared `SimRefusal`; finite-invalid cases e2e-p
 sim machinery (`useSimClock`, `StressBands`); incremental compile cache (fingerprinted artifact
 reuse, `actions/cache` in CI — warm builds reuse unchanged THINGs in seconds).
 
-## Phase 2 — Catalog breadth (next)
+## Phase 2 — Catalog breadth (in progress)
 
 March through the curriculum spine in batches; each batch should deliberately exercise a new
 factory capability, the way the flywheel exercised `poisson_ratio` and new quantity kinds.
 
-- **Machine elements:** helical compression spring (the G story continued; spring index + solid
-  height + buckling envelopes), power screw (friction as an honest knob; self-locking as a
-  validity condition), belt/capstan (the exponential).
+- **Machine elements** ✅ batch 1 shipped (2026-06-10): helical compression spring (the G story
+  continued; coil-bind/buckling/index envelopes — the buckling bound material-aware through E
+  and G via Shigley 10-12), power screw (friction as an honest knob — new `friction_coefficient`
+  and `efficiency` kinds; self-locking as a warn envelope, the jammed wedge as a refusal),
+  belt/capstan (the catalog's first `exp()`; the speed ceiling as a finite-value refusal, e2e-
+  pinned; max-power speed re-derived by calculus in tests). New kinds: `stiffness`,
+  `friction_coefficient`, `efficiency`; new display units N/m, N/mm, m/s.
 - **Structures:** simply-supported beam (superposition story), combined bending + torsion shaft
   (principal stress; bridges two existing THINGs), thin-walled tube torsion (Bredt).
 - **Radial-field family (already promised by existing failure notes):** rotating disk with a
