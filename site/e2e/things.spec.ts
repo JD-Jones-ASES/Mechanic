@@ -242,3 +242,74 @@ test("four-bar: non-Grashof geometry warns, and impossible assemblies refuse", a
   // and at this crank angle the coupler+rocker can't reach: outputs are refused
   await expect(page.locator(".validity-invalid").first()).toBeVisible();
 });
+
+/**
+ * Flywheel (defaults R=0.15 m, t=25 mm, ω=300 rad/s):
+ *   A36 (ρ=0.282 lb/in³=7805.7 kg/m³, ν=0.30, σ_y=248.21 MPa):
+ *     m=13.794 kg, E_k=6.983 kJ, e=506.25 J/kg, σ_max=(3.3/8)ρω²R²=6.520 MPa,
+ *     SF=38.07, ω_y=1851.0 rad/s = 17675 rpm.
+ *   Ti-6Al-4V (ρ=4428.8, ν=0.31, σ_y=868.74 MPa): σ_max=3.711 MPa, SF=234.1,
+ *     ω_y=43834 rpm — and e is IDENTICAL (e = R²ω²/4: the energy a geometry
+ *     stores per kg at a given speed is material-blind; the LIMIT is not).
+ */
+test("flywheel: self-loading stress goldens, and the energy-in config finds the speed", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/flywheel-disk/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  expect(await readOutput(page, "m_disk")).toBeCloseTo(13.794, 2);
+  expect(await readOutput(page, "E_k")).toBeCloseTo(6.983, 2); // kJ
+  expect(await readOutput(page, "e_m")).toBeCloseTo(506.25, 1); // J/kg
+  expect(await readOutput(page, "sigma_max")).toBeCloseTo(6.52, 2); // MPa
+  expect(await readOutput(page, "SF")).toBeCloseTo(38.07, 1);
+  expect(await readOutput(page, "omega_y")).toBeCloseTo(17675, -1); // rpm
+
+  // same relations backwards: name the energy, get the speed that stores it
+  await page.getByTestId("config-select").selectOption("energy-in");
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  await expect(page.locator("#knob-E_k")).toBeVisible();
+  await page.locator("#knob-E_k").fill("6.9832"); // kJ
+  expect(await readOutput(page, "omega")).toBeCloseTo(300, 0); // rad/s
+  expect(errors).toEqual([]);
+});
+
+test("flywheel material cascade: density IS the load, but the per-kg energy at a speed is geometry's", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/flywheel-disk/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  const sigmaSteel = await readOutput(page, "sigma_max");
+  const sfSteel = await readOutput(page, "SF");
+  const eSteel = await readOutput(page, "e_m");
+  const omYSteel = await readOutput(page, "omega_y");
+
+  await page.getByTestId("material-select").selectOption("ti-6al-4v");
+  const sigmaTi = await readOutput(page, "sigma_max");
+  const sfTi = await readOutput(page, "SF");
+  const eTi = await readOutput(page, "e_m");
+  const omYTi = await readOutput(page, "omega_y");
+
+  // the inversion of the torsion-shaft lesson: here the stress MOVES with material
+  expect(sigmaTi).toBeLessThan(sigmaSteel * 0.62); // lighter disk pulls on itself less
+  expect(sfTi).toBeGreaterThan(sfSteel * 5); //        ...and yields far later
+  expect(omYTi).toBeGreaterThan(omYSteel * 2); //      yield-onset speed way up
+  expect(eTi).toBeCloseTo(eSteel, 4); // e = R²ω²/4 — same geometry+speed, same J/kg, any material
+  expect(errors).toEqual([]);
+});
+
+test("flywheel: overspeed warns at first yield; brittle materials are visibly absent", async ({ page }) => {
+  await page.goto("things/flywheel-disk/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  // 10 of 13 seed materials publish a yield strength; grey iron (the classic
+  // flywheel material!), wood, and concrete do not — excluded, with a note
+  expect(await page.getByTestId("material-select").locator("option").count()).toBe(10);
+  await expect(page.getByText(/not listed here/i)).toBeVisible();
+
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  await page.locator("#knob-omega").fill("6000"); // rad/s: 400× the default stress
+  await expect(page.locator(".validity-warn").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/yield/i);
+});

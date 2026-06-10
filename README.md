@@ -3,9 +3,9 @@
 **Live site: https://jd-jones-ases.github.io/Mechanic/**
 
 A browsable, citation-backed database of mechanical and physical THINGS — currently a planetary
-gearset, cantilever beam, thin-walled pressure vessel, torsion shaft, Euler column, and four-bar
-linkage, plus a [chaining demo](https://jd-jones-ases.github.io/Mechanic/chain-demo/) that wires a
-gearbox into a shaft with type-checked port bindings. Every THING ships its governing equations
+gearset, cantilever beam, thin-walled pressure vessel, torsion shaft, Euler column, four-bar
+linkage, and solid-disk flywheel, plus a [chaining demo](https://jd-jones-ases.github.io/Mechanic/chain-demo/)
+that wires a gearbox into a shaft with type-checked port bindings. Every THING ships its governing equations
 **with machine-verified derivations**, an interactive simulation, material selection with visible
 provenance, and a how-it-fails note. Pure static site (GitHub Pages); all math is verified and
 compiled at build time by SymPy.

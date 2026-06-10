@@ -1,0 +1,34 @@
+The widget's margin is first yield at the disk centre, under a steady spin, for a solid uniform
+disk. Real flywheels die harder and uglier:
+
+- **Burst.** The defining flywheel failure: past its limit the disk tears into two or three large
+  sectors that leave tangentially at rim speed, each carrying its share of the stored energy as
+  shrapnel. The energy that made the flywheel useful is exactly what makes it dangerous —
+  industrial flywheels and turbine disks live inside containment housings sized for a full burst,
+  and spin-pit testing (deliberately bursting disks in a bunker) is a routine acceptance step for
+  turbine rotors.
+- **First yield is not burst — the margin hides on both sides.** A ductile disk that yields at
+  the centre just redistributes stress outward and keeps spinning; actual burst arrives at the
+  higher speed where the *average* hoop stress across a diameter approaches the material's
+  ultimate strength. So the widget's SF is conservative for ductile metals. For brittle materials
+  it is the opposite kind of wrong: no yield, no redistribution, no warning — the first crack is
+  the burst. That is why grey cast iron, the classic Victorian flywheel material, killed so many
+  operators when steam engines overspun: it publishes no yield strength at all (which is exactly
+  why it is absent from this page's material dropdown), and old engineering handbooks are full of
+  flywheel-explosion case studies.
+- **A centre hole doubles the stress.** Put even a small bore through the disk for a shaft — as
+  nearly every real flywheel must — and the peak hoop stress at the bore edge jumps to roughly
+  *twice* the solid-disk centre value. The solid-disk numbers here are the optimistic textbook
+  case; a bored disk reaches yield at about 70% of the solid disk's speed. Real designs use
+  shrink-fitted hubs, integral shafts, or profiled (constant-stress) disks to claw this back.
+- **Overspeed is squared.** Because stress grows with $\omega^2$, a 20% overspeed is a 44% stress
+  increase; 40% over is nearly double. Flywheel accidents are overwhelmingly governor/controller
+  failures, not material defects — the protection that matters is the one that limits speed.
+- **Fatigue from charge–discharge cycling.** A storage flywheel is stress-cycled every time it
+  banks and releases energy. Tens of thousands of deep cycles of centre stress make crack
+  initiation at the bore or hub fillet the life-limiting mechanism long before any static margin
+  is consumed.
+- **Everything off-axis.** Imbalance, gyroscopic moments when the vehicle turns, and shaft
+  critical speeds all load the bearings, not the disk — and bearing failure at speed releases the
+  rotor just as effectively as a burst. High-speed flywheels run on magnetic bearings in vacuum
+  partly for efficiency, partly because nothing mechanical survives the interface for long.
