@@ -20,9 +20,22 @@ So is $\sigma_y$ useless? No — it decides where Euler's formula is *allowed to
 columns yield before any bent equilibrium arrives; slender ones buckle long before yielding. The
 boundary is the transition slenderness $\lambda_T = \sqrt{2\pi^2 E/\sigma_y}$, and notice the
 twist: raising $\sigma_y$ *expands* Euler's empire (the envelope moves left) even though it never
-changes the load. Drive the length down in the widget and watch the page *refuse* to answer once
-$\lambda < \lambda_T$ — an inelastic column theory like the Johnson parabola owns that region, and
-showing Euler's number there would err on the dangerous side.
+changes the load.
+
+Left of $\lambda_T$ a second model takes over — J. B. Johnson's parabola, the standard design fit
+for intermediate columns, where partial yielding erodes the very stiffness buckling depends on:
+
+$$\sigma_J = \sigma_y - \left(\frac{\sigma_y \lambda}{2\pi}\right)^{\!2}\frac{1}{E} \qquad (\lambda \le \lambda_T)$$
+
+It is pinned at $\sigma_y$ for a stub column and meets Euler's hyperbola at $\lambda_T$ —
+*tangentially*: same value ($\sigma_y/2$), same slope, both facts machine-proven in the
+derivation below. That tangency is the whole reason for the $\sigma_y/2$ convention. Drive the
+length down in the widget and watch the **hand-off**: once $\lambda < \lambda_T$ the Euler
+readouts are refused (showing Euler's number there would err on the dangerous side) and the
+Johnson readouts take over — and on the capacity chart the operating point slides smoothly from
+the hyperbola onto the parabola. One page, two models, each honest only inside its own envelope.
+Note the asymmetry it creates: in Johnson territory the strong material finally *does* carry more
+load — $\sigma_y$ is back in the formula — which is exactly what short-column intuition expects.
 
 The end conditions are the configurations. Clamping both ends ($K = 0.5$) buys 4× the load of
 pinned–pinned; a flagpole ($K = 2$) pays 4× penalty — a factor of **sixteen** between the extremes,

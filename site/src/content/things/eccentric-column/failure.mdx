@@ -1,0 +1,31 @@
+The secant formula is exact elastic theory for an idealized member — and each idealization marks
+a way the real column quits earlier:
+
+- **First yield is the beginning of the end, not a nuisance.** Past $P_y$ the yielded fiber stops
+  taking extra stress, the effective section shrinks, the bow deepens, and the moment arm grows —
+  the same amplification loop that built the secant formula now feeds on a *softening* column.
+  Collapse follows at a load not far above first yield, which is why $P_y$ (and not some plastic
+  reserve) is the design ceiling this page reports. The widget refuses the elastic readouts past
+  first yield rather than pretend the fiction continues; $P_y$ and $\mathrm{SF}_P$ stay exact.
+- **The margin must be taken on load.** A stress-based factor of safety silently assumes
+  proportionality. Here a "factor of 2 on stress" can evaporate into far less than a factor of 2
+  on load — the page shows both margins so the gap is impossible to miss. Codes write this rule
+  down (apply the factor to the load, then check the stress); Shigley states it as the reason the
+  secant equation must be solved iteratively at all.
+- **Approaching $P_E$ is hopeless even though nothing has "buckled."** The deflection diverges
+  asymptotically; stiffness against the bow goes to zero. Real eccentric columns are serviceable
+  only well below the Euler load — by the time $P$ reaches even $0.7\,P_E$, the amplification
+  factor is brutal and growing without bound. There is no event to wait for, just runaway.
+- **Both-ends-same-side bowing is the worst case this page models.** Equal eccentricities on the
+  same side give single-curvature bending with the peak at midspan. Opposite-side offsets
+  (reverse curvature) are gentler; a single-end offset lands between. The pinned, equal-offset
+  case is the standard conservative chart.
+- **Tension can appear on the convex face.** Push the eccentricity ratio up and the bending
+  gradient overwhelms the uniform compression — the neutral axis walks into the section and part
+  of it goes into tension (watch the zero-stress line enter the bar in the sim). Bolted bases,
+  grouted joints and masonry — things that carry compression but not tension — fail this way
+  long before any fiber yields.
+- **Crooked columns are eccentric columns in disguise.** An initial bow $a$ behaves nearly like
+  an end eccentricity; design codes fold real-world crookedness, residual stress and accidental
+  offset into equivalent-imperfection rules precisely because the perfectly straight,
+  perfectly centered member of the [Euler page](../euler-column/) does not exist in any shop.

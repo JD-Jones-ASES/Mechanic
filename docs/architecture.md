@@ -37,9 +37,21 @@ step before `astro build`).
      independently resolved, DOF-checked on its own manifold (exact rational rank where the manifold
      point is rational; 50-dps numeric rank with a 1e-30 chop on transcendental manifolds), verified
      against EVERY relation, and given its own parity samples. There is NO blind `sympy.solve()` anywhere
-     in v1 (verified 2026-06: raw four-bar loop closure hangs `solve()` >5 min); authored closed forms
-     and future bracketed `solve1d` are the only paths. Any `False`/undecided ⇒ build failure naming
+     (verified 2026-06: raw four-bar loop closure hangs `solve()` >5 min); authored closed forms
+     and bracketed `solve1d` are the only paths. Any `False`/undecided ⇒ build failure naming
      thing/configuration/branch/target.
+   - *solve1d configurations* (first consumer: the eccentric column's secant equation): a target with
+     no closed form is authored as `solve1d: { relation: <id>, bracket: [lo, hi] }` — solve a DECLARED
+     relation for one unknown inside authored bracket EXPRESSIONS (dimension-checked against the
+     target; brackets may read earlier targets, e.g. `(1 - 1e-6)*P_E`). The certificate is numeric,
+     per verification sample: bracket endpoints real and ordered, residual SIGN CHANGE proven, a
+     33-point scan rejects multi-root brackets, the root found by mpmath bisection at 60 dps
+     (`sp.nsolve(..., solver='bisect')` — bracketed, never blind), and the fully-rooted point
+     back-substituted into EVERY relation. DOF rank runs at the rooted points (kept as Floats so the
+     numeric-rank path decides). Parity samples carry the bisection roots, so `check-parity.mjs` runs
+     the browser's own Brent against them — the root-finder itself is inside the oracle. Identity
+     derivation steps may not reference solve1d-dependent symbols (no closed form exists to verify
+     against); `definition` steps may. solve1d + multi-branch in one configuration is rejected (v1).
    - *Derivation steps*: each step is an equation in the THING's variables; after substituting the verified
      solutions of the step's declared configuration it must reduce to an identity (same tiered checker).
      This proves each displayed line is *true*, not that the chain is pedagogically minimal — prose carries
@@ -91,9 +103,13 @@ Sound because compilation is deterministic (seeded sampling). CI persists the ar
     "srepr": "…",                          // provenance: exact SymPy form that was verified
     "assumptions": ["rigid bodies"],
     "validity": [{ "guard_fn": "g1", "severity": "warn|invalid", "message": "…", "citation": "…",
-                   "needs": ["delta","L"] }],   // symbols the predicate reads — the engine evaluates it
+                   "needs": ["delta","L"],      // symbols the predicate reads — the engine evaluates it
                                                 // whenever all are finite, even after evaluation was
                                                 // refused ("cannot assemble" must not be masked)
+                   "scope": ["P_cr","SF_b"] }], // OPTIONAL scoped refusal: an invalid envelope poisons
+                                                // only these derived variables instead of the whole
+                                                // evaluation — model hand-off (Euler/Johnson). Absent
+                                                // = global refusal, as before.
     "citation": "source-id"
   }],
   "configurations": [{
@@ -102,9 +118,11 @@ Sound because compilation is deterministic (seeded sampling). CI persists the ar
     "inputs": ["N_s","N_p","omega_s"],
     "plan": [                              // discriminated union — executed in order
       { "type": "eval", "target": "N_r", "fn": "cfg_rf_N_r", "latex": "N_r = N_s + 2 N_p" },
-      { "type": "eval", "target": "omega_c", "fn": "cfg_rf_omega_c", "latex": "…" }
-      // { "type": "solve1d", "target": "x", "residual_fn": "…", "bracket_fns": ["…","…"] }  // Brent
-      // { "type": "solveND", … }          // RESERVED — feedback loops, not implemented
+      { "type": "eval", "target": "omega_c", "fn": "cfg_rf_omega_c", "latex": "…" },
+      { "type": "solve1d", "target": "P_y",  // bracketed Brent on a DECLARED relation's residual;
+        "residual_fn": "rel_secant_yield",   // bracket endpoints are FUNCTIONS of the evaluated env
+        "bracket_fns": ["cfg_a_P_y__blo", "cfg_a_P_y__bhi"], "latex": "…" }
+      // { "type": "solveND", … }          // RESERVED — feedback loops; ADR-0008 (proposed)
     ],
     "branches": null,                      // or { "selector": "circuit", "labels": ["open","crossed"],
                                            //      "continuity": "follow-previous" } with per-branch fns;
@@ -135,9 +153,13 @@ Sound because compilation is deterministic (seeded sampling). CI persists the ar
 
 ## Engines (`site/src/engines/`)
 
-- `relation.ts` — executes a configuration plan: eval steps, branch selection (+ continuity hint so
-  animations don't snap assemblies), guard evaluation → severity-tagged messages for the ValidityBanner.
-- `brent.ts` — ~50-line bracketing root-finder for `solve1d` steps (v1 insurance; fluids/feedback on-ramp).
+- `relation.ts` — executes a configuration plan: eval steps, solve1d steps (bracket fns from the env →
+  Brent; NaN ⇒ honest refusal), branch selection (+ continuity hint so animations don't snap
+  assemblies), guard evaluation → severity-tagged messages for the ValidityBanner. Scope-carrying
+  invalid envelopes poison only their named variables (`EvalResult.invalidVars`); unscoped invalids
+  refuse everything, as before.
+- `brent.ts` — ~50-line bracketing root-finder for `solve1d` steps (first consumer: the eccentric
+  column's secant equation; also the fluids/feedback on-ramp). Tolerance is relative for |root| > 1.
 - `units.ts` — engine computes in SI only; display conversion table per quantity kind; chaining legality
   check (dim 7-vector AND quantity_kind).
 - `chain.ts` — undirected port-bindings; the planner orders evaluation and **rejects cycles** (v1). Adding
@@ -151,10 +173,14 @@ postbuild with `data-pagefind-body` scoping (KaTeX/widget markup excluded), `pre
 honored by all sims, axe smoke test in CI. Page-weight budget: a THING page ships ≤ ~40 kB JS gz
 (Preact runtime + engine + island) — KaTeX/Pyodide stay out of the client bundle.
 
-**Sim contract (invariant 5):** ThingWidget passes sims `{ values, invalid }`, where `invalid` is the
-engine's authoritative refusal verdict — a refusal can leave values omitted, present-as-NaN, or fully
-finite (a validity predicate over good numbers), so NaN-sniffing alone is never sufficient. Refused
-states render the shared `SimRefusal` figure, never default geometry. Shared presentational helpers in
+**Sim contract (invariant 5):** ThingWidget passes sims `{ values, invalid, invalidVars }`, where
+`invalid` is the engine's authoritative GLOBAL refusal verdict — a refusal can leave values omitted,
+present-as-NaN, or fully finite (a validity predicate over good numbers), so NaN-sniffing alone is
+never sufficient — and `invalidVars` lists per-variable SCOPED refusals (model hand-off: e.g. below
+λ_T the Euler readouts are refused while Johnson's stay live). Globally refused states render the
+shared `SimRefusal` figure, never default geometry; scoped-refused variables must not be drawn
+confidently either (ColumnSim dashes the refused model's curve; EccentricColumnSim withholds the
+elastic panel and points at the still-valid load margin). Shared presentational helpers in
 `site/src/components/sims/`: `useSimClock` (rAF + reduced-motion; stops while refused), `StressBands`
 (the heat-ramp field encoding), `SimRefusal`. Exception by design: FourbarSim draws crank-only partial
 geometry for non-assembling poses (its inputs are always honest) with a caption saying so.

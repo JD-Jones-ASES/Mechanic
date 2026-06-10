@@ -11,23 +11,26 @@ interface Props {
   variables: Record<string, VariableMeta>;
   values: VarRecord; // SI
   invalid: boolean;
+  /** per-variable refusals from scope-carrying envelopes (model hand-off) */
+  invalidVars: string[];
   displayUnits: Record<string, string>;
   onUnitChange: (symbol: string, unit: string) => void;
 }
 
-export function Readouts({ targets, variables, values, invalid, displayUnits, onUnitChange }: Props) {
+export function Readouts({ targets, variables, values, invalid, invalidVars, displayUnits, onUnitChange }: Props) {
   return (
     <dl class="readouts">
       {targets.map((sym) => {
         const v = variables[sym]!;
         const unit = displayUnits[sym] ?? v.display_units[0] ?? v.si_unit;
         const val = values[sym];
+        const refused = invalid || invalidVars.includes(sym);
         const shown =
-          invalid || val === undefined || !Number.isFinite(val)
+          refused || val === undefined || !Number.isFinite(val)
             ? "—"
             : Number(toDisplay(val, unit).toPrecision(5)).toString();
         return (
-          <div class="readout" key={sym}>
+          <div class={refused && !invalid ? "readout readout-refused" : "readout"} key={sym}>
             <dt>{v.name}</dt>
             <dd data-output={sym}>
               <output>{shown}</output>{" "}

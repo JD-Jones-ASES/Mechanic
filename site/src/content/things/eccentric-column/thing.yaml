@@ -1,0 +1,398 @@
+id: eccentric-column
+title: Eccentric Column (Secant Formula)
+summary: >-
+  Load a column even slightly off-axis and the clean buckling story dissolves: it bows from the
+  first newton, stress grows faster than load, and the Euler limit survives only as the asymptote
+  the deflection chases. Because nothing here is linear, the safety factor must be taken on the
+  LOAD — the page solves that transcendental equation live, by bracketed root-finding.
+facets: [stability, stress, mass-cost]
+
+variables:
+  - symbol: P
+    name: Applied axial load
+    latex: P
+    unit: N
+    quantity_kind: force
+    default: 100000
+    bounds: [1000, 2.0e6]
+    positive: true
+    display_units: [kN, N]
+  - symbol: L
+    name: Column length (effective)
+    latex: L
+    unit: m
+    quantity_kind: length
+    default: 1.0
+    bounds: [0.2, 4.0]
+    positive: true
+    display_units: [m, mm]
+  - symbol: d
+    name: Diameter (solid circular)
+    latex: d
+    unit: m
+    quantity_kind: length
+    default: 0.05
+    bounds: [0.01, 0.3]
+    positive: true
+    display_units: [mm, m]
+  - symbol: e
+    name: Load eccentricity
+    latex: e
+    unit: m
+    quantity_kind: length
+    default: 0.005
+    bounds: [1.0e-4, 0.05]
+    positive: true
+    display_units: [mm, m]
+  - symbol: E
+    name: Young's modulus
+    latex: E
+    unit: Pa
+    quantity_kind: elastic_modulus
+    default: 200.0e9
+    bounds: [1.0e9, 450.0e9]
+    positive: true
+    role: material
+    display_units: [GPa, Pa]
+  - symbol: sigma_y
+    name: Yield strength
+    latex: '\sigma_y'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 250.0e6
+    bounds: [10.0e6, 2.0e9]
+    positive: true
+    role: material
+    display_units: [MPa, Pa]
+  - symbol: rho
+    name: Density
+    latex: '\rho'
+    unit: kg/m**3
+    quantity_kind: density
+    default: 7800
+    bounds: [400, 9000]
+    positive: true
+    role: material
+    display_units: ["kg/m^3"]
+  - symbol: A
+    name: Cross-section area
+    latex: A
+    unit: m**2
+    quantity_kind: area
+    default: 1.9635e-3
+    bounds: [1.0e-5, 0.1]
+    positive: true
+    role: derived
+  - symbol: I
+    name: Second moment of area
+    latex: I
+    unit: m**4
+    quantity_kind: second_moment_of_area
+    default: 3.068e-7
+    bounds: [1.0e-10, 1.0e-2]
+    positive: true
+    role: derived
+  - symbol: c
+    name: Extreme-fiber distance
+    latex: c
+    unit: m
+    quantity_kind: length
+    default: 0.025
+    bounds: [5.0e-3, 0.15]
+    positive: true
+    role: derived
+    display_units: [mm, m]
+  - symbol: r_g
+    name: Radius of gyration
+    latex: r
+    unit: m
+    quantity_kind: length
+    default: 0.0125
+    bounds: [2.5e-3, 0.075]
+    positive: true
+    role: derived
+    display_units: [mm, m]
+  - symbol: ecr
+    name: Eccentricity ratio
+    latex: '\frac{ec}{r^2}'
+    unit: '1'
+    quantity_kind: ratio
+    default: 0.8
+    bounds: [1.0e-3, 50]
+    positive: true
+    role: derived
+  - symbol: P_E
+    name: Euler load (asymptote)
+    latex: 'P_E'
+    unit: N
+    quantity_kind: force
+    default: 605591
+    bounds: [1.0e-2, 1.0e15]
+    positive: true
+    role: derived
+    display_units: [kN, N]
+  - symbol: sigma_max
+    name: Max compressive stress (midspan)
+    latex: '\sigma_{max}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 1.0166e8
+    bounds: [-1.0e15, 1.0e15]
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: delta_mid
+    name: Midspan deflection
+    latex: '\delta'
+    unit: m
+    quantity_kind: length
+    default: 1.2258e-3
+    bounds: [-10, 10]
+    role: derived
+    display_units: [mm, m]
+  - symbol: SF_sig
+    name: Margin on stress (deceptive)
+    latex: '\mathrm{SF}_\sigma'
+    unit: '1'
+    quantity_kind: safety_factor
+    default: 2.4591
+    bounds: [-1.0e10, 1.0e10]
+    role: derived
+  - symbol: P_y
+    name: Load at first yield
+    latex: 'P_y'
+    unit: N
+    quantity_kind: force
+    default: 210549
+    bounds: [0, 1.0e15]
+    positive: true
+    role: derived
+    display_units: [kN, N]
+  - symbol: SF_y
+    name: Margin on load (honest)
+    latex: '\mathrm{SF}_P'
+    unit: '1'
+    quantity_kind: safety_factor
+    default: 2.1055
+    bounds: [0, 1.0e10]
+    positive: true
+    role: derived
+  - symbol: m_col
+    name: Column mass
+    latex: m
+    unit: kg
+    quantity_kind: mass
+    default: 15.315
+    bounds: [0, 1.0e5]
+    positive: true
+    role: derived
+    display_units: [kg]
+
+materials:
+  binds:
+    E: youngs_modulus
+    sigma_y: yield_strength
+    rho: density
+
+relations:
+  - id: circ-area
+    group: stress
+    latex: 'A = \frac{\pi d^2}{4}'
+    residual: A - pi*d**2/4
+    assumptions:
+      - solid circular cross-section
+    citation: gere
+  - id: circ-second-moment
+    group: stress
+    latex: 'I = \frac{\pi d^4}{64}'
+    residual: I - pi*d**4/64
+    assumptions:
+      - solid circular cross-section
+    citation: gere
+  - id: extreme-fiber
+    group: stress
+    latex: 'c = \frac{d}{2}'
+    residual: c - d/2
+    assumptions:
+      - the bending stress peaks at the surface, on the concave side
+    citation: gere
+  - id: radius-of-gyration
+    group: stability
+    latex: 'r = \sqrt{I/A}'
+    residual: r_g**2*A - I
+    assumptions:
+      - definition — the section's bending stiffness expressed as a length
+    citation: gere
+  - id: eccentricity-ratio
+    group: stability
+    latex: '\frac{ec}{r^2}'
+    residual: ecr*r_g**2 - e*c
+    assumptions:
+      - the dimensionless offset that families all secant-formula design charts
+    citation: gere
+  - id: euler-load
+    group: stability
+    latex: 'P_E = \frac{\pi^2 E I}{L^2}'
+    residual: P_E*L**2 - pi**2*E*I
+    assumptions:
+      - pinned-pinned reference; for other end conditions read L as the effective length KL
+      - the perfect-column limit this imperfect column approaches but never reaches
+    citation: gere
+  - id: secant-stress
+    group: stress
+    latex: '\sigma_{max} = \frac{P}{A}\left[1 + \frac{ec}{r^2}\,\sec\!\left(\frac{L}{2r}\sqrt{\frac{P}{EA}}\right)\right]'
+    residual: sigma_max - (P/A)*(1 + ecr/cos((L/(2*r_g))*sqrt(P/(E*A))))
+    assumptions:
+      - linear-elastic material, plane sections (Euler-Bernoulli)
+      - pinned ends, load offset e at BOTH ends (single-curvature bowing)
+      - the exact elastic solution — no small-deflection linearization of the moment
+    citation: gere
+    validity:
+      - condition: P < P_E
+        severity: invalid
+        scope: [sigma_max, delta_mid, SF_sig]
+        message: >-
+          P ≥ P_E: at or beyond the Euler load no bent equilibrium exists for the elastic
+          column — the deflection grows without bound and the elastic readouts are refused.
+          The honest margin SF_P < 1 told the story long before this point.
+        citation: gere
+      - condition: sigma_max <= sigma_y
+        severity: invalid
+        scope: [sigma_max, delta_mid, SF_sig]
+        message: >-
+          σ_max > σ_y: the extreme fiber at midspan has yielded, and the elastic secant
+          solution is fiction past first yield. The load at first yield P_y and the load
+          margin SF_P remain exact — read those.
+        citation: gere
+  - id: secant-deflection
+    group: stability
+    latex: '\delta = e\left[\sec\!\left(\frac{L}{2r}\sqrt{\frac{P}{EA}}\right) - 1\right]'
+    residual: delta_mid - e*(1/cos((L/(2*r_g))*sqrt(P/(E*A))) - 1)
+    assumptions:
+      - midspan bow of the elastic beam-column; diverges as P approaches P_E
+    citation: gere
+  - id: stress-margin
+    group: stress
+    latex: '\mathrm{SF}_\sigma = \frac{\sigma_y}{\sigma_{max}}'
+    residual: SF_sig*sigma_max - sigma_y
+    assumptions:
+      - the linear-thinking margin — WRONG to design by here, shown for contrast
+      - stress grows faster than load, so this overstates the true margin
+    citation: gere
+  - id: secant-yield
+    group: stress
+    latex: '\sigma_y = \frac{P_y}{A}\left[1 + \frac{ec}{r^2}\,\sec\!\left(\frac{L}{2r}\sqrt{\frac{P_y}{EA}}\right)\right]'
+    residual: sigma_y - (P_y/A)*(1 + ecr/cos((L/(2*r_g))*sqrt(P_y/(E*A))))
+    assumptions:
+      - first yield of the extreme midspan fiber defines the usable load ceiling
+      - transcendental in P_y — no closed form exists; solved by bracketed root-finding
+        inside (0, P_E), where a root always exists and is unique
+    citation: shigley
+  - id: load-margin
+    group: stress
+    latex: '\mathrm{SF}_P = \frac{P_y}{P}'
+    residual: SF_y*P - P_y
+    assumptions:
+      - the margin a nonlinear member must quote on LOAD, not stress (Shigley's design rule)
+    citation: shigley
+  - id: mass
+    group: mass-cost
+    latex: 'm = \rho A L'
+    residual: m_col - rho*A*L
+    assumptions:
+      - prismatic column, uniform density
+    citation: gere
+
+configurations:
+  - id: analyze
+    label: Load, geometry and offset in — stresses, deflection and the honest margin out
+    constraints: {}
+    inputs: [P, L, d, e]
+    solutions:
+      A: pi*d**2/4
+      I: pi*d**4/64
+      c: d/2
+      r_g: d/4
+      ecr: e*c/r_g**2
+      P_E: pi**2*E*I/L**2
+      sigma_max: (P/A)*(1 + ecr/cos((L/(2*r_g))*sqrt(P/(E*A))))
+      delta_mid: e*(1/cos((L/(2*r_g))*sqrt(P/(E*A))) - 1)
+      SF_sig: sigma_y/sigma_max
+      P_y:
+        solve1d:
+          relation: secant-yield
+          bracket: ["1e-9*P_E", "(1 - 1e-6)*P_E"]
+      SF_y: P_y/P
+      m_col: rho*A*L
+
+derivation:
+  verifies_configuration: analyze
+  locals:
+    - symbol: k_e
+      unit: 1/m
+      positive: true
+      define: sqrt(P/(E*I))
+  steps:
+    - expr: Eq(k_e**2, P/(E*I))
+      prose: >-
+        Offset the load by e and the column carries a bending moment from the very first newton:
+        M(x) = −P·[e + v(x)]. The elastic curve obeys EI·v″ = M, i.e. v″ + k²v = −k²e with
+        k² = P/EI — the same harmonic operator as Euler's perfect column, but now FORCED by the
+        offset instead of waiting for an eigenvalue. There is no bifurcation to wait for.
+      rule: 'modeling: beam-column with end eccentricity'
+      check: definition
+    - expr: Eq(delta_mid, e*(1/cos(k_e*L/2) - 1))
+      prose: >-
+        Solve with pinned ends v(0) = v(L) = 0: the bow peaks at midspan as δ = e[sec(kL/2) − 1].
+        At kL/2 = π/2 — which is exactly P = P_E — the secant blows up: the imperfect column
+        does not buckle AT the Euler load, it deflects without bound APPROACHING it. (The test
+        suite re-solves this boundary-value problem independently with dsolve.)
+      rule: 'modeling: solve the beam-column BVP (re-derived in pipeline tests)'
+      check: definition
+    - expr: Eq(sigma_max, P/A + P*(e + delta_mid)*c/I)
+      prose: >-
+        The midspan section carries the axial force AND the amplified moment M_max = P(e + δ).
+        Superpose the two stresses at the concave extreme fiber — substituting δ and writing
+        Ar² = I collapses this to the secant formula above. From here on the algebra is
+        machine-verified.
+      rule: superposition of axial and bending stress at midspan
+    - expr: Eq(SF_y*P, P_y)
+      prose: >-
+        Because σ_max is nonlinear in P, the familiar σ_y/σ_max margin lies — doubling the load
+        far more than doubles the stress. The honest question is "what load first yields a
+        fiber?", and answering it means solving the secant equation for P_y, a transcendental
+        with no closed form. This page brackets the root inside (0, P_E) — where one always
+        exists, uniquely — and lets a verified root-finder answer live. SF_σ is displayed
+        anyway, struck through in spirit: compare it to SF_P and never trust it again.
+      rule: 'definition: the margin is taken on load (Shigley) — solved numerically, bracketed'
+      check: definition
+
+sim:
+  engine: statics-cascade
+  config:
+    draw: eccentric-column
+
+sources:
+  - id: gere
+    citation: >-
+      Gere, J. M., & Goodno, B. J., Mechanics of Materials, 9th ed., Cengage, 2018 — §11.5
+      (Columns with Eccentric Axial Loads) and §11.6 (The Secant Formula for Columns).
+    verification: >-
+      Section numbering pinned against the publisher's WebAssign section list for the Enhanced
+      9th edition (webassign.net/features/textbooks/ggmechmat9/details.html: "11.5 Columns with
+      Eccentric Axial Loads", "11.6 The Secant Formula for Columns"), 2026-06-10. The midspan
+      deflection and the secant stress formula are independently re-derived from the
+      beam-column ODE with boundary conditions in pipeline/tests/test_eccentric_physics.py.
+  - id: shigley
+    citation: >-
+      Budynas, R. G., & Nisbett, J. K., Shigley's Mechanical Engineering Design, 10th ed.,
+      McGraw-Hill, 2015 — §4-13 (Columns with Eccentric Loading): the secant equation for the
+      critical load, and the design rule that the factor of safety must be applied to the load
+      because the stress is a nonlinear function of it.
+    verification: >-
+      Formulas pinned verbatim against Dr. Ala Hijazi's class notes for the 10th edition
+      (Hashemite University, eis.hu.edu.jo/ACUploads/10526/CH 4.pdf, pp. 21–22), 2026-06-10:
+      δ = e[sec((L/2)√(P/EI)) − 1], σ_c = (P/A)[1 + (ec/k²)sec((L/2k)√(P/EA))], and the secant
+      equation solved for the load — with the note that P "appears twice … needs an iterative
+      process", which is precisely the bracketed root-finding this page performs. Section
+      number §4-13 corroborated topic-level against the publisher chapter-outline deck; not
+      page-pinned against the print TOC.

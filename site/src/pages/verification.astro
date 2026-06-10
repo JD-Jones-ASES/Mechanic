@@ -72,6 +72,15 @@ const totals = {
         high-precision (50-digit) numeric samples across the declared domain, per solution branch.
       </li>
       <li>
+        <strong>Bracketed numeric targets (solve1d)</strong> — a value with no closed form (the
+        eccentric column's load at first yield) is solved live in your browser by bracketed
+        root-finding, never symbol-blind solving. The build proves, at every verification
+        sample: the authored bracket really brackets (a residual sign change), contains exactly
+        one root, and the 60-digit bisection root satisfies <em>every</em> relation — and those
+        roots ship as reference values, so the browser's root-finder is checked against them on
+        each build.
+      </li>
+      <li>
         <strong>Derivation identities</strong> — every derivation line not badged as a modeling
         step is proven to follow from the verified solutions by computer algebra.
       </li>
@@ -85,7 +94,9 @@ const totals = {
         <strong>Display integrity</strong> — generated JavaScript is checked against
         SymPy-computed reference values (parity oracle); every display unit must resolve in the
         conversion table; all LaTeX must render; envelope violations surface as banners and
-        refused values, never silent numbers.
+        refused values, never silent numbers. Where two models share a page (Euler and Johnson
+        on the column), each model's invalid region refuses <em>its own readouts by name</em>
+        while the governing model's numbers stand — a scoped refusal, never a silent swap.
       </li>
       <li>
         <strong>End-to-end goldens</strong> — a browser test suite checks hand-derived numbers,

@@ -28,6 +28,7 @@ from .verify import (
     tiered_zero,
     verify_derivation_step,
     verify_solutions_against_relations,
+    verify_solve1d_configuration,
 )
 
 IDENT_RE = r"^[A-Za-z_][A-Za-z0-9_]*$"
@@ -161,6 +162,25 @@ class ThingCompiler:
                 sev = _require(env, "severity", vc)
                 if sev not in ("warn", "invalid"):
                     raise BuildError(f"{vc}: severity must be warn|invalid")
+                # scoped refusal (model hand-off): an invalid envelope may name
+                # the derived variables it poisons instead of refusing the whole
+                # evaluation — two models with complementary envelopes can then
+                # share one page (Euler/Johnson is the reference case)
+                scope = env.get("scope")
+                if scope is not None:
+                    if sev != "invalid":
+                        raise BuildError(f"{vc}: scope only applies to severity 'invalid'")
+                    if not isinstance(scope, list) or not scope:
+                        raise BuildError(f"{vc}: scope must be a non-empty list of symbols")
+                    for s_name in scope:
+                        if s_name not in self.table:
+                            raise BuildError(f"{vc}: scope references unknown variable '{s_name}'")
+                        if self.specs[self.table[s_name]].role != "derived":
+                            raise BuildError(
+                                f"{vc}: scope variable '{s_name}' has role "
+                                f"'{self.specs[self.table[s_name]].role}' — scoped refusal "
+                                f"poisons derived outputs, not knobs or material values"
+                            )
                 g_id = f"val_{rid.replace('-', '_')}_{i}"
                 self.fns.append(emit_function(g_id, cond, vc, boolean=True))
                 validity.append({
@@ -171,6 +191,7 @@ class ThingCompiler:
                     # even when evaluation was refused (e.g. "cannot assemble"
                     # must not be masked by the undefined-sqrt guard)
                     "needs": sorted(str(s) for s in cond.free_symbols),
+                    **({"scope": [str(s) for s in scope]} if scope else {}),
                 })
             self.residuals.append((rid, residual))
             rels.append({
@@ -181,12 +202,18 @@ class ThingCompiler:
                 "validity": validity, "citation": cit,
             })
         self.artifact["relations"] = rels
+        self.residual_by_id = dict(self.residuals)
+        self.relation_latex = {r["id"]: r["latex"] for r in rels}
 
     # ---------- configurations ----------
     def load_configurations(self) -> None:
         non_material = [s for s in self.specs if self.specs[s].role != "material"]
         cfgs = []
         self.resolved_by_cfg: dict[str, dict[sp.Symbol, sp.Expr]] = {}
+        # symbols with no closed form in a configuration (solve1d outputs and
+        # everything computed from them) — identity derivation steps must not
+        # reference these (load_derivation enforces it)
+        self.solve_tainted_by_cfg: dict[str, set[sp.Symbol]] = {}
         for cfg in _require(self.raw, "configurations", self.ctx):
             cid = _require(cfg, "id", f"{self.ctx} configuration")
             c = f"{self.ctx}, configuration '{cid}'"
@@ -226,6 +253,12 @@ class ThingCompiler:
                 lab: [] for lab in labels
             }
             all_pairs: list[tuple[sp.Symbol, sp.Expr]] = []  # guard derivation, deduped
+            # the plan in authoring order, for the solve1d verification campaign:
+            # ("eval", sym, expr) | ("solve1d", sym, residual, blo, bhi, rel_id)
+            ordered_steps: list[tuple] = []
+            seen_targets: list[sp.Symbol] = []
+            solve_targets: set[sp.Symbol] = set()
+            material_syms = [s for s in self.specs if self.specs[s].role == "material"]
             any_branched = False
             fn_prefix_base = f"cfg_{cid.replace('-', '_')}"
             for target_name, sol in solutions_raw.items():
@@ -235,6 +268,55 @@ class ThingCompiler:
                 target = self.table[target_name]
                 if target in inputs or target in constraints or self.specs[target].role == "material":
                     raise BuildError(f"{tc}: target is an input/constraint/material variable")
+                if isinstance(sol, dict) and "solve1d" in sol:
+                    # bracketed numeric target (ADR-0002): solve a DECLARED
+                    # relation for this target inside an authored bracket —
+                    # the citation rides on the relation, the bracket is
+                    # proven to sign-change at every verification sample
+                    sd = sol["solve1d"]
+                    if not isinstance(sd, dict):
+                        raise BuildError(f"{tc}: solve1d must be a mapping with 'relation' and 'bracket'")
+                    rel_id = str(_require(sd, "relation", tc))
+                    if rel_id not in self.residual_by_id:
+                        raise BuildError(f"{tc}: solve1d references unknown relation '{rel_id}'")
+                    residual = self.residual_by_id[rel_id]
+                    if target not in residual.free_symbols:
+                        raise BuildError(f"{tc}: relation '{rel_id}' does not involve '{target_name}'")
+                    knowns = {*inputs, *constraints, *material_syms, *seen_targets}
+                    not_ready = residual.free_symbols - knowns - {target}
+                    if not_ready:
+                        raise BuildError(
+                            f"{tc}: relation '{rel_id}' reads {sorted(map(str, not_ready))}, not yet "
+                            f"evaluated at this plan step — solve1d runs inside the forward DAG (v1)"
+                        )
+                    bracket = _require(sd, "bracket", tc)
+                    if not isinstance(bracket, list) or len(bracket) != 2:
+                        raise BuildError(f"{tc}: bracket must be a [lo, hi] pair of expressions")
+                    bexprs: list[sp.Expr] = []
+                    b_ids: list[str] = []
+                    for j, bs in enumerate(bracket):
+                        bc = f"{tc} bracket[{j}]"
+                        be = _parse(str(bs), self.table, bc)
+                        check_homogeneous(be - target, self.unit_map, bc)
+                        loose = be.free_symbols - knowns
+                        if loose:
+                            raise BuildError(f"{bc}: reads {sorted(map(str, loose))}, not yet evaluated")
+                        b_id = f"{fn_prefix_base}_{target_name}__b{'lo' if j == 0 else 'hi'}"
+                        self.fns.append(emit_function(b_id, be, bc))
+                        bexprs.append(be)
+                        b_ids.append(b_id)
+                        all_pairs.append((target, be))
+                    plan.append({
+                        "type": "solve1d", "target": target_name,
+                        "residual_fn": f"rel_{rel_id.replace('-', '_')}",
+                        "bracket_fns": b_ids,
+                        "latex": self.relation_latex[rel_id],
+                    })
+                    ordered_steps.append(("solve1d", target, residual, bexprs[0], bexprs[1], rel_id))
+                    solve_targets.add(target)
+                    seen_targets.append(target)
+                    targets_needed.discard(target)
+                    continue
                 if isinstance(sol, dict):  # multi-branch
                     any_branched = True
                     if branches_meta is None or list(sol) != labels:
@@ -259,8 +341,10 @@ class ThingCompiler:
                     for lab in labels:
                         ordered_by_label[lab].append((target, expr))
                     all_pairs.append((target, expr))
+                    ordered_steps.append(("eval", target, expr))
                     plan.append({"type": "eval", "target": target_name, "fn": fn_id,
                                  "latex": sp.latex(sp.Eq(target, expr), **LATEX_OPTS)})
+                seen_targets.append(target)
                 targets_needed.discard(target)
             if targets_needed:
                 raise BuildError(f"{c}: no solution authored for {sorted(map(str, targets_needed))}")
@@ -275,20 +359,47 @@ class ThingCompiler:
             # an unverified crossed-circuit solution must fail the build, not
             # ship as a selectable widget state (CLAUDE.md: branch-count
             # mismatch / solution residual != 0 are loud failures).
-            material_syms = [s for s in self.specs if self.specs[s].role == "material"]
             residual_exprs = [r for _, r in self.residuals]
             residual_exprs += [sym - val for sym, val in constraints.items()]
             samples: list[dict] = []
             first_resolved: dict[sp.Symbol, sp.Expr] | None = None
-            for lab in labels:
-                lc = c if lab is None else f"{c}, branch '{lab}'"
-                resolved = resolve_solutions(ordered_by_label[lab], constraints, lc)
-                pts = manifold_points(inputs, material_syms, resolved, self.specs, seed=lc)
-                dof_check(non_material, residual_exprs, inputs, pts, lc)
-                verify_solutions_against_relations(self.residuals, resolved, self.specs, lc)
-                if first_resolved is None:
-                    first_resolved = resolved
-                samples.extend(self._samples(cid, inputs, constraints, resolved, branch=lab))
+            if solve_targets:
+                # the numeric campaign: bracket sign-change + single-root scan
+                # + 60-dps bisection + total back-substitution, per sample —
+                # and a numeric-rank DOF check at the rooted points
+                if branches_meta:
+                    raise BuildError(f"{c}: solve1d cannot be combined with multi-branch solutions (v1)")
+                samples, pts = verify_solve1d_configuration(
+                    inputs, material_syms, constraints, ordered_steps,
+                    self.residuals, self.specs, c,
+                )
+                dof_check(non_material, residual_exprs, inputs, pts, c)
+                # symbolic prefix for derivation checks: targets that never
+                # read a solve1d output keep their verified closed forms;
+                # everything downstream is 'tainted' (no closed form exists)
+                resolved: dict[sp.Symbol, sp.Expr] = dict(constraints)
+                tainted: set[sp.Symbol] = set(solve_targets)
+                for st in ordered_steps:
+                    if st[0] != "eval":
+                        continue
+                    _, t_sym, t_expr = st
+                    flat = t_expr.subs(resolved)
+                    if flat.free_symbols & tainted:
+                        tainted.add(t_sym)
+                    else:
+                        resolved[t_sym] = sp.together(flat)
+                first_resolved = resolved
+                self.solve_tainted_by_cfg[cid] = tainted
+            else:
+                for lab in labels:
+                    lc = c if lab is None else f"{c}, branch '{lab}'"
+                    resolved = resolve_solutions(ordered_by_label[lab], constraints, lc)
+                    pts = manifold_points(inputs, material_syms, resolved, self.specs, seed=lc)
+                    dof_check(non_material, residual_exprs, inputs, pts, lc)
+                    verify_solutions_against_relations(self.residuals, resolved, self.specs, lc)
+                    if first_resolved is None:
+                        first_resolved = resolved
+                    samples.extend(self._samples(cid, inputs, constraints, resolved, branch=lab))
             # derivation steps are checked against the first branch's closed
             # forms; author branch-independent steps (or definition steps) for
             # anything downstream of the branch split
@@ -384,6 +495,7 @@ class ThingCompiler:
             self.artifact["configurations"][0]["id"] if self.artifact.get("configurations") else None
         )
         resolved = self.resolved_by_cfg.get(cfg_id, {})
+        tainted = self.solve_tainted_by_cfg.get(cfg_id, set())
         steps_out = []
         for i, step in enumerate(der.get("steps", [])):
             c = f"{self.ctx}, derivation step {i + 1}"
@@ -393,6 +505,13 @@ class ThingCompiler:
             check_mode = step.get("check", "identity")
             if check_mode not in ("identity", "definition"):
                 raise BuildError(f"{c}: check must be identity|definition")
+            if check_mode == "identity" and expr.free_symbols & tainted:
+                raise BuildError(
+                    f"{c}: identity step references solve1d-dependent symbol(s) "
+                    f"{sorted(str(s) for s in expr.free_symbols & tainted)} — no closed form "
+                    f"exists to verify against; restate it over closed-form variables or "
+                    f"mark it 'check: definition'"
+                )
             verify_derivation_step(expr, check_mode, local_defs, resolved, local_specs, c)
             steps_out.append({
                 "latex": sp.latex(expr, **LATEX_OPTS),

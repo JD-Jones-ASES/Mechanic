@@ -1,9 +1,12 @@
 // Build gate: the generated JS functions must reproduce SymPy's high-precision
 // sample outputs (the parity oracle embedded in each artifact by compile.py).
 // Catches printer bugs, CSE mistakes, and JS numeric pathologies before deploy.
+// solve1d steps run the SAME Brent the browser runs, against mpmath's
+// 60-digit bisection roots — the root-finder itself is inside the oracle.
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
+import { brent } from "../src/engines/brent.ts";
 
 const GENERATED_DIR = join(import.meta.dirname, "..", "src", "generated", "things");
 const RTOL = 1e-9;
@@ -29,6 +32,12 @@ for (const f of files) {
         if (typeof v === "number") env[k] = v;
       }
       for (const step of cfg.plan) {
+        if (step.type === "solve1d") {
+          const lo = fns[step.bracket_fns[0]](env);
+          const hi = fns[step.bracket_fns[1]](env);
+          env[step.target] = brent((x) => fns[step.residual_fn]({ ...env, [step.target]: x }), lo, hi);
+          continue;
+        }
         if (step.type !== "eval") continue;
         // multi-branch steps evaluate the branch this sample was generated on
         const fnId = step.branch_fns

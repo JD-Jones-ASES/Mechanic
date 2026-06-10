@@ -1,8 +1,11 @@
 /**
- * Brent's method root-finder for `solve1d` plan steps (ADR-0002): v1 insurance
- * for relations without authored closed forms, and the on-ramp for fluids and
- * feedback loops. Standard Brent: bisection safety net + secant/inverse
- * quadratic acceleration.
+ * Brent's method root-finder for `solve1d` plan steps (ADR-0002): bracketed
+ * relations without authored closed forms (first consumer: the eccentric
+ * column's secant equation), and the on-ramp for fluids and feedback loops.
+ * Standard Brent: bisection safety net + secant/inverse quadratic
+ * acceleration. `tol` is RELATIVE for |root| > 1 (an absolute 1e-12 can be
+ * below one ulp for roots of magnitude 1e5 — e.g. loads in newtons — which
+ * would burn maxIter for nothing).
  */
 export function brent(
   f: (x: number) => number,
@@ -25,7 +28,7 @@ export function brent(
   let mflag = true;
 
   for (let i = 0; i < maxIter; i++) {
-    if (fb === 0 || Math.abs(b - a) < tol) return b;
+    if (fb === 0 || Math.abs(b - a) < tol * Math.max(1, Math.abs(b))) return b;
     let s: number;
     if (fa !== fc && fb !== fc) {
       // inverse quadratic interpolation

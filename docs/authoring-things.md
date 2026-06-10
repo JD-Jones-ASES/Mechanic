@@ -42,6 +42,15 @@ relations:
         severity: warn                     # warn = show banner; invalid = refuse the number
         message: "Tip deflection exceeds L/10 — small-deflection assumption is breaking down."
         citation: gere-goodno
+      # scoped refusal (model hand-off): an INVALID envelope may name the derived
+      # variables it poisons — those readouts blank, everything else stands. This is
+      # how two models with complementary envelopes share one page (Euler/Johnson).
+      # Omit scope and the refusal is global, as before. scope is invalid-only, and
+      # every named symbol must be role: derived.
+      # - condition: lam >= lam_T
+      #   severity: invalid
+      #   scope: [P_cr, sigma_cr, SF_b]
+      #   message: "Below the transition the Johnson readouts govern — read those."
 
 configurations:
   - id: default
@@ -101,6 +110,38 @@ sources:
    `site/src/engines/units.ts` `DISPLAY_FACTORS` — `check-units.mjs` fails the build otherwise. Add the
    conversion entry in the same change as the unit.
 
+## solve1d targets (the eccentric-column pattern)
+
+When a target genuinely has no closed form (the secant equation's $P_y$ sits inside and outside
+a secant), author it as a bracketed root of a DECLARED relation:
+
+```yaml
+solutions:
+  P_E: pi**2*E*I/L**2                  # evaluated before the solve step
+  P_y:
+    solve1d:
+      relation: secant-yield           # the relation driven to zero (its citation rides along)
+      bracket: ["1e-9*P_E", "(1 - 1e-6)*P_E"]   # EXPRESSIONS; may read earlier targets
+  SF_y: P_y/P                          # downstream targets may use the root normally
+```
+
+What the build does with this (and fails loudly on):
+
+- The relation must exist, involve the target, and read only symbols already evaluated at that
+  plan step (inputs, constraints, materials, earlier targets) — solve1d runs inside the forward
+  DAG. Bracket expressions are dimension-checked against the target and obey the same ordering.
+- **The bracket must actually bracket**: at every verification sample the endpoints must be
+  real, ordered, and produce a residual sign change — and a 33-point scan must find exactly one
+  crossing (a multi-root bracket is an ambiguous widget answer; tighten it). Design the bracket
+  so this is a *theorem*, not luck — the eccentric column's residual falls monotonically from
+  σ_y to −∞ on (0, P_E), so its bracket can never fail.
+- The root is found by 60-digit bisection (never blind `solve()`), the rooted point is
+  back-substituted into EVERY relation, and the roots land in the parity samples — so the
+  browser's Brent is checked against them at every build.
+- Identity derivation steps may not reference the solve1d target or anything computed from it
+  (there is no closed form to verify against); use `check: definition` for those lines.
+- One solve1d target may not be combined with multi-branch solutions in the same configuration.
+
 ## Multi-branch configurations (the four-bar pattern)
 
 When a target has several honest solutions (quadratic targets: two assembly circuits), author ALL
@@ -156,5 +197,12 @@ What the build does with this:
   refused state — and the engine can refuse with values omitted, present-as-NaN, OR fully finite, so the
   `invalid` verdict is the only sufficient signal (see the sim contract in `docs/architecture.md`). Use
   the shared `useSimClock` for animation and `StressBands` for radial-field shading instead of copies.
+- Sims on pages with scoped envelopes must also consume `invalidVars`: a scope-refused variable must
+  not be drawn confidently (dash the refused model's curve, withhold the refused panel) even though the
+  page as a whole still renders. Deciding "which model governs" from raw values instead of the verdicts
+  re-implements validity in the widget — the thing invariant 4 exists to ban.
+- Writing a solve1d bracket that is merely *plausible*. The build proves the sign change only at
+  sampled states; author a bracket whose sign change is structural (endpoint limits provable in the
+  physics tests), or a future knob combination can hit the honest-refusal path for no good reason.
 - Editing `thing.yaml` with PowerShell `Get-Content`/`Set-Content` round-trips: PS 5.1 reads BOM-less
   UTF-8 as ANSI and silently mojibakes every em-dash and Greek letter. Use a UTF-8-safe editor path.

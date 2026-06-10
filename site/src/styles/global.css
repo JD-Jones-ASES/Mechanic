@@ -72,6 +72,8 @@ a { color: var(--accent); }
 .readout { display: flex; justify-content: space-between; gap: 1rem; border-bottom: 1px dashed var(--line); padding-bottom: 0.3rem; }
 .readout dt { color: var(--muted); }
 .readout output { font-variant-numeric: tabular-nums; font-weight: 600; }
+/* scoped refusal: this readout's model does not govern at the current state */
+.readout-refused dt, .readout-refused output, .readout-refused .readout-unit { opacity: 0.45; }
 
 .validity-msg { padding: 0.5rem 0.75rem; border-radius: 6px; font-size: 0.9rem; }
 .validity-warn { background: var(--warn-bg); color: var(--warn-ink); }
@@ -112,6 +114,17 @@ a { color: var(--accent); }
 .load-arrow-light { stroke: var(--ink); stroke-width: 1.2; fill: none; }
 .load-arrow-head { fill: var(--ink); }
 .sim-label { font-size: 12px; fill: var(--ink); }
+.sim-label-small { font-size: 9px; fill: var(--muted); }
+/* capacity chart (ColumnSim): the Euler-Johnson hand-off made visible */
+.chart-axis { stroke: var(--ink); stroke-width: 1.5; }
+.chart-ref { stroke: var(--line); stroke-dasharray: 3 3; }
+.chart-curve { stroke-width: 2.5; fill: none; stroke-linecap: round; }
+.chart-euler { stroke: var(--accent); }
+.chart-johnson { stroke: #f59e0b; }
+.chart-curve-off { stroke-dasharray: 2 4; opacity: 0.45; }
+.chart-tangency { fill: var(--paper); stroke: var(--ink); stroke-width: 1.5; }
+.chart-point { fill: var(--ink); }
+.chart-point-danger { fill: #dc2626; }
 /* four-bar linkage: one color per link so the prose can say "the amber crank" */
 .link-crank { stroke: #f59e0b; stroke-width: 5; stroke-linecap: round; }
 .link-coupler { stroke: var(--accent); stroke-width: 5; stroke-linecap: round; }
@@ -125,6 +138,9 @@ a { color: var(--accent); }
 .sim-outline { fill: none; stroke: var(--ink); stroke-width: 2.5; }
 .stress-band { fill: none; stroke: var(--accent); }
 .stress-band-hot { fill: none; stroke: #dc2626; }
+/* filled stress distribution (EccentricColumnSim): bar from σ_min to σ_max */
+.stress-fill { fill: var(--accent); opacity: 0.55; }
+.stress-fill-over { fill: #dc2626; opacity: 0.8; }
 /* flywheel-specific */
 .fw-scribe { stroke: var(--ink); stroke-width: 2; stroke-linecap: round; }
 .fw-tick { stroke: var(--muted); stroke-width: 2; }

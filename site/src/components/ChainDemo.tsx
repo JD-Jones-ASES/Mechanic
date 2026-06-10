@@ -134,6 +134,7 @@ export default function ChainDemo({ gear, shaft, materials }: Props) {
             variables={gear.variables}
             values={gearRes?.values ?? {}}
             invalid={gearRes?.invalid ?? true}
+            invalidVars={gearRes?.invalidVars ?? []}
             displayUnits={displayUnits}
             onUnitChange={unitChange}
           />
@@ -172,6 +173,7 @@ export default function ChainDemo({ gear, shaft, materials }: Props) {
             variables={shaft.variables}
             values={shaftRes?.values ?? {}}
             invalid={shaftRes?.invalid ?? true}
+            invalidVars={shaftRes?.invalidVars ?? []}
             displayUnits={displayUnits}
             onUnitChange={unitChange}
           />

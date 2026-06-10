@@ -1,0 +1,37 @@
+The [Euler column](../euler-column/) is a beautiful idealization: perfectly straight, loaded
+exactly through the centroid, perfectly content until — at one critical load — it bifurcates.
+Real columns never get that story. A bracket bolts on a few millimeters off-axis; a crane column
+carries its rail on one flange; even "centered" loads ride manufacturing tolerances. Offset the
+load by an eccentricity $e$ and the column carries a bending moment $M = P(e + v)$ from the
+**first newton** — it bows immediately, the bow lengthens the moment arm, the longer arm deepens
+the bow. The self-amplification has an exact elastic answer, the **secant formula**:
+
+$$\sigma_{max} = \frac{P}{A}\left[1 + \frac{ec}{r^2}\,\sec\!\left(\frac{L}{2r}\sqrt{\frac{P}{EA}}\right)\right]$$
+
+Two things to read out of it. First, the dimensionless **eccentricity ratio** $ec/r^2$ is the
+only place the offset enters — it families every column design chart ever printed. Second, the
+secant's argument reaches $\pi/2$ exactly when $P = P_E = \pi^2 EI/L^2$: the deflection and the
+stress *diverge* as the load approaches the Euler load. The imperfect column never buckles in
+the clean eigenvalue sense — it just runs away asymptotically toward the limit its perfect twin
+would have reached. (Dial $P$ upward in the widget and watch the bow do exactly this.)
+
+Now the point this page exists to make. The stress is **nonlinear in the load** — double $P$ and
+$\sigma_{max}$ *more* than doubles, because the secant grows too. So the familiar margin
+$\sigma_y/\sigma_{max}$ — fine for every linear THING in this catalog — **overstates your
+safety**. The honest question is: *what load first yields a fiber?* That means solving
+
+$$\sigma_y = \frac{P_y}{A}\left[1 + \frac{ec}{r^2}\,\sec\!\left(\frac{L}{2r}\sqrt{\frac{P_y}{EA}}\right)\right]$$
+
+for $P_y$ — and no algebra will ever isolate it: $P_y$ sits both outside and *inside* the secant.
+Shigley's text says it plainly: the load "appears twice … this equation needs an iterative
+process." This page does exactly that, live — the root is **bracketed** inside $(0, P_E)$, where
+it provably exists and is unique (the residual falls monotonically from $\sigma_y$ to $-\infty$),
+and a verified root-finder pins it on every knob drag. The build proves the bracket's sign change
+at dozens of sampled states and cross-checks the browser's roots against 60-digit bisection. Both
+margins are displayed side by side: $\mathrm{SF}_\sigma$ (deceptive) and $\mathrm{SF}_P$ (honest).
+At the default state they disagree by about 17% — *in the unsafe direction*.
+
+One more cascade worth clicking through the material picker: swap A36 for quenched 4340 at the
+same $E$ and the stress readouts **do not move** — elastic stress amplification is set by
+stiffness and geometry alone — but $P_y$ jumps by multiples. Strength is back in the story
+precisely because failure here *is* yielding, not the geometric escape of the perfect column.

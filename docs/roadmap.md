@@ -50,15 +50,25 @@ independent first-principles cross-check in `pipeline/tests/` + hand-checkable n
 web-pinned citations recorded in `sources[].verification` + browser visual pass + multi-angle
 code review before merge.
 
-## Phase 3 — Solver depth
+## Phase 3 — Solver depth (items 1–2 ✅ shipped 2026-06-10; item 3 awaiting sign-off)
 
 In dependency order:
-1. **Johnson parabola** for the Euler column — closed-form, converts today's principled refusal
-   into a second model with its own envelope; demonstrates model hand-off *within* one page.
-2. **First real `solve1d`/Brent consumer** — the engine shipped in v1 as insurance (ADR-0002);
-   the deferred eccentric-column secant formula is the natural customer.
-3. **Cyclic / ND solving** — feedback loops, statically indeterminate systems. Schema is ready
-   (reserved plan-step type); requires a new ADR and owner sign-off before building.
+1. **Johnson parabola** ✅ — second model on the Euler page with its own envelope; the refusal
+   below λ_T became a hand-off. Required (and delivered) a new shared-engine capability:
+   **scoped refusal** — invalid envelopes may poison named variables instead of the whole page
+   (`scope:` on validity; `EvalResult.invalidVars`; per-readout refusal; sims dash the refused
+   model). Tangency at λ_T (value AND slope) is machine-proven in the derivation and the Johnson
+   constant re-derived from the tangency requirement in tests.
+2. **First real `solve1d`/Brent consumer** ✅ — pipeline grew the full bracketed-root path
+   (authoring syntax → per-sample sign-change certificate + single-root scan → 60-dps bisection
+   → total back-substitution → roots in the parity oracle, so the browser's Brent is checked
+   against mpmath every build; static bracket replaced by bracket *functions* of the env). The
+   eccentric column (secant formula) consumes it: P_y solved live, and the page's point — the
+   margin must be taken on LOAD — falls out of the nonlinearity.
+3. **Cyclic / ND solving** — feedback loops, statically indeterminate systems. **ADR-0008 is
+   drafted (PROPOSED)** with a recommendation to split: `solveLinear` first (statically
+   indeterminate elastic structures — exact solve, full certificate), full nonlinear `solveND`
+   deferred until a THING demands it. Requires owner sign-off before building.
 
 ## Phase 4 — Chaining as the product
 

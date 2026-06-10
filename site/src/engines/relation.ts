@@ -33,6 +33,7 @@ export class RelationEngine {
     const env: VarRecord = { ...inputs };
     const messages: ValidityMessage[] = [];
     let invalid = false;
+    const invalidVars = new Set<string>();
 
     for (const [k, v] of Object.entries(cfg.constraints)) {
       if (typeof v === "number") env[k] = v;
@@ -61,10 +62,14 @@ export class RelationEngine {
           env[step.target] = this.fns[fnId]!(env) as number;
         } else if (step.type === "solve1d") {
           const residual = this.fns[step.residual_fn]!;
+          const lo = this.fns[step.bracket_fns[0]]!(env) as number;
+          const hi = this.fns[step.bracket_fns[1]]!(env) as number;
+          // brent returns NaN on an unbracketed/undefined interval, which the
+          // finiteness check below converts into an honest refusal
           env[step.target] = brent(
             (x) => residual({ ...env, [step.target]: x }) as number,
-            step.bracket[0],
-            step.bracket[1],
+            lo,
+            hi,
           );
         }
         if (!Number.isFinite(env[step.target]!)) {
@@ -90,12 +95,17 @@ export class RelationEngine {
         const ok = this.fns[v.guard_fn]!(env);
         if (ok === false) {
           messages.push({ severity: v.severity, message: v.message, citation: v.citation });
-          if (v.severity === "invalid") invalid = true;
+          if (v.severity === "invalid") {
+            // scoped refusal: poison only the named variables (model hand-off);
+            // an unscoped invalid still refuses the whole evaluation
+            if (v.scope) for (const s of v.scope) invalidVars.add(s);
+            else invalid = true;
+          }
         }
       }
     }
 
-    return { values: env, messages, invalid };
+    return { values: env, messages, invalid, invalidVars: [...invalidVars].sort() };
   }
 
   /** Residual magnitudes per relation — the credibility-spine self-check. */
