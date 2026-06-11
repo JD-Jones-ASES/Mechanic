@@ -262,7 +262,7 @@ test("verification page discloses authorship and the audit surface", async ({ pa
   await expect(page.getByText(/built end to end by an AI/i).first()).toBeVisible();
   await expect(page.getByText(/No human reviews the content/i).first()).toBeVisible();
   // every THING appears with its audit block (count is a deliberate change detector)
-  expect(await page.locator("section.relation-block").count()).toBe(16);
+  expect(await page.locator("section.relation-block").count()).toBe(17);
   await expect(page.getByText(/Where physics enters/i).first()).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -789,5 +789,70 @@ test("bored disk: energy-in runs backwards, and a bore that eats the rim refuses
   await page.locator("#knob-a").fill("200"); // mm > R = 150 mm
   await expect(page.locator(".validity-invalid").first()).toBeVisible();
   await expect(page.locator(".validity")).toContainText(/no disk remains/i);
+  await expect(page.locator(".sim figcaption")).toContainText(/nothing honest/i);
+});
+
+/**
+ * Compound cylinder (defaults r_i=40, r_c=60, r_o=90 mm, δ=30 µm, p=100 MPa):
+ *   A36 (E=199.95 GPa, σ_y=248.21 MPa, ρ=7805.7): p_c=19.23 MPa,
+ *   σ_θ,i^res=−69.21 MPa, σ_θ,i=80.02 MPa, SF_i=1.3788, SF_c=1.3791
+ *   (δ_bal=30.008 µm — the declared defaults ARE the balanced fit), μ=159.4.
+ *   δ→1 µm hands off to the monobloc cylinder: SF_i→1.005 — the parent
+ *   THING's doorstep at this very pressure, the refusal this page escapes.
+ *   Over-shrunk (δ=60 µm, p=20 MPa): σ_θ,i=−108.6 MPa < 0 → the SCOPED
+ *   refusal poisons SF_i alone (SF_c=1.546 stays live) — the second consumer
+ *   of the Euler/Johnson hand-off machinery.
+ */
+test("compound cylinder: balanced-fit goldens and the monobloc hand-off", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/compound-cylinder/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  // same exclusion as the beam family: 10 of 13 materials publish E, σ_y AND ρ
+  expect(await page.getByTestId("material-select").locator("option").count()).toBe(10);
+
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  expect(await readOutput(page, "p_c")).toBeCloseTo(19.23, 1); // MPa from 30 µm
+  expect(await readOutput(page, "sigma_ti_res")).toBeCloseTo(-69.21, 1); // MPa — the prize
+  expect(await readOutput(page, "sigma_ti_tot")).toBeCloseTo(80.02, 1); // MPa, not the monobloc 149.2
+  expect(await readOutput(page, "SF_bore")).toBeCloseTo(1.379, 2);
+  expect(await readOutput(page, "SF_iface")).toBeCloseTo(1.379, 2); // equal: the balanced fit
+  expect(await readOutput(page, "delta_bal")).toBeCloseTo(30.01, 1); // µm ≈ the dialed δ
+  expect(await readOutput(page, "mu_L")).toBeCloseTo(159.4, 0);
+  await expect(page.locator(".sim figcaption")).toContainText(/margins are equal/i);
+
+  // wind the fit out and the page collapses onto the thick-walled cylinder:
+  // at 100 MPa the monobloc wall sits on its first-yield doorstep
+  await page.locator("#knob-delta").fill("1"); // µm
+  expect(await readOutput(page, "SF_bore")).toBeCloseTo(1.005, 2);
+  expect(await readOutput(page, "SF_iface")).toBeCloseTo(2.195, 2);
+  expect(errors).toEqual([]);
+});
+
+test("compound cylinder: over-shrinking scope-refuses the bore margin, then warns, then geometry refuses globally", async ({ page }) => {
+  await page.goto("things/compound-cylinder/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+  await page.getByTestId("material-select").selectOption("steel-a36");
+
+  // over-shrunk for the pressure: the bore stays compressive at full p — the
+  // scoped invalid refuses SF_bore ALONE while the jacket margin stays live
+  await page.locator("#knob-delta").fill("60"); // µm
+  await page.locator("#knob-p").fill("20"); // MPa
+  await expect(page.locator(".validity-invalid").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/net hoop compression/i);
+  await expect(page.locator('[data-output="SF_bore"] output')).toHaveText("—");
+  expect(await readOutput(page, "SF_iface")).toBeCloseTo(1.546, 2);
+  expect(await readOutput(page, "p_c")).toBeCloseTo(38.45, 1); // the fit itself is fine
+  await expect(page.locator(".sim figcaption")).toContainText(/jacket margin governs/i);
+
+  // push the fit to assembly yield: the warn names the line autofrettage crosses
+  await page.locator("#knob-p").fill("100"); // MPa
+  await page.locator("#knob-delta").fill("120"); // µm → |σ_res| = 277 MPa > σ_y
+  await expect(page.locator(".validity-warn").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/compressive yield/i);
+
+  // geometric nonsense refuses everything: interface inside the bore
+  await page.locator("#knob-r_c").fill("20"); // mm < r_i = 40 mm
+  await expect(page.locator(".validity")).toContainText(/no liner remains/i);
   await expect(page.locator(".sim figcaption")).toContainText(/nothing honest/i);
 });

@@ -19,6 +19,8 @@ export const DISPLAY_FACTORS: Record<string, { factor: number; label: string }> 
   m: { factor: 1, label: "m" },
   mm: { factor: 1e-3, label: "mm" },
   cm: { factor: 1e-2, label: "cm" },
+  um: { factor: 1e-6, label: "µm" }, // shrink-fit interference lives in microns
+
   N: { factor: 1, label: "N" },
   kN: { factor: 1e3, label: "kN" },
   "N/m": { factor: 1, label: "N/m" },

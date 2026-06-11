@@ -1,0 +1,45 @@
+The [thick-walled cylinder](../thick-walled-cylinder/) ends on a refusal: the bore shear always
+exceeds the pressure, so past $p = \sigma_y/2$ **no amount of wall** contains the pressure
+elastically — the widget there diverges and says so. This page is the classical cheat. Machine
+the liner's outside a few **microns** larger than the jacket's inside, heat the jacket, drop it
+on, let it cool. The interference $\delta$ generates a contact pressure at the interface:
+
+$$p_c = \frac{E\,\delta}{r_c}\,\frac{(r_c^2 - r_i^2)\,(r_o^2 - r_c^2)}{2\,r_c^2\,(r_o^2 - r_i^2)}$$
+
+and that contact pressure squeezes the liner bore into **hoop compression** —
+$-2 p_c r_c^2/(r_c^2 - r_i^2)$, about $-69$ MPa at this page's defaults — parked exactly where
+service pressure will later hurt most. Pressurize the assembly and (same metal throughout) the
+wall responds as one monobloc cylinder with the frozen assembly field riding on top: the bore's
+tension must first *spend* the compression before it can start doing damage.
+
+Nothing is free — the relief the liner enjoys is tension the jacket prepaid at the interface.
+The page therefore carries **two margins**, and the knobs slide the danger between them:
+
+- **Under-shrunk: the bore governs.** Small $\delta$ leaves the wall nearly monobloc;
+  $\mathrm{SF}_i$ is the binding margin, $\mathrm{SF}_c$ loafs.
+- **Over-shrunk: the interface governs.** Every micron of interference lowers the bore shear
+  and raises the interface shear. Push far enough and the bore stays in net compression at full
+  pressure — at which point a *tensile* bore margin is meaningless, and the widget **refuses
+  that one readout** (the jacket margin and the assembly-compression warning carry the story
+  instead). Keep pushing and assembly alone yields something — before any pressure exists.
+- **Balanced: equal margins.** The two shears are linear in $p_c$, one falling, one rising, so
+  they cross exactly once; the $\delta_{bal}$ readout names that crossing for the current
+  pressure. The defaults sit exactly on it: $\mathrm{SF}_i = \mathrm{SF}_c = 1.39$ at 100 MPa —
+  a pressure that the *same envelope as a one-piece wall* would barely survive at
+  $\mathrm{SF} \approx 1.0$.
+
+The headline is the ceiling. Balance the fit, put the interface at the geometric mean
+$r_c = \sqrt{r_i\,r_o}$ (the defaults do: $\sqrt{40 \times 90} = 60$ mm), and the elastic
+capacity becomes $\sigma_y\,(1 - r_i/r_o)$ — against the monobloc's
+$(\sigma_y/2)(1 - r_i^2/r_o^2)$, a gain of $2/(1 + r_i/r_o)$: **two shells approach twice the
+ceiling** as walls grow thick. Both the optimum location and the doubling are machine-proven in
+the test pipeline, not quoted. This is 19th-century gun-barrel arithmetic, and it is why
+built-up construction exists.
+
+Two quiet notes worth knowing. First, there is no Poisson knob on this page: with both members
+the same metal, $\nu$ **cancels exactly** from the closure — the derivation below proves the
+cancellation with $\nu$ left symbolic (different metals would keep all four of
+$E_i, \nu_i, E_o, \nu_o$). Second, the shrink fit is secretly a *chaining* story: the fit turns
+microns into a pressure, $\delta \mapsto p_c$, and that pressure is exactly the kind of typed
+port — pascals, `pressure_stress` — that another THING's bore could someday consume. The
+[rotating disk](../rotating-disk-bore/) left its bore free for precisely this reason.

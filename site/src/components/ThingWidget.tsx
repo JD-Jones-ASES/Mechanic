@@ -26,6 +26,7 @@ import { FourbarSim } from "./sims/FourbarSim";
 import { PlanetarySim } from "./sims/PlanetarySim";
 import { ScrewSim } from "./sims/ScrewSim";
 import { ShaftSim } from "./sims/ShaftSim";
+import { ShrinkFitSim } from "./sims/ShrinkFitSim";
 import { SpringSim } from "./sims/SpringSim";
 import { SSBeamSim } from "./sims/SSBeamSim";
 import { TubeSim } from "./sims/TubeSim";
@@ -51,6 +52,7 @@ const SIMS: Record<
   "flywheel-disk": FlywheelSim,
   "rotating-disk-bore": DiskBoreSim,
   "thick-walled-cylinder": CylinderSim,
+  "compound-cylinder": ShrinkFitSim,
   "helical-spring": SpringSim,
   "power-screw": ScrewSim,
   "belt-drive": BeltSim,

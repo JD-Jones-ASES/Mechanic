@@ -41,8 +41,11 @@ factory capability, the way the flywheel exercised `poisson_ratio` and new quant
 - **Radial-field family (already promised by existing failure notes):** rotating disk with a
   central bore ✅ shipped 2026-06-10 (the vanishing-hole ×2 as a machine-proven limit; 1/√2
   speed penalty; e_m rises at fixed speed — both flywheel cross-links live); shrink-fit
-  compound cylinder remains (the autofrettage story made interactive — and secretly a chaining
-  story).
+  compound cylinder ✅ shipped 2026-06-10 (ν-cancellation proven with ν symbolic; the
+  two-shell optimum r_c = √(r_i·r_o) → capacity σ_y(1−r_i/r_o), approaching 2× the monobloc
+  ceiling, machine-proven; scoped refusal's second consumer — over-shrunk bores refuse SF_bore
+  alone; Timoshenko's own worked example as a published test golden; new µm display unit).
+  The radial-field family is complete.
 - **The deliberate schema stress-test:** spur gear pair (Lewis bending) forces a
   tabulated-data-with-provenance mechanism (form-factor tables as cited data, not magic
   numbers). Design that capability on purpose, not ad hoc.
