@@ -62,6 +62,10 @@ def test_lame_bvps_resolve_to_the_assembly_stresses():
     assert sp.simplify(ST_J.subs(r, r_c) - SIGMA_TC_RES) == 0
     for sr_, st_ in ((SR_L, ST_L), (SR_J, ST_J), (SR_W, ST_W)):
         assert sp.simplify(sp.diff(r * sr_, r) - st_) == 0
+        # plane-stress strain compatibility for each member field individually
+        eps_t = (st_ - nu * sr_) / E
+        eps_r = (sr_ - nu * st_) / E
+        assert sp.simplify(sp.diff(r * eps_t, r) - eps_r) == 0
     # relief factor > 2: the difference is manifestly positive
     relief = -SIGMA_TI_RES / p_c
     assert sp.simplify(relief - 2 - 2 * r_i**2 / (r_c**2 - r_i**2)) == 0
@@ -151,12 +155,9 @@ def test_geometric_mean_optimum_approaches_twice_the_monobloc_ceiling():
     (pc_bal,) = sp.solve(sp.Eq(TAU_BORE, TAU_IFACE), p_c)
     tau_balanced = sp.simplify(TAU_BORE.subs(p_c, pc_bal))
     (p_cap,) = sp.solve(sp.Eq(2 * tau_balanced, sigma_y), p)
-    crit = [
-        c
-        for c in sp.solve(sp.Eq(sp.diff(p_cap, r_c), 0), r_c)
-        if sp.simplify(c - sp.sqrt(r_i * r_o)) == 0
-    ]
-    assert len(crit) == 1
+    crits = sp.solve(sp.Eq(sp.diff(p_cap, r_c), 0), r_c)
+    assert len(crits) == 1  # the geometric mean is the ONLY stationary point
+    assert sp.simplify(crits[0] - sp.sqrt(r_i * r_o)) == 0
     p_star = sp.simplify(p_cap.subs(r_c, sp.sqrt(r_i * r_o)))
     assert sp.simplify(p_star - sigma_y * (1 - r_i / r_o)) == 0
     mono_cap = sigma_y / 2 * (1 - r_i**2 / r_o**2)
@@ -164,9 +165,10 @@ def test_geometric_mean_optimum_approaches_twice_the_monobloc_ceiling():
     assert sp.simplify(gain - 2 / (1 + r_i / r_o)) == 0
     assert sp.limit(gain, r_i, 0, "+") == 2
     assert sp.simplify(gain.subs(r_i, r_o)) == 1
-    # and the second-order check that √(r_i·r_o) is a maximum, not a saddle
+    # the second-order PROOF that the stationary point is a maximum: the second
+    # derivative there is exactly −4σ_y/r_o², manifestly negative
     d2 = sp.diff(p_cap, r_c, 2).subs(r_c, sp.sqrt(r_i * r_o))
-    assert sp.simplify(d2 * (r_o - r_i)).is_negative or sp.simplify(d2).could_extract_minus_sign()
+    assert sp.simplify(d2 + 4 * sigma_y / r_o**2) == 0
 
 
 def test_zero_interference_hands_off_to_the_monobloc_cylinder():
@@ -189,7 +191,7 @@ def test_no_silent_bore_yield_across_the_envelope_set():
     the true spread reaches σ_y, at least one of (service-yield warn
     2τ_bore ≥ σ_y) / (assembly-compression warn −σ_θ,i^res ≥ σ_y) / (scoped
     refusal σ_θ,i ≤ 0) has fired — no silent yield. 4000 seeded states across
-    the full knob and σ_y range."""
+    the knob ranges and a 35 MPa – 1 GPa σ_y spread."""
     f_pc = sp.lambdify((r_i, r_c, r_o, E, delta), P_C, "math")
     f_res = sp.lambdify((r_i, r_c, p_c), SIGMA_TI_RES, "math")
     f_tot = sp.lambdify((r_i, r_o, p, p_c, r_c), SIGMA_TI_TOT, "math")

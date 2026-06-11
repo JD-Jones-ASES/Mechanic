@@ -260,8 +260,10 @@ relations:
     assumptions:
       - the monobloc bore shear p·r_o²/(r_o²−r_i²) — the thick-walled cylinder's governing
         number — minus the shear relief bought by the fit
-      - signed by convention — positive means service tension governs the bore; negative means
-        the fit still holds the bore in net compression at full pressure
+      - signed by convention, and honest only on the tension side — the in-plane spread it
+        measures governs while the total bore hoop stays tensile, i.e. while τ_i > p/2; the
+        scoped envelope below refuses the bore margin at exactly that boundary (σ_θ,i = 0)
+        rather than let this number mislead
     citation: timoshenko-som2
     validity:
       - condition: 2*tau_bore < sigma_y
@@ -324,8 +326,10 @@ relations:
     assumptions:
       - the interference at which the two Tresca shears are equal at the current pressure —
         τ_i falls and τ_c rises linearly with contact pressure, so the crossing is unique and
-        closed-form; no new physics enters, only algebra over the two cited shears (the
-        derivation and test suite verify it)
+        closed-form; no new physics enters, only algebra over the two cited shears — Timoshenko
+        motivates the favorable distribution qualitatively (Art. 41) but does not state this
+        form; the equal-shear crossing is re-derived in pipeline/tests/ and the closed form is
+        machine-checked against the authored solutions
       - the denominator 2r_o²r_c² − r_c⁴ − r_o²r_i² = r_c²(r_o²−r_c²) + r_o²(r_c²−r_i²) is
         positive for every legal geometry, so a balanced fit always exists
       - with the interface at r_c = √(r_i·r_o), this fit maximizes the elastic pressure
@@ -456,18 +460,22 @@ sim:
 sources:
   - id: timoshenko-som2
     citation: >-
-      Timoshenko, S., Strength of Materials, Part II: Advanced Theory and Problems, 1st ed.,
-      Van Nostrand, 1930 — ch. VI "Deformations Symmetrical About an Axis", Art. 40 (the
-      thick-walled cylinder: Lamé field, internal/external pressure, displacements) and Art. 41
-      "Stresses Produced by Shrink Fit" (eq. 181: the same-material contact pressure; built-up
-      cylinders under internal pressure behave as one solid wall with shrink stresses
-      superposed; gun barrels; pre-yielding a solid tube as the analogous trick).
+      Timoshenko, S., Strength of Materials, Part II: Advanced Theory and Problems, 3rd ed.,
+      Van Nostrand, 1956 (first published 1930) — ch. VI "Deformations Symmetrical About an
+      Axis", Art. 40 (the thick-walled cylinder: Lamé field, internal/external pressure,
+      displacements) and Art. 41 "Stresses Produced by Shrink Fit" (eq. 181: the same-material
+      contact pressure; built-up cylinders under internal pressure behave as one solid wall
+      with shrink stresses superposed; gun barrels; pre-yielding a solid tube as the analogous
+      trick).
     verification: >-
-      Chapter/article numbers, eq. 181, and the superposition sentence pinned against the
-      Internet Archive full text (in.ernet.dli.2015.140195), 2026-06-10. The book's own worked
-      example (Art. 41, Prob. 2: p = 4,050 psi) is re-computed from the authored contact-
-      pressure relation as a published golden in pipeline/tests/test_shrinkfit_physics.py, and
-      the Lamé fields are independently re-derived there from equilibrium + compatibility.
+      Chapter/article numbers, eq. 181, the superposition sentence, and Art. 41 Prob. 2 pinned
+      against the Internet Archive full text (in.ernet.dli.2015.140195), 2026-06-10 — note the
+      item's DLI metadata mislabels the scan "1930"; its own title and copyright pages read
+      Third Edition, March 1956, so the pins hold for the 3rd edition and earlier-edition
+      numbering was not checked. The book's own worked example (Art. 41, Prob. 2: p = 4,050
+      psi) is re-computed from the authored contact-pressure relation as a published golden in
+      pipeline/tests/test_shrinkfit_physics.py, and the Lamé fields are independently
+      re-derived there from equilibrium + compatibility.
   - id: shigley
     citation: >-
       Budynas, R. G., & Nisbett, J. K., Shigley's Mechanical Engineering Design, 10th ed.,
@@ -476,12 +484,15 @@ sources:
       in pressurized cylinders), and §5-4 (maximum-shear-stress theory, S_sy = 0.5 S_y).
     verification: >-
       §3-16 title confirmed in the ch. 3 section sequence (3-13…3-19) against published
-      11th-edition-SI section listings, 2026-06-10, consistent with the §3-14 pin recorded by
-      the thick-walled-cylinder THING. The general interference relation and both assembly
-      stress states verified against the publisher's companion tutorial (McGraw-Hill,
-      "Machine Design Tutorial 4-17: Press and Shrink Fits", eqs. T4-57…T4-60, 7th-edition
-      text numbering), 2026-06-10; its same-material collapse is re-proven symbolically in
-      pipeline/tests/test_shrinkfit_physics.py.
+      11th-edition-SI section listings, 2026-06-10 — the 10th edition itself was not
+      re-inspected; numbering taken as stable, anchored by the §3-14 pin the
+      thick-walled-cylinder THING recorded against 10th-edition listings. The general
+      interference relation and the two member stress states at the interface verified against
+      the publisher's companion tutorial (McGraw-Hill, "Machine Design Tutorial 4-17: Press and
+      Shrink Fits", Text Eqs. 4-57…4-60 in 7th-edition numbering, two in the tutorial's
+      "Modified" form), 2026-06-10; the liner-bore assembly stress is the Lamé field of
+      Timoshenko Art. 40, re-derived in pipeline/tests/test_shrinkfit_physics.py, and the
+      same-material collapse is re-proven symbolically there.
   - id: gere
     citation: >-
       Gere, J. M., & Goodno, B. J., Mechanics of Materials, 9th ed., Cengage, 2018 — prismatic

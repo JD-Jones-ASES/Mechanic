@@ -91,8 +91,9 @@ export function ShrinkFitSim({
   const jacketProfile = (f: number) => Math.abs(hoopJacket(r_c + f * (r_o - r_c))) / peak;
 
   // pressure arrows pushing outward on the bore (shared vocabulary with the
-  // parent cylinder THING)
-  const arrows = [0, Math.PI / 2, Math.PI, (3 * Math.PI) / 2];
+  // parent cylinder THING); suppressed when the bore draws too small to hold them
+  const showBoreLoad = rInVis >= 12;
+  const arrows = showBoreLoad ? [0, Math.PI / 2, Math.PI, (3 * Math.PI) / 2] : [];
   const aIn = rInVis * 0.45;
   const aOut = rInVis * 0.82;
 
@@ -155,9 +156,11 @@ export function ShrinkFitSim({
             />
           </g>
         ))}
-        <text x={cx} y={cy + 4} text-anchor="middle" class="sim-label">
-          p
-        </text>
+        {showBoreLoad ? (
+          <text x={cx} y={cy + 4} text-anchor="middle" class="sim-label">
+            p
+          </text>
+        ) : null}
         <text x={cx - (rCVis + rOutVis) / 2} y={cy - 4} text-anchor="middle" class="sim-label-small">
           jacket
         </text>

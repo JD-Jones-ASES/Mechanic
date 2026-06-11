@@ -819,7 +819,7 @@ test("compound cylinder: balanced-fit goldens and the monobloc hand-off", async 
   expect(await readOutput(page, "SF_iface")).toBeCloseTo(1.379, 2); // equal: the balanced fit
   expect(await readOutput(page, "delta_bal")).toBeCloseTo(30.01, 1); // µm ≈ the dialed δ
   expect(await readOutput(page, "mu_L")).toBeCloseTo(159.4, 0);
-  await expect(page.locator(".sim figcaption")).toContainText(/balanced/i);
+  await expect(page.locator(".sim figcaption")).toContainText(/margins are equal/i);
 
   // wind the fit out and the page collapses onto the thick-walled cylinder:
   // at 100 MPa the monobloc wall sits on its first-yield doorstep
