@@ -68,6 +68,15 @@ names ride in the Date cell (`<date> · <branch>`).
 capstan math). The session that completes S13 either continues to S14 (protocol §2 continuation
 rule) or marks it SKIPPED — both are pre-authorized — and then closes the phase per protocol §8.
 
+**S02 block RESOLVED (2026-07-04):** the brief's THING needs Norton's `A·(r/d)^b` shoulder-fillet
+Kt coefficients verbatim from a published source. These were BLOCKED (unobtainable from ~12
+accessible sources) and then RESOLVED the same day — the owner supplied Norton *Machine Design*
+Appendix C directly; the verified `(A,b)` tables (axial/bending/torsion) + citation + r/d envelope +
+golden are now recorded in the S02 brief ("Table data — VERIFIED"), cross-checked against the Roark
+formula preserved in `log.md`. S02 is back to QUEUED and buildable as briefed; the multi-column
+implementation plan (a compiler/verifier logic fix — no schema/artifact change) is in the `log.md`
+S02 entry. History: PR #14 (the block + its resolution).
+
 ## Phase 3 — Solver depth: solveLinear + statically indeterminate THINGs
 
 ADR-0008 signed off 2026-07-04 with the SPLIT scope (solveLinear approved; nonlinear solveND
