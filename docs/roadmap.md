@@ -65,6 +65,14 @@ factory capability, the way the flywheel exercised `poisson_ratio` and new quant
   (axial/bending/torsion), K_t = A·(r/d)^b applied to a nominal stress, with two independent scoped
   poison paths (D/d table auto-guard + r/d authored envelope). Multi-column consumption is a
   compiler/verifier logic extension, no schema/artifact change. Catalog 18 → 19.
+- **Third table consumer, classical-elasticity coefficients:** rectangular-shaft-torsion
+  (Saint-Venant torsion of a solid rectangular bar) ✅ shipped 2026-07-04 (S03, PR #TBD) — the
+  first `table` use outside a machine-element chart: c1(a/b), c2(a/b) from Timoshenko §109 (two
+  columns, one lookup), τ_max at the long-side midpoint (corners carry zero), and an equal-area
+  round-shaft efficiency comparison ("why square shafts are a bad deal"). New `twist_rate` quantity
+  kind + `rad/m`, `deg/m` display units; a/b outside [1, 10] refuses globally rather than
+  extrapolate. The coefficients are cross-checked against the exact Fourier-series solution and
+  Roark's independent closed form in the physics test. Catalog 19 → 20.
 
 Per-THING gate (standard practice, from the flywheel/cylinder sessions): machine verification +
 independent first-principles cross-check in `pipeline/tests/` + hand-checkable numeric golden +

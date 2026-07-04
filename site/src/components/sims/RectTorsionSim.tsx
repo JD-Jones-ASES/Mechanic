@@ -4,7 +4,7 @@
  * so the figure shows it directly: a schematic shear-magnitude profile bulges
  * inward from each edge — a big hump at the midpoint of each LONG side (where
  * tau_max lives, marked with hot dots) and a smaller hump on each short side,
- * all falling to ZERO at the four corners (marked 0). A dashed circle of EQUAL
+ * all falling to ZERO at the four corners (dead-corner dots, one labelled 0). A dashed circle of EQUAL
  * cross-sectional area is overlaid: it carries less stress, which is the "why a
  * square shaft is a bad deal" moment. A torque arc wraps the section.
  *
@@ -40,10 +40,16 @@ export function RectTorsionSim({
     invalidVars.includes("tau_max") ||
     ![a, b, ab, tauMax, rEq].every(Number.isFinite);
   if (refused) {
+    // give the refusal figure the SAME reason the validity banner shows: a/b < 1
+    // is a swapped-labels problem, a/b > 10 is off the tabulated range
+    const caption =
+      Number.isFinite(ab) && ab < 1
+        ? "a/b is below 1 — a should be the LONG side. Swap the labels; nothing honest to draw until then."
+        : "Aspect ratio a/b is outside the tabulated range [1, 10] — no published coefficient, nothing honest to draw.";
     return (
       <SimRefusal
         ariaLabel="Rectangular shaft cross-section (undefined state)"
-        caption="Aspect ratio a/b is outside the tabulated range [1, 10] — no published coefficient, nothing honest to draw."
+        caption={caption}
         height={240}
       />
     );
@@ -69,7 +75,9 @@ export function RectTorsionSim({
 
   // heat: shear humps are always visible (they encode the DISTRIBUTION shape),
   // growing and reddening as the peak approaches shear yield (SF -> 1)
-  const heat = 0.45 + 0.55 * Math.min(1, Number.isFinite(SF) && SF > 0 ? 1 / SF : 1);
+  // unknown margin -> minimum heat (conservative, matching StressBands.tsx); the
+  // early refusal guard makes a non-finite SF here unreachable in practice
+  const heat = 0.45 + 0.55 * Math.min(1, Number.isFinite(SF) && SF > 0 ? 1 / SF : 0);
   const danger = Number.isFinite(SF) && SF < 1;
   const shearClass = danger ? "rect-torsion-shear-hot" : "rect-torsion-shear";
 
