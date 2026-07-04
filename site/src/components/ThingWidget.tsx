@@ -111,7 +111,7 @@ export default function ThingWidget({ artifact, materials, sim }: Props) {
     return engine.evaluate(cfgId, { ...knobs, ...materialValues }, activeBranch);
   }, [fns, artifact, cfgId, knobs, materialValues, activeBranch]);
 
-  const targets = cfg.plan.map((s) => s.target);
+  const targets = cfg.plan.flatMap((s) => (s.type === "table" ? s.targets : [s.target]));
   const SimComponent = sim?.config?.draw ? SIMS[String(sim.config.draw)] : undefined;
 
   return (

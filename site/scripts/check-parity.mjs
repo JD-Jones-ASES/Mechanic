@@ -7,6 +7,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { brent } from "../src/engines/brent.ts";
+import { tableLookup } from "../src/engines/table.ts";
 
 const GENERATED_DIR = join(import.meta.dirname, "..", "src", "generated", "things");
 const RTOL = 1e-9;
@@ -36,6 +37,15 @@ for (const f of files) {
           const lo = fns[step.bracket_fns[0]](env);
           const hi = fns[step.bracket_fns[1]](env);
           env[step.target] = brent((x) => fns[step.residual_fn]({ ...env, [step.target]: x }), lo, hi);
+          continue;
+        }
+        if (step.type === "table") {
+          // same shared lookup the browser runs — pin JS interpolation against
+          // the mpmath sample outputs (samples are generated inside the domain)
+          const arg = fns[step.arg_fn](env);
+          for (let c = 0; c < step.targets.length; c++) {
+            env[step.targets[c]] = tableLookup(step.rows, arg, step.mode, c + 1);
+          }
           continue;
         }
         if (step.type !== "eval") continue;
