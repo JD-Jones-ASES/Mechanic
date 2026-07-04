@@ -76,6 +76,9 @@ All of these, in order, all green, before the PR is opened. Working directories 
    convention shortens the slug: `test_belt_physics.py`, `test_ssbeam_physics.py` — match it) that
    RE-DERIVES the governing result from first principles (equilibrium / compatibility / energy /
    `dsolve`) — not by importing `thing.yaml`'s residuals. `uv run pytest -q` in `pipeline/` green.
+   Existence is machine-gated: `test_physics_coverage.py` fails naming any THING whose slug lacks
+   a mapped test module — add your slug → module entry to its `PHYSICS_TESTS` map in the same PR.
+   The gate checks existence only; the test's independence and golden quality are §4's job.
 3. **Hand-checkable numeric golden**: ≥ 1 test asserting a published or by-hand value, source
    pinned in a comment (the Timoshenko-worked-example pattern from compound-cylinder).
 4. **Citations**: every `sources[]` entry carries `verification:` with the actual pinning method
