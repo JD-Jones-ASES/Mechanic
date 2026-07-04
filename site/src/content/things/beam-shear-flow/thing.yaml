@@ -1,0 +1,337 @@
+id: beam-shear-flow
+title: Transverse Shear in Beams (τ = VQ/Ib, Shear Flow, Fastener Spacing)
+summary: >-
+  A beam does not only bend — the shear force V drags its layers past one another, and that
+  longitudinal shear is what a built-up beam's nails or bolts actually carry. The stress is a
+  parabola (peak 3V/2A at the neutral axis, zero at the surfaces), and the shear flow q = VQ/I sets
+  the fastener spacing. Statics and geometry only: no stiffness enters at all.
+facets: [stress]
+
+variables:
+  # --- free inputs ---
+  - symbol: V
+    name: Transverse shear force
+    latex: V
+    unit: N
+    quantity_kind: force
+    default: 8000
+    bounds: [1, 500000]
+    positive: true
+    display_units: [kN, N]
+  - symbol: b
+    name: Section width
+    latex: b
+    unit: m
+    quantity_kind: length
+    default: 0.05
+    bounds: [0.005, 0.4]
+    positive: true
+    display_units: [mm, m]
+  - symbol: h
+    name: Section height
+    latex: h
+    unit: m
+    quantity_kind: length
+    default: 0.15
+    bounds: [0.005, 0.6]
+    positive: true
+    display_units: [mm, m]
+  - symbol: s
+    name: Fastener spacing (along the beam)
+    latex: s
+    unit: m
+    quantity_kind: length
+    default: 0.10
+    bounds: [0.01, 0.5]
+    positive: true
+    display_units: [mm, m]
+  - symbol: L
+    name: Span (for the slenderness check)
+    latex: L
+    unit: m
+    quantity_kind: length
+    default: 2.0
+    bounds: [0.1, 12.0]
+    positive: true
+    display_units: [m, mm]
+  # --- material (strength axis ONLY — see overview) ---
+  - symbol: sigma_y
+    name: Yield strength (tension)
+    latex: '\sigma_y'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 250.0e6
+    bounds: [10.0e6, 2.0e9]
+    positive: true
+    role: material
+    display_units: [MPa, Pa]
+  # --- derived ---
+  - symbol: A
+    name: Cross-sectional area
+    latex: A
+    unit: m**2
+    quantity_kind: area
+    default: 0.0075
+    bounds: [0, 1.0]
+    positive: true
+    role: derived
+    display_units: ["cm^2", "m**2"]
+  - symbol: I
+    name: Second moment of area
+    latex: I
+    unit: m**4
+    quantity_kind: second_moment_of_area
+    default: 1.40625e-5
+    bounds: [1.0e-12, 1.0e-2]
+    positive: true
+    role: derived
+  - symbol: tau_max
+    name: Max shear stress (neutral axis)
+    latex: '\tau_{max}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 1.6e6
+    bounds: [0, 1.0e10]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: tau_avg
+    name: Average shear stress (V/A)
+    latex: '\tau_{avg}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 1.066667e6
+    bounds: [0, 1.0e10]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: ratio
+    name: Peak-to-average ratio
+    latex: '\tau_{max}/\tau_{avg}'
+    unit: '1'
+    quantity_kind: ratio
+    default: 1.5
+    bounds: [0, 5]
+    positive: true
+    role: derived
+  - symbol: q
+    name: Shear flow at the neutral axis
+    latex: q
+    unit: N/m
+    quantity_kind: shear_flow
+    default: 80000
+    bounds: [0, 1.0e9]
+    positive: true
+    role: derived
+    display_units: ["N/mm", "N/m"]
+  - symbol: F_fastener
+    name: Force per fastener
+    latex: 'F_{fast}'
+    unit: N
+    quantity_kind: force
+    default: 8000
+    bounds: [0, 1.0e7]
+    positive: true
+    role: derived
+    display_units: [kN, N]
+  - symbol: SF
+    name: Safety factor (shear yield)
+    latex: '\mathrm{SF}'
+    unit: '1'
+    quantity_kind: safety_factor
+    default: 78.125
+    bounds: [0, 1.0e6]
+    positive: true
+    role: derived
+  - symbol: lambda_sd
+    name: Span-to-depth ratio
+    latex: 'L/h'
+    unit: '1'
+    quantity_kind: ratio
+    default: 13.3333
+    bounds: [0, 500]
+    positive: true
+    role: derived
+
+materials:
+  binds:
+    sigma_y: yield_strength
+
+relations:
+  - id: area
+    group: stress
+    latex: 'A = b\,h'
+    residual: A - b*h
+    assumptions:
+      - solid rectangular cross-section
+    citation: gere
+  - id: inertia
+    group: stress
+    latex: 'I = \dfrac{b h^3}{12}'
+    residual: I - b*h**3/12
+    assumptions:
+      - second moment of area about the neutral (centroidal) axis, bending about the strong axis
+    citation: gere
+  - id: max-shear
+    group: stress
+    latex: '\tau_{max} = \dfrac{V Q_{na}}{I\,b} = \dfrac{3V}{2A}'
+    residual: tau_max*2*A - 3*V
+    assumptions:
+      - transverse shear formula τ = VQ/(Ib); Q_na = b h^2/8 is the first moment of the area above
+        the neutral axis, the largest Q in the section, so the shear peaks at the neutral axis
+      - linear elastic, prismatic beam; the formula assumes the shear stress is uniform across the
+        width b at each height (exact for a thin rectangle, a good approximation for stocky ones)
+    citation: gere
+    validity:
+      - condition: tau_max < sigma_y/2
+        severity: warn
+        message: >-
+          Peak shear stress exceeds the shear yield strength (σ_y/2 by the maximum-shear-stress
+          criterion) — the neutral-axis fibers have yielded and the elastic parabola stops being
+          the truth.
+        citation: shigley
+  - id: avg-shear
+    group: stress
+    latex: '\tau_{avg} = \dfrac{V}{A}'
+    residual: tau_avg*A - V
+    assumptions:
+      - the nominal "V over area" shear stress — what you get if you (wrongly) assume shear is
+        spread evenly over the section
+    citation: gere
+  - id: peak-ratio
+    group: stress
+    latex: '\dfrac{\tau_{max}}{\tau_{avg}} = \dfrac{3}{2}'
+    residual: ratio*tau_avg - tau_max
+    assumptions:
+      - for a rectangle the peak is exactly 3/2 of the average, independent of size or load — a
+        pure consequence of the parabolic distribution
+    citation: gere
+  - id: shear-flow
+    group: stress
+    latex: 'q = \dfrac{V Q_{na}}{I} = \tau_{max}\,b'
+    residual: q*8*I - V*b*h**2
+    assumptions:
+      - shear FLOW is the shear force per unit length of beam that a longitudinal cut must carry;
+        q = τ·b = VQ/I, evaluated here at the neutral axis (its maximum), the critical joint for a
+        beam built up from two stacked planks
+      - same dimensions as a distributed load (N/m) but a different quantity kind — a shear flow
+        must never be chained into a line load or a spring rate (invariant 2)
+    citation: gere
+  - id: fastener-force
+    group: stress
+    latex: 'F_{fast} = q\,s'
+    residual: F_fastener - q*s
+    assumptions:
+      - each connector spaced s apart carries the shear flow over its tributary length; F = q·s is
+        the design equation that sets nail or bolt spacing
+      - convention on this page — F is the force at ONE interface per spacing s; a row of two
+        paired fasteners at each station splits it in half
+    citation: gere
+  - id: safety-factor
+    group: stress
+    latex: '\mathrm{SF} = \dfrac{\sigma_y/2}{\tau_{max}}'
+    residual: SF*2*tau_max - sigma_y
+    assumptions:
+      - maximum-shear-stress (Tresca) criterion — shear yield at σ_y/2; transverse shear rarely
+        governs in a slender beam (SF is usually large), which is exactly the point
+    citation: shigley
+  - id: span-depth
+    group: stress
+    latex: '\lambda = \dfrac{L}{h}'
+    residual: lambda_sd*h - L
+    assumptions:
+      - span-to-depth ratio; sets whether the beam is slender enough for shear deflection to be
+        negligible
+    citation: gere
+    validity:
+      - condition: lambda_sd >= 10
+        severity: warn
+        message: >-
+          Short, deep beam (L < 10h): the shear deflection that the Euler–Bernoulli beam pages
+          (simply-supported-beam, cantilever-beam) neglect is no longer small, and transverse shear
+          may govern the design rather than bending.
+        citation: gere
+
+configurations:
+  - id: shear-in
+    label: Shear force and section in — the parabola, the peak, the shear flow, the fastener force
+    constraints: {}
+    inputs: [V, b, h, s, L]
+    solutions:
+      A: b*h
+      I: b*h**3/12
+      tau_max: 3*V/(2*A)
+      tau_avg: V/A
+      ratio: tau_max/tau_avg
+      q: V*b*h**2/(8*I)
+      F_fastener: q*s
+      SF: sigma_y/(2*tau_max)
+      lambda_sd: L/h
+
+derivation:
+  verifies_configuration: shear-in
+  locals:
+    - symbol: Q
+      unit: m**3
+      positive: true
+      define: b*h**2/8
+  steps:
+    - expr: Eq(tau_max, V*Q/(I*b))
+      prose: >-
+        The modeling step, from horizontal equilibrium: the bending stress σ = My/I grows along the
+        beam at the rate dσ/dx = (V/I)·y, because dM/dx = V. Isolate the sliver of beam below a cut
+        at height y and sum forces along the axis — the unbalanced push from that stress gradient
+        over the area below can only be resisted by longitudinal shear on the cut, of width b. That
+        balance is τ·b = (V/I)∫y dA = VQ/I, so τ = VQ/(Ib), where Q is the first moment of the area
+        beyond the cut. (The build's test re-runs this integral from scratch.)
+      rule: 'equilibrium: bending-stress gradient balanced by longitudinal shear'
+      check: definition
+    - expr: Eq(tau_max, 3*V/(2*A))
+      prose: >-
+        Q is largest at the neutral axis (Q_na = bh²/8), so the shear peaks THERE, not at the loaded
+        surface — the exact opposite of bending stress. Substitute Q_na and I = bh³/12 and the peak
+        is exactly 3/2 of the average V/A. The full distribution is a parabola: zero at the top and
+        bottom fibers (no material beyond them to shear off), maximum at the middle.
+      rule: substitute the rectangle at the neutral axis
+      check: identity
+    - expr: Eq(q, V*Q/I)
+      prose: >-
+        Multiply the neutral-axis stress by the width it crosses and you get the shear FLOW,
+        q = τ·b = VQ/I — the longitudinal force per unit length of beam that any horizontal cut must
+        transmit. This is the quantity a built-up beam's connectors actually carry, and it has the
+        units of a distributed load (N/m) but is a different physical kind entirely.
+      rule: 'shear flow = shear stress × width'
+      check: identity
+    - expr: Eq(F_fastener, q*s)
+      prose: >-
+        A beam nailed or bolted together from separate pieces must carry that shear flow across every
+        joint. Each connector, spaced s apart, resists F = q·s — the equation that actually sizes the
+        nail spacing in a plywood box beam or the bolt pitch in a plate girder. Tighten the spacing
+        and each fastener carries less; that is the only knob the connection gives you.
+      rule: 'definition: connector force = shear flow × spacing'
+      check: definition
+
+sim:
+  engine: statics-cascade
+  config:
+    draw: beam-shear-flow
+
+sources:
+  - id: gere
+    citation: >-
+      Gere, J. M., & Goodno, B. J., Mechanics of Materials, 9th ed., Cengage, 2018 — §5.8–5.11
+      (shear stresses in beams of rectangular cross section, the shear formula τ = VQ/Ib, shear flow,
+      and built-up beams / fastener spacing).
+    verification: >-
+      Topic-level citation (same source id and §5.x family as simply-supported-beam and
+      cantilever-beam). The shear formula τ = VQ/(Ib), the parabolic distribution, τ_max = 3V/2A, and
+      the shear flow q = VQ/I are ALL re-derived from first principles in
+      pipeline/tests/test_shear_flow_physics.py — the bending-stress-gradient equilibrium integral,
+      the 3/2 peak, and the theorem that the parabola integrates back to exactly V — so nothing here
+      rests on citation alone. The hand golden (V=12 kN, 40×180 mm, s=75 mm → τ_max=2.5 MPa,
+      q=100 N/mm, F=7.5 kN) is arithmetic on those formulas, checkable by hand.
+  - id: shigley
+    citation: >-
+      Budynas, R. G., & Nisbett, J. K., Shigley's Mechanical Engineering Design, 10th ed.,
+      McGraw-Hill, 2015 — §5-4 (maximum-shear-stress theory, S_sy = 0.5 S_y).
+    verification: "Tresca shear-yield criterion; standard, the same σ_y/2 basis the torsion-shaft page uses."

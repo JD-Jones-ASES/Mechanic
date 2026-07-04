@@ -37,6 +37,10 @@ QUANTITY_KINDS: frozenset[str] = frozenset({
     "torque",  # twisting moment about the axis
     "bending_moment",  # same dims as torque [2,1,-2,…]; a belt's torque must not chain into a bending port
     "line_load",  # N/m distributed load — same dims as stiffness; the kind keeps them apart
+    "shear_flow",  # N/m — VQ/I, force per unit length a built-up joint carries; the THIRD kind
+                   # on the N/m dimension vector. A distributed load (line_load), a spring rate
+                   # (stiffness), and a shear flow all share dims [0,1,-2,…] and must NEVER chain
+                   # into one another — this trio is why quantity_kind exists (invariant 2).
     "energy",
     "power",
     "pressure_stress",

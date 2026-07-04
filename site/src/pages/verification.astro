@@ -59,7 +59,12 @@ const totals = {
     <ul>
       <li>
         <strong>Dimensional homogeneity</strong> — every relation's terms carry identical SI
-        dimension 7-vectors; transcendental functions take dimensionless arguments only.
+        dimension 7-vectors; transcendental functions take dimensionless arguments only. Dimension
+        alone is not enough, so every variable also carries a <em>quantity kind</em>: a beam's shear
+        flow, a distributed load, and a spring rate are all newtons per metre and share the identical
+        dimension vector, yet the type system forbids chaining one into another because their kinds
+        (<code>shear_flow</code>, <code>line_load</code>, <code>stiffness</code>) differ — same units,
+        three meanings, kept apart on purpose.
       </li>
       <li>
         <strong>Degree-of-freedom arithmetic</strong> — each configuration's knob count equals

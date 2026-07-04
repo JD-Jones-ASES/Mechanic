@@ -149,6 +149,13 @@ a { color: var(--accent); }
 .rect-torsion-hotspot { fill: var(--accent); }
 .rect-torsion-hotspot-hot { fill: #dc2626; }
 .rect-torsion-dead { fill: var(--muted); }
+/* beam-shear-flow (ShearFlowSim): the section outline, the parabolic shear-stress
+   profile (accent, red past shear yield), the built-up joint line and its fasteners */
+.shearflow-section { fill: var(--line); stroke: var(--ink); stroke-width: 2; }
+.shearflow-profile { fill: var(--accent); opacity: 0.5; stroke: var(--accent); stroke-width: 1.5; }
+.shearflow-profile-hot { fill: #dc2626; opacity: 0.6; stroke: #dc2626; stroke-width: 1.5; }
+.shearflow-joint { stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 5 3; }
+.shearflow-fastener { fill: var(--accent); stroke: var(--ink); stroke-width: 0.75; }
 /* shared sim vocabulary: stress bands (StressBands.tsx) shade where a field
    concentrates and turn red past first yield; .sim-outline is a figure's
    structural outline */
