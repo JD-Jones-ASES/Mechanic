@@ -21,7 +21,7 @@ the new kind. Catalog 20 → 21.
 Any false → BLOCKED, do not start (protocol §1.6, §9.1).
 
 - Main CI green: `gh run list --branch main --limit 1`
-- No PAUSED / IN_PROGRESS rows: `rg -n "PAUSED|IN_PROGRESS" docs/sessions/queue.md` returns nothing
+- No PAUSED / IN_PROGRESS rows: `rg -n '\|\s*(IN_PROGRESS|PAUSED)\s*\|' docs/sessions/queue.md` returns nothing
 - S03 DONE (strict queue order): `rg -n '^\| S03 .*DONE' docs/sessions/queue.md`
 - `shear_flow` kind not yet claimed: `rg -n "shear_flow" pipeline/src/mech_pipeline/kinds.py` returns nothing
 - `line_load` kind exists to reuse: `rg -n "line_load" pipeline/src/mech_pipeline/kinds.py`

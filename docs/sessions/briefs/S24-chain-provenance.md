@@ -22,7 +22,7 @@ Each with a check command; any false → BLOCKED, do not start (protocol §1.6, 
 
 - Main CI green: `gh run list --branch main --limit 1`
 - Phase 4 ruling line present (protocol §8): `rg -n "Phase 4 approved — JD" docs/sessions/queue.md`
-- No PAUSED/IN_PROGRESS rows: `rg -n "PAUSED|IN_PROGRESS" docs/sessions/queue.md` returns nothing
+- No PAUSED/IN_PROGRESS rows: `rg -n '\|\s*(IN_PROGRESS|PAUSED)\s*\|' docs/sessions/queue.md` returns nothing
 - S21 and S22 DONE in queue: `rg -n "^\| S2[12]" docs/sessions/queue.md` shows both DONE
   (S23 is assumed merged — order S21→S22→S23→S24 — but is not strictly required; if S23 is not
   DONE, note it in the log and proceed)

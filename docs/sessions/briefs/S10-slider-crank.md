@@ -20,7 +20,7 @@ the branch pair. The heaviest sim of the batch: piston + rod + crank.
 Any false → BLOCKED, do not start (protocol §1.6, §9.1).
 
 - Main CI green: `gh run list --branch main --limit 1`
-- No PAUSED/IN_PROGRESS rows: `rg "PAUSED|IN_PROGRESS" docs/sessions/queue.md` → zero matches
+- No PAUSED/IN_PROGRESS rows: `rg -n '\|\s*(IN_PROGRESS|PAUSED)\s*\|' docs/sessions/queue.md` → zero matches
 - S09 DONE: `rg "\| S09 \|" docs/sessions/queue.md` → status column reads DONE
 - The pattern parent exists: `test -f site/src/content/things/fourbar-linkage/thing.yaml` (Bash tool)
 - Kinds exist: `rg "angular_acceleration" pipeline/src/mech_pipeline/kinds.py` → ≥1 match, and

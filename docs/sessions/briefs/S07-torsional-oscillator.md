@@ -21,7 +21,7 @@ flywheel-disk's — the strongest chain-port pair in the catalog.
 Any false → BLOCKED, do not start (protocol §1.6, §9.1).
 
 - Main CI green: `gh run list --branch main --limit 1`
-- No PAUSED/IN_PROGRESS rows: `rg "PAUSED|IN_PROGRESS" docs/sessions/queue.md` → zero matches
+- No PAUSED/IN_PROGRESS rows: `rg -n '\|\s*(IN_PROGRESS|PAUSED)\s*\|' docs/sessions/queue.md` → zero matches
 - Prior row DONE (strict top-to-bottom order): `rg "\| S06 \|" docs/sessions/queue.md` → status column reads DONE
 - Parent THINGs whose results are reused verbatim exist:
   `test -f site/src/content/things/torsion-shaft/thing.yaml && test -f site/src/content/things/flywheel-disk/thing.yaml` (Bash tool)

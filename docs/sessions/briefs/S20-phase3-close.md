@@ -22,7 +22,7 @@ Any false → BLOCKED, do not start (protocol §1.6, §9.1).
 
 - Main CI green: `gh run list --branch main --limit 1`
 - No claimed/suspended rows (table cells, not the legend line):
-  `rg "\| (PAUSED|IN_PROGRESS) \|" docs/sessions/queue.md` → zero hits
+  `rg -n '\|\s*(IN_PROGRESS|PAUSED)\s*\|' docs/sessions/queue.md` → zero hits
 - Phase 3 ruled: `rg "Phase 3 approved" docs/sessions/queue.md` → the literal ruling line exists
 - S15–S19 all resolved: `rg "^\| S1[5-9] " docs/sessions/queue.md` — every row DONE, or
   BLOCKED/SKIPPED with an owner-visible reason. No QUEUED/IN_PROGRESS/PAUSED row above S20.

@@ -21,7 +21,7 @@ quantity kind and `rad/m` / `deg/m` display units enter the registries. Catalog 
 Any false → BLOCKED, do not start (protocol §1.6, §9.1).
 
 - Main CI green: `gh run list --branch main --limit 1`
-- No PAUSED / IN_PROGRESS rows: `rg -n "PAUSED|IN_PROGRESS" docs/sessions/queue.md` returns nothing
+- No PAUSED / IN_PROGRESS rows: `rg -n '\|\s*(IN_PROGRESS|PAUSED)\s*\|' docs/sessions/queue.md` returns nothing
 - S01 DONE (table capability + ADR-0009): `rg -n '^\| S01 .*DONE' docs/sessions/queue.md` AND
   `rg --files docs/decisions | rg -i 0009`
 - S02 DONE (real-arg multi-column table proven in production): `rg -n '^\| S02 .*DONE' docs/sessions/queue.md`

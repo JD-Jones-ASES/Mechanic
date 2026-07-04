@@ -98,8 +98,9 @@ Generated artifacts (`site/src/generated/`, `data/build/`) are **never committed
 
 ## Out of scope (v1)
 
-Feedback loops / cyclic solving (schema is ready; solver is not built) · full chaining UI (`/chain-demo/`
-is the one shipped demo) · Materials Project integration · fluids & time-integration dynamics engines ·
+Nonlinear/feedback cyclic solving (`solveND` — deferred by ADR-0008, accepted 2026-07-04 with split
+scope; certified linear `solve_linear` groups ARE approved and land in Phase 3) · full chaining UI
+(`/chain-demo/` is the one shipped demo until Phase 4) · Materials Project integration · fluids & time-integration dynamics engines ·
 Pyodide sandbox · integer tooth-count synthesis · eccentric-column solve-for-P (transcendental) ·
 coupler-curve inverse · custom domain · analytics (none, stated policy) · accounts/comments (static site).
 

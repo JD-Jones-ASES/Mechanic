@@ -6,7 +6,8 @@ questions here, or expect a BLOCKED stop.
 
 - **ID / Title:** S<NN> — <title>
 - **Phase:** 2 | 3 | 4
-- **Type:** THING | engine+THING | engine | docs | hotfix
+- **Type:** THING | engine+THING | engine | feature | docs | hotfix (combinations allowed;
+  "feature" = site/UI work — runs the protocol §3 gate minus items 2–4, like engine/docs)
 - **Size:** S | M | L — L means solo (never claimed via the continuation rule); if mid-session
   the work grows beyond L, that is a PAUSED trigger (protocol §9.4), not a license to rush.
 - **Status:** FULL | DRAFT (DRAFT briefs are verified by the prior phase's closing session before

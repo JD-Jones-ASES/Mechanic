@@ -108,7 +108,8 @@ it fits; `SimRefusal` for invalid states. Component `site/src/components/sims/Tr
 - overview.mdx contains the Phase 3 solveLinear bridge statement
 - Visual pass per §5: normal + refused screenshots, what-was-checked described
 - Log entry appended; queue row S13 → DONE with PR# + date
-- S14 disposition executed per Notes (continuation or SKIPPED + phase closure)
+- S14 disposition executed per Notes (continuation or SKIPPED + phase closure) OR explicitly
+  deferred to the next session in Notes-for-next
 
 ## Out of scope
 
@@ -125,7 +126,10 @@ compression (cross-link euler-column only).
   (b) mark the S14 queue row SKIPPED (pre-authorized by the queue's shed note) and close Phase 2
   yourself per protocol §8: write `docs/sessions/reports/phase-2.md` (template in §11), verify/update
   the Phase 3 DRAFT briefs (S15–S20) against merged reality, set the queue header to
-  `Active phase: 2 — AWAITING OWNER`, and STOP.
+  `Active phase: 2 — AWAITING OWNER`, and STOP; or
+  (c) if you cannot fund (a) or (b) honestly, complete S13's own bookkeeping, state the deferral
+  in Notes-for-next, and stop — the next session claims S14 normally and ITS completer closes the
+  phase.
   Closure costs real context (a report + six DRAFT briefs to reconcile) — budget it into the choice.
   When in doubt, choose (b): a clean phase close beats a paused shed item.
 - α is measured from VERTICAL. State the convention in overview, the sim, and relation comments —

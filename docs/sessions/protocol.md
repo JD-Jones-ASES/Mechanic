@@ -23,12 +23,18 @@ Rules that hold even if you read nothing else:
 
 1. `CLAUDE.md` (auto-loaded) and this file, in full.
 2. `docs/sessions/queue.md` — check, in order:
-   a. **OWNER NOTES** dated after the last log entry → honor them; they override briefs.
-   b. Any row **PAUSED** → resuming it IS your session; go to §9.4 resume procedure.
-   c. Any row **IN_PROGRESS** → crashed session; go to §9.6.
-   d. Otherwise claim the **topmost QUEUED row of the active phase**.
-   e. Queue header says **AWAITING OWNER**, or the next work is in a phase with no
-      `Phase <n> approved — JD <date>` ruling line → **stop and report**; do nothing.
+   a. **OWNER NOTES** → honor every note still present; they override briefs and remain binding
+      until the owner removes them.
+   b. Queue header says **AWAITING OWNER** → **stop and report**; do nothing. (Only the owner
+      flips the header off AWAITING OWNER — see §8.)
+   c. Any row **PAUSED** → resuming it IS your session; go to §9.4 resume procedure.
+   d. Any row **IN_PROGRESS** → crashed session; go to §9.6.
+   e. All rows of the active phase DONE/SKIPPED but `reports/phase-<n>.md` is missing or the
+      header is not AWAITING OWNER → the phase close is unfinished; **performing §8 IS your
+      session**.
+   f. Otherwise: verify the active phase has its literal ruling line
+      (`Phase <n> approved — JD <date>`) — absent → **stop and report**. Present → claim the
+      **topmost QUEUED row of the active phase**.
 3. Your brief: `docs/sessions/briefs/<ID>-<slug>.md`, in full.
 4. The **last 2 entries** of `docs/sessions/log.md` — `Notes-for-next` is a contract written for you.
 5. The active phase's section of `docs/roadmap.md`. For THING sessions:
@@ -45,16 +51,18 @@ Rules that hold even if you read nothing else:
 
 ## §2 Claiming and branching
 
-Branch names match history: `thing/<slug>` (single THING), `phase<N>/<slug>` (engine/capability
-work), `docs/<slug>`, `hotfix/<slug>`. Your **first commit on the branch** flips the queue row
-QUEUED → IN_PROGRESS (date + branch name) — the claim marker that makes crashes detectable. All
-session-end bookkeeping (§7) rides in the same PR, so `main` only ever shows QUEUED or DONE for
-finished work.
+Branch names match history: `thing/<slug>` (single THING), `phase<N>/<slug>` (engine, capability,
+or feature work), `docs/<slug>`, `hotfix/<slug>`. Your **first commit on the branch** flips the
+queue row QUEUED → IN_PROGRESS — the claim marker that makes crashes detectable. **Status cells
+hold ONLY the bare token** (QUEUED / IN_PROGRESS / PAUSED / …) — the guard greps in every brief
+depend on this; record the branch name in the row's Date cell (`2026-07-12 · thing/foo`), details
+in the log. All session-end bookkeeping (§7) rides in the same PR, so `main` only ever shows
+QUEUED or DONE for finished work.
 
 **Continuation rule:** after fully completing a row (PR merged, bookkeeping done, deploy verified),
 if you judge **≥50% of your context remains**, you MAY claim the next QUEUED row — fresh branch,
-fresh PR, full startup checks minus the re-reading you've already done. Never batch two rows into
-one PR. When in doubt, stop; a clean stop costs one relaunch.
+fresh PR, full startup checks including a re-read of OWNER NOTES (minus re-reading docs already in
+context). Never batch two rows into one PR. When in doubt, stop; a clean stop costs one relaunch.
 
 ## §3 The per-THING gate, as commands
 
@@ -80,8 +88,9 @@ All of these, in order, all green, before the PR is opened. Working directories 
 8. **Multi-angle self-review** (§4).
 9. **Bookkeeping** (§7) committed into the branch.
 
-Engine/docs sessions run the same list minus items 2–4, plus the brief-specific certificates
-(e.g. solveLinear's per-sample certificate tests).
+Engine, feature, and docs sessions run the same list minus items 2–4, plus the brief-specific
+certificates (e.g. solveLinear's per-sample certificate tests). A session whose brief ships a
+THING alongside engine/feature work runs the full list for that THING.
 
 ## §4 Multi-angle self-review
 
@@ -154,6 +163,11 @@ No session ever starts a next-phase row unless `queue.md` contains the literal r
 `Phase <n+1> approved — JD <date>`. This is checkable at startup and exists so the owner's
 phase-boundary control is real.
 
+**The owner — never a session — flips the header off AWAITING OWNER**: when ruling, the owner
+writes the ruling line AND sets the header to `Active phase: <n+1>` in the same edit (runbook
+step 2e). A session that finds a ruling line but an unflipped header stops and reports — it does
+not "help".
+
 ## §9 Failure protocols
 
 Every branch below ends in a queue flip + log entry + stop. None ends in a lowered gate.
@@ -185,9 +199,10 @@ per 9.1 against a synthetic top-of-queue row `MAIN BROKEN: <symptom>`.
 gates + review + bookkeeping with ~20% context margin — gates cost more context than they look.
 Stop feature work immediately. Bring the branch to a CLEAN PARTIAL state (everything committed;
 ideally `pnpm build` passes — if not, say so explicitly); push the branch; do NOT open a mergeable
-PR; flip the row to PAUSED (branch name + log pointer); append a log entry whose `State:` section
+PR; flip the row's Status cell to the bare token PAUSED (branch name in the Date cell, per §2 —
+never decorate the Status cell); append a log entry whose `State:` section
 is exact resume instructions **written for a stranger** (what's done, what's unverified, the next
-command to run); stop. The next session's first duty (§1.2b) is resuming this row on the same
+command to run); stop. The next session's first duty (§1.2c) is resuming this row on the same
 branch before claiming anything new.
 
 **9.5 Incremental-cache staleness.** Fingerprint = `thing.yaml` + pipeline source + SymPy version,

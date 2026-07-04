@@ -21,8 +21,9 @@ member — invariant 3's legibility moment. Catalog +1.
 Any false → BLOCKED, do not start (§1.6, §9.1).
 
 - Main CI green: `gh run list --branch main --limit 1` → latest run success.
-- No PAUSED/IN_PROGRESS rows: `rg "PAUSED|IN_PROGRESS" docs/sessions/queue.md` → zero matches.
-  (A PAUSED S16 preempts you per §1.2b even though S16 is not a dependency.)
+- No PAUSED/IN_PROGRESS rows: `rg -n '\|\s*(IN_PROGRESS|PAUSED)\s*\|' docs/sessions/queue.md` → zero matches.
+  (A PAUSED S16 preempts you per §1.2c even though S16 is not a dependency.)
+- Phase 3 ruled: `rg "Phase 3 approved — JD" docs/sessions/queue.md` → the literal ruling line exists
 - Dependency S15 DONE: `rg '\| S15' docs/sessions/queue.md` → status column reads DONE.
   S16 DONE is NOT required — S16 and S17 each depend only on S15 and may run in either order.
 - solve_linear capability exists (the 2×2 group needs it): `rg "certify_linear_group"

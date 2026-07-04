@@ -23,7 +23,7 @@ Each with a check command; any false → BLOCKED, do not start (protocol §1.6, 
 
 - Main CI green: `gh run list --branch main --limit 1`
 - Phase 4 ruling line present (protocol §8): `rg -n "Phase 4 approved — JD" docs/sessions/queue.md`
-- No PAUSED/IN_PROGRESS rows: `rg -n "PAUSED|IN_PROGRESS" docs/sessions/queue.md` returns nothing
+- No PAUSED/IN_PROGRESS rows: `rg -n '\|\s*(IN_PROGRESS|PAUSED)\s*\|' docs/sessions/queue.md` returns nothing
 - S22, S23, S24 DONE in queue: `rg -n "^\| S2[234]" docs/sessions/queue.md` shows all DONE
 - Frozen v1 URL machinery exists: `rg -n "v1=" site/src/engines/chain-url.ts` and the
   append-only contract test: `rg -n "COMPATIBILITY CONTRACT" site/e2e/chain-url.spec.ts`

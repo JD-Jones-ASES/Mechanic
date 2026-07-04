@@ -20,7 +20,7 @@ curvature penalty (inner fiber up to ~1.5–2× hotter). Catalog 21 → 22.
 Any false → BLOCKED, do not start (protocol §1.6, §9.1).
 
 - Main CI green: `gh run list --branch main --limit 1`
-- No PAUSED / IN_PROGRESS rows: `rg -n "PAUSED|IN_PROGRESS" docs/sessions/queue.md` returns nothing
+- No PAUSED / IN_PROGRESS rows: `rg -n '\|\s*(IN_PROGRESS|PAUSED)\s*\|' docs/sessions/queue.md` returns nothing
 - S04 DONE (strict queue order): `rg -n '^\| S04 .*DONE' docs/sessions/queue.md`
 - Transcendental-closed-form precedent exists (exp in belt-drive verifies, so ln here will):
   `rg -n "exp" site/src/content/things/belt-drive/thing.yaml`

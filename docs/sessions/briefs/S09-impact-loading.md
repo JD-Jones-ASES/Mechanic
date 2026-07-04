@@ -20,7 +20,7 @@ is machine-proven — the surprising, provable golden.
 Any false → BLOCKED, do not start (protocol §1.6, §9.1).
 
 - Main CI green: `gh run list --branch main --limit 1`
-- No PAUSED/IN_PROGRESS rows: `rg "PAUSED|IN_PROGRESS" docs/sessions/queue.md` → zero matches
+- No PAUSED/IN_PROGRESS rows: `rg -n '\|\s*(IN_PROGRESS|PAUSED)\s*\|' docs/sessions/queue.md` → zero matches
 - S08 DONE: `rg "\| S08 \|" docs/sessions/queue.md` → status column reads DONE
 - Constants mechanism exists: `rg -F '"constant"' site/src/content.config.ts` → ≥1 match, AND
   `rg -F "role: constant" site/src/content/things/shaft-critical-speed/thing.yaml` → ≥1 match

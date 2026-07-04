@@ -161,7 +161,8 @@ changes (verified against compile.py 2026-07-04). Never hand-edit or commit anyt
       { "type": "solve1d", "target": "P_y",  // bracketed Brent on a DECLARED relation's residual;
         "residual_fn": "rel_secant_yield",   // bracket endpoints are FUNCTIONS of the evaluated env
         "bracket_fns": ["cfg_a_P_y__blo", "cfg_a_P_y__bhi"], "latex": "…" }
-      // { "type": "solveND", … }          // RESERVED — feedback loops; ADR-0008 (proposed)
+      // { "type": "solveND", … }          // RESERVED — nonlinear/feedback solving; deferred by
+                                            // ADR-0008 (accepted, split scope) pending its own future ADR
     ],
     "branches": null,                      // or { "selector": "circuit", "labels": ["open","crossed"],
                                            //      "continuity": "follow-previous" } with per-branch fns;
@@ -184,14 +185,17 @@ changes (verified against compile.py 2026-07-04). Never hand-edit or commit anyt
 
 **Parity-sample encoding** (verified against compile.py `_samples`, verify.py
 `verify_solve1d_configuration`, and check-parity.mjs, 2026-07-04): 3 samples per configuration per
-branch label, deterministically seeded (`<thing>/<cfg>/samples[/<branch>]`). `inputs` = the declared
-knobs PLUS every material-role variable, as floats. `outputs` = every plan target, not just leaves;
-closed-form samples ALSO include the constrained variables, solve1d samples exclude them but DO carry
-the 60-dps mpmath bisection roots as plain floats — that is how the browser's Brent gets oracle-checked
-(the asymmetry is real, not a doc error). A sample that hits a complex/±∞/NaN value anywhere in its
-chain is discarded WHOLE and resampled — there is no per-value omission and no partially-populated
-sample; if `40×n` attempts can't produce `n` clean samples the build fails ("could not generate parity
-samples"). Multi-branch samples are keyed by a top-level `"branch": <label>`; `check-parity.mjs`
+branch label. `inputs` = the declared knobs PLUS every material-role variable, as floats.
+`outputs` = every plan target, not just leaves; closed-form samples ALSO include the constrained
+variables, solve1d samples exclude them but DO carry the 60-dps mpmath bisection roots as plain
+floats — that is how the browser's Brent gets oracle-checked (the asymmetry is real, not a doc
+error). The two paths are seeded and capped differently: closed-form samples (compile.py
+`_samples`) are seeded by `<thing>/<cfg>/samples[/<branch>]`, discard any sample that hits a
+complex/±∞/NaN value anywhere in its chain WHOLE (no per-value omission), and fail the build
+("could not generate parity samples") if `40×n` attempts can't produce `n` clean samples; solve1d
+samples are the first 3 certified points of `verify_solve1d_configuration`'s 30-sample campaign,
+seeded by the configuration's context string, capped at `20×NUM_SAMPLES` attempts with its own
+failure message ("only N real-valued solve1d samples found"). Multi-branch samples are keyed by a top-level `"branch": <label>`; `check-parity.mjs`
 evaluates each sample on exactly that branch's fns. The gate replays the whole plan in Node against the
 emitted `fns.ts` (solve1d steps run the site's actual `brent.ts`) and requires every output within
 relative `1e-9` (`RTOL`, scale floored at 1e-30); numeric constraints are seeded into the env,

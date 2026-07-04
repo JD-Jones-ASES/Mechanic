@@ -20,7 +20,8 @@ per-THING gates, cross-linked to their determinate siblings. Catalog +2.
 Any false → BLOCKED, do not start (§1.6, §9.1).
 
 - Main CI green: `gh run list --branch main --limit 1` → latest run success.
-- No PAUSED/IN_PROGRESS rows: `rg "PAUSED|IN_PROGRESS" docs/sessions/queue.md` → zero matches.
+- No PAUSED/IN_PROGRESS rows: `rg -n '\|\s*(IN_PROGRESS|PAUSED)\s*\|' docs/sessions/queue.md` → zero matches.
+- Phase 3 ruled: `rg "Phase 3 approved — JD" docs/sessions/queue.md` → the literal ruling line exists
 - Dependency S15 DONE: `rg '\| S15' docs/sessions/queue.md` → status column reads DONE.
   (S17 is NOT a dependency — S16 and S17 each depend only on S15 and may run in either order.)
 - Capability exists: `rg "certify_linear_group" pipeline/src/mech_pipeline/verify.py`,
@@ -29,7 +30,7 @@ Any false → BLOCKED, do not start (§1.6, §9.1).
 - Kinds registered, property seeded (no new ones): `rg '"torque"' pipeline/src/mech_pipeline/kinds.py`
   and `rg "shear_modulus" data/materials/steel-a36.yaml`.
 - propped-cantilever's existence is NOT an entry criterion (S15's fallback may have deferred it to
-  an S15b row — if that row sits QUEUED above you, §1.2d says it is yours first).
+  an S15b row — if that row sits QUEUED above you, §1.2f says it is yours first).
 
 ## New capabilities required
 

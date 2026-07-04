@@ -6,23 +6,45 @@ Read `docs/sessions/protocol.md` first; it defines every status and transition u
 
 ## Phase gate rulings
 
-A session may only start work in a phase listed here as approved (protocol §8).
+A session may only start work in a phase listed here as approved (protocol §8). When ruling, the
+owner writes the ruling line AND flips the **Active phase** header above in the same edit.
 
-- Phase 2 approved — JD 2026-07-04 (rulings recorded in `docs/roadmap.md` header and Phase 2/3 sections)
+- Phase 2 approved — JD 2026-07-04 (this launch)
 - Phase 3: NOT YET RULED (the Phase 2 closing session writes `reports/phase-2.md`; owner rules here)
 - Phase 4: NOT YET RULED
 
+## Owner rulings on record (2026-07-04)
+
+Briefs cite these by number. They are the authoritative record: closing sessions may
+verify/update DRAFT briefs against merged reality but may **not** alter or drop quoted ruling text.
+
+- **R1** — ADR-0008 signed off, SPLIT scope: `solveLinear` approved to build; nonlinear `solveND`
+  deferred to a future ADR (recorded in `docs/decisions/ADR-0008-cyclic-solving.md` + roadmap Phase 3).
+- **R2** — Phase 2 target: grow the catalog from 17 to ≈30 THINGs (roadmap Phase 2).
+- **R3** — Working rhythm: sessions fully autonomous within a phase; phase-closing session writes a
+  report and stops for owner direction (roadmap header).
+- **R4** — Merge policy: sessions merge their own PRs after all gates pass; merge is publish
+  (roadmap header; protocol §6).
+- **R5** — Capability designs approved as drafted in the S00 plan: the tabulated-data `table` plan
+  step, Option B (S01 brief + ADR-0009 when written) and the solveLinear build-time-exact-solve
+  design (S15 brief). Implement as specified; genuine conflicts with reality → BLOCKED (§9.2),
+  not redesign.
+- **R6** — Session plan approved: the S01–S25 queue below, incl. S14 as pre-authorized shed item
+  and the pre-answered design decisions embedded in the briefs.
+
 ## OWNER NOTES
 
-Sessions must read and honor notes dated after the last log entry. Owner: edit this file only when
-no row is IN_PROGRESS or PAUSED.
+Notes remain **binding until the owner removes or strikes them** — sessions read them at every
+startup and before every continuation row. Owner: edit this file only when no row is IN_PROGRESS
+or PAUSED, and remove a note once it has served its purpose.
 
 - (none)
 
 ## Phase 2 — Catalog breadth (17 → 30/31 THINGs)
 
 Strict top-to-bottom order. Statuses: QUEUED → IN_PROGRESS → DONE; also PAUSED / BLOCKED / SKIPPED
-(protocol §2, §9).
+(protocol §2, §9). **Status cells hold only the bare token** — guard greps depend on it; branch
+names ride in the Date cell (`<date> · <branch>`).
 
 | ID  | Session                                                        | THING # | Status | PR  | Date       | Brief |
 |-----|----------------------------------------------------------------|---------|--------|-----|------------|-------|

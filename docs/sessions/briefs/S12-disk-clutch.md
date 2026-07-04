@@ -58,7 +58,7 @@ Per friction face (N faces multiply — see Notes on per-face bookkeeping):
 
 ## Envelopes
 
-- `r_i < r_o`: INVALID, global — the annulus does not exist; nothing on the page is meaningful.
+- `r_i >= r_o`: INVALID, global — the annulus does not exist; nothing on the page is meaningful.
 - `p_max > p_allow`: WARN — lining overloaded relative to the cited allowable; the run-in/wear story
   in failure.mdx.
 - Positivity on F, μ, radii, ω_slip: structural invalids.

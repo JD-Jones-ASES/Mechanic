@@ -22,7 +22,7 @@ Each with a check command; any false → BLOCKED, do not start (protocol §1.6, 
 
 - Main CI green: `gh run list --branch main --limit 1`
 - Phase 4 ruling line present (protocol §8): `rg -n "Phase 4 approved — JD" docs/sessions/queue.md`
-- No PAUSED/IN_PROGRESS rows: `rg -n "PAUSED|IN_PROGRESS" docs/sessions/queue.md` returns nothing
+- No PAUSED/IN_PROGRESS rows: `rg -n '\|\s*(IN_PROGRESS|PAUSED)\s*\|' docs/sessions/queue.md` returns nothing
 - S21 DONE in queue: `rg -n "^\| S21" docs/sessions/queue.md` shows DONE
 - chain-eval engine exists headless: `test -f site/src/engines/chain-eval.ts` and
   `rg -n "refused-by-upstream" site/src/engines/chain-eval.ts`

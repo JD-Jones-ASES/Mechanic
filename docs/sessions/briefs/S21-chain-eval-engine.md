@@ -26,7 +26,7 @@ Each with a check command; any false → BLOCKED, do not start (protocol §1.6, 
 
 - Main CI green: `gh run list --branch main --limit 1`
 - Phase 4 ruling line present (protocol §8): `rg -n "Phase 4 approved — JD" docs/sessions/queue.md`
-- No PAUSED/IN_PROGRESS rows: `rg -n "PAUSED|IN_PROGRESS" docs/sessions/queue.md` returns nothing
+- No PAUSED/IN_PROGRESS rows: `rg -n '\|\s*(IN_PROGRESS|PAUSED)\s*\|' docs/sessions/queue.md` returns nothing
 - Phase 3 rows terminal (S15–S20 DONE or SKIPPED): `rg -n "^\| S1[5-9]|^\| S20" docs/sessions/queue.md`
 - ChainGraph planner + type-checker exist: `rg -n "evaluationOrder" site/src/engines/chain.ts`
   and `rg -n "connectionLegal" site/src/engines/units.ts`

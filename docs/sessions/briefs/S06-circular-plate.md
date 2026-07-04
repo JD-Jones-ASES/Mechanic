@@ -23,7 +23,7 @@ deliberate stress test of the kind registry. Catalog 22 → 23.
 Any false → BLOCKED, do not start (protocol §1.6, §9.1).
 
 - Main CI green: `gh run list --branch main --limit 1`
-- No PAUSED / IN_PROGRESS rows: `rg -n "PAUSED|IN_PROGRESS" docs/sessions/queue.md` returns nothing
+- No PAUSED / IN_PROGRESS rows: `rg -n '\|\s*(IN_PROGRESS|PAUSED)\s*\|' docs/sessions/queue.md` returns nothing
 - S05 DONE (strict queue order): `rg -n '^\| S05 .*DONE' docs/sessions/queue.md`
 - `flexural_rigidity` kind not yet claimed: `rg -n "flexural_rigidity" pipeline/src/mech_pipeline/kinds.py` returns nothing
 - `N*m` display unit exists: `rg -n '"N\*m"' site/src/engines/units.ts`

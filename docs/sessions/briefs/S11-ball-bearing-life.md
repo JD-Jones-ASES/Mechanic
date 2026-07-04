@@ -11,9 +11,10 @@
 THING #28 live at `/things/ball-bearing-life/`: bearing load-life closed forms with ball/roller as
 configurations, a life-in-hours readout, and the Weibull reliability adjustment beyond R = 0.90.
 C10 and C0 are honest catalog-value knobs — the page teaches what the catalog number MEANS, it does
-not scrape catalogs. First `probability` quantity kind and first time-display units (`h`, `Mrev`)
-land here. Catalog 27 → 28. The X,Y equivalent-load threshold-table module is an OPTIONAL stretch
-appendix (see below) and cannot block the merge.
+not scrape catalogs. First `probability` quantity kind; adds `h` and `Mrev` display units (S07
+already added Hz/s/ms; `Mrev` converts a revolution count, not a time). Catalog 27 → 28. The X,Y
+equivalent-load threshold-table module is an OPTIONAL stretch appendix (see below) and cannot
+block the merge.
 
 ## Entry criteria
 

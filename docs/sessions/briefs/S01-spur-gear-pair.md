@@ -23,8 +23,10 @@ Any false → BLOCKED, do not start (protocol §1.6).
 - Dependency S00 DONE: `rg 'S00.*DONE' docs/sessions/queue.md` → one row
 - No half-landed capability: `rg '"table"' site/src/engines/types.ts` → no output (else read log.md first)
 - Materials seeded: `test -f data/materials/nylon-66.yaml && test -f data/materials/iron-gray-class30.yaml`
-- Kinds exist (none new): `rg '"count"|"ratio"|"velocity"|"torque"|"power"' pipeline/src/mech_pipeline/kinds.py`
-- Units exist (none new): `rg '"m/s"|"rpm"|"kW"|"N\*m"|"MPa"|"mm"' site/src/engines/units.ts`
+- Kinds exist (none new; ALL must match): `for p in '"count"' '"ratio"' '"velocity"' '"torque"' '"power"'; do
+  rg -q "$p" pipeline/src/mech_pipeline/kinds.py || echo "MISSING $p"; done` (Bash) → prints nothing
+- Units exist (none new; ALL must match): `for p in '"m/s"' '\brpm:' '\bkW:' '"N\*m"' '\bMPa:' '\bmm:'; do
+  rg -q "$p" site/src/engines/units.ts || echo "MISSING $p"; done` (Bash) → prints nothing
 
 ## New capabilities required
 

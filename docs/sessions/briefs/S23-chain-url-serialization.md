@@ -21,7 +21,7 @@ Each with a check command; any false → BLOCKED, do not start (protocol §1.6, 
 
 - Main CI green: `gh run list --branch main --limit 1`
 - Phase 4 ruling line present (protocol §8): `rg -n "Phase 4 approved — JD" docs/sessions/queue.md`
-- No PAUSED/IN_PROGRESS rows: `rg -n "PAUSED|IN_PROGRESS" docs/sessions/queue.md` returns nothing
+- No PAUSED/IN_PROGRESS rows: `rg -n '\|\s*(IN_PROGRESS|PAUSED)\s*\|' docs/sessions/queue.md` returns nothing
 - S21 and S22 DONE in queue: `rg -n "^\| S2[12]" docs/sessions/queue.md` shows both DONE
 - The builder and its serializable store exist: `test -f site/src/components/ChainBuilder.tsx`
   and the store shape matches S22's brief (read the component; a drifted store shape is a
@@ -70,11 +70,13 @@ history spam. No new visual components.
 
 - `site/src/engines/chain-url.ts` — `encodeChain(state) → string`, `decodeChain(fragment) →
   {state, dropped: [...], error?}`. Encoding DECIDED: `#v1=` literal prefix + base64url-encoded
-  JSON of the S22 store `{version, nodes: [(slug, config)], bindings, knobs, materials,
-  displayUnits}`. Compact grammar REJECTED (more code, more bug surface; fragment length budget
-  is generous). Floats: SI values via default JS number→string (JSON.stringify), which IS
-  shortest-round-trip — pin this fact in a comment. Knobs equal to the variable's default (exact
-  SI equality) are OMITTED; the decoder refills defaults.
+  JSON of the S22 store, verbatim S22 shape:
+  `{ nodes: [{id, slug, config}], bindings: [{from:{node,port}, to:{node,port}}], knobs: {nodeId: {sym: SI number}}, materials: {nodeId: materialId}, displayUnits: {nodeId: {sym: unit}} }`.
+  The `#v1=` fragment prefix ALONE carries the format version — the payload is the S22 store
+  as-is, with NO inner `version` field. Compact grammar REJECTED (more code, more bug surface;
+  fragment length budget is generous). Floats: SI values via default JS number→string
+  (JSON.stringify), which IS shortest-round-trip — pin this fact in a comment. Knobs equal to the
+  variable's default (exact SI equality) are OMITTED; the decoder refills defaults.
 - Length budget (DECIDED): total URL > 2000 chars → still produce the full URL but show a warning
   ("link may be too long for some contexts — remove nodes or overrides"); NEVER shorten or
   truncate silently.

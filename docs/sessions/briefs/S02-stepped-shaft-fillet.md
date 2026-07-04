@@ -26,8 +26,10 @@ Any false → BLOCKED, do not start (protocol §1.6).
 - Table capability exists in the runtime: `rg '"table"' site/src/engines/types.ts` → matches
 - Table verifier exists: `rg 'verify_table_configuration' pipeline/src/mech_pipeline/verify.py`
 - Table machinery tests green: `uv run --directory pipeline pytest -q -k table`
-- Kinds needed all exist (no new kinds): `rg '"stress"|"ratio"|"force"|"torque"' pipeline/src/mech_pipeline/kinds.py`
-- Display units all exist (no new units): `rg '"MPa"|"mm"|"N\*m"|"kN"' site/src/engines/units.ts`
+- Kinds needed all exist (no new kinds; ALL must match): `for p in '"pressure_stress"' '"ratio"' '"force"'
+  '"torque"'; do rg -q "$p" pipeline/src/mech_pipeline/kinds.py || echo "MISSING $p"; done` (Bash) → prints nothing
+- Display units all exist (no new units; ALL must match): `for p in '\bMPa:' '\bmm:' '"N\*m"' '\bkN:'; do
+  rg -q "$p" site/src/engines/units.ts || echo "MISSING $p"; done` (Bash) → prints nothing
 
 ## New capabilities required
 

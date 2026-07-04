@@ -10,8 +10,8 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   S01–S25, reports stub); ADR-0008 → ACCEPTED (split scope; owner sign-off 2026-07-04);
   roadmap + CLAUDE.md updated with the four owner rulings; doc-gap hardening pass over
   `docs/authoring-things.md` and `docs/architecture.md`. Catalog count unchanged (17).
-- Gates: docs-only session — full CI (pipeline pytest + site build + unit + e2e + axe) green on
-  the PR as regression proof; no new tests.
+- Gates: docs-only session — CI green on the PR (pipeline pytest + site build + unit + e2e + axe)
+  was the merge gate, verified before merging; no new tests.
 - Golden: N/A (no THING shipped).
 - Citations pinned: N/A. Note: per-THING briefs name canonical sources; pinning happens in the
   THING sessions themselves.
@@ -21,6 +21,7 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   designs — implement them as specified, don't re-litigate; genuine conflicts with reality →
   BLOCKED per protocol §9.2.
 - Notes-for-next (S01): the `table` plan-step design in your brief is the deliberate design the
-  roadmap demanded — read the whole brief before touching schema. The four owner rulings of
-  2026-07-04 are recorded in `docs/roadmap.md`; Phase 2 is approved, Phases 3–4 are not yet ruled.
-  Owner rulings quoted in queue/roadmap are authoritative over anything else you infer.
+  roadmap demanded — read the whole brief before touching schema. The owner rulings of 2026-07-04
+  are enumerated as R1–R6 in `docs/sessions/queue.md` ("Owner rulings on record") with R1–R4 also
+  recorded in `docs/roadmap.md` and ADR-0008; Phase 2 is approved, Phases 3–4 are not yet ruled.
+  The queue's rulings block is authoritative over anything else you infer.

@@ -22,7 +22,7 @@ eccentric-column's role for solve1d.
 Any false → BLOCKED, do not start (§1.6, §9.1).
 
 - Main CI green: `gh run list --branch main --limit 1` → latest run success. Red → §9.3 preempts.
-- No PAUSED/IN_PROGRESS rows: `rg "PAUSED|IN_PROGRESS" docs/sessions/queue.md` → zero matches.
+- No PAUSED/IN_PROGRESS rows: `rg -n '\|\s*(IN_PROGRESS|PAUSED)\s*\|' docs/sessions/queue.md` → zero matches.
 - Phase 3 ruled: `rg "Phase 3 approved — JD" docs/sessions/queue.md` → exactly one line (§8).
 - All Phase 2 rows DONE/SKIPPED: `rg "QUEUED" docs/sessions/queue.md` → no Phase 2 row.
 - ADR-0008 present, split sign-off recorded: `test -f docs/decisions/ADR-0008-cyclic-solving.md`
@@ -148,7 +148,11 @@ draw; key `propped-cantilever`; new SVG classes in `global.css`; draw consumes e
 - **Pre-authorized fallback (owner, 2026-07-04):** if the full per-THING gate cannot finish with
   §9.4 margin, ship capability + tests + ADR/docs as a complete engine-session PR (§3 gate minus
   items 2–4, plus certificate tests); record the deviation in the log, add a QUEUED row
-  `S15b — propped-cantilever (pure consumer)` in the same PR, mark S15 DONE. Never merge a half-verified THING.
+  `S15b — propped-cantilever (pure consumer)` in the same PR, mark S15 DONE. In the same PR, also
+  write `docs/sessions/briefs/S15b-propped-cantilever.md` (protocol §1.3 — a QUEUED row requires a
+  brief: copy this brief's Physics scope / Envelopes / Materials axis / Sim sketch / THING
+  deliverables and exit criteria; entry criteria = the capability-existence checks from S16), and
+  insert the row directly below S15. Never merge a half-verified THING.
 - `linsolve` runs ONLY after the affine certificate passes. No `sp.solve` anywhere. The parity
   oracle needs no root machinery — closed forms compare directly. Mirror `test_solve1d.py`'s
   fixture style (in-memory thing dicts, loud BuildError asserts).

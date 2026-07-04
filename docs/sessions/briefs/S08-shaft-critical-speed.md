@@ -20,7 +20,7 @@ mandatory. The mechanism is deliberately small: g only, one consumer here, S09 i
 Any false → BLOCKED, do not start (protocol §1.6, §9.1).
 
 - Main CI green: `gh run list --branch main --limit 1`
-- No PAUSED/IN_PROGRESS rows: `rg "PAUSED|IN_PROGRESS" docs/sessions/queue.md` → zero matches
+- No PAUSED/IN_PROGRESS rows: `rg -n '\|\s*(IN_PROGRESS|PAUSED)\s*\|' docs/sessions/queue.md` → zero matches
 - S07 DONE: `rg "\| S07 \|" docs/sessions/queue.md` → status column reads DONE
 - S07's capability exists: `rg frequency pipeline/src/mech_pipeline/kinds.py` → ≥1 match, and
   `rg Hz site/src/engines/units.ts` → ≥1 match

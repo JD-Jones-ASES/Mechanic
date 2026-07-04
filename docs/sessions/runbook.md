@@ -25,15 +25,22 @@ Paste this verbatim to start every session (Claude Code, Opus 4.8, repo at
    c. Skim the `Deviations` lines in `docs/sessions/log.md` for the phase.
    d. Answer the report's "Decisions needed" questions — edit next-phase briefs/queue rows if you
       want changes.
-   e. Write the ruling line in `docs/sessions/queue.md`:
-      `Phase <n+1> approved — JD <date>`.
+   e. In `docs/sessions/queue.md`, in ONE edit: write the ruling line
+      `Phase <n+1> approved — JD <date>` AND change the header from
+      `Active phase: <n> — AWAITING OWNER` to `Active phase: <n+1>`. Commit to main as
+      `Docs: owner phase ruling`. (Both parts matter — sessions stop on an AWAITING OWNER header
+      and never flip it themselves.)
    f. Paste the launch prompt.
 3. **Interjecting mid-series** (any time NO row is IN_PROGRESS or PAUSED): edit
    `docs/sessions/queue.md` directly — reorder QUEUED rows, add a row + brief, mark a row SKIPPED
    with a reason, or add a dated line under OWNER NOTES
-   (`- OWNER NOTE 2026-07-12: do S09 before S08; cite SKF not Shigley for bearing tables`).
-   Commit to main as `Docs: owner queue edit`. Sessions read and honor OWNER NOTES at startup —
-   a queue edit survives; a chat remark doesn't.
+   (`- OWNER NOTE 2026-07-12: cite SKF, not Shigley, for the bearing tables`).
+   Commit to main as `Docs: owner queue edit`. Sessions honor OWNER NOTES until you remove them —
+   a queue edit survives; a chat remark doesn't. **Caution when reordering:** Phase 2 briefs
+   hard-code their predecessor as an entry criterion, and some orders are real dependencies
+   (S01 → S02/S03 table capability; S07 → S08 frequency kind; S08 → S09 constants mechanism) —
+   if you reorder, also update the affected briefs' "Dependency … DONE" entry criteria, or prefer
+   an OWNER NOTE over a reorder.
 4. **A session ends BLOCKED:** read its log entry (it contains the exact blocker and a
    reproduction command). Resolve — edit the brief, make a ruling, sign an ADR, or SKIP the row.
    Flip the row BLOCKED → QUEUED (or SKIPPED). Paste the launch prompt.
