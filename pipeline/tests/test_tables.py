@@ -576,3 +576,62 @@ def test_columns_authored_non_consecutively_fail(things2_dir, tmp_path):
     """)
     with pytest.raises(BuildError, match="consecutively"):
         _compile2(things2_dir, tmp_path, fixture)
+
+
+def test_single_column_read_at_two_args_stays_two_disjoint_steps(things2_dir, tmp_path):
+    # THE S01 shape (spur-gear-pair): ONE single-column table consumed twice at
+    # DIFFERENT args (N_p, N_g). The (table_id, srepr(at)) group key must keep
+    # these as TWO separate steps with disjoint scopes — if the arg were dropped
+    # from the key they would collapse into one group and mis-scope/collide. Only
+    # e2e covered this before; pin it at the pipeline level here.
+    fixture = textwrap.dedent("""
+        id: table2-fixture
+        title: One column, two args
+        facets: [kinematics]
+        variables:
+          - {symbol: n, name: Count 1, unit: "1", quantity_kind: count, default: 20, bounds: [10, 40], integer: true, positive: true}
+          - {symbol: m, name: Count 2, unit: "1", quantity_kind: count, default: 30, bounds: [10, 40], integer: true, positive: true}
+          - {symbol: W, name: Load, unit: N, quantity_kind: force, default: 1000, bounds: [1, 100000], positive: true}
+          - {symbol: Y, name: Factor n, unit: "1", quantity_kind: ratio, default: 0.32, bounds: [0.0, 1.0], role: derived}
+          - {symbol: Y2, name: Factor m, unit: "1", quantity_kind: ratio, default: 0.42, bounds: [0.0, 1.0], role: derived}
+          - {symbol: s, name: Product n, unit: N, quantity_kind: force, default: 320, bounds: [-1e6, 1e6], role: derived}
+          - {symbol: s2, name: Product m, unit: N, quantity_kind: force, default: 420, bounds: [-1e6, 1e6], role: derived}
+        tables:
+          - id: demo-Y
+            name: Demo Table
+            citation: src
+            provenance: "Demo single-column values."
+            interpolation_citation: src
+            arg: n
+            columns: [Y]
+            mode: interpolate-linear
+            rows:
+              - [10, 0.20]
+              - [20, 0.32]
+              - [40, 0.50]
+        relations:
+          - {id: proxy1, latex: 's = W Y', residual: s - W*Y, citation: src}
+          - {id: proxy2, latex: 's2 = W Y2', residual: s2 - W*Y2, citation: src}
+        configurations:
+          - id: default
+            label: One column read at two different args
+            inputs: [n, m, W]
+            solutions:
+              Y: {table: demo-Y, at: n}
+              Y2: {table: demo-Y, at: m}
+              s: W*Y
+              s2: W*Y2
+        derivation:
+          steps:
+            - {expr: 'Eq(s, W*Y)', prose: "downstream of a tabulated lookup", rule: "definition", check: definition}
+        sim: {engine: statics-cascade, config: {}}
+        sources:
+          - {id: src, citation: "Fixture source."}
+    """)
+    artifact, _ = _compile2(things2_dir, tmp_path, fixture)
+    tsteps = [s for s in artifact["configurations"][0]["plan"] if s["type"] == "table"]
+    assert len(tsteps) == 2, "different args ⇒ two separate single-column steps (the S01 shape)"
+    assert {tuple(t["targets"]) for t in tsteps} == {("Y",), ("Y2",)}  # Y2 uses the fallback column 0
+    scopes = [set(t["guard"]["scope"]) for t in tsteps]
+    assert scopes[0].isdisjoint(scopes[1]), f"per-arg steps must have disjoint scopes, got {scopes}"
+    assert {frozenset(s) for s in scopes} == {frozenset({"Y", "s"}), frozenset({"Y2", "s2"})}

@@ -20,8 +20,10 @@ BAND: Norton (App. C) and Roark/Pilkey (Peterson's SCF) each state their fits
 reproduce Peterson's charts to within a few percent (Pilkey's polynomial fits are
 typically stated ~5%). We therefore require agreement to within 5% over the
 well-stepped D/d >= 1.5 band, where both fits are most reliable; the observed
-maximum over the tested points is ~3.2% (bending). We do NOT widen the band to
-pass — 5% IS the sources' own stated accuracy. Near D/d -> 1 the two fits diverge
+maximum over the tested points is ~4.7% (bending, D/d=1.5, r/d=0.25). We do NOT
+widen the band to pass — 5% IS the sources' own stated accuracy, and two fits
+each stated accurate to ~5% vs Peterson can differ from each other by more, so
+agreeing to under 5% is a genuine (and honestly tight) result. Near D/d -> 1 the two fits diverge
 more (both are least reliable there), which is why the cross-check stays at
 D/d >= 1.5, exactly as the brief specifies.
 """
@@ -173,7 +175,8 @@ def test_norton_and_roark_fits_agree_within_the_stated_band():
             f"{load} D/d={Dd} r/d={rd}: Norton {kn:.4f} vs Roark {kr:.4f} = {rel:.1%} (> {BAND:.0%})"
         )
     # the fits genuinely DIFFER (independent digitizations, not a self-check),
-    # yet stay comfortably inside the stated band
+    # yet agree to within the stated band — the tightest point (bending, D/d=1.5,
+    # r/d=0.25) sits ~0.3 pp inside the 5% edge, an honest but not generous margin
     assert 0.005 < worst < BAND
 
 
