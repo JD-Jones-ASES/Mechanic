@@ -1,9 +1,13 @@
 # Roadmap — toward the final product
 
-Phased plan agreed with the owner 2026-06-10 (in-session). Working rhythm: complete a phase,
-pause for owner direction before starting the next. Everything here operates under the five
-invariants in `CLAUDE.md` and the verification model in `docs/decisions/ADR-0007` (AI-authored,
-programmatic gates, no human review — the site says so on `/verification/`).
+Phased plan agreed with the owner 2026-06-10 (in-session). Working rhythm (owner ruling
+2026-07-04): sessions run fully autonomously WITHIN a phase — one session = one merged PR, each
+session merging its own PR after all gates pass (green CI, multi-angle self-review, browser
+visual pass; consistent with ADR-0007) — and at each phase boundary the closing session writes
+`docs/sessions/reports/phase-<n>.md` and stops for owner direction. Session mechanics, queue, and
+briefs live in `docs/sessions/`. Everything here operates under the five invariants in `CLAUDE.md`
+and the verification model in `docs/decisions/ADR-0007` (AI-authored, programmatic gates, no human
+review — the site says so on `/verification/`).
 
 **Rough definition of done:** 30–50 THINGs covering the undergraduate spine (statics → mechanics
 of materials → machine design → dynamics), a chain-builder that turns the catalog into a
@@ -20,6 +24,11 @@ sim machinery (`useSimClock`, `StressBands`); incremental compile cache (fingerp
 reuse, `actions/cache` in CI — warm builds reuse unchanged THINGs in seconds).
 
 ## Phase 2 — Catalog breadth (in progress)
+
+**Target (owner ruling 2026-07-04): grow the catalog from 17 to ≈30 THINGs.** The
+session-by-session plan is `docs/sessions/queue.md` (S01–S14; band-brake is the designated shed
+item, so Phase 2 lands at 30 or 31); the spur-gear tabulated-data capability goes first, designed
+deliberately, then consumed by later batches.
 
 March through the curriculum spine in batches; each batch should deliberately exercise a new
 factory capability, the way the flywheel exercised `poisson_ratio` and new quantity kinds.
@@ -53,9 +62,10 @@ factory capability, the way the flywheel exercised `poisson_ratio` and new quant
 Per-THING gate (standard practice, from the flywheel/cylinder sessions): machine verification +
 independent first-principles cross-check in `pipeline/tests/` + hand-checkable numeric golden +
 web-pinned citations recorded in `sources[].verification` + browser visual pass + multi-angle
-code review before merge.
+code review before merge. The gate is expanded into exact commands in
+`docs/sessions/protocol.md` §3.
 
-## Phase 3 — Solver depth (items 1–2 ✅ shipped 2026-06-10; item 3 awaiting sign-off)
+## Phase 3 — Solver depth (items 1–2 ✅ shipped 2026-06-10; item 3 approved 2026-07-04, split scope)
 
 In dependency order:
 1. **Johnson parabola** ✅ — second model on the Euler page with its own envelope; the refusal
@@ -70,10 +80,12 @@ In dependency order:
    against mpmath every build; static bracket replaced by bracket *functions* of the env). The
    eccentric column (secant formula) consumes it: P_y solved live, and the page's point — the
    margin must be taken on LOAD — falls out of the nonlinearity.
-3. **Cyclic / ND solving** — feedback loops, statically indeterminate systems. **ADR-0008 is
-   drafted (PROPOSED)** with a recommendation to split: `solveLinear` first (statically
-   indeterminate elastic structures — exact solve, full certificate), full nonlinear `solveND`
-   deferred until a THING demands it. Requires owner sign-off before building.
+3. **Cyclic / ND solving** — feedback loops, statically indeterminate systems. **Owner ruling
+   2026-07-04: ADR-0008 signed off with the SPLIT scope** — `solveLinear` (statically
+   indeterminate elastic structures; exact solve, full per-sample certificate) is approved to
+   build; nonlinear `solveND` is deferred to a future ADR and remains out of scope until a THING
+   demands it and the owner signs that ADR. Execution: sessions S15–S20 in
+   `docs/sessions/queue.md`.
 
 ## Phase 4 — Chaining as the product
 
@@ -81,7 +93,8 @@ The differentiator. The type system (dimension 7-vector + quantity kind) already
 forward chains legal; the work is a chain-builder page (pick THINGs, wire ports, planner orders
 evaluation), chains serialized into the URL (shareable on a static site), and curated examples
 (motor → planetary → shaft → flywheel: spin-up time and what it costs in stress). Every number
-keeps its citation through the chain.
+keeps its citation through the chain. Execution: sessions S21–S25 in `docs/sessions/queue.md`;
+those briefs are DRAFT until the Phase 3 closing session verifies them.
 
 ## Phase 5 — Materials depth
 
