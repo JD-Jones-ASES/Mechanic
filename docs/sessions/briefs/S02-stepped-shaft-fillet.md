@@ -147,3 +147,71 @@ retrofitting spur-gear-pair or others · combined loading on one page (each conf
   ≥ 6 min. Pure THING authoring keeps warm rebuilds.
 - Branch `thing/stepped-shaft-fillet`; PR title e.g.
   `THING 19: stepped shaft fillet (Phase 2 second table consumer, real-arg multi-column)`.
+
+## Table data — VERIFIED, obtained 2026-07-04 (resolves the §9.1 data block)
+
+The original data block (log S02 entry, PR #14) is RESOLVED: the owner supplied Norton's Appendix C
+directly, and the `(A,b)` coefficients below were read digit-for-digit from it and independently
+corroborated against the Roark cross-check formula (also in the log S02 `State:` section). Transcribe
+these into `thing.yaml` `tables:` (rows must be strictly INCREASING `D/d`; they are listed ascending
+here). Fit form: **K_t ≅ A·(r/d)^b** (one `(A,b)` pair per `D/d`).
+
+**Source (cite as `norton`):** Norton, R. L., *Machine Design: An Integrated Approach*, Appendix C
+"Stress-Concentration Factors" — **Fig. C-1** (shoulder fillet, axial tension), **Fig. C-2**
+(bending), **Fig. C-3** (torsion), pp. 1028–1029; Norton credits Peterson's charts.
+`verification:` = "Read digit-for-digit from Norton App C Figs C-1/C-2/C-3 (owner-provided scan,
+2026-07-04); cross-checked against Roark *Formulas for Stress and Strain* Table 6-1 case III-2
+closed form (agree within the mid-`D/d` band; see physics test)."
+
+Axial tension — arg `D/d`, columns `[A, b]` (Fig. C-1):
+```
+D/d      A          b
+1.01     0.98413   -0.10474
+1.02     1.01220   -0.12474
+1.05     1.00480   -0.17076
+1.07     0.98498   -0.19548
+1.10     0.98450   -0.20818
+1.15     0.98084   -0.22485
+1.20     0.96272   -0.25527
+1.30     0.99682   -0.25751
+1.50     0.99957   -0.28221
+2.00     1.01470   -0.30035
+```
+Bending — arg `D/d`, columns `[A, b]` (Fig. C-2):
+```
+D/d      A          b
+1.01     0.91938   -0.17032
+1.02     0.96048   -0.17711
+1.03     0.98061   -0.18381
+1.05     0.98137   -0.19653
+1.07     0.97527   -0.20958
+1.10     0.95120   -0.23757
+1.20     0.97098   -0.21796
+1.50     0.93836   -0.25759
+2.00     0.90879   -0.28598
+3.00     0.89334   -0.30860
+6.00     0.87868   -0.33243
+```
+Torsion — arg `D/d`, columns `[A, b]` (Fig. C-3):
+```
+D/d      A          b
+1.09     0.90337   -0.12692
+1.20     0.83425   -0.21649
+1.33     0.84897   -0.23161
+2.00     0.86331   -0.23865
+```
+**r/d envelope (authored, scoped to K_t + descendants):** Norton plots Figs C-1–C-3 over
+`0 < r/d ≤ 0.30` and prints no explicit numeric validity range, so take `r/d ≤ 0.30` as the published
+upper bound (invalid above) and a sharp-fillet **warn** at small `r/d` (the curves are drawn from
+`r/d ≈ 0.02–0.05` upward; K_t → large and fit uncertainty dominates near sharp notches). State this
+honestly in the envelope citation (do not invent a lower bound Norton doesn't print). The `D/d`
+out-of-range refusal is the SEPARATE table auto-guard (per-table `D/d` domains: axial `[1.01, 2.00]`,
+bending `[1.01, 6.00]`, torsion `[1.09, 2.00]`) — verify BOTH poison paths independently in e2e.
+
+**Golden (by-hand):** e.g. bending at `D/d = 1.50` (exact row), `r/d = 0.10`:
+`K_t = 0.93836 · 0.10^(-0.25759) = 0.93836 · 10^0.25759 = 0.93836 · 1.80926 = 1.6978` — pin the
+coefficients in a comment. **Cross-check (physics test):** re-implement Roark Table 6-1 case III-2
+`K_t = C1 + C2(2h/D) + C3(2h/D)² + C4(2h/D)³`, `h=(D−d)/2` (C-coefficients verbatim in the log S02
+entry) and assert agreement with `A·(r/d)^b` within the sources' stated ~few-% fit accuracy over the
+well-stepped `D/d ≥ 1.5` band; the near-`D/d→1` rows diverge more (both fits are least reliable there)
+— state the band + both citations honestly, do NOT tune it (brief Physics scope).

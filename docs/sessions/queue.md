@@ -50,7 +50,7 @@ names ride in the Date cell (`<date> · <branch>`).
 |-----|----------------------------------------------------------------|---------|--------|-----|------------|-------|
 | S00 | Docs: session system bootstrap                                 | —       | DONE   | #11 | 2026-07-04 | (the plan is the brief) |
 | S01 | spur-gear-pair (Lewis) + `table` plan-step capability + ADR-0009 | 18    | DONE   | #13 | 2026-07-04 | [S01](briefs/S01-spur-gear-pair.md) |
-| S02 | stepped-shaft-fillet (Kt fits; real-arg multi-column table)    | 19      | BLOCKED | #14 | 2026-07-04 · thing/stepped-shaft-fillet | [S02](briefs/S02-stepped-shaft-fillet.md) |
+| S02 | stepped-shaft-fillet (Kt fits; real-arg multi-column table)    | 19      | QUEUED | —   | —          | [S02](briefs/S02-stepped-shaft-fillet.md) |
 | S03 | rectangular-shaft-torsion (Saint-Venant; twist_rate kind)      | 20      | QUEUED | —   | —          | [S03](briefs/S03-rectangular-shaft-torsion.md) |
 | S04 | beam-shear-flow (shear_flow kind)                              | 21      | QUEUED | —   | —          | [S04](briefs/S04-beam-shear-flow.md) |
 | S05 | curved-beam (Winkler; zero new machinery)                      | 22      | QUEUED | —   | —          | [S05](briefs/S05-curved-beam.md) |
@@ -68,15 +68,14 @@ names ride in the Date cell (`<date> · <branch>`).
 capstan math). The session that completes S13 either continues to S14 (protocol §2 continuation
 rule) or marks it SKIPPED — both are pre-authorized — and then closes the phase per protocol §8.
 
-**S02 BLOCKED (2026-07-04):** the brief's THING needs Norton's `A·(r/d)^b` shoulder-fillet
-Kt coefficients *verbatim from a published source* (self-digitizing charts is forbidden by the
-brief). The Roark cross-check formula was obtained and verified, but Norton's/Shigley's verbatim
-`(A,b)` values could not be obtained or confirmed from any accessible source, so the table data
-cannot be sourced honestly (credibility spine). Full reproduction + the verified Roark data + the
-multi-column implementation plan + owner unblock options are in `log.md` (S02 entry). **Only the
-owner flips BLOCKED → QUEUED** (protocol §9.1); the fastest unblock is to paste the Norton/Shigley
-`(A,b)` rows into the S02 brief. Draft PR carries the bookkeeping. S03 must NOT start ahead of S02
-(strict top-to-bottom order) until the owner rules.
+**S02 block RESOLVED (2026-07-04):** the brief's THING needs Norton's `A·(r/d)^b` shoulder-fillet
+Kt coefficients verbatim from a published source. These were BLOCKED (unobtainable from ~12
+accessible sources) and then RESOLVED the same day — the owner supplied Norton *Machine Design*
+Appendix C directly; the verified `(A,b)` tables (axial/bending/torsion) + citation + r/d envelope +
+golden are now recorded in the S02 brief ("Table data — VERIFIED"), cross-checked against the Roark
+formula preserved in `log.md`. S02 is back to QUEUED and buildable as briefed; the multi-column
+implementation plan (a compiler/verifier logic fix — no schema/artifact change) is in the `log.md`
+S02 entry. History: PR #14 (the block + its resolution).
 
 ## Phase 3 — Solver depth: solveLinear + statically indeterminate THINGs
 

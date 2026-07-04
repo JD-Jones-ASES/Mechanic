@@ -146,3 +146,14 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   *directly as relations* (drops the multi-column exercise → re-scope S02); OR (c) authorize a
   transparently project-fitted `(A,b)`-of-Roark table (relaxes "never digitized by us" for this
   fit-of-a-cited-formula case) → keeps multi-column with honest fit-provenance. Recommend (a).
+- **RESOLUTION (2026-07-04, same session, interactive):** owner chose unblock option (a) and supplied
+  Norton *Machine Design: An Integrated Approach* Appendix C directly (Figs C-1 axial / C-2 bending /
+  C-3 torsion, pp. 1028–1029). The `(A,b)` coefficients were read digit-for-digit and cross-checked
+  against the preserved Roark formula; all three tables + citation (`norton`) + r/d envelope + a
+  by-hand golden are now recorded in the S02 brief under "Table data — VERIFIED". Queue row S02 flipped
+  BLOCKED → QUEUED (buildable as briefed); PR #14 retitled to carry the block+resolution docs. The
+  full build (multi-column machinery per the plan above + THING + physics test + sim + e2e + gates +
+  review + visual pass) did NOT fit this session's remaining budget, so it is handed off CLEAN as a
+  QUEUED row for a fresh full-budget session rather than started and PAUSED mid-way (protocol prefers a
+  clean stop over confusing inherited state). Provided source PDFs were read in place for fact
+  extraction only — never copied into the repo or committed (verified `git ls-files` clean of PDFs).
