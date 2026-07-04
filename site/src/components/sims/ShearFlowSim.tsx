@@ -31,6 +31,7 @@ export function ShearFlowSim({ values, invalid = false }: { values: VarRecord; i
     return (
       <SimRefusal
         ariaLabel="Beam shear distribution (refused state)"
+        label="refused"
         caption="The engine refused this state — there is no honest shear distribution to draw."
         height={H}
       />
