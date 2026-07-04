@@ -284,3 +284,62 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   selectOption); and read readouts a tick AFTER the switch (async re-render, per S02's note e). (f) When
   a sim has more than one refusal reason, branch the SimRefusal `caption` on the refused quantity's value
   (finite a/b<1 vs >10) so the figure's reason matches the validity banner's.
+
+## S04 — beam-shear-flow — 2026-07-04 — PR #17 — MERGED
+
+- Shipped: THING 21 `beam-shear-flow` (transverse shear in beams) — τ = VQ/(Ib), the parabolic
+  profile with τ_max = 3V/2A at the neutral axis (zero at the surfaces, opposite of bending), shear
+  flow q = VQ/I, and the fastener-spacing readout F = q·s. New `shear_flow` quantity kind — the THIRD
+  kind on the N/m dimension vector (with `line_load` and `stiffness`), the invariant-2 worked example
+  (a paragraph added to `verification.astro`'s hand-authored "dimensional homogeneity" bullet). Single
+  config, inputs [V,b,h,s,L], strength-only material axis (σ_y). Catalog 20 → 21.
+- Gates: pytest 216 passed (210 baseline + 6 test_shear_flow_physics.py); pnpm build clean (cold —
+  kinds.py edit; parity 933 values / 21 artifacts, units 472, katex 859, mdx 42 prose files); unit 17;
+  e2e 60 (+3 beam-shear-flow: material-blind goldens + the 3/2 peak; shear-yield warn; slender warn;
+  verification relation-block count 20→21); visual pass (built dist /Mechanic/): the textbook figure
+  renders — cross-section rectangle + parabolic shear profile peaking at the NA, zero at surfaces, plus
+  the built-up-joint elevation with fastener dots at spacing s; drove a tiny section past shear yield and
+  SAW the warn banner + the parabola turn red; drove L/h<10 → slender warn; steel→aluminium moved SF only
+  (τ_max/q/F fixed); the 3-N/m-kinds prose renders on /verification/; KaTeX + console clean. review: 5
+  independent passes (physics + invariants + code/tests subagents, + /code-review correctness & cleanup
+  finders) — 0 blockers, 0 majors; physics reviewer re-derived every formula from slice equilibrium and
+  hand-checked both goldens; invariants reviewer verified DOF=5 against the real build math. 2 minor
+  findings, both fixed (SimRefusal label="refused" drift from SSBeamSim; overview over-claimed that
+  /verification/ lists the three theorems — reworded to attribute them to the physics test).
+- Golden: built-up beam V=12 kN, b=40 mm, h=180 mm, s=75 mm: I=1.944e-5 m⁴, Q_na=1.62e-4 m³,
+  τ_max=3V/2A=2.5 MPa, q=VQ/I=100 N/mm, F=q·s=7.5 kN (test_shear_flow_physics.py; source Gere §5.8-5.11,
+  pinned in the docstring; all exact, hand-checkable).
+- Citations pinned: `gere` (Mechanics of Materials 9th §5.8-5.11 — shear formula, shear flow, built-up
+  beams; topic-level, same source id as the sibling beam pages) + `shigley` (§5-4 Tresca σ_y/2). HONEST:
+  the τ=VQ/Ib derivation, the 3/2 peak, and the theorem ∫τ dA = V are ALL re-derived from slice
+  equilibrium (symbolic dσ/dx integration) in the physics test, so nothing rests on citation alone; the
+  golden is arithmetic on those formulas.
+- Deviations from brief: (1) Warn-only THING (no invalid envelope). The brief's "e2e ... refusal at
+  minimum" and §5 "SEE the refusal" are satisfied by the two WARN banners (shear yield, slenderness) —
+  τ=VQ/Ib is defined and finite for all positive inputs, so there is no physical hard-refusal, and
+  inventing one would violate invariant 5. This matches the simply-supported-beam warn-only precedent;
+  both reviewers confirmed the warn-only design is the honest call. The sim's SimRefusal branch is the
+  defensive contract (consumed, unreachable via knobs). (2) The "built-up flange interface" is modeled
+  at the neutral axis (two stacked planks — the MAX shear flow, the critical joint), with the off-NA
+  flange case q=VQ_flange/I covered in prose; a movable joint-height knob was considered and dropped as
+  needless complexity. (3) Q (first moment, dims L³) is inlined as a derivation local (bh²/8), NOT a
+  variable — this avoids minting a second new kind (first_moment_of_area) which would be unauthorized.
+- New capabilities future briefs may rely on: `shear_flow` kind now in the registry (N/m; must not chain
+  into line_load or stiffness). DECIDED-TASK OUTCOME — thin-tube-torsion Bredt-q migration: EVALUATED,
+  STAYS AS-IS. Bredt's q is a derivation LOCAL (`content.config.ts` locals schema has fields
+  symbol/unit/positive/bounds/define — NO quantity_kind), and a derivation local is not a chainable
+  widget port, so it needs no kind; giving it one requires adding quantity_kind to the locals schema =
+  a schema change = §9.2 capability creep, out of scope. The two shear flows (along-beam transverse vs
+  Bredt around-a-closed-cell) are contrasted in overview prose instead. Flagged the schema extension as
+  a follow-up task for owner consideration (not urgent).
+- Notes-for-next (S05 = curved-beam, Winkler, "zero new machinery"): (a) the transient pnpm deps-check
+  failure ("pnpm install failed" at build start, clean lockfile) hit TWICE this session — just re-run
+  the build, or `pnpm install --frozen-lockfile` (returns "Already up to date") then re-run; do NOT treat
+  it as a real failure. (b) S05 needs NO new kind/unit per its title — if you find yourself reaching for
+  one, STOP and re-read the brief (it may be a sign of a design detour). (c) A warn-only THING is a fully
+  legitimate pattern (simply-supported-beam, now beam-shear-flow) — do not invent an invalid envelope to
+  satisfy a "refusal pin"; pin the warn banners instead and say so. (d) Derived-variable `bounds:` are
+  display/annotation only (never build-checked, never read at runtime) — loose "sensible range" ceilings
+  are fine and the norm; don't agonize over covering the extreme input corner. (e) inlining an
+  intermediate as a derivation `local` (with `define:`) is the clean way to use a quantity that would
+  otherwise need a new kind you're not authorized to mint (Q=bh²/8 here). Full detail in this entry.

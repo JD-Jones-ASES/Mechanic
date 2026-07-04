@@ -28,6 +28,7 @@ import { PlanetarySim } from "./sims/PlanetarySim";
 import { RectTorsionSim } from "./sims/RectTorsionSim";
 import { ScrewSim } from "./sims/ScrewSim";
 import { ShaftSim } from "./sims/ShaftSim";
+import { ShearFlowSim } from "./sims/ShearFlowSim";
 import { ShrinkFitSim } from "./sims/ShrinkFitSim";
 import { SpringSim } from "./sims/SpringSim";
 import { SSBeamSim } from "./sims/SSBeamSim";
@@ -65,6 +66,7 @@ const SIMS: Record<
   "thin-tube-torsion": TubeSim,
   "stepped-shaft": SteppedShaftSim,
   "rectangular-shaft-torsion": RectTorsionSim,
+  "beam-shear-flow": ShearFlowSim,
 };
 
 interface Props {

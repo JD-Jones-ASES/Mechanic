@@ -1,0 +1,36 @@
+The widget answers a narrow elastic question — *given this section and this shear force, what is the
+transverse shear stress and the shear flow?* — and turns the shear flow into a fastener force. The ways a
+real beam gets into trouble in shear mostly live in what the page deliberately leaves out.
+
+- **The formula assumes the shear is uniform across the width — for a wide section it is not.** $\tau =
+  VQ/Ib$ quietly assumes the shear stress is the same all the way across the width $b$ at a given height.
+  That is excellent for a tall narrow rectangle but increasingly wrong as the section gets wide and flat:
+  the true stress bulges toward the edges, and the flanges of an I-beam or wide-flange carry shear in a way
+  this one-dimensional formula only approximates. Wide sections need the full two-dimensional elasticity
+  solution the page does not attempt.
+
+- **Unsymmetric and open thin-walled sections have a shear center — miss it and you add torsion.** For a
+  channel, an angle, or any section without two axes of symmetry, the transverse load must pass through a
+  particular point — the **shear center**, generally *not* the centroid — or the beam twists as well as
+  bends, superposing a torsional shear on the transverse one. This page assumes a doubly-symmetric section
+  loaded through its centroid, so the shear center never comes up; it is its own topic (and its own future
+  THING).
+
+- **Shear deflection is computed nowhere here — only warned about.** Euler–Bernoulli beam theory (the
+  [simply-supported](../simply-supported-beam/) and [cantilever](../cantilever-beam/) pages) ignores the
+  deflection this very shear causes, which is fine for slender beams and not fine for short deep ones. The
+  page flags $L < 10h$ with a warning but does not compute the extra sag — Timoshenko beam theory does, and
+  that is out of scope.
+
+- **The fastener readout is force, not a complete connection design.** $F_{fast} = q\,s$ tells you the
+  shear a connector carries, but a real joint check also involves the fastener's own shear and bearing
+  capacity, edge distances, the direction the flow reverses near supports and load points (where $V$ flips
+  sign and the spacing may need to tighten), and — for glued or welded seams — the strength *per unit
+  length* rather than per fastener. And mind the paired-fastener bookkeeping the overview flags: counting a
+  double row as a single connector halves the force you think each one sees.
+
+- **Static and elastic only.** No fatigue at the connectors (where cyclic shear actually cracks built-up
+  members), no plastic shear redistribution once the neutral-axis fibers yield, no stress concentration at
+  bolt holes, no combined bending-plus-shear interaction — near a support a beam sees its largest $V$ and a
+  large $M$ at once. Read the page as *where the shear goes and what the connection must carry*, not as a
+  finished design.

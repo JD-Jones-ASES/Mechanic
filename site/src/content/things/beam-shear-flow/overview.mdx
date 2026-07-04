@@ -1,0 +1,67 @@
+Bending gets all the attention, but a loaded beam is also being **sheared** — the transverse force
+$V$ tries to slide each horizontal layer past the one below it. That longitudinal sliding is resisted
+by shear stress inside the beam, and for a beam built up from separate pieces it is exactly what the
+nails, screws, or bolts have to carry. This page is the shear formula $\tau = VQ/Ib$, the parabolic
+stress it predicts, and the **fastener spacing** that falls out of it — the same section whose bending
+the [simply-supported beam](../simply-supported-beam/) and [cantilever beam](../cantilever-beam/)
+pages handle.
+
+$$\tau = \frac{V Q}{I\,b}, \qquad \tau_{max} = \frac{3V}{2A}\ \text{(at the neutral axis)}, \qquad q = \frac{V Q}{I} = \tau\,b$$
+
+Here $Q$ is the **first moment**, about the neutral axis, of the part of the cross-section beyond the
+cut you are checking; $I$ is the second moment of the whole section, and $b$ the width at the cut.
+
+## The parabola, and why the middle is hottest
+
+Bending stress is largest at the top and bottom fibers and zero at the neutral axis. Transverse shear
+is the **exact opposite**: it is zero at the top and bottom surfaces — there is nothing beyond them to
+shear off, so $Q = 0$ — and largest at the **neutral axis**, where $Q$ is biggest. For a rectangle the
+distribution is a clean parabola, and the peak works out to
+
+$$\tau_{max} = \frac{3V}{2A} = \tfrac{3}{2}\,\tau_{avg},$$
+
+exactly **1.5 times** the naive "force over area" value, independent of size or load. Drive $V$ and the
+section knobs in the widget and watch the parabola breathe — always peaked in the middle, always dead
+at the edges. (Note how *large* the safety factor usually is: transverse shear rarely governs a slender
+beam. Where it bites is short deep beams — the widget warns you there — and, always, the connections.)
+
+## Shear flow sizes the fasteners
+
+Multiply the shear stress by the width it crosses and you get the **shear flow** $q = \tau b = VQ/I$:
+the longitudinal force *per unit length of beam* that any horizontal cut must transmit. Build a beam by
+nailing two planks together along the neutral axis and the nails have to carry that flow. Each fastener,
+spaced $s$ apart, resists
+
+$$F_{fast} = q\,s,$$
+
+which is the equation that actually sets the nail spacing in a plywood box beam or the bolt pitch in a
+plate girder — tighten $s$ and each connector carries less. **Convention on this page:** $F_{fast}$ is
+the force at *one* interface per spacing $s$; if you put a *row of two* paired fasteners at each station,
+each carries half. (The widget evaluates $q$ at the neutral axis, its maximum — the critical joint; a
+seam located up at a flange carries the smaller $q = VQ_{flange}/I$ of that flange's own first moment.)
+
+## Three quantities, one dimension — why kinds exist
+
+This page is the catalog's clearest illustration of **[invariant 2](/Mechanic/verification/)**. The shear
+flow $q$ is measured in **newtons per metre**. So is a beam's **distributed load** $w$ (the
+[simply-supported beam](../simply-supported-beam/) carries one). So is a **spring rate** $k$. All three
+share the identical SI dimension vector $[\mathrm{M\,T^{-2}}]$ — and yet feeding one into another would be
+physical nonsense: a shear flow is not a load you can hang on a structure, and a stiffness is neither. The
+engine refuses those connections not by dimension — which would allow them — but by a separate
+**`quantity_kind`** tag (`shear_flow`, `line_load`, `stiffness`). Same units, three meanings, kept apart
+on purpose.
+
+There is even a second, unrelated "shear flow" in the catalog: **Bredt's** torsional shear flow in a
+closed [thin-walled tube](../thin-tube-torsion/), $q = T/2A_m$, which runs *around* a closed cell rather
+than *along* a beam. Same words, different physics — the open beam here versus the closed tube there is one
+of the sharpest contrasts on the site.
+
+## A strength-only material axis
+
+Only one material property enters, and it enters weakly: **$\sigma_y$** sets the shear-yield warning
+($\tau_{max}$ vs $\sigma_y/2$, the Tresca criterion) and the safety factor. Stiffness $E$ and density
+$\rho$ **do not appear at all** — the elastic shear-stress distribution in a homogeneous prismatic beam is
+pure statics and geometry. That is the honest picture, not a padded one: swapping steel for aluminium
+changes nothing here except the margin. The build's physics test proves the $VQ/Ib$ derivation from slice
+equilibrium, the $3/2$ peak, and the theorem that the parabola integrates back to precisely $V$; the
+[/verification/](/Mechanic/verification/) page records what is machine-proven and what rests on citation.

@@ -262,7 +262,7 @@ test("verification page discloses authorship and the audit surface", async ({ pa
   await expect(page.getByText(/built end to end by an AI/i).first()).toBeVisible();
   await expect(page.getByText(/No human reviews the content/i).first()).toBeVisible();
   // every THING appears with its audit block (count is a deliberate change detector)
-  expect(await page.locator("section.relation-block").count()).toBe(20); // +rectangular-shaft-torsion (S03)
+  expect(await page.locator("section.relation-block").count()).toBe(21); // +beam-shear-flow (S04)
   await expect(page.getByText(/Where physics enters/i).first()).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -1022,4 +1022,57 @@ test("rectangular torsion: a/b below 1 tells you to swap the labels", async ({ p
   await expect(page.locator(".validity-invalid").first()).toBeVisible();
   await expect(page.locator(".validity")).toContainText(/swap your labels|a is meant to be the LONG side/i);
   await expect(page.locator('[data-output="tau_max"] output')).toHaveText("—");
+});
+
+/*
+ * Beam shear flow (S04) — τ = VQ/Ib, and the THIRD `shear_flow` kind on the N/m
+ * dimension vector. Warn-only THING (like simply-supported-beam): the shear
+ * formula is defined for all positive inputs, so envelope-visibility is pinned
+ * via the two warn banners, not a hard refusal. Defaults V=8 kN, 50×150 mm
+ * section, s=100 mm, L=2 m (all material-blind):
+ *   τ_max = 3V/2A = 3·8000/(2·0.0075) = 1.60 MPa ; τ_avg = V/A = 1.067 MPa (ratio 1.5)
+ *   q = τ_max·b = 1.6e6·0.05 = 80 000 N/m = 80 N/mm ; F = q·s = 8000 N = 8 kN
+ */
+test("beam shear flow: parabola goldens are material-blind; the peak is 3/2 the average", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/beam-shear-flow/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  await page.getByTestId("material-select").selectOption("steel-4340");
+  expect(await readOutput(page, "tau_max")).toBeCloseTo(1.6, 2); // MPa
+  expect(await readOutput(page, "tau_avg")).toBeCloseTo(1.0667, 2); // MPa
+  expect(await readOutput(page, "ratio")).toBeCloseTo(1.5, 5); // the parabola's signature
+  expect(await readOutput(page, "q")).toBeCloseTo(80, 1); // N/mm
+  expect(await readOutput(page, "F_fastener")).toBeCloseTo(8, 2); // kN
+  const sfSteel = await readOutput(page, "SF");
+
+  // statics + geometry only: switching material moves ONLY the margin
+  await page.getByTestId("material-select").selectOption("al-6061-t6");
+  expect(await readOutput(page, "tau_max")).toBeCloseTo(1.6, 2); // unchanged
+  expect(await readOutput(page, "q")).toBeCloseTo(80, 1); // unchanged
+  expect(await readOutput(page, "F_fastener")).toBeCloseTo(8, 2); // unchanged
+  expect(await readOutput(page, "SF")).toBeLessThan(sfSteel); // lower σ_y → less margin
+  expect(errors).toEqual([]);
+});
+
+test("beam shear flow: a tiny section past shear yield warns, not silently", async ({ page }) => {
+  await page.goto("things/beam-shear-flow/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  // shrink the section and crank V so τ_max = 3V/2A clears σ_y/2 (Tresca shear yield)
+  await page.getByLabel("Section width value").fill("10"); // mm
+  await page.getByLabel("Section height value").fill("20"); // mm → A=2e-4 m²
+  await page.getByLabel("Transverse shear force value").fill("200"); // kN → τ_max=1500 MPa
+  await expect(page.locator(".validity-warn").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/shear yield|maximum-shear-stress/i);
+});
+
+test("beam shear flow: a short, deep beam warns about neglected shear deflection", async ({ page }) => {
+  await page.goto("things/beam-shear-flow/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  // L/h below 10 (L=1 m, h=0.15 m → 6.67): the beam pages' neglected shear deflection matters
+  await page.getByLabel("Span (for the slenderness check) value").fill("1");
+  await expect(page.locator(".validity-warn").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/short, deep beam|shear deflection/i);
 });

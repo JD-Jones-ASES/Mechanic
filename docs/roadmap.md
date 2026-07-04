@@ -73,6 +73,16 @@ factory capability, the way the flywheel exercised `poisson_ratio` and new quant
   kind + `rad/m`, `deg/m` display units; a/b outside [1, 10] refuses globally rather than
   extrapolate. The coefficients are cross-checked against the exact Fourier-series solution and
   Roark's independent closed form in the physics test. Catalog 19 → 20.
+- **Transverse shear + the third N/m kind:** beam-shear-flow (τ = VQ/Ib) ✅ shipped 2026-07-04
+  (S04, PR #17) — the parabolic shear distribution (τ_max = 3V/2A at the neutral axis, zero at the
+  surfaces), shear flow q = VQ/I, and the fastener-spacing readout F = q·s. Ships the `shear_flow`
+  quantity kind — the THIRD kind on the N/m dimension vector (with `line_load` and `stiffness`),
+  making it the invariant-2 worked example on `/verification/`. A strength-only material axis
+  (σ_y for the shear-yield warn; E and ρ genuinely do not enter). The τ = VQ/Ib formula, the 3/2
+  peak, and the theorem that the parabola integrates back to exactly V are re-derived from slice
+  equilibrium in the physics test. thin-tube-torsion's Bredt shear flow was evaluated for migration
+  and left as-is (a derivation local carries no `quantity_kind` slot — a schema change is out of
+  scope). Catalog 20 → 21.
 
 Per-THING gate (standard practice, from the flywheel/cylinder sessions): machine verification +
 independent first-principles cross-check in `pipeline/tests/` + hand-checkable numeric golden +

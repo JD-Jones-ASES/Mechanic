@@ -18,6 +18,7 @@ TESTS_DIR = Path(__file__).resolve().parent
 
 # slug -> physics test module (repo convention shortens the slug)
 PHYSICS_TESTS = {
+    "beam-shear-flow": "test_shear_flow_physics.py",
     "belt-drive": "test_belt_physics.py",
     "cantilever-beam": "test_beam_physics.py",
     "combined-shaft": "test_combined_physics.py",
