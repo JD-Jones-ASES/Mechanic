@@ -74,7 +74,7 @@ factory capability, the way the flywheel exercised `poisson_ratio` and new quant
   extrapolate. The coefficients are cross-checked against the exact Fourier-series solution and
   Roark's independent closed form in the physics test. Catalog 19 → 20.
 - **Transverse shear + the third N/m kind:** beam-shear-flow (τ = VQ/Ib) ✅ shipped 2026-07-04
-  (S04, PR #TBD) — the parabolic shear distribution (τ_max = 3V/2A at the neutral axis, zero at the
+  (S04, PR #17) — the parabolic shear distribution (τ_max = 3V/2A at the neutral axis, zero at the
   surfaces), shear flow q = VQ/I, and the fastener-spacing readout F = q·s. Ships the `shear_flow`
   quantity kind — the THIRD kind on the N/m dimension vector (with `line_load` and `stiffness`),
   making it the invariant-2 worked example on `/verification/`. A strength-only material axis
