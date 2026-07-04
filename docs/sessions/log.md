@@ -75,7 +75,7 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   a `gh run rerun --failed` cleared it — if preflight shows a red main whose build-test passed but
   deploy says "try again later", re-run before treating it as broken.
 
-## S02 — stepped-shaft-fillet — 2026-07-04 — PR #<pending> (draft) — BLOCKED
+## S02 — stepped-shaft-fillet — 2026-07-04 — PR #14 (draft) — BLOCKED
 
 - Shipped: nothing to the catalog (BLOCKED during data-sourcing, before any THING/pipeline code was
   written). Catalog stays 18. This branch carries ONLY the BLOCKED bookkeeping (queue + this log).
