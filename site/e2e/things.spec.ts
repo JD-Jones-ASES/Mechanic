@@ -262,7 +262,7 @@ test("verification page discloses authorship and the audit surface", async ({ pa
   await expect(page.getByText(/built end to end by an AI/i).first()).toBeVisible();
   await expect(page.getByText(/No human reviews the content/i).first()).toBeVisible();
   // every THING appears with its audit block (count is a deliberate change detector)
-  expect(await page.locator("section.relation-block").count()).toBe(18); // +spur-gear-pair (S01)
+  expect(await page.locator("section.relation-block").count()).toBe(19); // +stepped-shaft-fillet (S02)
   await expect(page.getByText(/Where physics enters/i).first()).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -897,4 +897,71 @@ test("spur gear pair: a pinion below the table domain refuses that gear alone", 
   // the gear (N_g = 36, in domain) is untouched — the page stands
   expect(await readOutput(page, "Y_g")).toBeCloseTo(0.3775, 4);
   expect(await readOutput(page, "sigma_b_g")).toBeGreaterThan(0);
+});
+
+/*
+ * Stepped shaft, shoulder fillet (S02) — the second `table` consumer and the
+ * first REAL-arg MULTI-COLUMN one: one lookup at D/d fills BOTH (A, b).
+ * Default config = axial, D/d = 1.50 (exact Norton Fig. C-1 row A = 0.99957,
+ * b = -0.28221), r/d = 0.10, σ_nom = 100 MPa:
+ *   K_t = 0.99957·0.10^(-0.28221) = 1.9144 (pure geometry, material-blind)
+ *   σ_max = K_t·σ_nom = 191.4 MPa ;  SF = σ_y/σ_max (material-dependent)
+ */
+test("stepped shaft: axial K_t golden, and material moves SF but never K_t", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/stepped-shaft-fillet/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  expect(await readOutput(page, "Kt")).toBeCloseTo(1.914, 2); // node lookup, both columns
+  expect(await readOutput(page, "sigma_max")).toBeCloseTo(191.4, 0); // MPa, material-blind
+  const ktBefore = await readOutput(page, "Kt");
+  const sfBefore = await readOutput(page, "SF");
+  // K_t is pure geometry: switch material and it must not move; SF must
+  await page.getByTestId("material-select").selectOption("steel-4340");
+  expect(await readOutput(page, "Kt")).toBeCloseTo(ktBefore, 5); // unchanged — geometry
+  expect(await readOutput(page, "sigma_max")).toBeCloseTo(191.4, 0); // unchanged — geometry
+  expect(Math.abs((await readOutput(page, "SF")) - sfBefore)).toBeGreaterThan(1); // σ_y up ⇒ SF up
+  expect(errors).toEqual([]);
+});
+
+test("stepped shaft: the three loadings concentrate the same geometry differently", async ({ page }) => {
+  await page.goto("things/stepped-shaft-fillet/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+  // same D/d = 1.5, r/d = 0.10 — only the cited (A, b) table changes with load
+  expect(await readOutput(page, "Kt")).toBeCloseTo(1.914, 2); // axial (default)
+  await page.getByTestId("config-select").selectOption("bending");
+  expect(await readOutput(page, "Kt")).toBeCloseTo(1.698, 2); // Norton Fig. C-2
+  await page.getByTestId("config-select").selectOption("torsion");
+  expect(await readOutput(page, "Kt")).toBeCloseTo(1.459, 2); // Norton Fig. C-3 (interp 1.33→2.00)
+});
+
+test("stepped shaft: D/d off the table refuses the coefficients and everything below", async ({ page }) => {
+  await page.goto("things/stepped-shaft-fillet/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+  // POISON PATH 1 — the table auto-guard. Axial covers D/d 1.01–2.00; push D/d
+  // to 3.0 and there are no coefficients, so A, b AND everything below refuse.
+  await page.getByLabel("Diameter ratio D/d value").fill("3");
+  await expect(page.locator(".validity-invalid").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/Norton Fig\. C-1|published only/);
+  await expect(page.locator('[data-output="A"] output')).toHaveText("—"); // the columns themselves
+  await expect(page.locator('[data-output="b"] output')).toHaveText("—");
+  await expect(page.locator('[data-output="Kt"] output')).toHaveText("—");
+  await expect(page.locator('[data-output="sigma_max"] output')).toHaveText("—");
+  await expect(page.locator('[data-output="SF"] output')).toHaveText("—");
+});
+
+test("stepped shaft: r/d past the fit range refuses K_t but keeps the looked-up coefficients", async ({ page }) => {
+  await page.goto("things/stepped-shaft-fillet/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+  // POISON PATH 2 — the authored r/d envelope, INDEPENDENT of the table guard.
+  // r/d = 0.45 > 0.30 (Norton's plotted limit): the power-law fit has no basis,
+  // so K_t downward refuse — but A and b (D/d still in the table) stay live.
+  await page.locator("#knob-rd").fill("0.45");
+  await expect(page.locator(".validity-invalid").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/plotted only up to r\/d/);
+  expect(await readOutput(page, "A")).toBeGreaterThan(0); // honest lookups, D/d in domain
+  expect(await readOutput(page, "b")).toBeLessThan(0);
+  await expect(page.locator('[data-output="Kt"] output')).toHaveText("—");
+  await expect(page.locator('[data-output="sigma_max"] output')).toHaveText("—");
+  await expect(page.locator('[data-output="SF"] output')).toHaveText("—");
 });
