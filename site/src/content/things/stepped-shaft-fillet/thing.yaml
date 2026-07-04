@@ -1,0 +1,303 @@
+id: stepped-shaft-fillet
+title: Stepped Shaft — Shoulder-Fillet Stress Concentration
+summary: >-
+  A shoulder where a shaft steps from a large diameter D to a small diameter d concentrates stress in
+  the fillet of radius r. The peak stress is the nominal stress times a geometric factor K_t read from
+  a cited chart — pure geometry: the material changes the safety factor but never K_t.
+facets: [stress]
+
+variables:
+  # --- knobs (free inputs): the two chart ratios plus the nominal stress ---
+  - symbol: Dd
+    name: Diameter ratio D/d
+    latex: 'D/d'
+    unit: '1'
+    quantity_kind: ratio
+    default: 1.5
+    bounds: [1.01, 6.5]
+    positive: true
+  - symbol: rd
+    name: Fillet ratio r/d
+    latex: 'r/d'
+    unit: '1'
+    quantity_kind: ratio
+    default: 0.10
+    bounds: [0.01, 0.5]
+    positive: true
+  - symbol: sigma_nom
+    name: Nominal stress
+    latex: '\sigma_{nom}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 1.0e8
+    bounds: [1.0e6, 2.0e9]
+    positive: true
+    display_units: [MPa, GPa]
+  # --- fixed per-configuration discriminator (constrained, never a knob) ---
+  # Selects which loading the page is showing so the sim can draw the matching
+  # load glyph (axial arrows / bending moment / torsion). It is constrained in
+  # every configuration, so it is neither a knob nor a readout — the same
+  # constrained-constant idiom S01 uses for the pressure angle and Barth speed.
+  - symbol: load_case
+    name: Load case (1 axial · 2 bending · 3 torsion)
+    latex: '\text{case}'
+    unit: '1'
+    quantity_kind: count
+    default: 1
+    bounds: [1, 3]
+    integer: true
+    positive: true
+  # --- material ---
+  - symbol: sigma_y
+    name: Yield strength
+    latex: '\sigma_y'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 3.2405e8
+    bounds: [1.0e6, 3.0e9]
+    positive: true
+    role: material
+    display_units: [MPa, GPa]
+  # --- derived outputs ---
+  - symbol: A
+    name: Fit coefficient A
+    latex: A
+    unit: '1'
+    quantity_kind: ratio
+    default: 0.99957
+    bounds: [0.5, 1.5]
+    positive: true
+    role: derived
+  - symbol: b
+    name: Fit exponent b
+    latex: b
+    unit: '1'
+    quantity_kind: ratio
+    default: -0.28221
+    bounds: [-0.5, 0.0]
+    positive: false
+    role: derived
+  - symbol: Kt
+    name: Stress-concentration factor
+    latex: 'K_t'
+    unit: '1'
+    quantity_kind: ratio
+    default: 1.9144
+    bounds: [0.5, 8.0]
+    positive: true
+    role: derived
+  - symbol: sigma_max
+    name: Peak stress at the fillet
+    latex: '\sigma_{max}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 1.9144e8
+    bounds: [0, 1.0e12]
+    positive: true
+    role: derived
+    display_units: [MPa, GPa]
+  - symbol: SF
+    name: Static safety factor
+    latex: '\mathrm{SF}'
+    unit: '1'
+    quantity_kind: safety_factor
+    default: 1.6928
+    bounds: [0, 1.0e6]
+    positive: true
+    role: derived
+
+materials:
+  binds:
+    sigma_y: yield_strength
+
+# Three cited coefficient tables — one per loading. K_t ≅ A·(r/d)^b; (A, b) are
+# read by the diameter ratio D/d. Axial/bending/torsion concentrate a shoulder
+# fillet differently, so each loading has its own (A, b) rows. Values transcribed
+# digit-for-digit from Norton, Machine Design, Appendix C (owner-provided scan,
+# 2026-07-04) and cross-checked against Roark's closed form in the physics test.
+tables:
+  - id: kt-axial
+    name: Norton Fig. C-1 (axial)
+    citation: norton
+    provenance: >-
+      Fitted K_t coefficients for a shoulder fillet in a stepped round bar under axial tension,
+      K_t = A·(r/d)^b, as published in Norton, Machine Design, Appendix C, Fig. C-1 (credited to
+      Peterson). Read digit-for-digit from the figure; the fit is a cited model, not derived here.
+    interpolation_citation: norton
+    arg: Dd
+    columns: [A, b]
+    mode: interpolate-linear
+    rows:
+      - [1.01, 0.98413, -0.10474]
+      - [1.02, 1.01220, -0.12474]
+      - [1.05, 1.00480, -0.17076]
+      - [1.07, 0.98498, -0.19548]
+      - [1.10, 0.98450, -0.20818]
+      - [1.15, 0.98084, -0.22485]
+      - [1.20, 0.96272, -0.25527]
+      - [1.30, 0.99682, -0.25751]
+      - [1.50, 0.99957, -0.28221]
+      - [2.00, 1.01470, -0.30035]
+  - id: kt-bending
+    name: Norton Fig. C-2 (bending)
+    citation: norton
+    provenance: >-
+      Fitted K_t coefficients for a shoulder fillet in a stepped round bar under bending,
+      K_t = A·(r/d)^b, as published in Norton, Machine Design, Appendix C, Fig. C-2 (credited to
+      Peterson). Read digit-for-digit from the figure; the fit is a cited model, not derived here.
+    interpolation_citation: norton
+    arg: Dd
+    columns: [A, b]
+    mode: interpolate-linear
+    rows:
+      - [1.01, 0.91938, -0.17032]
+      - [1.02, 0.96048, -0.17711]
+      - [1.03, 0.98061, -0.18381]
+      - [1.05, 0.98137, -0.19653]
+      - [1.07, 0.97527, -0.20958]
+      - [1.10, 0.95120, -0.23757]
+      - [1.20, 0.97098, -0.21796]
+      - [1.50, 0.93836, -0.25759]
+      - [2.00, 0.90879, -0.28598]
+      - [3.00, 0.89334, -0.30860]
+      - [6.00, 0.87868, -0.33243]
+  - id: kt-torsion
+    name: Norton Fig. C-3 (torsion)
+    citation: norton
+    provenance: >-
+      Fitted K_t coefficients for a shoulder fillet in a stepped round bar under torsion,
+      K_t = A·(r/d)^b, as published in Norton, Machine Design, Appendix C, Fig. C-3 (credited to
+      Peterson). Read digit-for-digit from the figure; the fit is a cited model, not derived here.
+    interpolation_citation: norton
+    arg: Dd
+    columns: [A, b]
+    mode: interpolate-linear
+    rows:
+      - [1.09, 0.90337, -0.12692]
+      - [1.20, 0.83425, -0.21649]
+      - [1.33, 0.84897, -0.23161]
+      - [2.00, 0.86331, -0.23865]
+
+relations:
+  - id: kt-fit
+    group: stress
+    latex: 'K_t = A\left(\dfrac{r}{d}\right)^{b}'
+    residual: Kt - A*rd**b
+    assumptions:
+      - Norton's power-law fit to Peterson's shoulder-fillet chart; A and b depend on D/d
+      - K_t is a pure geometric amplifier — it does not depend on the material
+    citation: norton
+    validity:
+      # r/d above the published fit range: no data — refuse K_t and its
+      # descendants (scoped), leave the geometry and nominal stress standing.
+      - condition: rd <= 0.30
+        severity: invalid
+        scope: [Kt, sigma_max, SF]
+        message: >-
+          Norton's fitted K_t curves (App. C, Figs C-1 to C-3) are plotted only up to r/d = 0.30;
+          beyond that shoulder radius there is no published fit, so K_t and everything computed from
+          it are withheld. Reduce r/d.
+        citation: norton
+      # very sharp fillet: the curves are drawn from about r/d = 0.02-0.05 up,
+      # where K_t is largest and the power-law fit is least certain — warn, do
+      # not refuse (Norton prints no numeric lower bound, so we invent none).
+      - condition: rd >= 0.05
+        severity: warn
+        message: >-
+          Sharp fillet (r/d below about 0.05): Norton's curves are drawn from roughly r/d = 0.02-0.05
+          upward, where K_t is largest and the power-law fit is least certain. Treat the number as
+          indicative and prefer a more generous fillet.
+        citation: norton
+  - id: peak-stress
+    group: stress
+    latex: '\sigma_{max} = K_t\,\sigma_{nom}'
+    residual: sigma_max - Kt*sigma_nom
+    assumptions:
+      - definition of the stress-concentration factor — peak stress at the fillet vs nominal stress
+      - static, linear-elastic; no yielding redistribution and no fatigue (this is geometry pedagogy)
+    citation: norton
+  - id: safety
+    group: stress
+    latex: '\mathrm{SF} = \dfrac{\sigma_y}{\sigma_{max}}'
+    residual: SF*sigma_max - sigma_y
+    assumptions:
+      - static factor of safety on first yield; the allowable is taken as the yield strength (educational)
+      - for torsion sigma_nom is a shear stress, so SF here is illustrative — a shear-yield criterion is proper
+    citation: norton
+
+configurations:
+  - id: axial
+    label: Axial tension — nominal 4F/(πd²), K_t from Norton Fig. C-1
+    constraints: { load_case: 1 }
+    inputs: [Dd, rd, sigma_nom]
+    solutions:
+      A: { table: kt-axial, at: Dd }
+      b: { table: kt-axial, at: Dd }
+      Kt: A*rd**b
+      sigma_max: Kt*sigma_nom
+      SF: sigma_y/sigma_max
+  - id: bending
+    label: Bending — nominal 32M/(πd³), K_t from Norton Fig. C-2
+    constraints: { load_case: 2 }
+    inputs: [Dd, rd, sigma_nom]
+    solutions:
+      A: { table: kt-bending, at: Dd }
+      b: { table: kt-bending, at: Dd }
+      Kt: A*rd**b
+      sigma_max: Kt*sigma_nom
+      SF: sigma_y/sigma_max
+  - id: torsion
+    label: Torsion — nominal 16T/(πd³), K_t from Norton Fig. C-3
+    constraints: { load_case: 3 }
+    inputs: [Dd, rd, sigma_nom]
+    solutions:
+      A: { table: kt-torsion, at: Dd }
+      b: { table: kt-torsion, at: Dd }
+      Kt: A*rd**b
+      sigma_max: Kt*sigma_nom
+      SF: sigma_y/sigma_max
+
+derivation:
+  verifies_configuration: axial
+  steps:
+    - expr: Eq(Kt, A*rd**b)
+      prose: >-
+        Plotted on log-log axes, the chart of K_t against r/d (at a fixed diameter ratio D/d) is very
+        nearly a straight line, so Norton fits each curve as a power law K_t = A·(r/d)^b. The pair
+        (A, b) is read from the Appendix C table by the diameter ratio D/d — cited data, not a formula.
+      rule: 'modeling: Norton App. C power-law fit (K_t = A(r/d)^b); (A, b) from D/d'
+      check: definition
+    - expr: Eq(sigma_max, Kt*sigma_nom)
+      prose: >-
+        By definition the stress-concentration factor multiplies the nominal (net-section) stress to
+        give the true peak stress at the root of the fillet: σ_max = K_t·σ_nom. The nominal stress is
+        whatever your bending, torsion, or axial analysis gives for that smaller section.
+      rule: 'definition: stress-concentration factor amplifies the nominal stress'
+      check: definition
+    - expr: Eq(SF*sigma_max, sigma_y)
+      prose: >-
+        The static margin is the yield strength over that peak stress. Because K_t is set entirely by
+        the shape (D/d and r/d), switching material moves the safety factor but never K_t — the
+        amplification is baked into the geometry. A sharper fillet raises K_t and eats the margin.
+      rule: 'definition: static safety factor — material moves SF, never K_t'
+      check: definition
+
+sim:
+  engine: statics-cascade
+  config:
+    draw: stepped-shaft
+
+sources:
+  - id: norton
+    citation: >-
+      Norton, R. L., Machine Design: An Integrated Approach, Appendix C "Stress-Concentration Factors",
+      Figs C-1 (axial tension), C-2 (bending), C-3 (torsion), pp. 1028-1029 — fitted equations
+      K_t = A·(r/d)^b for a shoulder fillet in a stepped circular shaft, credited to Peterson's charts.
+    verification: >-
+      Read digit-for-digit from Norton App. C Figs C-1/C-2/C-3 (owner-provided scan, 2026-07-04);
+      cross-checked against Roark, Formulas for Stress and Strain, Table 6-1 case III-2 closed form
+      (C1..C4 polynomial in 2h/D) — the two independently published fits agree within the sources'
+      stated few-percent accuracy over the well-stepped D/d >= 1.5 band (see
+      pipeline/tests/test_stepped_shaft_physics.py). The (A, b) numbers are cited DATA, not
+      machine-proven physics; interpolation between D/d rows is proven in the parity oracle. Shigley
+      Fig. A-15-8/9 is the same chart family and is named as a cross-reference only, never digitized.

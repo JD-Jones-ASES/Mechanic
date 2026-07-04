@@ -1,0 +1,53 @@
+Almost every real shaft changes diameter along its length: a large section steps down to a smaller
+one to seat a bearing, a gear, or a coupling against the **shoulder**. That step cannot be a sharp
+corner — a sharp re-entrant corner is a stress singularity — so it is blended with a **fillet** of
+radius $r$. The fillet is where the shaft is most likely to crack, and this page is about how much
+the geometry there amplifies the stress. It is the shoulder that the [spur gear pair](../spur-gear-pair/)
+is pressed against, and the same section whose nominal stresses the [cantilever beam](../cantilever-beam/)
+and [torsion shaft](../torsion-shaft/) pages compute.
+
+Away from the shoulder, the smaller shaft of diameter $d$ carries an ordinary **nominal stress** —
+the elementary result for that section, depending on how it is loaded:
+
+$$\sigma_{nom} = \frac{4F}{\pi d^2}\ \text{(axial)}, \qquad \sigma_{nom} = \frac{32M}{\pi d^3}\ \text{(bending)}, \qquad \tau_{nom} = \frac{16T}{\pi d^3}\ \text{(torsion)}$$
+
+Enter that nominal stress in the widget (the [combined shaft](../combined-shaft/) page shows where a
+bending-plus-torsion state comes from). At the fillet the real stress is higher, by a **stress-concentration
+factor** $K_t$ that depends only on the shape:
+
+$$\sigma_{max} = K_t\,\sigma_{nom}, \qquad K_t = A\left(\frac{r}{d}\right)^{b}$$
+
+## $K_t$ is geometry, not strength
+
+The two ratios that set $K_t$ are the **diameter ratio** $D/d$ (how big the step is) and the **fillet
+ratio** $r/d$ (how gently it is blended). Plotted against $r/d$ on log-log axes at fixed $D/d$, the
+concentration factor is very nearly a straight line, so Norton fits each curve as the power law
+$K_t = A\,(r/d)^{b}$ and tabulates the pair $(A, b)$ by $D/d$. A shoulder fillet under axial, bending,
+and torsional load concentrates stress differently, so there are **three tables** — pick the loading
+in the widget and watch $K_t$ change while the geometry stays put.
+
+The single most important thing to see here: **$K_t$ contains no material property.** It is pure
+geometry. Switch from aluminium to steel and the peak stress $\sigma_{max}$ at a given nominal load is
+*identical* — only the safety factor $\mathrm{SF} = \sigma_y/\sigma_{max}$ moves, because only the
+allowable stress changed. The amplification is baked into the shape; the way to fix a fillet that is
+working too hard is a **larger $r/d$**, not a stronger alloy. Drag the $r/d$ knob up and watch $K_t$
+fall toward 1; drag it down toward a sharp corner and watch it climb.
+
+## Cited data, and where it stops
+
+The $(A, b)$ coefficients are **cited data with provenance**, read digit-for-digit from Norton's
+Appendix C (Figs C-1 to C-3, credited to Peterson's charts) — not derived on this page. The widget
+looks them up by $D/d$, interpolating linearly between the published rows, and that interpolation is
+machine-checked against the browser every build. Two honest boundaries are enforced, each **refusing
+$K_t$ and everything downstream while the geometry and nominal stress keep standing**:
+
+- **$D/d$ outside a table's published rows** — there are no coefficients there, so the lookup refuses.
+  The three tables cover different spans (axial $1.01$–$2.00$, bending $1.01$–$6.00$, torsion
+  $1.09$–$2.00$), so a $D/d$ that is fine for bending may be off the table for torsion.
+- **$r/d$ above $0.30$** — Norton plots the curves only to $r/d = 0.30$; beyond that the power-law fit
+  has no published basis. Below about $r/d = 0.05$ a warning fires instead: the fit is least certain
+  where the fillet is sharpest and $K_t$ is largest.
+
+The [/verification/](/Mechanic/verification/) page states exactly what is machine-proven here (the
+lookup, the interpolation, the two refusals, the algebra) and what rests on citation (the coefficients
+themselves, independently cross-checked against Roark's closed-form fit).

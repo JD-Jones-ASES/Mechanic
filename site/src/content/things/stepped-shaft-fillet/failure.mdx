@@ -1,0 +1,43 @@
+The widget answers one narrow question — *by how much does this shoulder geometry amplify the
+nominal stress?* — and reports a static safety factor on that peak. That number is the start of a
+strength check, not the end of one. The ways a stepped shaft actually fails mostly live in what this
+page deliberately does **not** model.
+
+- **$K_t$ is where fatigue cracks start — and fatigue is the real killer (the deliberate non-model).**
+  Shafts almost never fail by static yielding at a fillet; they fail by **fatigue**, and they start
+  at the fillet precisely because that is where the stress peaks. Under a fluctuating load the number
+  that matters is the *fatigue* stress-concentration factor $K_f = 1 + q\,(K_t - 1)$, where the
+  **notch sensitivity** $q$ (between 0 and 1) softens the geometric $K_t$ by how much the material
+  actually feels a sharp notch. This page computes $K_t$ and stops: it has no endurance limit, no
+  notch sensitivity $q$, and none of the Marin surface/size/reliability factors. A comfortable static
+  $\mathrm{SF}$ here says nothing about how many million cycles the shaft survives — that is the
+  fatigue story a later phase will build on top of exactly this $K_t$.
+
+- **Ductile static loading hides the concentration; brittle and cyclic loading do not.** Under a
+  *static* load a ductile shaft yields locally at the fillet, and that little zone of yielding
+  redistributes the stress so the part carries far more than $\sigma_{max} = K_t\sigma_{nom}$ would
+  suggest — which is why full $K_t$ is usually *not* applied to static ductile design. Where $K_t$
+  bites in full is (a) brittle materials, which cannot redistribute, and (b) fatigue, where the peak
+  drives crack initiation cycle after cycle. Read this page as geometry pedagogy — *which knob moves
+  the peak stress, and by how much* — rather than a static design margin.
+
+- **The torsion safety factor is illustrative.** For the torsion case the "nominal stress" is a
+  **shear** stress, so comparing it to the tensile yield strength $\sigma_y$ mixes a shear quantity
+  with a normal-stress allowable. A proper check uses a shear yield ($\tau_y \approx 0.577\,\sigma_y$
+  by von Mises), the same distinction the [combined shaft](../combined-shaft/) page draws with its
+  Tresca and von Mises circles. The factor here shows the *amplification*, not a defensible torsional
+  margin.
+
+- **The nominal stress is only as good as the model behind it.** You type $\sigma_{nom}$ in; it comes
+  from an elementary result for the smaller section — $32M/\pi d^3$ in [bending](../cantilever-beam/),
+  $16T/\pi d^3$ in [torsion](../torsion-shaft/), $4F/\pi d^2$ axial — and inherits every assumption
+  those make (linear-elastic, slender, load applied where you think it is). A real shoulder often
+  carries bending *and* torsion at once; the concentration factors do not simply add, and the
+  interaction is its own topic.
+
+- **A fillet you cannot actually cut is a fiction.** The $r/d$ knob assumes the fillet radius you dial
+  in is really there. Grinding relief, tool-nose radius, and a bearing race that must seat flat against
+  the shoulder all fight a generous fillet, so real shoulders are frequently sharper than the drawing —
+  pushing $K_t$ up the steep part of the curve where the warn banner already flags the fit as least
+  certain. This is the same shoulder the [spur gear pair](../spur-gear-pair/) seats against; a fillet
+  chosen for the gear's convenience can quietly become the shaft's weakest point.

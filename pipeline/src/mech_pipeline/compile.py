@@ -328,6 +328,10 @@ class ThingCompiler:
             seen_targets: list[sp.Symbol] = []
             solve_targets: set[sp.Symbol] = set()
             table_targets: set[sp.Symbol] = set()
+            # tabulated consumers grouped by (table_id, srepr(at)): several
+            # targets that read the SAME table at the SAME arg share ONE plan
+            # step, each filling its own column (real-arg multi-column lookup).
+            table_groups: dict[tuple, dict] = {}
             material_syms = [s for s in self.specs if self.specs[s].role == "material"]
             any_branched = False
             fn_prefix_base = f"cfg_{cid.replace('-', '_')}"
@@ -388,21 +392,70 @@ class ThingCompiler:
                     targets_needed.discard(target)
                     continue
                 if isinstance(sol, dict) and "table" in sol:
-                    # tabulated lookup (ADR-0009): the column value comes from a
+                    # tabulated lookup (ADR-0009): the column value(s) come from a
                     # cited table at arg = `at`, evaluated inside the forward DAG.
                     # No closed form exists, so like solve1d the value is proven
                     # numerically (verify_table_configuration) and tainted for
                     # derivation identity steps; out-of-domain refuses, scoped.
+                    # Targets reading the SAME table at the SAME arg are grouped
+                    # into ONE plan step, each filling its own column — a target
+                    # whose NAME matches a column template takes that column, and
+                    # one that does not (S01's Y_g reading the Y_p-templated single
+                    # column) falls back to column 0. The step's latex and guard
+                    # message name the full column set, so they are finalized in a
+                    # pass after the whole solutions loop (see below).
                     table_id = str(sol["table"])
                     if table_id not in self.tables:
                         raise BuildError(f"{tc}: references unknown table '{table_id}'")
                     tbl = self.tables[table_id]
-                    if len(tbl.columns) != 1:
-                        raise BuildError(
-                            f"{tc}: multi-column table consumption is not built in v1 "
-                            f"(table '{table_id}' declares {len(tbl.columns)} columns)"
-                        )
                     at_expr = _parse(str(_require(sol, "at", tc)), self.table, tc)
+                    ncol = len(tbl.columns)
+                    # which column does this target fill? A target whose NAME is a
+                    # column takes that column. A single-column table also accepts
+                    # a differently-named target (S01's Y_g reads the Y_p column);
+                    # a multi-column table does NOT — each consumer must name its
+                    # column, or a typo silently maps to column 0.
+                    if target_name in tbl.columns:
+                        col_index = tbl.columns.index(target_name)
+                    elif ncol == 1:
+                        col_index = 0
+                    else:
+                        raise BuildError(
+                            f"{tc}: target '{target_name}' does not name any column of "
+                            f"multi-column table '{table_id}' (columns {tbl.columns}) — "
+                            f"a consumer must name the column it fills"
+                        )
+                    col_tmpl = self.table[tbl.columns[col_index]]
+                    check_homogeneous(target - col_tmpl, self.unit_map, f"{tc} table column")
+                    if self.specs[target].quantity_kind != self.specs[col_tmpl].quantity_kind:
+                        raise BuildError(
+                            f"{tc}: target kind '{self.specs[target].quantity_kind}' ≠ column "
+                            f"template '{self.specs[col_tmpl].quantity_kind}'"
+                        )
+                    group_key = (table_id, sp.srepr(at_expr))
+                    existing = table_groups.get(group_key)
+                    if existing is not None:
+                        # a further column of an already-opened group: it must be
+                        # authored consecutively (no intervening plan step) so the
+                        # ordering stays a forward DAG and the group is one lookup.
+                        step = existing["plan"]
+                        if plan[-1] is not step:
+                            raise BuildError(
+                                f"{tc}: columns of table '{table_id}' at the same arg must be "
+                                f"authored consecutively (a non-table step interrupts the group)"
+                            )
+                        if step["targets"][col_index] is not None:
+                            raise BuildError(
+                                f"{tc}: column '{tbl.columns[col_index]}' of table '{table_id}' is "
+                                f"already filled by '{step['targets'][col_index]}'"
+                            )
+                        step["targets"][col_index] = target_name
+                        ordered_steps.append(("table", target, table_id, at_expr, col_index + 1))
+                        table_targets.add(target)
+                        seen_targets.append(target)
+                        targets_needed.discard(target)
+                        continue
+                    # first column of a new group: validate the arg once
                     knowns = {*inputs, *constraints, *material_syms, *seen_targets}
                     not_ready = at_expr.free_symbols - knowns
                     if not_ready:
@@ -423,39 +476,30 @@ class ThingCompiler:
                             raise BuildError(
                                 f"{tc}: table '{table_id}' has an integer arg but '{at_expr}' is not integer"
                             )
-                    col_tmpl = self.table[tbl.columns[0]]
-                    check_homogeneous(target - col_tmpl, self.unit_map, f"{tc} table column")
-                    if self.specs[target].quantity_kind != self.specs[col_tmpl].quantity_kind:
-                        raise BuildError(
-                            f"{tc}: target kind '{self.specs[target].quantity_kind}' ≠ column "
-                            f"template '{self.specs[col_tmpl].quantity_kind}'"
-                        )
                     arg_fn_id = f"{fn_prefix_base}_{target_name}__arg"
                     self.fns.append(emit_function(arg_fn_id, at_expr, tc))
                     rows_float = [[float(v) for v in row] for row in tbl.rows]
                     lo, hi = rows_float[0][0], rows_float[-1][0]
-                    latex = (
-                        f"{self.specs[target].latex} = {_mathrm(tbl.name)}"
-                        f"\\!\\left({sp.latex(at_expr, **LATEX_OPTS)}\\right)"
-                    )
-                    plan.append({
-                        "type": "table", "targets": [target_name], "table_id": table_id,
+                    targets_slots: list[str | None] = [None] * ncol
+                    targets_slots[col_index] = target_name
+                    step = {
+                        "type": "table", "targets": targets_slots, "table_id": table_id,
                         "arg_fn": arg_fn_id, "mode": tbl.mode, "rows": rows_float,
                         "domain": [lo, hi],
-                        "guard": {  # scope (columns + descendants) filled in after the loop
+                        "guard": {  # message + scope filled after the loop (need the column set)
                             "severity": "invalid",
-                            "message": (
-                                f"{self.specs[target].name} is read from {tbl.name}, published only "
-                                f"for {self.specs[arg_sym].name} between {lo:g} and {hi:g}; outside "
-                                f"that range there is no data, so it (and anything computed from it) "
-                                f"is refused."
-                            ),
+                            "message": "",
                             "citation": tbl.citation,
                             "scope": [],
                         },
-                        "latex": latex,
-                    })
-                    ordered_steps.append(("table", target, table_id, at_expr))
+                        "latex": "",
+                    }
+                    plan.append(step)
+                    table_groups[group_key] = {
+                        "plan": step, "tbl": tbl, "arg_sym": arg_sym,
+                        "at_expr": at_expr, "lo": lo, "hi": hi,
+                    }
+                    ordered_steps.append(("table", target, table_id, at_expr, col_index + 1))
                     table_targets.add(target)
                     seen_targets.append(target)
                     targets_needed.discard(target)
@@ -497,12 +541,55 @@ class ThingCompiler:
                     f"but every authored solution is single-branch"
                 )
 
+            # finalize each table step now its full column set is known: require
+            # every column filled (a None slot would be an unlabelled runtime
+            # lookup), then build the multi-column latex + guard message. One
+            # column keeps S01's exact `Y = Table(N)` form and singular message;
+            # several render a tuple `(A, b) = Table(D/d)` and plural message.
+            for grp in table_groups.values():
+                step, tbl, arg_sym = grp["plan"], grp["tbl"], grp["arg_sym"]
+                at_expr, lo, hi = grp["at_expr"], grp["lo"], grp["hi"]
+                filled = step["targets"]
+                missing = [tbl.columns[i] for i, t in enumerate(filled) if t is None]
+                if missing:
+                    raise BuildError(
+                        f"{c}, table '{tbl.id}': column(s) {missing} are declared but never "
+                        f"consumed here — every column of a table read in a configuration must "
+                        f"be filled (v1)"
+                    )
+                if len(filled) == 1:
+                    lhs = self.specs[self.table[filled[0]]].latex
+                else:
+                    lhs = "\\left(" + ",\\ ".join(
+                        self.specs[self.table[t]].latex for t in filled
+                    ) + "\\right)"
+                step["latex"] = (
+                    f"{lhs} = {_mathrm(tbl.name)}"
+                    f"\\!\\left({sp.latex(at_expr, **LATEX_OPTS)}\\right)"
+                )
+                names = [self.specs[self.table[t]].name for t in filled]
+                if len(names) == 1:
+                    subject, verb, tail = names[0], "is", "it (and anything computed from it) is refused."
+                else:
+                    subject = (
+                        " and ".join(names) if len(names) == 2
+                        else ", ".join(names[:-1]) + ", and " + names[-1]
+                    )
+                    verb, tail = "are", "they (and anything computed from them) are refused."
+                step["guard"]["message"] = (
+                    f"{subject} {verb} read from {tbl.name}, published only for "
+                    f"{self.specs[arg_sym].name} between {lo:g} and {hi:g}; outside that range "
+                    f"there is no data, so {tail}"
+                )
+
             # scoped-refusal scope for each table step: the column(s) it fills
             # PLUS every downstream eval target that reads them. A σ_b computed
             # from a refused Y must blank too, or the page would show a
             # trustworthy-looking number built on missing data. Walk the eval
-            # chain after each table step (forward DAG ⇒ one pass suffices).
-            table_plan_by_target = {p["targets"][0]: p for p in plan if p["type"] == "table"}
+            # chain after each table step (forward DAG ⇒ one pass suffices);
+            # every column of a shared step unions its reach into one scope.
+            table_step_by_target = {t: p for p in plan if p["type"] == "table" for t in p["targets"]}
+            scope_reach: dict[int, set[str]] = {}
             for idx, st in enumerate(ordered_steps):
                 if st[0] != "table":
                     continue
@@ -517,7 +604,11 @@ class ThingCompiler:
                             f"{c}: table scope symbol '{s}' has role "
                             f"'{self.specs[s].role}' — scoped refusal poisons derived outputs only"
                         )
-                table_plan_by_target[str(tgt_sym)]["guard"]["scope"] = sorted(str(s) for s in reach)
+                step = table_step_by_target[str(tgt_sym)]
+                scope_reach.setdefault(id(step), set()).update(str(s) for s in reach)
+            for p in plan:
+                if p["type"] == "table":
+                    p["guard"]["scope"] = sorted(scope_reach.get(id(p), set()))
 
             # EVERY branch is independently resolved and proven against EVERY
             # relation, and the DOF check runs on each branch's own manifold —
