@@ -149,8 +149,9 @@ the page stands. New `site/src/components/sims/GearPairSim.tsx`; register its dr
 ## Exit criteria
 
 - Catalog count = 18 on /things/, in CLAUDE.md, and in README.
-- `uv run pytest -q` (pipeline/) collects > 150 (baseline 150 on main, 2026-07-04), all green;
-  test_tables.py + test_gear_physics.py present.
+- `uv run pytest -q` (pipeline/) collects > 157 (baseline 157 on main, 2026-07-04, incl. the
+  physics-test existence gate), all green; test_tables.py + test_gear_physics.py present and
+  `spur-gear-pair` mapped in test_physics_coverage.py's PHYSICS_TESTS (the gate fails otherwise).
 - Machine-proven fact: emitted Y(N) reproduces every Table 14-2 row bit-exactly, linear between,
   scoped invalid outside [12, 400] — asserted by the build, not by hand.
 - ADR-0009 ACCEPTED: `rg -l 'ACCEPTED' docs/decisions/ADR-0009*`
