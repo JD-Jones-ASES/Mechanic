@@ -203,7 +203,7 @@ variables:
     latex: '\mathrm{SF}_g'
     unit: '1'
     quantity_kind: safety_factor
-    default: 6.213
+    default: 6.212
     bounds: [0, 1.0e6]
     positive: true
     role: derived

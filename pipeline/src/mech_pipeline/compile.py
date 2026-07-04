@@ -528,6 +528,12 @@ class ThingCompiler:
             residual_exprs += [sym - val for sym, val in constraints.items()]
             samples: list[dict] = []
             first_resolved: dict[sp.Symbol, sp.Expr] | None = None
+            # solve1d and table campaigns are separate dispatch arms (below); a
+            # config with BOTH would silently skip the table's residual
+            # certificate, miscount DOF, and mis-scope refusals — so refuse it
+            # loudly, exactly as the multi-branch combinations already do (v1).
+            if solve_targets and table_targets:
+                raise BuildError(f"{c}: solve1d and table steps cannot be combined in one configuration (v1)")
             if solve_targets:
                 # the numeric campaign: bracket sign-change + single-root scan
                 # + 60-dps bisection + total back-substitution, per sample —

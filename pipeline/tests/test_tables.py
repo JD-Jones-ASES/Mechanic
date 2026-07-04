@@ -273,6 +273,27 @@ def test_arg_kind_mismatch_fails(things_dir, tmp_path):
         compile_all(things_dir, tmp_path / "generated")
 
 
+def test_table_plus_solve1d_in_one_config_fails_loudly(things_dir, tmp_path):
+    # a config with BOTH a table and a solve1d step would silently skip the
+    # table residual certificate and miscount DOF — it must refuse loudly, the
+    # way table+multi-branch and solve1d+multi-branch already do (v1)
+    bad = (
+        TABLE_YAML.replace(
+            "tables:\n",
+            '  - {symbol: q, name: Root, unit: "1", quantity_kind: ratio, default: 0.5, bounds: [0, 1], positive: true, role: derived}\n'
+            "tables:\n",
+        )
+        .replace(
+            "relations:\n",
+            "relations:\n  - {id: qrel, latex: 'q^2 = Y', residual: q**2 - Y, citation: src}\n",
+        )
+        .replace("s: W*Y", "s: W*Y\n      q: {solve1d: {relation: qrel, bracket: ['1e-9', '1']}}")
+    )
+    _write(things_dir, bad)
+    with pytest.raises(BuildError, match="cannot be combined"):
+        compile_all(things_dir, tmp_path / "generated")
+
+
 def test_identity_derivation_step_may_not_touch_table_target(things_dir, tmp_path):
     # flip the lone step to an identity check: it references s and Y, both
     # table-tainted (no closed form), so the taint guard must refuse it

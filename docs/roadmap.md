@@ -55,9 +55,10 @@ factory capability, the way the flywheel exercised `poisson_ratio` and new quant
   ceiling, machine-proven; scoped refusal's second consumer — over-shrunk bores refuse SF_bore
   alone; Timoshenko's own worked example as a published test golden; new µm display unit).
   The radial-field family is complete.
-- **The deliberate schema stress-test:** spur gear pair (Lewis bending) forces a
-  tabulated-data-with-provenance mechanism (form-factor tables as cited data, not magic
-  numbers). Design that capability on purpose, not ad hoc.
+- **The deliberate schema stress-test:** spur gear pair (Lewis bending) ✅ shipped 2026-07-04
+  (S01, PR #13) — forced a tabulated-data-with-provenance mechanism designed on purpose: the
+  first-class `table` plan step (ADR-0009), cited form-factor data with node-exact lookup, linear
+  interpolation pinned in the parity oracle, and a scoped out-of-domain refusal. Catalog 17 → 18.
 
 Per-THING gate (standard practice, from the flywheel/cylinder sessions): machine verification +
 independent first-principles cross-check in `pipeline/tests/` + hand-checkable numeric golden +
