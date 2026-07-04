@@ -18,6 +18,7 @@ import { BeamSim } from "./sims/BeamSim";
 import { BeltSim } from "./sims/BeltSim";
 import { ColumnSim } from "./sims/ColumnSim";
 import { CombinedShaftSim } from "./sims/CombinedShaftSim";
+import { CurvedBeamSim } from "./sims/CurvedBeamSim";
 import { CylinderSim } from "./sims/CylinderSim";
 import { DiskBoreSim } from "./sims/DiskBoreSim";
 import { EccentricColumnSim } from "./sims/EccentricColumnSim";
@@ -67,6 +68,7 @@ const SIMS: Record<
   "stepped-shaft": SteppedShaftSim,
   "rectangular-shaft-torsion": RectTorsionSim,
   "beam-shear-flow": ShearFlowSim,
+  "curved-beam": CurvedBeamSim,
 };
 
 interface Props {

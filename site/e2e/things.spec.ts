@@ -262,7 +262,7 @@ test("verification page discloses authorship and the audit surface", async ({ pa
   await expect(page.getByText(/built end to end by an AI/i).first()).toBeVisible();
   await expect(page.getByText(/No human reviews the content/i).first()).toBeVisible();
   // every THING appears with its audit block (count is a deliberate change detector)
-  expect(await page.locator("section.relation-block").count()).toBe(21); // +beam-shear-flow (S04)
+  expect(await page.locator("section.relation-block").count()).toBe(22); // +curved-beam (S05)
   await expect(page.getByText(/Where physics enters/i).first()).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -1075,4 +1075,68 @@ test("beam shear flow: a short, deep beam warns about neglected shear deflection
   await page.getByLabel("Span (for the slenderness check) value").fill("1");
   await expect(page.locator(".validity-warn").first()).toBeVisible();
   await expect(page.locator(".validity")).toContainText(/short, deep beam|shear deflection/i);
+});
+
+/**
+ * Curved beam (Winkler). Defaults are a crane hook: r_i=40, r_o=100 mm, b=30 mm,
+ * P=12 kN. The stresses are pure statics + geometry (material-blind); only SF moves
+ * with material. Hand-checkable at defaults:
+ *   r_n = 60/ln(2.5) = 65.481 mm ; e = r_c − r_n = 70 − 65.481 = 4.5186 mm
+ *   σ_bi = M c_i/(A e r_i) = 65.79 MPa ; direct P/A = 6.667 MPa ; σ_i = 72.458 MPa
+ *   straight-beam Mc/I = 6M/(bh²) = 46.667 MPa ; K_i = σ_bi/σ_str = 1.4098
+ * The page's point: σ_i > σ_str (the inner fiber runs hotter than the straight
+ * formula predicts), by exactly the geometric factor K_i.
+ */
+test("curved beam: curvature penalty is material-blind; the inner fiber beats Mc/I", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/curved-beam/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  await page.getByTestId("material-select").selectOption("steel-4340");
+  const sigmaI = await readOutput(page, "sigma_i");
+  const sigmaStr = await readOutput(page, "sigma_str");
+  expect(sigmaI).toBeCloseTo(72.458, 1); // MPa (combined inner fiber)
+  expect(await readOutput(page, "sigma_bi")).toBeCloseTo(65.791, 1); // MPa (bending part)
+  expect(sigmaStr).toBeCloseTo(46.667, 1); // MPa (straight-beam Mc/I)
+  expect(await readOutput(page, "sigma_o")).toBeCloseTo(-28.983, 1); // MPa (outer, compression)
+  expect(await readOutput(page, "K_i")).toBeCloseTo(1.4098, 3); // the curvature penalty
+  expect(await readOutput(page, "curv")).toBeCloseTo(1.1667, 3); // r_c/h
+  expect(sigmaI).toBeGreaterThan(sigmaStr); // THE point: curved inner fiber is hotter
+  const sfSteel = await readOutput(page, "SF");
+
+  // statics + geometry only: switching material moves ONLY the margin
+  await page.getByTestId("material-select").selectOption("al-6061-t6");
+  expect(await readOutput(page, "sigma_i")).toBeCloseTo(72.458, 1); // unchanged
+  expect(await readOutput(page, "K_i")).toBeCloseTo(1.4098, 3); // unchanged
+  expect(await readOutput(page, "SF")).toBeLessThan(sfSteel); // lower σ_y → less margin
+  expect(errors).toEqual([]);
+});
+
+test("curved beam: an impossible geometry (r_o ≤ r_i) refuses, sim included", async ({ page }) => {
+  await page.goto("things/curved-beam/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  // drag the outer radius below the inner (default r_i = 40 mm): no section exists
+  await page.getByLabel("Outer radius value").fill("30"); // mm, < r_i
+  await expect(page.locator(".validity-invalid").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/outer radius must exceed|geometry error/i);
+  // the refused readout blanks (global invalid), and the sim shows its refusal
+  await expect(page.locator('[data-output="sigma_i"] output')).toHaveText("—");
+  await expect(page.locator(".sim figcaption")).toContainText(/no honest curved-beam|refused this geometry/i);
+});
+
+test("curved beam: a nearly-straight beam (r_c/h ≥ 10) warns you don't need this page", async ({ page }) => {
+  await page.goto("things/curved-beam/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  // squeeze the radii together: r_i=145, r_o=155 mm → h=10, r_c=150, r_c/h=15;
+  // ease the load so the thin section stays elastic — the ONLY warn is "nearly straight"
+  await page.getByLabel("Hook load (through the center of curvature) value").fill("0.3"); // kN
+  await page.getByLabel("Inner radius value").fill("145");
+  await page.getByLabel("Outer radius value").fill("155");
+  await expect(page.locator(".validity-warn").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/barely curved|do not need|r_c\/h/i);
+  await expect(page.locator(".validity")).not.toContainText(/yield/i); // no competing yield warn
+  // the curvature penalty has all but vanished — the two curves have converged
+  expect(await readOutput(page, "K_i")).toBeLessThan(1.03);
 });

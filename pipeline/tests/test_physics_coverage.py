@@ -23,6 +23,7 @@ PHYSICS_TESTS = {
     "cantilever-beam": "test_beam_physics.py",
     "combined-shaft": "test_combined_physics.py",
     "compound-cylinder": "test_shrinkfit_physics.py",
+    "curved-beam": "test_curved_beam_physics.py",
     "eccentric-column": "test_eccentric_physics.py",
     "euler-column": "test_column_physics.py",
     "flywheel-disk": "test_flywheel_physics.py",

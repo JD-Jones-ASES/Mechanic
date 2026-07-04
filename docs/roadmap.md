@@ -83,6 +83,17 @@ factory capability, the way the flywheel exercised `poisson_ratio` and new quant
   equilibrium in the physics test. thin-tube-torsion's Bredt shear flow was evaluated for migration
   and left as-is (a derivation local carries no `quantity_kind` slot — a schema change is out of
   scope). Catalog 20 → 21.
+- **Curvature stress + a deliberate zero-machinery breather:** curved-beam (Winkler bending) ✅
+  shipped 2026-07-04 (S05) — the crane hook / C-clamp / press frame. The neutral axis shifts off the
+  centroid to r_n = h/ln(r_o/r_i) (the log is the curved-beam analogue of belt-drive's exp), the tiny
+  eccentricity e = r_c − r_n drives the inner-fiber concentration, and a side-by-side straight-beam
+  Mc/I readout exposes the curvature penalty K_i (≈1.4× at the default hook). A single crane-hook
+  configuration superposes the direct P/A on the curved bending with M = P·r_c (the combined-loading
+  pattern from eccentric-column). Deliberately ZERO new machinery — no kind, unit, table, solve, or
+  schema change — with the effort spent instead on the derivation and a machine-proven straight-beam
+  limit: σ_i → Mc/I as r_c/h → ∞, verified by series expansion (K_i = 1 + (h/r_c)/3 + …) in the physics
+  test, which also re-derives r_n and κ from the two section-equilibrium conditions and cross-checks
+  against Roark. Strength-only material axis (σ_y; E and ρ genuinely do not enter). Catalog 21 → 22.
 
 Per-THING gate (standard practice, from the flywheel/cylinder sessions): machine verification +
 independent first-principles cross-check in `pipeline/tests/` + hand-checkable numeric golden +

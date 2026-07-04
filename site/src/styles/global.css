@@ -156,6 +156,21 @@ a { color: var(--accent); }
 .shearflow-profile-hot { fill: #dc2626; opacity: 0.6; stroke: #dc2626; stroke-width: 1.5; }
 .shearflow-joint { stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 5 3; }
 .shearflow-fastener { fill: var(--accent); stroke: var(--ink); stroke-width: 0.75; }
+/* curved-beam (CurvedBeamSim): the C-throat member and load, then the stress panel —
+   the section depth strip, the σ = 0 datum, the curved-beam profile (accent, red at
+   yield), the shifted neutral axis, and the inner/outer fiber markers. The dashed
+   straight-beam Mc/I line and the centroid reuse .beam-ghost. */
+.curvedbeam-member { fill: var(--line); stroke: var(--ink); stroke-width: 1.5; }
+.curvedbeam-origin { fill: var(--ink); }
+.curvedbeam-cut { stroke: var(--ink); stroke-width: 2.5; }
+.curvedbeam-load { stroke: var(--accent); stroke-width: 2; }
+.curvedbeam-section { fill: var(--line); stroke: var(--ink); stroke-width: 1; }
+.curvedbeam-datum { stroke: var(--muted); stroke-width: 1; }
+.curvedbeam-profile { stroke: var(--accent); stroke-width: 2; }
+.curvedbeam-profile-hot { stroke: #dc2626; stroke-width: 2.5; }
+.curvedbeam-axis { stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 2 2; }
+.curvedbeam-fiber { fill: var(--accent); }
+.curvedbeam-fiber-hot { fill: #dc2626; }
 /* shared sim vocabulary: stress bands (StressBands.tsx) shade where a field
    concentrates and turn red past first yield; .sim-outline is a figure's
    structural outline */

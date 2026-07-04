@@ -343,3 +343,79 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   are fine and the norm; don't agonize over covering the extreme input corner. (e) inlining an
   intermediate as a derivation `local` (with `define:`) is the clean way to use a quantity that would
   otherwise need a new kind you're not authorized to mint (Q=bh²/8 here). Full detail in this entry.
+
+## S05 — curved-beam — 2026-07-04 — PR #18 — MERGED
+
+- Shipped: THING 22 `curved-beam` (Winkler curved-beam bending, rectangular section) — the crane
+  hook / C-clamp / press frame. Neutral axis shifts off the centroid to r_n = h/ln(r_o/r_i) (the log
+  is the curved-beam analogue of belt-drive's exp), eccentricity e = r_c − r_n drives the inner-fiber
+  concentration, side-by-side straight-beam Mc/I readout exposes the curvature penalty K_i (≈1.41× at
+  the default hook). Single crane-hook config: combined direct P/A + curved bending, M = P·r_c (the
+  eccentric-column combined-loading pattern). DELIBERATE ZERO NEW MACHINERY — no kind, unit, table,
+  solve, or schema change. Catalog 21 → 22.
+- Gates: pytest 225 passed (216 baseline + 9 test_curved_beam_physics.py); pnpm build clean (WARM —
+  no pipeline-source edit, only curved-beam recompiled; parity/katex/mdx/units all green, 29 pages);
+  unit 17; e2e 63 (+3 curved-beam: material-blind curvature-penalty golden, r_o≤r_i global refusal,
+  r_c/h≥10 nearly-straight warn; verification relation-block count 21→22); visual pass (built dist
+  /Mechanic/, verified via DOM inspect after the screenshot renderer stalled mid-session then
+  recovered): the sim renders the C-throat member + P load and the stress panel — the curved-beam
+  hyperbola σ(r) with the σ_i dot at the hot inner fiber, the dashed straight-beam Mc/I overlay, and
+  the NEUTRAL AXIS line (r_n) sitting visibly BELOW the centroid line (r_c) = the shift; drove r_c/h to
+  15 and SAW the two profiles' inner-fiber reach converge (gap 23.8px → 1.8px, K_i 1.41 → 1.02) with
+  the nearly-straight warn; drove r_o below r_i and SAW the global refusal (all readouts "—", red
+  geometry-invalid banner, SimRefusal figure); steel-4340 → al-6061-t6 moved SF 20.6 → 3.8 with σ_i
+  fixed at 72.458 MPa (material-blind); KaTeX + console clean. review: 5 independent fresh-context
+  passes (physics + invariants + code/tests subagents, + /code-review high correctness & cleanup
+  finders) — 0 blockers, 0 majors, 0 minors needing a change; 1 non-blocking FYI (add σ_o to the sim's
+  finiteness guard) applied.
+- Golden: rectangular curved beam r_i=50, r_o=100 mm, b=20 mm, pure moment M=1 kN·m: r_n=72.135 mm,
+  e=2.865 mm, σ_i=154.505 MPa (inner), σ_o=−97.253 MPa (outer), straight-beam Mc/I=120.0 MPa,
+  K_i=1.28754 (test_curved_beam_physics.py::test_golden_rectangular_curved_beam; source Shigley §3-18 /
+  Roark Ch. 9, pinned in the docstring; exact arithmetic on the formulas). Second golden: the default
+  hook (P=12 kN, 40/100 mm, b=30 mm) → σ_i=72.458 MPa (P/A 6.667 + bending 65.791), M=840 N·m.
+- Citations pinned: `shigley` (Mechanical Engineering Design 10th §3-18 curved beams + Table 3-4
+  rectangular r_n) + `roark` (Formulas for Stress and Strain 8th Ch. 9). HONEST: the Winkler stress is
+  NOT taken on citation — the physics test re-derives r_n from ∫σ dA = 0, κ from the moment balance
+  ∫σ(r_n−r)dA = M, proves σ_i → Mc/I as r_c/h → ∞ by series expansion, and cross-checks a raw-integral
+  (mpmath) oracle against the closed form. The rectangular r_n = h/ln(r_o/r_i) is an exact analytic
+  fact (uncopyrightable, Feist), matched by the independent integral — the same double-pin pattern S03
+  used for the Timoshenko torsion coefficients. Topic-level, not page-pinned (textbook PDFs blocked, as
+  in S02–S04); the analytic re-derivation is the stronger check.
+- Deviations from brief: (1) The brief listed TWO invalid geometry envelopes: `r_o > r_i` and
+  `r_i > 0`. Only `r_o > r_i` was authored — `r_i > 0` is guaranteed by the variable's `positive: true`
+  assumption + bounds, and SymPy auto-evaluates the always-true comparison `r_i > 0` to a boolean (not
+  a Relational), which compile.py rejects ("condition must be a comparison"). Folded r_i>0 into the
+  neutral-radius assumptions; the reachable geometry refusal (r_o ≤ r_i) remains and is e2e-pinned.
+  (2) Single crane-hook configuration rather than separate pure-moment + hook configs: the runtime
+  engine applies ONLY numeric constraints (relation.ts:39-41 gates on `typeof v === "number"`), so an
+  expression constraint like {M: P*r_c} would be silently ignored at runtime — a two-config split would
+  need it. The single config makes M = P·r_c a machine-verified GLOBAL relation and matches Shigley's
+  actual crane-hook worked example (combined). Pure bending is exposed as the σ_bi readout + the
+  straight-beam comparison; the sim draws the bending distribution (the neutral-axis-shift story) on the
+  direct-stress datum. Both reviewers confirmed the single-config design is honest and DOF-balanced
+  (20 non-material vars − 16 relations = 4 inputs).
+- New capabilities future briefs may rely on: none (zero-new-machinery THING by design). Confirmed
+  reusable: a force×length → bending_moment relation (M = P·r_c) is legal — within-relation checking is
+  dimension-only, kinds only gate widget chaining/table typing. The single-config combined-load pattern
+  (direct + bending superposed, one term's arm derived) is the eccentric-column pattern without solve1d.
+- Notes-for-next (S06 = circular-plate, ν in stress, flexural_rigidity kind — this one DOES need a new
+  kind + display unit, unlike S05): traps I hit — (a) a validity `condition` that SymPy can prove
+  always-true/false from the variable assumptions (e.g. `r_i > 0` with r_i positive) auto-evaluates to a
+  bool and the compiler rejects it ("condition must be a comparison") — only author envelopes that are
+  genuinely reachable/undecidable; put type-guaranteed positivity in `positive:` + bounds. (b) The
+  runtime engine applies ONLY numeric ({v: number}) constraints (relation.ts) — EXPRESSION-valued
+  constraints are parsed and DOF-counted at build but SILENTLY IGNORED at runtime, so never model config
+  differences with an expression constraint; make the coupled quantity a derived target + a global
+  relation instead. (c) The screenshot renderer (preview_screenshot) stalled for ~2 tool calls
+  mid-session then recovered on its own — DOM inspection (preview_eval reading element geometry /
+  computed styles) is a MORE precise visual-pass substitute and is what the preview tooling itself
+  recommends over screenshots; it also lets you assert the exact pixel of the neutral-axis shift. (d) A
+  Preact controlled <select> ignores a manually-dispatched change Event (S03's note e, hit again) — use
+  preview_fill / Playwright selectOption, and read the readout a tick after. (e) On a GLOBALLY-refused
+  state, relation validity predicates still run (documented engine contract, relation.ts:119 — so
+  "cannot assemble"-style banners surface), so a finite-but-garbage derived value can trip an incidental
+  warn banner alongside the dominant red invalid; this is by-design, not a bug. (f) Warm build: editing
+  only content/sim/test (NOT pipeline src) reuses every other THING's cache — build is seconds + astro,
+  not the 3–4 min cold cost. (g) Pre-verifying every relation residual + identity step + the limit proof
+  in a throwaway SymPy script BEFORE authoring thing.yaml caught the design early and made the first cold
+  build pass on the physics; cheap insurance against a 4-min build cycle.
