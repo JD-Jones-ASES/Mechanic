@@ -66,7 +66,7 @@ factory capability, the way the flywheel exercised `poisson_ratio` and new quant
   poison paths (D/d table auto-guard + r/d authored envelope). Multi-column consumption is a
   compiler/verifier logic extension, no schema/artifact change. Catalog 18 → 19.
 - **Third table consumer, classical-elasticity coefficients:** rectangular-shaft-torsion
-  (Saint-Venant torsion of a solid rectangular bar) ✅ shipped 2026-07-04 (S03, PR #TBD) — the
+  (Saint-Venant torsion of a solid rectangular bar) ✅ shipped 2026-07-04 (S03, PR #16) — the
   first `table` use outside a machine-element chart: c1(a/b), c2(a/b) from Timoshenko §109 (two
   columns, one lookup), τ_max at the long-side midpoint (corners carry zero), and an equal-area
   round-shaft efficiency comparison ("why square shafts are a bad deal"). New `twist_rate` quantity
