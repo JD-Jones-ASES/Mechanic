@@ -311,3 +311,327 @@ def test_wrong_downstream_solution_fails_back_substitution(things_dir, tmp_path)
     _write(things_dir, bad)
     with pytest.raises(BuildError, match="proxy"):
         compile_all(things_dir, tmp_path / "generated")
+
+
+def test_single_column_guard_message_is_unchanged(things_dir, tmp_path):
+    # S01-preservation: the single-column path keeps the SINGULAR guard message
+    # and the `Y = Table(n)` latex it emitted before multi-column support existed
+    # (the message/latex are now built in a post-loop pass; this pins byte-parity).
+    artifact, _ = _compile(things_dir, tmp_path)
+    step = next(s for s in artifact["configurations"][0]["plan"] if s["type"] == "table")
+    assert step["targets"] == ["Y"]
+    assert step["guard"]["scope"] == ["Y", "s"]
+    assert step["latex"].startswith("Y = ")
+    assert step["guard"]["message"] == (
+        "Factor is read from Demo Table, published only for Count between 10 and 40; "
+        "outside that range there is no data, so it (and anything computed from it) is refused."
+    )
+
+
+# ============================================================================
+# Real-arg MULTI-COLUMN consumption (the S02 stepped-shaft-fillet capability):
+# several targets reading the SAME table at the SAME arg are grouped into ONE
+# plan step, each filling its own column. S01 (single column read at two
+# DIFFERENT args → two separate steps) is unaffected and is pinned above.
+# ============================================================================
+
+# arg x (a REAL ratio) → two columns [A, b]; downstream p = A·x^b and z = 10·p.
+# DOF: {x, A, b, p, z} = 5 unknowns, input [x] = 1; relations kfit + down (2)
+# plus the table pinning A AND b (2) = 4; 5 − 4 = 1. It ONLY balances if EACH
+# column counts as one relation — the two-column DOF test.
+TABLE2_YAML = textwrap.dedent("""
+    id: table2-fixture
+    title: Two-column table fixture
+    facets: [kinematics]
+    variables:
+      - {symbol: x, name: Ratio arg, unit: "1", quantity_kind: ratio, default: 2.0, bounds: [1.0, 4.0], positive: true}
+      - {symbol: A, name: Coefficient A, unit: "1", quantity_kind: ratio, default: 0.9, bounds: [0.0, 2.0], positive: true, role: derived}
+      - {symbol: b, name: Exponent b, unit: "1", quantity_kind: ratio, default: -0.2, bounds: [-1.0, 0.0], role: derived}
+      - {symbol: p, name: Product, unit: "1", quantity_kind: ratio, default: 0.78, bounds: [0.0, 10.0], positive: true, role: derived}
+      - {symbol: z, name: Downstream, unit: "1", quantity_kind: ratio, default: 7.8, bounds: [0.0, 100.0], positive: true, role: derived}
+    tables:
+      - id: demo-AB
+        name: Demo AB
+        citation: src
+        provenance: "Demo two-column values, invented for the fixture."
+        interpolation_citation: src
+        arg: x
+        columns: [A, b]
+        mode: interpolate-linear
+        rows:
+          - [1.0, 0.80, -0.10]
+          - [2.0, 0.90, -0.20]
+          - [4.0, 1.00, -0.30]
+    relations:
+      - {id: kfit, latex: 'p = A x^{b}', residual: p - A*x**b, citation: src}
+      - {id: down, latex: 'z = 10 p', residual: z - 10*p, citation: src}
+    configurations:
+      - id: default
+        label: Look up A and b at one arg, form the product
+        inputs: [x]
+        solutions:
+          A: {table: demo-AB, at: x}
+          b: {table: demo-AB, at: x}
+          p: A*x**b
+          z: 10*p
+    derivation:
+      steps:
+        - expr: Eq(z, 10*p)
+          prose: "z scales the tabulated product; A and b are tainted, so this is a definition step."
+          rule: "definition: downstream of a two-column tabulated lookup"
+          check: definition
+    sim: {engine: statics-cascade, config: {}}
+    sources:
+      - {id: src, citation: "Fixture source."}
+""")
+
+
+@pytest.fixture
+def things2_dir(tmp_path):
+    d = tmp_path / "things" / "table2-fixture"
+    d.mkdir(parents=True)
+    (d / "thing.yaml").write_text(TABLE2_YAML, encoding="utf-8")
+    return tmp_path / "things"
+
+
+def _compile2(things2_dir, tmp_path, yaml_text=None):
+    if yaml_text is not None:
+        (things2_dir / "table2-fixture" / "thing.yaml").write_text(yaml_text, encoding="utf-8")
+    out = tmp_path / "generated"
+    compile_all(things2_dir, out)
+    artifact = json.loads((out / "table2-fixture.compiled.json").read_text(encoding="utf-8"))
+    fns = (out / "table2-fixture.fns.ts").read_text(encoding="utf-8")
+    return artifact, fns
+
+
+def test_two_columns_group_into_one_step(things2_dir, tmp_path):
+    artifact, fns = _compile2(things2_dir, tmp_path)
+    tsteps = [s for s in artifact["configurations"][0]["plan"] if s["type"] == "table"]
+    assert len(tsteps) == 1, "A and b at the same arg must share ONE plan step"
+    step = tsteps[0]
+    assert step["targets"] == ["A", "b"]      # positional: column 0 = A, column 1 = b
+    assert step["table_id"] == "demo-AB"
+    assert step["arg_fn"] in fns              # ONE arg fn for the whole group
+    assert step["rows"][0] == [1.0, 0.80, -0.10]
+    assert step["rows"][-1] == [4.0, 1.00, -0.30]
+
+
+def test_columns_map_by_name_not_authoring_order(things2_dir, tmp_path):
+    # author b BEFORE A (a content-only 3-step swap): the targets array is still
+    # [A, b] because a column is chosen by NAME, not by authoring order
+    swapped = (
+        TABLE2_YAML.replace("A: {table: demo-AB, at: x}", "__TMP__")
+        .replace("b: {table: demo-AB, at: x}", "A: {table: demo-AB, at: x}")
+        .replace("__TMP__", "b: {table: demo-AB, at: x}")
+    )
+    assert "b: {table: demo-AB, at: x}\n" in swapped  # b really is first now
+    artifact, _ = _compile2(things2_dir, tmp_path, swapped)
+    step = next(s for s in artifact["configurations"][0]["plan"] if s["type"] == "table")
+    assert step["targets"] == ["A", "b"]
+
+
+def test_two_column_scope_is_the_union_of_both_reaches(things2_dir, tmp_path):
+    # refusing the lookup poisons BOTH columns and everything downstream:
+    # A, b, p (reads A and b), z (reads p) — the union of the two reaches, sorted
+    artifact, _ = _compile2(things2_dir, tmp_path)
+    step = next(s for s in artifact["configurations"][0]["plan"] if s["type"] == "table")
+    assert step["guard"]["scope"] == ["A", "b", "p", "z"]
+    assert step["guard"]["severity"] == "invalid"
+
+
+def test_two_column_dof_counts_each_column_as_a_relation(things2_dir, tmp_path):
+    # a successful compile IS the proof: 5 unknowns − (2 relations + 2 columns) =
+    # 1 = the single input x. If a column were treated as free, DOF would be 2.
+    artifact, _ = _compile2(things2_dir, tmp_path)
+    assert artifact["configurations"][0]["inputs"] == ["x"]
+
+
+def test_two_column_parity_reproduces_both_columns(things2_dir, tmp_path):
+    artifact, _ = _compile2(things2_dir, tmp_path)
+    rows = _rows([[1.0, 0.80, -0.10], [2.0, 0.90, -0.20], [4.0, 1.00, -0.30]])
+    samples = artifact["configurations"][0]["samples"]
+    assert samples
+    for smp in samples:
+        x = smp["inputs"]["x"]
+        xf = sp.Float(str(x), 50)
+        expA = float(table_lookup_ref(rows, xf, "interpolate-linear", 1))
+        expb = float(table_lookup_ref(rows, xf, "interpolate-linear", 2))
+        assert abs(smp["outputs"]["A"] - expA) < 1e-9
+        assert abs(smp["outputs"]["b"] - expb) < 1e-9
+        assert abs(smp["outputs"]["p"] - expA * x ** expb) < 1e-6 * max(abs(smp["outputs"]["p"]), 1.0)
+        assert abs(smp["outputs"]["z"] - 10 * smp["outputs"]["p"]) < 1e-6 * max(abs(smp["outputs"]["z"]), 1.0)
+
+
+def test_two_column_latex_and_message_name_both_columns(things2_dir, tmp_path):
+    artifact, _ = _compile2(things2_dir, tmp_path)
+    step = next(s for s in artifact["configurations"][0]["plan"] if s["type"] == "table")
+    assert step["latex"].startswith("\\left(A,\\ b\\right) = ")   # tuple LHS
+    assert "Demo" in step["latex"]                                # the table name
+    msg = step["guard"]["message"]
+    assert "Coefficient A" in msg and "Exponent b" in msg         # both columns named
+    assert "are read from" in msg
+    assert "they (and anything computed from them) are refused." in msg
+
+
+def test_multi_column_target_must_name_a_column(things2_dir, tmp_path):
+    # a consumer of a MULTI-column table that names no column would silently map
+    # to column 0 — reject it (single-column S01 template reuse stays allowed).
+    # C reads demo-AB but is not a column; the loop must refuse it by name.
+    fixture = textwrap.dedent("""
+        id: table2-fixture
+        title: Non-column consumer
+        facets: [kinematics]
+        variables:
+          - {symbol: x, name: Ratio arg, unit: "1", quantity_kind: ratio, default: 2.0, bounds: [1.0, 4.0], positive: true}
+          - {symbol: A, name: Coefficient A, unit: "1", quantity_kind: ratio, default: 0.9, bounds: [0.0, 2.0], positive: true, role: derived}
+          - {symbol: b, name: Exponent b, unit: "1", quantity_kind: ratio, default: -0.2, bounds: [-1.0, 0.0], role: derived}
+          - {symbol: C, name: Bad target, unit: "1", quantity_kind: ratio, default: 0.9, bounds: [0.0, 2.0], positive: true, role: derived}
+        tables:
+          - id: demo-AB
+            name: Demo AB
+            citation: src
+            provenance: "Demo two-column values."
+            interpolation_citation: src
+            arg: x
+            columns: [A, b]
+            mode: interpolate-linear
+            rows:
+              - [1.0, 0.80, -0.10]
+              - [2.0, 0.90, -0.20]
+              - [4.0, 1.00, -0.30]
+        relations:
+          - {id: crel, latex: 'C = A', residual: C - A, citation: src}
+        configurations:
+          - id: default
+            label: A third target names no column
+            inputs: [x]
+            solutions:
+              A: {table: demo-AB, at: x}
+              b: {table: demo-AB, at: x}
+              C: {table: demo-AB, at: x}
+        derivation:
+          steps:
+            - {expr: 'Eq(C, A)', prose: "C is tainted.", rule: "definition", check: definition}
+        sim: {engine: statics-cascade, config: {}}
+        sources:
+          - {id: src, citation: "Fixture source."}
+    """)
+    with pytest.raises(BuildError, match="does not name any column"):
+        _compile2(things2_dir, tmp_path, fixture)
+
+
+def test_unfilled_column_fails_loudly(things2_dir, tmp_path):
+    # declare a two-column table but fill only column A (b comes from a formula):
+    # the b column is left an unlabelled runtime lookup — refuse it by name
+    bad = TABLE2_YAML.replace("b: {table: demo-AB, at: x}", "b: x - 1.8")
+    with pytest.raises(BuildError, match="never consumed"):
+        _compile2(things2_dir, tmp_path, bad)
+
+
+def test_columns_authored_non_consecutively_fail(things2_dir, tmp_path):
+    # an eval between the two column consumers would make the runtime (which
+    # fills all columns at the group's single step) and the pipeline verification
+    # (which fills b at b's later position) disagree — refuse the interleaving
+    fixture = textwrap.dedent("""
+        id: table2-fixture
+        title: Non-consecutive columns
+        facets: [kinematics]
+        variables:
+          - {symbol: x, name: Ratio arg, unit: "1", quantity_kind: ratio, default: 2.0, bounds: [1.0, 4.0], positive: true}
+          - {symbol: A, name: Coefficient A, unit: "1", quantity_kind: ratio, default: 0.9, bounds: [0.0, 2.0], positive: true, role: derived}
+          - {symbol: b, name: Exponent b, unit: "1", quantity_kind: ratio, default: -0.2, bounds: [-1.0, 0.0], role: derived}
+          - {symbol: w, name: Interloper, unit: "1", quantity_kind: ratio, default: 3.0, bounds: [0.0, 10.0], positive: true, role: derived}
+        tables:
+          - id: demo-AB
+            name: Demo AB
+            citation: src
+            provenance: "Demo two-column values."
+            interpolation_citation: src
+            arg: x
+            columns: [A, b]
+            mode: interpolate-linear
+            rows:
+              - [1.0, 0.80, -0.10]
+              - [2.0, 0.90, -0.20]
+              - [4.0, 1.00, -0.30]
+        relations:
+          - {id: wrel, latex: 'w = x + 1', residual: w - (x + 1), citation: src}
+        configurations:
+          - id: default
+            label: An eval interrupts the two column consumers
+            inputs: [x]
+            solutions:
+              A: {table: demo-AB, at: x}
+              w: x + 1
+              b: {table: demo-AB, at: x}
+        derivation:
+          steps:
+            - expr: Eq(w, x + 1)
+              prose: "An ordinary closed form written between the two column lookups."
+              rule: "definition"
+              check: definition
+        sim: {engine: statics-cascade, config: {}}
+        sources:
+          - {id: src, citation: "Fixture source."}
+    """)
+    with pytest.raises(BuildError, match="consecutively"):
+        _compile2(things2_dir, tmp_path, fixture)
+
+
+def test_single_column_read_at_two_args_stays_two_disjoint_steps(things2_dir, tmp_path):
+    # THE S01 shape (spur-gear-pair): ONE single-column table consumed twice at
+    # DIFFERENT args (N_p, N_g). The (table_id, srepr(at)) group key must keep
+    # these as TWO separate steps with disjoint scopes — if the arg were dropped
+    # from the key they would collapse into one group and mis-scope/collide. Only
+    # e2e covered this before; pin it at the pipeline level here.
+    fixture = textwrap.dedent("""
+        id: table2-fixture
+        title: One column, two args
+        facets: [kinematics]
+        variables:
+          - {symbol: n, name: Count 1, unit: "1", quantity_kind: count, default: 20, bounds: [10, 40], integer: true, positive: true}
+          - {symbol: m, name: Count 2, unit: "1", quantity_kind: count, default: 30, bounds: [10, 40], integer: true, positive: true}
+          - {symbol: W, name: Load, unit: N, quantity_kind: force, default: 1000, bounds: [1, 100000], positive: true}
+          - {symbol: Y, name: Factor n, unit: "1", quantity_kind: ratio, default: 0.32, bounds: [0.0, 1.0], role: derived}
+          - {symbol: Y2, name: Factor m, unit: "1", quantity_kind: ratio, default: 0.42, bounds: [0.0, 1.0], role: derived}
+          - {symbol: s, name: Product n, unit: N, quantity_kind: force, default: 320, bounds: [-1e6, 1e6], role: derived}
+          - {symbol: s2, name: Product m, unit: N, quantity_kind: force, default: 420, bounds: [-1e6, 1e6], role: derived}
+        tables:
+          - id: demo-Y
+            name: Demo Table
+            citation: src
+            provenance: "Demo single-column values."
+            interpolation_citation: src
+            arg: n
+            columns: [Y]
+            mode: interpolate-linear
+            rows:
+              - [10, 0.20]
+              - [20, 0.32]
+              - [40, 0.50]
+        relations:
+          - {id: proxy1, latex: 's = W Y', residual: s - W*Y, citation: src}
+          - {id: proxy2, latex: 's2 = W Y2', residual: s2 - W*Y2, citation: src}
+        configurations:
+          - id: default
+            label: One column read at two different args
+            inputs: [n, m, W]
+            solutions:
+              Y: {table: demo-Y, at: n}
+              Y2: {table: demo-Y, at: m}
+              s: W*Y
+              s2: W*Y2
+        derivation:
+          steps:
+            - {expr: 'Eq(s, W*Y)', prose: "downstream of a tabulated lookup", rule: "definition", check: definition}
+        sim: {engine: statics-cascade, config: {}}
+        sources:
+          - {id: src, citation: "Fixture source."}
+    """)
+    artifact, _ = _compile2(things2_dir, tmp_path, fixture)
+    tsteps = [s for s in artifact["configurations"][0]["plan"] if s["type"] == "table"]
+    assert len(tsteps) == 2, "different args ⇒ two separate single-column steps (the S01 shape)"
+    assert {tuple(t["targets"]) for t in tsteps} == {("Y",), ("Y2",)}  # Y2 uses the fallback column 0
+    scopes = [set(t["guard"]["scope"]) for t in tsteps]
+    assert scopes[0].isdisjoint(scopes[1]), f"per-arg steps must have disjoint scopes, got {scopes}"
+    assert {frozenset(s) for s in scopes} == {frozenset({"Y", "s"}), frozenset({"Y2", "s2"})}

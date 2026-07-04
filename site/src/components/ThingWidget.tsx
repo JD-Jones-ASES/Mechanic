@@ -30,6 +30,7 @@ import { ShaftSim } from "./sims/ShaftSim";
 import { ShrinkFitSim } from "./sims/ShrinkFitSim";
 import { SpringSim } from "./sims/SpringSim";
 import { SSBeamSim } from "./sims/SSBeamSim";
+import { SteppedShaftSim } from "./sims/SteppedShaftSim";
 import { TubeSim } from "./sims/TubeSim";
 import { VesselSim } from "./sims/VesselSim";
 
@@ -61,6 +62,7 @@ const SIMS: Record<
   "simply-supported-beam": SSBeamSim,
   "combined-shaft": CombinedShaftSim,
   "thin-tube-torsion": TubeSim,
+  "stepped-shaft": SteppedShaftSim,
 };
 
 interface Props {

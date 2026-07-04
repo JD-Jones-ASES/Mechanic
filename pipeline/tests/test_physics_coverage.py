@@ -33,6 +33,7 @@ PHYSICS_TESTS = {
     "rotating-disk-bore": "test_disk_physics.py",
     "simply-supported-beam": "test_ssbeam_physics.py",
     "spur-gear-pair": "test_gear_physics.py",
+    "stepped-shaft-fillet": "test_stepped_shaft_physics.py",
     "thick-walled-cylinder": "test_cylinder_physics.py",
     "thin-tube-torsion": "test_tube_physics.py",
     "torsion-shaft": "test_shaft_physics.py",

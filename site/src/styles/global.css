@@ -136,6 +136,10 @@ a { color: var(--accent); }
 .link-pivot { fill: var(--ink); }
 .link-pin { fill: var(--paper); stroke: var(--ink); stroke-width: 2; }
 .shaft-body { stroke: var(--accent); stroke-width: 3; }
+/* stepped shaft (SteppedShaftSim): the metal half-section, and the withheld
+   fillet marker drawn when K_t is refused (scoped) but the geometry stands */
+.stepped-shaft-body { fill: var(--line); stroke: var(--ink); stroke-width: 2; }
+.stepped-hotspot { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 4 3; }
 /* shared sim vocabulary: stress bands (StressBands.tsx) shade where a field
    concentrates and turn red past first yield; .sim-outline is a figure's
    structural outline */

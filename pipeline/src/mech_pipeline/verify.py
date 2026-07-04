@@ -474,8 +474,8 @@ def verify_table_configuration(
                     hole = True
                     break
                 known[target] = val
-            else:  # ("table", target, table_id, arg_expr)
-                _, target, table_id, arg_expr = step
+            else:  # ("table", target, table_id, arg_expr, col) — col is 1-based
+                _, target, table_id, arg_expr, col = step
                 tbl = tables[table_id]
                 arg_val = arg_expr.subs(known).evalf(60, chop=True)
                 if not arg_val.is_number or arg_val.is_real is not True:
@@ -485,7 +485,7 @@ def verify_table_configuration(
                 if bool(arg_val < lo) or bool(arg_val > hi):
                     hole = True  # out of domain: refusal proven elsewhere; resample
                     break
-                y = table_lookup_ref(tbl.rows, arg_val, tbl.mode, 1)
+                y = table_lookup_ref(tbl.rows, arg_val, tbl.mode, col)
                 if y is sp.nan:
                     hole = True  # exact-row miss on a sampled arg: resample
                     break

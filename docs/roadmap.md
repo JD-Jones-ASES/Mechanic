@@ -59,6 +59,12 @@ factory capability, the way the flywheel exercised `poisson_ratio` and new quant
   (S01, PR #13) — forced a tabulated-data-with-provenance mechanism designed on purpose: the
   first-class `table` plan step (ADR-0009), cited form-factor data with node-exact lookup, linear
   interpolation pinned in the parity oracle, and a scoped out-of-domain refusal. Catalog 17 → 18.
+- **Second table consumer, real-arg multi-column:** stepped-shaft-fillet (shoulder-fillet stress
+  concentration) ✅ shipped 2026-07-04 (S02, PR #15) — hardened the `table` capability under a REAL
+  argument (D/d) filling TWO columns (A, b) from one lookup, three cited Norton App-C tables
+  (axial/bending/torsion), K_t = A·(r/d)^b applied to a nominal stress, with two independent scoped
+  poison paths (D/d table auto-guard + r/d authored envelope). Multi-column consumption is a
+  compiler/verifier logic extension, no schema/artifact change. Catalog 18 → 19.
 
 Per-THING gate (standard practice, from the flywheel/cylinder sessions): machine verification +
 independent first-principles cross-check in `pipeline/tests/` + hand-checkable numeric golden +

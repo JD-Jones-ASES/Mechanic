@@ -50,7 +50,7 @@ names ride in the Date cell (`<date> · <branch>`).
 |-----|----------------------------------------------------------------|---------|--------|-----|------------|-------|
 | S00 | Docs: session system bootstrap                                 | —       | DONE   | #11 | 2026-07-04 | (the plan is the brief) |
 | S01 | spur-gear-pair (Lewis) + `table` plan-step capability + ADR-0009 | 18    | DONE   | #13 | 2026-07-04 | [S01](briefs/S01-spur-gear-pair.md) |
-| S02 | stepped-shaft-fillet (Kt fits; real-arg multi-column table)    | 19      | QUEUED | —   | —          | [S02](briefs/S02-stepped-shaft-fillet.md) |
+| S02 | stepped-shaft-fillet (Kt fits; real-arg multi-column table)    | 19      | DONE   | #15 | 2026-07-04 | [S02](briefs/S02-stepped-shaft-fillet.md) |
 | S03 | rectangular-shaft-torsion (Saint-Venant; twist_rate kind)      | 20      | QUEUED | —   | —          | [S03](briefs/S03-rectangular-shaft-torsion.md) |
 | S04 | beam-shear-flow (shear_flow kind)                              | 21      | QUEUED | —   | —          | [S04](briefs/S04-beam-shear-flow.md) |
 | S05 | curved-beam (Winkler; zero new machinery)                      | 22      | QUEUED | —   | —          | [S05](briefs/S05-curved-beam.md) |

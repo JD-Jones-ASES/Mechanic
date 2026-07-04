@@ -157,3 +157,70 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   QUEUED row for a fresh full-budget session rather than started and PAUSED mid-way (protocol prefers a
   clean stop over confusing inherited state). Provided source PDFs were read in place for fact
   extraction only — never copied into the repo or committed (verified `git ls-files` clean of PDFs).
+
+## S02 — stepped-shaft-fillet + real-arg multi-column table capability — 2026-07-04 — PR #15 — MERGED
+
+- Shipped: THING 19 `stepped-shaft-fillet` (shoulder-fillet stress concentration; 3 configs
+  axial/bending/torsion, three cited Norton App-C `(A,b)` tables, K_t=A·(r/d)^b, σ_max=K_t·σ_nom, SF)
+  + the real-arg **multi-column** `table` consumption capability (one lookup at D/d fills BOTH columns
+  A,b) as a compile/verify LOGIC change — no schema/artifact-shape change. Catalog 18 → 19.
+- Gates: pytest 201 passed (184 baseline + 11 test_tables.py multi-column incl. the S01 two-args
+  regression + 6 test_stepped_shaft_physics.py); pnpm build clean (cold — pipeline-source edit busts
+  fingerprints; parity 864 values / 19 artifacts, katex 769, mdx 38 files, units 413 refs); unit 17;
+  e2e 54 (+4 stepped-shaft: axial golden + material-blind K_t, three-config K_t, D/d table-guard
+  refusal, r/d envelope refusal; verification relation-block count 18→19); visual pass: opened built
+  dist at /Mechanic/things/stepped-shaft-fillet/ — stepped shaft draws with a StressBands fillet bloom,
+  axial F arrows (K_t 1.914); switched to bending (M moment glyph, K_t 1.698) and torsion (T glyph,
+  K_t 1.459) — same geometry, different concentration; drove r/d=0.45 → K_t/σ_max/SF blank, bloom→dashed
+  marker + banner, A/b LIVE (poison path 2); drove D/d=3 → A,b,K_t,σ_max,SF ALL blank, multi-column guard
+  names both columns (poison path 1); 2024-T3→Ti K_t fixed at 1.6981 while SF 1.91→5.12; KaTeX 0 errors;
+  console clean; /things/ card + /verification/ block present. review: physics + invariants + code/tests
+  (3 fresh-context subagents) + /code-review correctness (3 angles: line-by-line, removed-behavior,
+  cross-file). 2 real findings, both FIXED — (a) physics-test docstring claimed cross-check worst-case
+  ~3.2% but the real max over the committed points is 4.73% (bending D/d=1.5, r/d=0.25); corrected the
+  stated max + softened "comfortably inside" (test still passes honestly, 4.73%<5%); (b) added a
+  pipeline regression test for the S01 shape (one single-column table read at two DIFFERENT args → two
+  disjoint steps) that only e2e covered before. Rebutted: guard-message names the table's declared arg
+  not the lookup arg (pre-existing, not this diff; doesn't affect S02 where `at: Dd` IS the arg);
+  same-table-same-arg-twice now errors (intentional, no THING does it); load_configurations is long
+  (~440 lines, future helper-extraction — brief scoped bugfixes only). Invariants/cross-file/line-by-line
+  angles: clean.
+- Golden: by-hand K_t, bending D/d=1.50 (Norton Fig C-2 row A=0.93836, b=-0.25759), r/d=0.10:
+  K_t = 0.93836·0.10^(-0.25759) = 1.69809 ≈ 1.698 (test_stepped_shaft_physics.py::test_kt_golden_by_hand,
+  which also asserts the authored table carries those coefficients bit-for-bit). Nominal stresses
+  (32M/πd³, 16T/πd³, 4F/πd²) re-derived from I/J/A. Norton vs Roark Table 6-1 case III-2 cross-check
+  agrees within 5% over D/d≥1.5 (observed max 4.73% bending); band = both sources' own stated fit
+  accuracy vs Peterson, NOT tuned to pass.
+- Citations pinned: `norton` (Norton *Machine Design: An Integrated Approach* App. C Figs C-1/C-2/C-3,
+  owner-provided scan 2026-07-04) — (A,b) read digit-for-digit, cross-checked vs Roark Table 6-1 in the
+  physics test. HONEST: the (A,b) are cited DATA, not machine-proven; interpolation between D/d rows IS
+  parity-proven. Shigley Fig A-15-8/9 named as the same chart family, never digitized.
+- Deviations from brief: (1) σ_nom entered DIRECTLY as a free input rather than computed per-config from
+  M/T/F — the decided design in the prior S02 log State section: the single-arch-computes-all-vars
+  constraint makes per-config load-derived σ_nom impossible (a zeroed inactive load blows up SF; confirmed
+  vs euler/thick-cylinder/combined-shaft). The three nominal formulas live in overview/derivation prose +
+  cross-links (cantilever-beam, torsion-shaft, combined-shaft) instead. The brief's Physics-scope wording
+  listed them as computed; the log State section had already resolved this. (2) Geometry knobs are the
+  ratios D/d and r/d directly (mirrors Norton's chart axes; only ratios set K_t) rather than absolute
+  D,d,r. (3) Added a constrained-constant `load_case` (kind count, 1/2/3) so the sim can pick the load
+  glyph — the same constrained-constant idiom S01 uses for phi/v_b; invisible to the user (not input, not
+  readout). (4) Multi-column table machinery: made real-arg multi-column consumption actually work (in
+  scope by brief design — "make it work"); removed the single-column reject, added grouping/scope/verify.
+- New capabilities future briefs may rely on: real-arg **multi-column** `table` consumption — several
+  targets reading the SAME table at the SAME arg group into ONE plan step, each filling its own column
+  (mapped by column NAME; single-column keeps the S01 differently-named-target fallback-to-col-0).
+  Each column still counts as one relation (DOF stays honest). Consumers of a group MUST be authored
+  CONSECUTIVELY (no intervening plan step), every declared column read in a config MUST be filled, and a
+  multi-column consumer MUST name its column (single-column may not). The refusal scope is the UNION of
+  every column's eval-descendant reach. No schema/artifact-shape change: `targets` was already
+  array(min 1) and the runtime + parity oracle already looped 1-based columns.
+- Notes-for-next (S03): traps I hit — (a) `test_tables.py` TABLE_YAML is `textwrap.dedent`'d, so `.replace`
+  mutation strings MUST be content-only (no leading indent) or they silently no-op and a negative test
+  passes a GOOD fixture (bit me on 3 tests; add an `assert mutation-took` line). (b) Playwright `.fill()`
+  on `<input type=range>` throws "Malformed value" for some values (e.g. "3.0") — target the sibling
+  number input via `getByLabel("<name> value")` instead (each knob renders a range AND a number input).
+  (c) editing pipeline source busts every fingerprint → cold build (~3–4 min). (d) the constrained-constant
+  discriminator (`load_case`) is a clean way to give a sim per-config awareness with NO schema change —
+  reuse it if a THING's sim must know its active configuration. (e) config switch RESETS knobs to the new
+  config's input defaults, so in an e2e/eval read the value AFTER a re-render tick (Preact re-renders
+  async — a synchronous read right after dispatching the `input` event is stale).
