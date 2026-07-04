@@ -224,3 +224,63 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   reuse it if a THING's sim must know its active configuration. (e) config switch RESETS knobs to the new
   config's input defaults, so in an e2e/eval read the value AFTER a re-render tick (Preact re-renders
   async — a synchronous read right after dispatching the `input` event is stale).
+
+## S03 — rectangular-shaft-torsion — 2026-07-04 — PR #16 — MERGED
+
+- Shipped: THING 20 `rectangular-shaft-torsion` (Saint-Venant torsion of a solid rectangular bar) —
+  the THIRD `table` consumer and its first use outside a machine-element chart: c1(a/b), c2(a/b) from
+  Timoshenko §109 (two columns, one lookup at a/b), τ_max=T/(c1·a·b²) at the long-side midpoint
+  (corners zero), θ'=T/(c2·a·b³·G), equal-area round-shaft efficiency readouts (η_τ, η_θ > 1 — "why
+  square shafts are a bad deal"). New `twist_rate` quantity kind (kinds.py) + `rad/m`, `deg/m` display
+  units (units.ts). Catalog 19 → 20.
+- Gates: pytest 210 passed (201 baseline + 9 test_rect_torsion_physics.py); pnpm build clean (cold —
+  kinds.py edit busts every fingerprint; parity 906 values / 20 artifacts, units 446, katex 822, mdx
+  40 prose files); unit 17; e2e 57 (+3 rect-torsion: material-blind goldens + equal-area comparison,
+  a/b>10 GLOBAL refusal, a/b<1 swap-labels refusal; verification relation-block count 19→20); visual
+  pass (built dist /Mechanic/): cross-section sim renders visibly (2:1 rectangle real fill/stroke, hot
+  dots at long-side midpoints + τ_max label, schematic shear humps, dead-corner dots, dashed equal-area
+  round overlay, torque arc); drove a/b→12 and SAW the global refusal (SimRefusal figure + two invalid
+  banners + every readout blanked incl. the untainted round-shaft ones); Al-2024→steel-4340 moved twist
+  1.12→0.41 °/m and SF 10.8→49.7 while τ_max fixed at 15.056 MPa (material-blind); KaTeX + console clean;
+  /things/ card + /verification/ block present. review: 5 independent passes (physics + invariants +
+  code/tests fresh-context subagents, + /code-review correctness & cleanup finders) — 0 blockers, 0
+  majors; physics reviewer re-derived the whole THING from scratch (independent Prandtl BVP). 5 minor
+  findings, ALL fixed (see below).
+- Golden: square bar a/b=1, c1=0.208: τ_max = 100/(0.208·0.05·0.05²) = 3.84615 MPa (test_rect_torsion_
+  physics.py::test_tau_max_golden_by_hand; source Timoshenko §109, pinned in comment; the test also
+  asserts the authored square row is exactly (0.208, 0.1406)).
+- Citations pinned: `timoshenko` (Theory of Elasticity §107 membrane analogy, §108-109 rectangular
+  torsion table) + `roark` (Formulas for Stress and Strain 7th ed Ch.10 closed forms, = Table 10.7 in
+  8th ed) cross-checked in the physics test against BOTH the exact Saint-Venant Fourier series (I
+  re-derive it; worst |authored−series| ≈ 0.0005) AND Roark's independent closed form. `gere`/`shigley`
+  for the round-shaft baseline + Tresca SF. HONEST: the primary Timoshenko PDF was archive.org-blocked
+  this session (same block as S02), so the coefficients were pinned by first-principles re-derivation +
+  Roark rather than transcription — a STRONGER check, and legitimate because these are the exact solution
+  of a PDE (uncopyrightable facts, Feist), not a proprietary fit; the verification field says so plainly.
+- Deviations from brief: (1) Coefficient sourcing — briefed to transcribe Timoshenko §109 verbatim; the
+  PDF was unreachable, so I authored series-and-Roark-confirmed values and pinned them via the exact
+  elasticity solution + Roark's closed form (NOT a §9.1 block: the block criterion is "value can't be
+  independently confirmed" and here it is confirmed from first principles; contrast S02's Norton fit,
+  which had no analytic check). (2) The named cross-check "Roark 8th ed Table 10.7" was accessed as the
+  7th-ed closed form (via amesweb) + the Roark-cited β table (via Wikipedia) — identical coefficients,
+  different edition/access path; stated honestly in sources[].verification. (3) Single configuration
+  (torque-in) — the brief didn't mandate multiple; a=long/b=short are independent dimensioned inputs
+  with a/b derived (physical, and both refusals reachable by the a,b knobs).
+- New capabilities future briefs may rely on: `twist_rate` quantity kind (1/L; must not chain into
+  curvature/wavenumber) and `rad/m`,`deg/m` display units now in the registries. Pattern proven: a
+  cited coefficient table whose values are ALSO an exact analytic solution can be double-pinned in the
+  physics test (published data ∧ first-principles re-derivation) — reuse for any classical-elasticity
+  coefficient THING (ellipse/triangle torsion, plate coefficients).
+- Notes-for-next (S04 = beam-shear-flow, `shear_flow` kind): traps I hit — (a) `math.cosh(x)` OVERFLOWS
+  for large x in a Fourier-series test; guard `1/cosh` with an `x>700 → 0` fallback (sech is ~0 there).
+  (b) A transient pnpm deps-check failure ("pnpm install failed") can hit at build start even with a
+  clean lockfile — `pnpm install --frozen-lockfile` returns "Already up to date" and re-running the
+  build clears it (S01 saw the Pages-deploy variant of this). (c) Editing kinds.py (pipeline source)
+  busts EVERY fingerprint → cold build (~4 min); batch your kind addition into the first build. (d) A
+  GLOBAL-invalid envelope on a DERIVED table arg (a/b from a,b) does NOT starve the parity sampler —
+  n=3 samples is the standard count and the sampler resamples past out-of-domain points, so seeing
+  "only 3 samples" is normal, not a bug. (e) In a browser eval, a raw `select.dispatchEvent(new
+  Event('change'))` does NOT update a Preact controlled <select> — use preview_fill (or Playwright
+  selectOption); and read readouts a tick AFTER the switch (async re-render, per S02's note e). (f) When
+  a sim has more than one refusal reason, branch the SimRefusal `caption` on the refused quantity's value
+  (finite a/b<1 vs >10) so the figure's reason matches the validity banner's.

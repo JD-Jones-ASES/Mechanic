@@ -25,6 +25,7 @@ import { FlywheelSim } from "./sims/FlywheelSim";
 import { FourbarSim } from "./sims/FourbarSim";
 import { GearPairSim } from "./sims/GearPairSim";
 import { PlanetarySim } from "./sims/PlanetarySim";
+import { RectTorsionSim } from "./sims/RectTorsionSim";
 import { ScrewSim } from "./sims/ScrewSim";
 import { ShaftSim } from "./sims/ShaftSim";
 import { ShrinkFitSim } from "./sims/ShrinkFitSim";
@@ -63,6 +64,7 @@ const SIMS: Record<
   "combined-shaft": CombinedShaftSim,
   "thin-tube-torsion": TubeSim,
   "stepped-shaft": SteppedShaftSim,
+  "rectangular-shaft-torsion": RectTorsionSim,
 };
 
 interface Props {

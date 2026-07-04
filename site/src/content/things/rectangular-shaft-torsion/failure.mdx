@@ -1,0 +1,47 @@
+The widget answers one narrow, elastic question — *given this rectangular section and this torque,
+what is the peak shear stress and the twist?* — and reports a static shear-yield margin on that peak.
+Most of the ways a bar like this actually gets into trouble live in what the page deliberately does
+**not** model.
+
+- **Free warping is assumed — restrain it and the whole picture changes.** The Saint-Venant solution
+  behind $c_1$ and $c_2$ lets every cross-section **warp** freely out of its plane (rectangles do not
+  stay plane under torsion the way circles do). Clamp an end, or load the bar so warping is prevented,
+  and you get **warping normal stresses** and a stiffer response that this page has no term for. The
+  effect is mild for a chunky rectangle but dominant for thin open sections (a channel, an angle, an
+  I-beam in torsion), which is exactly why closed thin-walled tubes — see
+  [thin-tube torsion](../thin-tube-torsion/) — are so much better at carrying torque than open ones of
+  the same weight.
+
+- **Thin sections are torsionally awful, and the $b^3$ tells you so.** Both the stiffness and the
+  strength ride on the **short** side cubed ($\theta' \propto 1/b^3$) or squared ($\tau_{max}\propto
+  1/b^2$). Halve the thickness (holding $a$) and the twist rate jumps by roughly eightfold — exactly
+  eightfold in the thin-strip limit, where $c_2$ stops changing. As $a/b\to\infty$ the coefficients
+  saturate at $1/3$, so a long thin strip is essentially a membrane with almost no torsional rigidity —
+  the reason sheet metal is stiff in bending but hopeless in twist.
+
+- **Rectangular- and square-wire springs are this problem, coiled.** A helical spring wound from
+  **rectangular** (or square) wire carries its load as torsion of a rectangular bar wrapped into a
+  helix, so its stress and its rate are governed by exactly these $c_1$, $c_2$ coefficients rather than
+  the round-wire formulas on the [helical spring](../helical-spring/) page. Designers reach for
+  rectangular wire precisely because it packs more material into a given coil envelope — but the sharp
+  corners are stress raisers under the superposed curvature, and the flats warp, so the round-wire
+  intuition does not transfer cleanly.
+
+- **The safety factor is a static shear-yield illustration, not a fatigue life.** $\mathrm{SF} =
+  (\sigma_y/2)/\tau_{max}$ uses the maximum-shear-stress (Tresca) criterion, the same conservative
+  shear yield the round [torsion shaft](../torsion-shaft/) uses. Real torsion members usually fail by
+  **fatigue**, and they crack at the **long-side midpoints** — the very spots this page marks hottest —
+  cycle after cycle. A comfortable static $\mathrm{SF}$ here says nothing about cycles survived; that is
+  a later phase built on top of this peak stress.
+
+- **A "rectangle" with a sharp re-entrant feature is a different problem.** The corners of a plain
+  rectangle are dead in elastic torsion — but cut a **keyway**, a spline, or an internal notch and that
+  *concave* corner becomes a stress **concentration**, the opposite of the unloaded convex corner. That
+  is the [stepped-shaft-fillet](../stepped-shaft-fillet/) story ($K_t$ from a cited chart) transplanted
+  onto a torsion member, and it is not included here.
+
+- **One torque, one prismatic bar, linear-elastic throughout.** No bending combined with the torsion
+  (that superposition is the [combined shaft](../combined-shaft/) page), no taper along the length, no
+  local plastic redistribution once the long-side midpoint yields, and manufactured corner radii are
+  idealised as perfectly sharp. Read the page as *where the stress goes and why the round shaft wins*,
+  not as a finished design margin.

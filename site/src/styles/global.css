@@ -140,6 +140,15 @@ a { color: var(--accent); }
    fillet marker drawn when K_t is refused (scoped) but the geometry stands */
 .stepped-shaft-body { fill: var(--line); stroke: var(--ink); stroke-width: 2; }
 .stepped-hotspot { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 4 3; }
+/* rectangular-shaft-torsion (RectTorsionSim): the cross-section face, the
+   schematic shear-magnitude humps (peak at the long-side midpoints, zero at the
+   corners), the peak-stress hot dots, and the dead-corner markers */
+.rect-torsion-face { fill: var(--line); stroke: var(--ink); stroke-width: 2; }
+.rect-torsion-shear { fill: var(--accent); opacity: 0.4; }
+.rect-torsion-shear-hot { fill: #dc2626; opacity: 0.55; }
+.rect-torsion-hotspot { fill: var(--accent); }
+.rect-torsion-hotspot-hot { fill: #dc2626; }
+.rect-torsion-dead { fill: var(--muted); }
 /* shared sim vocabulary: stress bands (StressBands.tsx) shade where a field
    concentrates and turn red past first yield; .sim-outline is a figure's
    structural outline */

@@ -1,0 +1,499 @@
+id: rectangular-shaft-torsion
+title: Rectangular Shaft in Torsion (Saint-Venant)
+summary: >-
+  Twist a solid rectangular bar and the shear stress does something the round shaft never does:
+  it peaks at the MIDDLE of the long side and drops to exactly zero at the corners. Two cited
+  coefficients c1, c2 — functions only of the side ratio a/b — set the peak stress and the twist,
+  and an equal-area round shaft beats it on both counts. Why square shafts are a bad deal.
+facets: [stress, mass-cost]
+
+# CONVENTION (pinned once — sources disagree on symbols; see overview.mdx):
+#   a = LONG side, b = SHORT side, aspect ratio a/b >= 1.
+#   tau_max = T / (c1 * a * b^2)  at the midpoint of the LONG side (corners carry zero stress).
+#   theta'  = T / (c2 * a * b^3 * G)   (twist per unit length).
+#   c1(a/b), c2(a/b): classical Saint-Venant coefficients, cited table (Timoshenko §109),
+#   linearly interpolated; a/b -> infinity gives the thin-strip limit c1 = c2 = 1/3.
+
+variables:
+  # --- free inputs (knobs) ---
+  - symbol: T
+    name: Torque
+    latex: T
+    unit: N*m
+    quantity_kind: torque
+    default: 200
+    bounds: [1, 20000]
+    positive: true
+    display_units: ["N*m"]
+  - symbol: a
+    name: Long side (a)
+    latex: a
+    unit: m
+    quantity_kind: length
+    default: 0.06
+    bounds: [0.01, 0.4]
+    positive: true
+    display_units: [mm, m]
+  - symbol: b
+    name: Short side (b)
+    latex: b
+    unit: m
+    quantity_kind: length
+    default: 0.03
+    bounds: [0.005, 0.2]
+    positive: true
+    display_units: [mm, m]
+  - symbol: L
+    name: Length
+    latex: L
+    unit: m
+    quantity_kind: length
+    default: 0.5
+    bounds: [0.05, 5.0]
+    positive: true
+    display_units: [m, mm]
+  # --- material ---
+  - symbol: G
+    name: Shear modulus
+    latex: G
+    unit: Pa
+    quantity_kind: elastic_modulus
+    default: 79.0e9
+    bounds: [0.5e9, 200.0e9]
+    positive: true
+    role: material
+    display_units: [GPa, Pa]
+  - symbol: sigma_y
+    name: Yield strength (tension)
+    latex: '\sigma_y'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 250.0e6
+    bounds: [10.0e6, 2.0e9]
+    positive: true
+    role: material
+    display_units: [MPa, Pa]
+  - symbol: rho
+    name: Density
+    latex: '\rho'
+    unit: kg/m**3
+    quantity_kind: density
+    default: 7800
+    bounds: [400, 9000]
+    positive: true
+    role: material
+    display_units: ["kg/m^3"]
+  # --- derived: aspect ratio and the two cited coefficients ---
+  - symbol: ab
+    name: Aspect ratio (long / short)
+    latex: 'a/b'
+    unit: '1'
+    quantity_kind: ratio
+    default: 2.0
+    bounds: [0.1, 80]
+    positive: true
+    role: derived
+  - symbol: c1
+    name: Stress coefficient c1(a/b)
+    latex: 'c_1'
+    unit: '1'
+    quantity_kind: ratio
+    default: 0.246
+    bounds: [0.15, 0.34]
+    positive: true
+    role: derived
+  - symbol: c2
+    name: Stiffness coefficient c2(a/b)
+    latex: 'c_2'
+    unit: '1'
+    quantity_kind: ratio
+    default: 0.229
+    bounds: [0.13, 0.34]
+    positive: true
+    role: derived
+  # --- derived: the rectangle ---
+  - symbol: A_cs
+    name: Cross-sectional area
+    latex: A
+    unit: m**2
+    quantity_kind: area
+    default: 0.0018
+    bounds: [0, 1.0]
+    positive: true
+    role: derived
+    display_units: ["cm^2", "m**2"]
+  - symbol: tau_max
+    name: Max shear stress (mid of long side)
+    latex: '\tau_{max}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 1.50557e7
+    bounds: [0, 5.0e10]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: thetap
+    name: Twist rate (per length)
+    latex: "\\theta'"
+    unit: rad/m
+    quantity_kind: twist_rate
+    default: 0.00682421
+    bounds: [0, 1000]
+    positive: true
+    role: derived
+    display_units: ["deg/m", "rad/m"]
+  - symbol: theta
+    name: Angle of twist (over L)
+    latex: '\theta'
+    unit: rad
+    quantity_kind: angle
+    default: 0.00341211
+    bounds: [0, 100]
+    positive: true
+    role: derived
+    display_units: [deg, rad]
+  # --- derived: the equal-area round shaft it is compared against ---
+  - symbol: r_eq
+    name: Equal-area round radius
+    latex: 'r_{eq}'
+    unit: m
+    quantity_kind: length
+    default: 0.0239365
+    bounds: [0, 1.0]
+    positive: true
+    role: derived
+    display_units: [mm, m]
+  - symbol: tau_round
+    name: Round-shaft shear stress
+    latex: '\tau_{\circ}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 9.28381e6
+    bounds: [0, 5.0e10]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: thetap_round
+    name: Round-shaft twist rate
+    latex: "\\theta'_{\\circ}"
+    unit: rad/m
+    quantity_kind: twist_rate
+    default: 0.00490951
+    bounds: [0, 1000]
+    positive: true
+    role: derived
+    display_units: ["deg/m", "rad/m"]
+  - symbol: eta_tau
+    name: Stress penalty (rect / round)
+    latex: '\eta_\tau'
+    unit: '1'
+    quantity_kind: ratio
+    default: 1.62172
+    bounds: [0, 100]
+    positive: true
+    role: derived
+  - symbol: eta_theta
+    name: Twist penalty (rect / round)
+    latex: '\eta_\theta'
+    unit: '1'
+    quantity_kind: ratio
+    default: 1.39
+    bounds: [0, 100]
+    positive: true
+    role: derived
+  # --- derived: margin and mass ---
+  - symbol: SF
+    name: Safety factor (shear yield)
+    latex: '\mathrm{SF}'
+    unit: '1'
+    quantity_kind: safety_factor
+    default: 8.3025
+    bounds: [0, 1000]
+    positive: true
+    role: derived
+  - symbol: m_bar
+    name: Bar mass
+    latex: m
+    unit: kg
+    quantity_kind: mass
+    default: 7.02
+    bounds: [0, 5000]
+    positive: true
+    role: derived
+    display_units: [kg]
+
+materials:
+  binds:
+    G: shear_modulus
+    sigma_y: yield_strength
+    rho: density
+
+# The two classical coefficients as a function of the side ratio a/b, read by ONE
+# lookup at a/b and filling BOTH columns (c1 for stress, c2 for stiffness). These
+# are the exact Saint-Venant coefficients tabulated by Timoshenko & Goodier §109;
+# each authored value is cross-checked in pipeline/tests/test_rect_torsion_physics.py
+# against (a) the exact Fourier-series solution and (b) Roark's independent closed
+# form (agreement <= 0.001, the machine-checked bound). Outside a/b in [1, 10] there is no published value,
+# so the lookup refuses rather than extrapolate (see the aspect-ratio envelopes).
+tables:
+  - id: rect-torsion-coeffs
+    name: Timoshenko §109
+    citation: timoshenko
+    provenance: >-
+      Classical Saint-Venant torsion coefficients for a solid rectangular bar: c1 sets the
+      maximum shear stress at the midpoint of the long side (tau_max = T/(c1·a·b^2)) and c2 sets
+      the torsional rigidity (theta' = T/(c2·a·b^3·G)), both functions only of the side ratio a/b.
+      As tabulated by Timoshenko & Goodier, Theory of Elasticity, §109. Cited data, not derived
+      here; each value is cross-checked in the physics test against the exact elasticity series
+      and Roark's independent formulas.
+    interpolation_citation: roark
+    arg: ab
+    columns: [c1, c2]
+    mode: interpolate-linear
+    rows:
+      - [1.0, 0.208, 0.1406]
+      - [1.5, 0.231, 0.196]
+      - [2.0, 0.246, 0.229]
+      - [2.5, 0.258, 0.249]
+      - [3.0, 0.267, 0.263]
+      - [4.0, 0.282, 0.281]
+      - [5.0, 0.291, 0.291]
+      - [10.0, 0.312, 0.312]
+
+relations:
+  - id: aspect-ratio
+    group: stress
+    latex: 'a/b \;\;(\text{long} \div \text{short})'
+    residual: ab*b - a
+    assumptions:
+      - a is the long side and b the short side, so the ratio a/b is at least 1
+      - the coefficients c1, c2 depend on this ratio alone, not on the absolute size
+    citation: timoshenko
+    validity:
+      # a/b < 1 means the labels are swapped (b is actually the longer side). The
+      # coefficient table is only defined for a/b >= 1, so refuse — globally, with
+      # a message that tells the user exactly what to fix.
+      - condition: ab >= 1
+        severity: invalid
+        message: >-
+          a is meant to be the LONG side, so a/b must be at least 1. This bar has b longer than a —
+          swap your labels (put the longer dimension in a) and the coefficients apply.
+        citation: timoshenko
+      # a/b > 10: past the tabulated range. Interpolating past the last row would
+      # fabricate a coefficient nobody published, so refuse (credibility spine).
+      - condition: ab <= 10
+        severity: invalid
+        message: >-
+          The published coefficient table stops at a/b = 10; beyond that there is no tabulated
+          value and interpolation would invent one. For a very thin strip use the closed-form limit
+          c1 = c2 = 1/3 discussed on this page.
+        citation: timoshenko
+  - id: max-stress
+    group: stress
+    latex: '\tau_{max} = \dfrac{T}{c_1\,a\,b^{2}}'
+    residual: tau_max*c1*a*b**2 - T
+    assumptions:
+      - Saint-Venant pure torsion of a prismatic bar; no warping restraint, no axial or bending load
+      - linear elastic; the peak sits at the midpoint of the long side, the corners carry zero stress
+    citation: timoshenko
+    validity:
+      - condition: tau_max < sigma_y/2
+        severity: warn
+        message: >-
+          Peak shear stress exceeds the shear yield strength (σ_y/2 by the maximum-shear-stress
+          criterion) — the long-side midpoint has yielded and every elastic number here stops being
+          the truth.
+        citation: shigley
+  - id: twist-rate
+    group: stress
+    latex: "\\theta' = \\dfrac{T}{c_2\\,a\\,b^{3}\\,G}"
+    residual: thetap*c2*a*b**3*G - T
+    assumptions:
+      - torsional rigidity of the section is G·c2·a·b^3; c2 is the cited stiffness coefficient
+      - uniform section and torque along the length; twist per unit length is constant
+    citation: timoshenko
+  - id: total-twist
+    group: stress
+    latex: '\theta = \theta'' L'
+    residual: theta - thetap*L
+    assumptions:
+      - the twist rate is uniform along the bar, so the total angle is simply theta' times length
+    citation: gere
+  - id: area
+    group: mass-cost
+    latex: 'A = a\,b'
+    residual: A_cs - a*b
+    assumptions:
+      - solid rectangular section
+    citation: gere
+  - id: equal-area-radius
+    group: stress
+    latex: 'r_{eq} = \sqrt{\dfrac{a\,b}{\pi}}'
+    residual: pi*r_eq**2 - A_cs
+    assumptions:
+      - the round shaft compared against carries the SAME cross-sectional area (same material used)
+    citation: gere
+  - id: round-stress
+    group: stress
+    latex: '\tau_{\circ} = \dfrac{2\,T}{\pi\,r_{eq}^{3}}'
+    residual: tau_round*pi*r_eq**3 - 2*T
+    assumptions:
+      - solid circular shaft carrying the same torque; tau = 16T/(πd^3) = 2T/(πr^3)
+    citation: gere
+  - id: round-twist-rate
+    group: stress
+    latex: "\\theta'_{\\circ} = \\dfrac{2\\,T}{\\pi\\,r_{eq}^{4}\\,G}"
+    residual: thetap_round*pi*r_eq**4*G - 2*T
+    assumptions:
+      - solid circular shaft, polar second moment J = πr^4/2, so theta' = T/(G·J) = 2T/(π r^4 G)
+    citation: gere
+  - id: stress-penalty
+    group: stress
+    latex: '\eta_\tau = \dfrac{\tau_{max}}{\tau_{\circ}}'
+    residual: eta_tau*tau_round - tau_max
+    assumptions:
+      - ratio of the rectangle's peak stress to the equal-area round shaft's; greater than 1 means
+        the rectangle is worse, and it worsens as the section elongates
+    citation: gere
+  - id: twist-penalty
+    group: stress
+    latex: '\eta_\theta = \dfrac{\theta''}{\theta''_{\circ}}'
+    residual: eta_theta*thetap_round - thetap
+    assumptions:
+      - ratio of the rectangle's twist rate to the equal-area round shaft's; also greater than 1
+    citation: gere
+  - id: safety-factor
+    group: stress
+    latex: '\mathrm{SF} = \dfrac{\sigma_y/2}{\tau_{max}}'
+    residual: SF*tau_max - sigma_y/2
+    assumptions:
+      - maximum-shear-stress (Tresca) criterion — shear yield at σ_y/2; conservative next to the
+        distortion-energy value 0.577 σ_y
+    citation: shigley
+  - id: mass
+    group: mass-cost
+    latex: 'm = \rho\,a\,b\,L'
+    residual: m_bar - rho*A_cs*L
+    assumptions:
+      - prismatic solid bar, uniform density
+    citation: gere
+
+configurations:
+  - id: torque-in
+    label: Torque and section in — peak stress, twist, round-shaft comparison, margin out
+    constraints: {}
+    inputs: [T, a, b, L]
+    solutions:
+      ab: a/b
+      c1: { table: rect-torsion-coeffs, at: ab }
+      c2: { table: rect-torsion-coeffs, at: ab }
+      A_cs: a*b
+      tau_max: T/(c1*a*b**2)
+      thetap: T/(c2*a*b**3*G)
+      theta: thetap*L
+      r_eq: sqrt(a*b/pi)
+      tau_round: 2*T/(pi*r_eq**3)
+      thetap_round: 2*T/(pi*r_eq**4*G)
+      eta_tau: tau_max/tau_round
+      eta_theta: thetap/thetap_round
+      SF: sigma_y/(2*tau_max)
+      m_bar: rho*a*b*L
+
+derivation:
+  verifies_configuration: torque-in
+  steps:
+    - expr: Eq(tau_max, T/(c1*a*b**2))
+      prose: >-
+        Prandtl's membrane analogy: the torsion stress function is the height of a soap film blown
+        over the cross-section, and the shear stress is the film's SLOPE, running parallel to the
+        boundary. The film is steepest where the wall is closest to the centre — the midpoint of the
+        LONG side — so the peak stress sits there, not at the corners, where a convex corner forces
+        the slope (and the stress) to zero. Timoshenko tabulates the coefficient c1(a/b); this is
+        cited data, not something the build derives.
+      rule: 'modeling: membrane analogy (Timoshenko §107); c1(a/b) from the §109 table'
+      check: definition
+    - expr: Eq(thetap, T/(c2*a*b**3*G))
+      prose: >-
+        The same solution gives the torsional rigidity as G·c2·a·b^3, so the twist per unit length is
+        theta' = T/(c2·a·b^3·G). G is the ONLY material property that touches this page: swap steel
+        for aluminium (G ≈ 26 vs 79 GPa) and the same bar twists about three times as much per metre
+        at an identical peak stress — because tau_max carries no material property at all.
+      rule: 'modeling: torsional rigidity G·c2·a·b^3; c2(a/b) from the §109 table'
+      check: definition
+    - expr: Eq(theta, thetap*L)
+      prose: >-
+        The twist rate is uniform along a prismatic bar, so the total angle of twist is just the rate
+        times the length.
+      rule: 'kinematics: uniform twist along the length'
+      check: definition
+    - expr: Eq(r_eq, sqrt(a*b/pi))
+      prose: >-
+        Now the fair comparison. Replace the rectangle with a solid ROUND shaft of the SAME
+        cross-sectional area (same material, same weight per length): π·r_eq^2 = a·b fixes its radius.
+      rule: 'equal-area substitution'
+      check: identity
+    - expr: Eq(tau_round, 2*T/(pi*r_eq**3))
+      prose: >-
+        That round shaft carries the same torque with the familiar tau = 16T/(πd^3) = 2T/(π r^3). The
+        rectangle's tau_max is LARGER (their ratio eta_tau exceeds 1), and the penalty grows as the
+        section flattens — the corners are dead weight that carries almost no shear. This is why a
+        square shaft is a bad deal and a thin strip is a terrible one.
+      rule: 'circular torsion formula, equal area'
+      check: identity
+    - expr: Eq(eta_tau, tau_max/tau_round)
+      prose: >-
+        Collecting the comparison: eta_tau is the stress penalty (about 1.36 for a square, rising with
+        a/b) and eta_theta the twist penalty. Both exceed 1 for every rectangle — the round section is
+        the efficient one.
+      rule: 'definition: efficiency ratios vs the equal-area circle'
+      check: definition
+    - expr: Eq(SF, sigma_y/(2*tau_max))
+      prose: >-
+        Yield in shear arrives at σ_y/2 by the maximum-shear-stress (Tresca) criterion. Note again
+        what each property touches: G set the twist, σ_y sets this margin, and tau_max — geometry and
+        load alone — is blind to the material.
+      rule: 'maximum-shear-stress criterion'
+      check: definition
+
+sim:
+  engine: statics-cascade
+  config:
+    draw: rectangular-shaft-torsion
+
+sources:
+  - id: timoshenko
+    citation: >-
+      Timoshenko, S. P., & Goodier, J. N., Theory of Elasticity, 3rd ed., McGraw-Hill, 1970 —
+      §107 (membrane analogy) and §108-109 (torsion of a bar of rectangular cross section: the
+      coefficient table for maximum stress and torsional rigidity, and the thin-strip limit 1/3).
+    verification: >-
+      The primary Timoshenko PDF was not directly reachable this session (archive.org refused the
+      connection), so the coefficients were pinned by a STRONGER route than transcription: every
+      authored row is recomputed from the exact Saint-Venant Fourier series in
+      pipeline/tests/test_rect_torsion_physics.py and agrees within the test's asserted <= 0.001
+      (worst observed vs the series ~0.0005), and each value also matches Roark's independent closed
+      form (below, within ~0.0005) and the thin-strip limit c1 = c2 = 1/3. These
+      are the exact solution of a classical PDE — uncopyrightable facts confirmed from first
+      principles, not a proprietary fit. Values corroborated against the Roark-attributed table on
+      Wikipedia's "Torsion constant" article, 2026-07-04.
+  - id: roark
+    citation: >-
+      Young, W. C., & Budynas, R. G., Roark's Formulas for Stress and Strain, 7th ed., McGraw-Hill,
+      2002, Ch. 10 (Table 10.7 in the 8th ed.) — solid rectangular section in torsion: the closed
+      forms K = a·b^3·[1/3 − 0.21(b/a)(1 − b^4/12a^4)] and tau_max at the midpoint of the longer side.
+    verification: >-
+      Closed forms fetched from amesweb.info's Roark-cited rectangular-torsion page and implemented
+      independently in test_rect_torsion_physics.py; evaluated per authored row they agree with the
+      Timoshenko table and the exact series within the sources' stated accuracy. Roark's β column
+      cross-read from Wikipedia's "Torsion constant" (which cites Roark 7th ed.), 2026-07-04.
+  - id: gere
+    citation: >-
+      Gere, J. M., & Goodno, B. J., Mechanics of Materials, 9th ed., Cengage, 2018 — §3.3-3.5
+      (circular shafts in torsion: tau = 16T/(πd^3), theta = TL/(GJ), J = πd^4/32), used here for the
+      equal-area round-shaft comparison.
+    verification: "Standard circular-torsion formulas; re-derived from first principles in the physics test."
+  - id: shigley
+    citation: >-
+      Budynas, R. G., & Nisbett, J. K., Shigley's Mechanical Engineering Design, 10th ed.,
+      McGraw-Hill, 2015 — §5-4 (maximum-shear-stress theory, S_sy = 0.5 S_y).
+    verification: "Tresca shear-yield criterion; standard, used for the SF readout as on the round torsion-shaft page."

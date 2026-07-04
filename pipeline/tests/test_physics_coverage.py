@@ -30,6 +30,7 @@ PHYSICS_TESTS = {
     "planetary-gearset": "test_planetary_physics.py",
     "power-screw": "test_powerscrew_physics.py",
     "pressure-vessel": "test_vessel_physics.py",
+    "rectangular-shaft-torsion": "test_rect_torsion_physics.py",
     "rotating-disk-bore": "test_disk_physics.py",
     "simply-supported-beam": "test_ssbeam_physics.py",
     "spur-gear-pair": "test_gear_physics.py",
