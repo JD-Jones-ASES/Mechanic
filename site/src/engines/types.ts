@@ -63,6 +63,27 @@ export type PlanStep =
        */
       bracket_fns: [string, string];
       latex: string;
+    }
+  | {
+      type: "table";
+      /** columns this lookup fills — one target per value column of a row */
+      targets: string[];
+      table_id: string;
+      /** fn of the already-evaluated env producing the lookup argument */
+      arg_fn: string;
+      mode: "interpolate-linear" | "exact-row";
+      /** rows embedded verbatim: [arg, col1, ...], strictly increasing arg */
+      rows: number[][];
+      domain: [number, number];
+      /**
+       * Out-of-domain (interpolate) or non-row (exact-row) makes the lookup
+       * non-finite; the engine turns that into this SCOPED invalid refusal —
+       * `scope` (columns + their descendants) is added to invalidVars, the page
+       * stands. No clamp/extrapolation exists in the lookup (invariant 5). The
+       * table's citation rides along so the refusal banner is provenance-clean.
+       */
+      guard: { severity: "invalid"; message: string; citation?: string | null; scope: string[] };
+      latex: string;
     };
 
 export interface Configuration {

@@ -1,0 +1,56 @@
+A spur gear pair is the workhorse of parallel-shaft power transmission: two toothed wheels whose
+pitch circles roll without slipping, trading speed for torque by the ratio of their tooth counts.
+The [planetary gearset](../planetary-gearset/) folds three of these meshes into one hub; a single
+external pair is the atom they are built from. Fix the module $m$ (the tooth size, in mm of pitch
+diameter per tooth) and the geometry is set: pitch diameter $d = mN$, centre distance
+$c = m(N_p + N_g)/2$, and gear ratio
+
+$$i = \frac{N_g}{N_p} = \frac{\omega_p}{\omega_g}$$
+
+Power arrives as torque on the pinion and leaves as a single **tangential tooth force** at the
+pitch point. Balance moments about the pinion axis — torque against force times pitch radius — and
+
+$$W_t = \frac{2T}{m\,N_p}$$
+
+That same $W_t$ pushes back on the gear (action–reaction), so both members carry the identical
+load. This is the [power screw](../power-screw/) trick in rotary form: a torque becomes a force at
+a radius, exactly as a screw's torque becomes an axial thrust.
+
+## The Lewis equation, and why the pinion is the weak one
+
+Wilfred Lewis (1892) modelled a gear tooth as a **cantilever loaded at its tip**, and inscribed the
+largest parabola of uniform strength inside the tooth outline. The root bending stress that falls
+out is
+
+$$\sigma_b = \frac{K_v\,W_t}{b\,m\,Y}$$
+
+where $b$ is the face width and $Y$ is the dimensionless **Lewis form factor** — everything about
+the tooth's shape, distilled to one number. $Y$ grows with the number of teeth: a 12-tooth pinion
+is stubby and sharply curved ($Y = 0.245$), a 100-tooth gear is nearly a rack and far beefier
+($Y = 0.447$). Because $\sigma_b \propto 1/Y$, at **identical load, module, and material the
+pinion always carries the higher stress** — it has the fewer teeth, so the smaller $Y$. That is the
+single most useful fact in gear design: *check the pinion; it governs.* Dial $N_p$ and $N_g$ in the
+widget and watch $\mathrm{SF}_p$ sit stubbornly below $\mathrm{SF}_g$ even when both gears are the
+same steel.
+
+$Y$ is not a formula. It comes from a graphical layout of the tooth (or its digital equivalent) and
+is published as a table — Shigley's Table 14-2, for 20° full-depth teeth with the load near the
+tip. This page carries that table as **cited data with provenance**: the widget interpolates
+linearly between the published tooth counts and **refuses** (per gear, leaving the rest standing)
+outside the tabulated range of 12–400 teeth, because there is no published value to stand on. The
+[/verification/](/Mechanic/verification/) page states exactly what is machine-proven here (the
+interpolation, the refusal, the algebra) and what rests on citation (the tabulated numbers
+themselves).
+
+## The velocity factor
+
+Real teeth engage a hair out of step, so the load a running mesh feels exceeds the static one. Barth's
+empirical **velocity factor** scales the stress up with pitch-line velocity $V = \omega_p\,m\,N_p/2$:
+
+$$K_v = \frac{6.1 + V}{6.1}$$
+
+(metric, for cut or milled teeth; the $6.1$ carries units of m/s). It is a fit, not a theorem —
+push $V$ high enough and a banner warns that the fit has left its cited range, the same honesty the
+[belt drive](../belt-drive/) applies to its capstan speed ceiling. Torque, speed, and the tooth
+bending stress it drives all live on one page here, the way the [torsion shaft](../torsion-shaft/)
+ties twist to shear.

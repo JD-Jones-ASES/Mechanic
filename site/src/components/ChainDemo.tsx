@@ -16,6 +16,13 @@ import { ValidityBanner } from "./ValidityBanner";
 
 const fnsModules = import.meta.glob("../generated/things/*.fns.ts");
 
+// eval/solve1d steps fill one `target`; a table step fills several `targets`.
+// Flatten to the variables a plan produces (mirrors ThingWidget) — a bare
+// `.map(p => p.target)` would inject `undefined` for a table step.
+function planTargets(plan: CompiledThing["configurations"][number]["plan"]): string[] {
+  return plan.flatMap((p) => (p.type === "table" ? p.targets : [p.target]));
+}
+
 const GEAR_CFG = "ring-fixed";
 const SHAFT_CFG = "torque-in";
 const BINDINGS: Binding[] = [
@@ -38,7 +45,7 @@ function ports(artifact: CompiledThing, cfgId: string) {
   return {
     inputs: Object.fromEntries(cfg.inputs.map((s) => [s, port(s)])),
     outputs: Object.fromEntries(
-      cfg.plan.map((p) => [p.target, port(p.target)] as const),
+      planTargets(cfg.plan).map((t) => [t, port(t)] as const),
     ),
   };
 }
@@ -130,7 +137,7 @@ export default function ChainDemo({ gear, shaft, materials }: Props) {
             onUnitChange={unitChange}
           />
           <Readouts
-            targets={gearCfg.plan.map((p) => p.target)}
+            targets={planTargets(gearCfg.plan)}
             variables={gear.variables}
             values={gearRes?.values ?? {}}
             invalid={gearRes?.invalid ?? true}
@@ -169,7 +176,7 @@ export default function ChainDemo({ gear, shaft, materials }: Props) {
             onUnitChange={unitChange}
           />
           <Readouts
-            targets={shaftCfg.plan.map((p) => p.target)}
+            targets={planTargets(shaftCfg.plan)}
             variables={shaft.variables}
             values={shaftRes?.values ?? {}}
             invalid={shaftRes?.invalid ?? true}

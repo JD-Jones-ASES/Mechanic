@@ -118,5 +118,5 @@ Python pipeline first; `uv run pytest` in `pipeline/` for math-layer tests. A co
 minutes — four-bar branch verification dominates; it is slow, not hung — but unchanged THINGs are
 cache-reused, so warm rebuilds take seconds plus the astro step. The repo is public and the site deploys
 from CI on every push to main — there is no review step between merge and the public site:
-https://jd-jones-ases.github.io/Mechanic/ (catalog state: 17 THINGs; the live `/verification/` page is
+https://jd-jones-ases.github.io/Mechanic/ (catalog state: 18 THINGs; the live `/verification/` page is
 the public statement of what is and isn't machine-proven).

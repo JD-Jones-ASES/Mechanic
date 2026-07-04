@@ -202,6 +202,67 @@ What the build does with this:
 - `expected_branches` must equal `len(branches.labels)`, at least one solution must actually be
   branched, and single-branch configurations must not carry a `branches` block.
 
+## Tabulated relation data (the `table` plan step, ADR-0009)
+
+When a governing quantity is *published as a table*, not a formula — the Lewis gear-tooth form
+factor `Y(N)` is the reference case — author it as a cited `tables:` block and consume it in
+`solutions`. There is no closed form to verify against, so (like `solve1d`) the value is proven
+numerically per sample and tainted for derivation identity steps.
+
+```yaml
+tables:
+  - id: lewis-form-factor-20fd
+    name: Table 14-2               # rendered in the plan-step LaTeX, e.g. Y = Table 14-2(N)
+    citation: shigley              # must resolve in sources[]
+    provenance: "Values as published in Shigley Table 14-2; 20° full-depth, load at the tip."
+    arg: N_p                       # a declared variable — the dimensional/kind TEMPLATE for the argument
+    columns: [Y_p]                 # declared variable(s) — the template(s) for each value column
+    mode: interpolate-linear       # interpolate-linear | exact-row | threshold (RESERVED — compile rejects it)
+    interpolation_citation: shigley  # REQUIRED for interpolate-*: who says interpolating is legitimate
+    rows:                          # [arg, col1, ...], strictly increasing arg; rows_from: <file> RESERVED
+      - [12, 0.245]
+      - [400, 0.480]               # ... every published row, verbatim
+```
+
+Consume it in `configurations.solutions` — one entry per column value you want, `at` an expression
+over already-evaluated symbols (forward DAG, like a `solve1d` bracket). The same table may be read
+more than once at different args:
+
+```yaml
+solutions:
+  Y_p: { table: lewis-form-factor-20fd, at: N_p }   # target Y_p ← lookup at N_p
+  Y_g: { table: lewis-form-factor-20fd, at: N_g }   # target Y_g ← same table at N_g
+  sigma_b: K_v*W_t/(b*m_mod*Y_p)                    # downstream closed forms read the columns normally
+```
+
+What the build does with this (and fails loudly on):
+
+- **Dimensional typing.** The consumed target is checked against the column template's dimension
+  AND quantity kind; `at` is checked against the `arg` template's dimension and kind (and integer
+  flag). Same-dimension/different-kind (a ratio fed where a count is expected) is rejected.
+- **DOF.** Each column a table fills counts as **one relation** — the table pins that unknown as
+  surely as a closed form would, so knob counts stay honest.
+- **Node-exact + interpolation, proven.** The emitted lookup returns each published row
+  bit-exactly (no interpolation arithmetic runs at a node), interpolates linearly between rows, and
+  the samples land in the parity oracle so the browser's interpolation is pinned against mpmath
+  every build. Rows must be strictly increasing and finite; an integer-flagged `arg` needs integer
+  rows.
+- **Out-of-domain refuses, scoped.** Outside the tabulated range the lookup is non-finite and the
+  engine raises a **scoped `invalid`** refusal: the column AND its downstream dependents blank, the
+  table's citation rides along, the rest of the page stands. There is **no clamp or extrapolation**
+  in the emitted code — outside the data there is nothing honest to return. (`exact-row` mode
+  refuses any non-row argument the same way.)
+- **Derivation.** Table outputs (and everything computed from them) have no closed form, so
+  `identity` derivation steps may not reference them — restate over closed-form variables upstream,
+  or mark the step `check: definition`. That interpolation between rows is legitimate is itself a
+  cited modeling choice (`interpolation_citation`), surfaced on `/verification/`; the tabulated
+  numbers are cited DATA, not machine-proven physics — say so, and cross-pin them against a second
+  published source in `sources[].verification` and the physics test.
+
+`threshold` mode and `rows_from` (external data files) are schema-reserved; the compiler rejects
+them until their consumers arrive. Multi-column consumption (one lookup filling several targets) is
+not built in v1 — one target per table entry.
+
 ## Scoped refusal — what the engine actually does
 
 - `scope` is taken at face value: when the envelope trips, every named symbol is added to

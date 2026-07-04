@@ -5,6 +5,7 @@
  * banners, never as silent NaN or plausible wrong numbers).
  */
 import { brent } from "./brent.ts";
+import { tableLookup } from "./table.ts";
 import type { CompiledThing, Configuration, EvalResult, Fn, ValidityMessage, VarRecord } from "./types.ts";
 
 const EPS_NONZERO = 1e-12;
@@ -56,6 +57,28 @@ export class RelationEngine {
 
     if (!invalid) {
       for (const step of cfg.plan) {
+        if (step.type === "table") {
+          // tabulated lookup (ADR-0009): fill each column from the row at arg.
+          // A non-finite result (out of domain / non-row) is a SCOPED refusal —
+          // poison the columns + descendants, carry the table's citation, keep
+          // the page standing. No clamp/extrapolation happens in tableLookup.
+          const arg = this.fns[step.arg_fn]!(env) as number;
+          let refused = false;
+          for (let c = 0; c < step.targets.length; c++) {
+            const y = tableLookup(step.rows, arg, step.mode, c + 1);
+            env[step.targets[c]!] = y;
+            if (!Number.isFinite(y)) refused = true;
+          }
+          if (refused) {
+            messages.push({
+              severity: step.guard.severity,
+              message: step.guard.message,
+              citation: step.guard.citation,
+            });
+            for (const s of step.guard.scope) invalidVars.add(s);
+          }
+          continue;
+        }
         if (step.type === "eval") {
           const fnId = step.branch_fns ? step.branch_fns[branch ?? cfg.branches?.labels[0] ?? ""] : step.fn;
           if (!fnId) throw new Error(`no function for plan step '${step.target}'`);
@@ -73,6 +96,10 @@ export class RelationEngine {
           );
         }
         if (!Number.isFinite(env[step.target]!)) {
+          // an expected NaN cascading from an upstream scoped table refusal is
+          // already accounted for (its readout is blanked) — don't escalate it
+          // into a whole-page refusal
+          if (invalidVars.has(step.target)) continue;
           invalid = true;
           messages.push({
             severity: "invalid",

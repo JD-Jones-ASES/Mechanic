@@ -262,7 +262,7 @@ test("verification page discloses authorship and the audit surface", async ({ pa
   await expect(page.getByText(/built end to end by an AI/i).first()).toBeVisible();
   await expect(page.getByText(/No human reviews the content/i).first()).toBeVisible();
   // every THING appears with its audit block (count is a deliberate change detector)
-  expect(await page.locator("section.relation-block").count()).toBe(17);
+  expect(await page.locator("section.relation-block").count()).toBe(18); // +spur-gear-pair (S01)
   await expect(page.getByText(/Where physics enters/i).first()).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -855,4 +855,46 @@ test("compound cylinder: over-shrinking scope-refuses the bore margin, then warn
   await page.locator("#knob-r_c").fill("20"); // mm < r_i = 40 mm
   await expect(page.locator(".validity")).toContainText(/no liner remains/i);
   await expect(page.locator(".sim figcaption")).toContainText(/nothing honest/i);
+});
+
+/*
+ * Spur gear pair (Lewis bending) — the first `table` plan-step consumer.
+ * Defaults N_p=18, N_g=36, m=4 mm, b=40 mm, T=100 N·m, ω_p=50 rad/s. The
+ * bending stresses are MATERIAL-INDEPENDENT (σ_b = K_v W_t/(b m Y), no σ_y):
+ *   W_t = 2·100/(0.004·18) = 2777.8 N = 2.7778 kN
+ *   Y_p = Table14-2(18) = 0.309 (node) ; Y_g = interp(36) = 0.3775
+ *   σ_b,p = 1.29508·2777.8/(0.04·0.004·0.309) = 72.764 MPa
+ *   σ_b,g = same / 0.3775                       = 59.560 MPa  (pinion higher → governs)
+ */
+test("spur gear pair computes the Lewis goldens; pinion governs", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/spur-gear-pair/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  expect(await readOutput(page, "i")).toBeCloseTo(2, 5);
+  expect(await readOutput(page, "W_t")).toBeCloseTo(2.7778, 3); // kN
+  expect(await readOutput(page, "Y_p")).toBeCloseTo(0.309, 4); // exact node lookup
+  expect(await readOutput(page, "Y_g")).toBeCloseTo(0.3775, 4); // interpolated 34→38
+  expect(await readOutput(page, "sigma_b_p")).toBeCloseTo(72.764, 2); // MPa, material-blind
+  expect(await readOutput(page, "sigma_b_g")).toBeCloseTo(59.56, 2); // MPa, material-blind
+  // the pedagogy: smaller Y_p → higher stress → lower margin, whatever the material
+  expect(await readOutput(page, "SF_p")).toBeLessThan(await readOutput(page, "SF_g"));
+  expect(errors).toEqual([]);
+});
+
+test("spur gear pair: a pinion below the table domain refuses that gear alone", async ({ page }) => {
+  await page.goto("things/spur-gear-pair/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  await page.locator("#knob-N_p").fill("10"); // < 12: off the bottom of Table 14-2
+  // scoped invalid: the pinion's tabulated readout and its dependents refuse,
+  // carrying the table citation — while the gear side stays live (page stands)
+  await expect(page.locator(".validity-invalid").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/Table 14-2/);
+  await expect(page.locator('[data-output="Y_p"] output')).toHaveText("—");
+  await expect(page.locator('[data-output="sigma_b_p"] output')).toHaveText("—");
+  await expect(page.locator('[data-output="SF_p"] output')).toHaveText("—");
+  // the gear (N_g = 36, in domain) is untouched — the page stands
+  expect(await readOutput(page, "Y_g")).toBeCloseTo(0.3775, 4);
+  expect(await readOutput(page, "sigma_b_g")).toBeGreaterThan(0);
 });

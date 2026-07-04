@@ -56,6 +56,31 @@ const solve1dSolutionSchema = z.object({
   }),
 });
 
+// tabulated relation data (ADR-0009): a cited lookup table. `arg` and `columns`
+// are declared variables serving as the dimensional/kind templates; each row is
+// [arg, col1, ...] with strictly increasing arg. `interpolate-linear` and
+// `exact-row` ship; `threshold` is schema-reserved (compile rejects it until a
+// consumer arrives). rows_from is reserved for an external data file.
+const tableSchema = z.object({
+  id: z.string(),
+  name: z.string().optional(), // display name rendered in the plan-step LaTeX (default: id)
+  citation: z.string(),
+  provenance: z.string(),
+  arg: identifier,
+  columns: z.array(identifier).min(1),
+  mode: z.enum(["interpolate-linear", "exact-row", "threshold"]),
+  interpolation_citation: z.string().optional(),
+  out_of_domain: z.literal("invalid").default("invalid"),
+  rows: z.array(z.array(z.number()).min(2)).min(2),
+});
+
+// consuming a table in configurations.solutions: `Y: { table: <id>, at: <expr> }`.
+// `at` is an expression over already-evaluated symbols (forward DAG).
+const tableSolutionSchema = z.object({
+  table: z.string(),
+  at: z.string(),
+});
+
 const configurationSchema = z.object({
   id: z.string(),
   label: z.string().optional(),
@@ -63,7 +88,10 @@ const configurationSchema = z.object({
   inputs: z.array(identifier),
   solutions: z.record(
     identifier,
-    z.union([z.string(), solve1dSolutionSchema, z.record(z.string(), z.string())]),
+    // tableSolutionSchema before the generic record: a table lookup {table, at}
+    // is all-string-valued and would otherwise be swallowed by the multi-branch
+    // record. solve1d is disambiguated by its non-string value.
+    z.union([z.string(), solve1dSolutionSchema, tableSolutionSchema, z.record(z.string(), z.string())]),
   ),
   expected_branches: z.number().int().default(1),
   branches: z
@@ -95,6 +123,7 @@ const things = defineCollection({
     facets: z.array(z.string()).min(1),
     variables: z.array(variableSchema).min(1),
     materials: z.object({ binds: z.record(identifier, z.string()) }).optional(),
+    tables: z.array(tableSchema).default([]),
     relations: z.array(relationSchema).min(1),
     configurations: z.array(configurationSchema).min(1),
     derivation: z
@@ -152,6 +181,28 @@ const planStep = z.discriminatedUnion("type", [
     // bracket endpoints are FUNCTIONS of the evaluated env (fns.ts keys) —
     // sign change between them is proven at every verification sample
     bracket_fns: z.tuple([z.string(), z.string()]),
+    latex: z.string(),
+  }),
+  // tabulated data (ADR-0009): look up `arg_fn(env)` in `rows` ([arg, col1, ...]).
+  // Out-of-domain (interpolate) or non-row (exact-row) yields a non-finite value;
+  // the runtime routes that through `guard` as a SCOPED invalid refusal (the
+  // named columns + their descendants blank; the page stands) — no clamp or
+  // extrapolation path exists in the emitted lookup. The guard carries no
+  // guard_fn: the lookup's own definedness is the (build-proven) refusal trigger.
+  z.object({
+    type: z.literal("table"),
+    targets: z.array(identifier).min(1),
+    table_id: z.string(),
+    arg_fn: z.string(),
+    mode: z.enum(["interpolate-linear", "exact-row"]),
+    rows: z.array(z.array(z.number()).min(2)).min(2),
+    domain: z.tuple([z.number(), z.number()]),
+    guard: z.object({
+      severity: z.literal("invalid"),
+      message: z.string(),
+      citation: z.string().nullable().optional(),
+      scope: z.array(identifier).min(1),
+    }),
     latex: z.string(),
   }),
 ]);
@@ -234,6 +285,23 @@ const compiled = defineCollection({
       }),
     ),
     material_binding: z.record(identifier, z.string()).nullable(),
+    // tabulated-data provenance (ADR-0009) for the /verification/ audit surface
+    tables: z
+      .array(
+        z.object({
+          id: z.string(),
+          name: z.string(),
+          citation: z.string(),
+          provenance: z.string(),
+          interpolation_citation: z.string().nullable().optional(),
+          mode: z.string(),
+          arg: identifier,
+          columns: z.array(identifier),
+          domain: z.tuple([z.number(), z.number()]),
+          rows_count: z.number(),
+        }),
+      )
+      .default([]),
     sim: z.object({ engine: z.string(), config: z.record(z.string(), z.unknown()).default({}) }).nullable(),
     sources: z.array(
       z.object({

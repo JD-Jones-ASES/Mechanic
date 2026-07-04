@@ -128,7 +128,9 @@ def test_identity_derivation_step_may_not_touch_solve1d_targets(things_dir, tmp_
     )
     assert "check: definition" not in bad  # the replace actually landed
     (things_dir / "lambert-fixture" / "thing.yaml").write_text(bad, encoding="utf-8")
-    with pytest.raises(BuildError, match="solve1d-dependent"):
+    # the taint guard is shared with table lookups now, so its message reads
+    # "no closed form (solve1d root or table lookup)"
+    with pytest.raises(BuildError, match="no closed form"):
         compile_all(things_dir, tmp_path / "generated")
 
 

@@ -23,6 +23,7 @@ import { DiskBoreSim } from "./sims/DiskBoreSim";
 import { EccentricColumnSim } from "./sims/EccentricColumnSim";
 import { FlywheelSim } from "./sims/FlywheelSim";
 import { FourbarSim } from "./sims/FourbarSim";
+import { GearPairSim } from "./sims/GearPairSim";
 import { PlanetarySim } from "./sims/PlanetarySim";
 import { ScrewSim } from "./sims/ScrewSim";
 import { ShaftSim } from "./sims/ShaftSim";
@@ -43,6 +44,7 @@ const SIMS: Record<
   (p: { values: VarRecord; invalid?: boolean; invalidVars?: string[] }) => JSX.Element
 > = {
   planetary: PlanetarySim,
+  "gear-pair": GearPairSim,
   "cantilever-beam": BeamSim,
   "pressure-vessel": VesselSim,
   "torsion-shaft": ShaftSim,
@@ -111,7 +113,7 @@ export default function ThingWidget({ artifact, materials, sim }: Props) {
     return engine.evaluate(cfgId, { ...knobs, ...materialValues }, activeBranch);
   }, [fns, artifact, cfgId, knobs, materialValues, activeBranch]);
 
-  const targets = cfg.plan.map((s) => s.target);
+  const targets = cfg.plan.flatMap((s) => (s.type === "table" ? s.targets : [s.target]));
   const SimComponent = sim?.config?.draw ? SIMS[String(sim.config.draw)] : undefined;
 
   return (

@@ -54,6 +54,49 @@ class VarSpec:
     display_units: list[str] = field(default_factory=list)
 
 
+@dataclass
+class TableSpec:
+    """A compiled tabulated relation (ADR-0009). `rows` are high-precision
+    Floats ([arg, col1, ...], strictly increasing arg) used by the verifier;
+    the artifact embeds the same values as JS numbers. `columns` are the
+    declared template variables the lookup fills (dimensional/kind checks ride
+    on them at the consumption site)."""
+
+    id: str
+    name: str
+    citation: str
+    provenance: str
+    interpolation_citation: str | None
+    arg: str
+    arg_integer: bool
+    columns: list[str]
+    mode: str  # interpolate-linear | exact-row
+    rows: list[list[sp.Float]]
+
+
+def table_lookup_ref(rows: list[list[sp.Float]], arg, mode: str, col: int):
+    """Reference lookup mirroring site/src/engines/table.ts EXACTLY (`col` is
+    1-based into the row; index 0 is the argument). Returns `sp.nan` on a
+    refusal — out of domain (interpolate-linear) or a non-row arg (exact-row) —
+    so the browser's NaN-refusal and this oracle cannot diverge."""
+    n = len(rows)
+    if n == 0:
+        return sp.nan
+    for i in range(n):
+        if arg == rows[i][0]:  # exact node hit: stored value, no interpolation
+            return rows[i][col]
+    if mode == "exact-row":
+        return sp.nan
+    if arg < rows[0][0] or arg > rows[n - 1][0]:  # strictly outside the domain
+        return sp.nan
+    for i in range(n - 1):
+        x0, x1 = rows[i][0], rows[i + 1][0]
+        if x0 <= arg <= x1:
+            y0, y1 = rows[i][col], rows[i + 1][col]
+            return y0 + (y1 - y0) * (arg - x0) / (x1 - x0)
+    return sp.nan  # unreachable once the domain check has passed
+
+
 def _sample_value(spec: VarSpec, rng: random.Random) -> sp.Rational:
     """A random exact rational inside the variable's bounds (so evalf can hit 50 dps)."""
     lo, hi = spec.bounds if spec.bounds else (0.1, 10.0)
@@ -311,6 +354,171 @@ def verify_solve1d_configuration(
         raise BuildError(
             f"{context}: only {done} real-valued solve1d samples found after {attempts} "
             f"attempts — cannot certify the configuration (check variable bounds)"
+        )
+    return parity, points
+
+
+def verify_table(table: TableSpec, context: str) -> None:
+    """Structural + node-exact + refusal certificate for one table (ADR-0009,
+    verification parts 1, 2, 4). Fails the build loudly on any violation.
+
+      1. STRUCTURAL: mode legal (interpolate-linear | exact-row ship now;
+         threshold is schema-reserved and rejected here); interpolate needs an
+         interpolation_citation; ≥2 rows; each row is [arg, col1, ...]; args
+         strictly increasing and finite; integer-arg tables need integer rows.
+      2. NODE-EXACT: the reference lookup at every row's arg returns that row's
+         stored value bit-exactly — no interpolation arithmetic runs at a node,
+         so yaml → artifact drift is impossible to hide.
+      4. REFUSAL PROVEN: an out-of-domain arg (interpolate) or a between-rows
+         arg (exact-row) makes the lookup non-finite — the honest refuse signal.
+    (Part 3, the residual back-substitution, needs the configuration and lives
+    in verify_table_configuration; part 5 is the /verification/ audit surface.)
+    """
+    c = f"{context}, table '{table.id}'"
+    ncol = len(table.columns)
+    if table.mode not in ("interpolate-linear", "exact-row"):
+        raise BuildError(
+            f"{c}: mode '{table.mode}' is not yet built — interpolate-linear and "
+            f"exact-row ship; threshold is schema-reserved until its consumer arrives"
+        )
+    if table.mode.startswith("interpolate") and not table.interpolation_citation:
+        raise BuildError(f"{c}: interpolate-* mode requires an interpolation_citation")
+    if len(table.rows) < 2:
+        raise BuildError(f"{c}: needs at least 2 rows")
+    prev = None
+    for ri, row in enumerate(table.rows):
+        if len(row) != 1 + ncol:
+            raise BuildError(
+                f"{c}: row {ri} has {len(row)} value(s), expected {1 + ncol} "
+                f"(arg + {ncol} column(s))"
+            )
+        for x in row:
+            if not bool(x.is_finite):
+                raise BuildError(f"{c}: row {ri} has a non-finite value {x}")
+        arg = row[0]
+        if prev is not None and not bool(arg > prev):
+            raise BuildError(
+                f"{c}: arg column must be strictly increasing (row {ri}: {arg} not > {prev})"
+            )
+        # numeric fractional-part test — a structural `arg != floor(arg)` is
+        # always True (Float vs Integer differ by type), which would misfire
+        if table.arg_integer and bool(sp.Abs(arg - sp.floor(arg)) > sp.Float("1e-30")):
+            raise BuildError(
+                f"{c}: arg variable '{table.arg}' is integer, but row {ri} arg {arg} is not"
+            )
+        prev = arg
+    # part 2 — node-exact
+    for ri, row in enumerate(table.rows):
+        for col in range(1, ncol + 1):
+            got = table_lookup_ref(table.rows, row[0], table.mode, col)
+            if got is sp.nan or got != row[col]:
+                raise BuildError(
+                    f"{c}: NODE-EXACT failed at row {ri}, column {col}: "
+                    f"lookup={got} but stored={row[col]}"
+                )
+    # part 4 — refusal proven, not assumed
+    lo, hi = table.rows[0][0], table.rows[-1][0]
+    if table.mode == "interpolate-linear":
+        for probe in (lo - 1, hi + 1):
+            if table_lookup_ref(table.rows, probe, table.mode, 1) is not sp.nan:
+                raise BuildError(f"{c}: out-of-domain arg {probe} did NOT refuse (part 4)")
+    else:  # exact-row: a strictly-between-rows arg must refuse
+        mid = (table.rows[0][0] + table.rows[1][0]) / 2
+        if mid != table.rows[0][0] and table_lookup_ref(table.rows, mid, table.mode, 1) is not sp.nan:
+            raise BuildError(f"{c}: exact-row non-row arg {mid} did NOT refuse (part 4)")
+
+
+def verify_table_configuration(
+    inputs: list[sp.Symbol],
+    material_syms: list[sp.Symbol],
+    constraints: dict[sp.Symbol, sp.Expr],
+    ordered_steps: list[tuple],
+    residuals: list[tuple[str, sp.Expr]],
+    tables: dict[str, TableSpec],
+    specs: dict[sp.Symbol, VarSpec],
+    context: str,
+) -> tuple[list[dict], list[dict[sp.Symbol, sp.Expr]]]:
+    """The per-sample certificate for a configuration containing `table` plan
+    steps (ADR-0009 verification part 3). A table output has no closed form, so
+    — exactly like solve1d — the certificate is numeric and per-sample:
+
+      1. sample the inputs + material variables (exact rationals);
+      2. run the plan at 60 dps, resolving each table step by the reference
+         lookup (samples are drawn inside the domain; the refusal path is proven
+         separately in verify_table);
+      3. back-substitute the fully-populated point into EVERY relation residual
+         and require it to vanish — the looked-up values join the residual-zero
+         certificate that closed forms and solve1d roots already get.
+
+    Returns (parity_samples, manifold_points): float samples for the JS parity
+    oracle (the browser's linear interpolation is pinned against these), and the
+    on-manifold points for the DOF Jacobian-rank check.
+    """
+    rng = random.Random(context)
+    free_syms = [*inputs, *material_syms]
+    parity: list[dict] = []
+    points: list[dict[sp.Symbol, sp.Expr]] = []
+    done = 0
+    attempts = 0
+    while done < NUM_SAMPLES and attempts < 40 * NUM_SAMPLES:
+        attempts += 1
+        known: dict[sp.Symbol, sp.Expr] = {s: _sample_value(specs[s], rng) for s in free_syms}
+        for sym, val in constraints.items():
+            known[sym] = val.subs(known) if val.free_symbols else val
+        hole = False
+        for step in ordered_steps:
+            if step[0] == "eval":
+                _, target, expr = step
+                val = expr.subs(known).evalf(60, chop=True)
+                if not val.is_number or val.has(sp.zoo, sp.oo, sp.nan) or val.is_real is not True:
+                    hole = True
+                    break
+                known[target] = val
+            else:  # ("table", target, table_id, arg_expr)
+                _, target, table_id, arg_expr = step
+                tbl = tables[table_id]
+                arg_val = arg_expr.subs(known).evalf(60, chop=True)
+                if not arg_val.is_number or arg_val.is_real is not True:
+                    hole = True
+                    break
+                lo, hi = tbl.rows[0][0], tbl.rows[-1][0]
+                if bool(arg_val < lo) or bool(arg_val > hi):
+                    hole = True  # out of domain: refusal proven elsewhere; resample
+                    break
+                y = table_lookup_ref(tbl.rows, arg_val, tbl.mode, 1)
+                if y is sp.nan:
+                    hole = True  # exact-row miss on a sampled arg: resample
+                    break
+                known[target] = sp.Float(y, 50)
+        if hole:
+            continue
+        # the fully-populated point must satisfy EVERY relation — the same total
+        # back-substitution closed forms and solve1d roots get. Tolerance is the
+        # numeric SOLVE1D_TOLERANCE: the looked-up value is a Float, not symbolic.
+        for rel_id, res in residuals:
+            val = res.subs(known).evalf(PRECISION_DPS, chop=True)
+            if not val.is_number or val.is_real is not True:
+                raise BuildError(f"{context}: relation '{rel_id}' not real at table sample {attempts}")
+            if abs(val) > SOLVE1D_TOLERANCE:
+                raise BuildError(
+                    f"{context}: relation '{rel_id}' residual {sp.N(val, 6)} ≠ 0 at table "
+                    f"sample {attempts} — the table/solution chain does not satisfy the relations"
+                )
+        done += 1
+        if len(parity) < 3:
+            parity.append({
+                "inputs": {str(s): float(known[s]) for s in free_syms},
+                "outputs": {
+                    str(t): float(known[t])
+                    for t in known
+                    if t not in free_syms and t not in constraints
+                },
+            })
+            points.append(dict(known))
+    if done < max(10, NUM_SAMPLES // 3):
+        raise BuildError(
+            f"{context}: only {done} valid table samples after {attempts} attempts — "
+            f"check that the input bounds overlap the table domain"
         )
     return parity, points
 

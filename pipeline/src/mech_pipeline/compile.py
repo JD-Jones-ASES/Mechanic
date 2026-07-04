@@ -21,6 +21,7 @@ from .dims import check_homogeneous, check_relational_homogeneous, dim_vector, p
 from .emit_js import auto_guards, emit_function, render_fns_ts
 from .kinds import QUANTITY_KINDS
 from .verify import (
+    TableSpec,
     VarSpec,
     dof_check,
     manifold_points,
@@ -29,6 +30,8 @@ from .verify import (
     verify_derivation_step,
     verify_solutions_against_relations,
     verify_solve1d_configuration,
+    verify_table,
+    verify_table_configuration,
 )
 
 IDENT_RE = r"^[A-Za-z_][A-Za-z0-9_]*$"
@@ -46,6 +49,13 @@ _GLOBALS = {
 }
 
 LATEX_OPTS = {"inv_trig_style": "full"}
+
+
+def _mathrm(name: str) -> str:
+    """A KaTeX-safe upright operator name for a table's plan-step LaTeX
+    (e.g. 'Table 14-2' -> \\mathrm{Table\\ 14\\text{-}2})."""
+    safe = name.replace("\\", "").replace(" ", "\\ ").replace("-", "\\text{-}")
+    return f"\\mathrm{{{safe}}}"
 
 
 def _parse(expr_str: str, table: dict[str, sp.Symbol], context: str) -> sp.Expr:
@@ -78,6 +88,7 @@ class ThingCompiler:
         self.table: dict[str, sp.Symbol] = {}
         self.unit_map: dict[sp.Symbol, sp.Expr] = {}
         self.fns: list[str] = []
+        self.tables: dict[str, TableSpec] = {}
         self.artifact: dict = {"schema_version": 1, "thing": self.thing_id}
 
     # ---------- variables ----------
@@ -205,6 +216,64 @@ class ThingCompiler:
         self.residual_by_id = dict(self.residuals)
         self.relation_latex = {r["id"]: r["latex"] for r in rels}
 
+    # ---------- tables (ADR-0009) ----------
+    def load_tables(self) -> None:
+        """Parse and structurally verify the `tables:` block. Each table becomes
+        a TableSpec (high-precision rows) that load_configurations consumes; the
+        artifact carries table metadata for the /verification/ audit surface."""
+        sources = {s["id"] for s in self.raw.get("sources", [])}
+        meta: list[dict] = []
+        seen: set[str] = set()
+        for t in self.raw.get("tables", []):
+            tid = _require(t, "id", f"{self.ctx} table")
+            c = f"{self.ctx}, table '{tid}'"
+            if tid in seen:
+                raise BuildError(f"{c}: duplicate table id")
+            seen.add(tid)
+            cit = _require(t, "citation", c)
+            if cit not in sources:
+                raise BuildError(f"{c}: citation '{cit}' not found in sources")
+            interp_cit = t.get("interpolation_citation")
+            if interp_cit is not None and interp_cit not in sources:
+                raise BuildError(f"{c}: interpolation_citation '{interp_cit}' not found in sources")
+            if t.get("out_of_domain", "invalid") != "invalid":
+                raise BuildError(f"{c}: out_of_domain must be 'invalid' — the only supported guard")
+            arg = _require(t, "arg", c)
+            if arg not in self.table:
+                raise BuildError(f"{c}: arg '{arg}' is not a declared variable")
+            columns = _require(t, "columns", c)
+            if not isinstance(columns, list) or not columns:
+                raise BuildError(f"{c}: columns must be a non-empty list of declared variables")
+            for col in columns:
+                if col not in self.table:
+                    raise BuildError(f"{c}: column '{col}' is not a declared variable")
+            raw_rows = _require(t, "rows", c)
+            if not isinstance(raw_rows, list):
+                raise BuildError(f"{c}: rows must be a list")
+            rows_hp = [[sp.Float(str(v), 50) for v in row] for row in raw_rows]
+            spec = TableSpec(
+                id=tid,
+                name=str(t.get("name", tid)),
+                citation=cit,
+                provenance=str(_require(t, "provenance", c)),
+                interpolation_citation=interp_cit,
+                arg=str(arg),
+                arg_integer=bool(self.specs[self.table[arg]].integer),
+                columns=[str(col) for col in columns],
+                mode=str(_require(t, "mode", c)),
+                rows=rows_hp,
+            )
+            verify_table(spec, self.ctx)  # structural + node-exact + refusal (parts 1,2,4)
+            self.tables[tid] = spec
+            meta.append({
+                "id": tid, "name": spec.name, "citation": cit, "provenance": spec.provenance,
+                "interpolation_citation": interp_cit, "mode": spec.mode,
+                "arg": spec.arg, "columns": spec.columns,
+                "domain": [float(rows_hp[0][0]), float(rows_hp[-1][0])],
+                "rows_count": len(rows_hp),
+            })
+        self.artifact["tables"] = meta
+
     # ---------- configurations ----------
     def load_configurations(self) -> None:
         non_material = [s for s in self.specs if self.specs[s].role != "material"]
@@ -258,6 +327,7 @@ class ThingCompiler:
             ordered_steps: list[tuple] = []
             seen_targets: list[sp.Symbol] = []
             solve_targets: set[sp.Symbol] = set()
+            table_targets: set[sp.Symbol] = set()
             material_syms = [s for s in self.specs if self.specs[s].role == "material"]
             any_branched = False
             fn_prefix_base = f"cfg_{cid.replace('-', '_')}"
@@ -317,6 +387,79 @@ class ThingCompiler:
                     seen_targets.append(target)
                     targets_needed.discard(target)
                     continue
+                if isinstance(sol, dict) and "table" in sol:
+                    # tabulated lookup (ADR-0009): the column value comes from a
+                    # cited table at arg = `at`, evaluated inside the forward DAG.
+                    # No closed form exists, so like solve1d the value is proven
+                    # numerically (verify_table_configuration) and tainted for
+                    # derivation identity steps; out-of-domain refuses, scoped.
+                    table_id = str(sol["table"])
+                    if table_id not in self.tables:
+                        raise BuildError(f"{tc}: references unknown table '{table_id}'")
+                    tbl = self.tables[table_id]
+                    if len(tbl.columns) != 1:
+                        raise BuildError(
+                            f"{tc}: multi-column table consumption is not built in v1 "
+                            f"(table '{table_id}' declares {len(tbl.columns)} columns)"
+                        )
+                    at_expr = _parse(str(_require(sol, "at", tc)), self.table, tc)
+                    knowns = {*inputs, *constraints, *material_syms, *seen_targets}
+                    not_ready = at_expr.free_symbols - knowns
+                    if not_ready:
+                        raise BuildError(
+                            f"{tc}: table arg reads {sorted(map(str, not_ready))}, not yet "
+                            f"evaluated at this plan step — tables run inside the forward DAG (v1)"
+                        )
+                    arg_sym = self.table[tbl.arg]
+                    check_homogeneous(at_expr - arg_sym, self.unit_map, f"{tc} table arg")
+                    if at_expr.is_Symbol and at_expr in self.specs:
+                        aspec, tmpl = self.specs[at_expr], self.specs[arg_sym]
+                        if aspec.quantity_kind != tmpl.quantity_kind:
+                            raise BuildError(
+                                f"{tc}: table arg kind '{aspec.quantity_kind}' ≠ template "
+                                f"'{tmpl.quantity_kind}' (dimensions alone are not enough)"
+                            )
+                        if tmpl.integer and not aspec.integer:
+                            raise BuildError(
+                                f"{tc}: table '{table_id}' has an integer arg but '{at_expr}' is not integer"
+                            )
+                    col_tmpl = self.table[tbl.columns[0]]
+                    check_homogeneous(target - col_tmpl, self.unit_map, f"{tc} table column")
+                    if self.specs[target].quantity_kind != self.specs[col_tmpl].quantity_kind:
+                        raise BuildError(
+                            f"{tc}: target kind '{self.specs[target].quantity_kind}' ≠ column "
+                            f"template '{self.specs[col_tmpl].quantity_kind}'"
+                        )
+                    arg_fn_id = f"{fn_prefix_base}_{target_name}__arg"
+                    self.fns.append(emit_function(arg_fn_id, at_expr, tc))
+                    rows_float = [[float(v) for v in row] for row in tbl.rows]
+                    lo, hi = rows_float[0][0], rows_float[-1][0]
+                    latex = (
+                        f"{self.specs[target].latex} = {_mathrm(tbl.name)}"
+                        f"\\!\\left({sp.latex(at_expr, **LATEX_OPTS)}\\right)"
+                    )
+                    plan.append({
+                        "type": "table", "targets": [target_name], "table_id": table_id,
+                        "arg_fn": arg_fn_id, "mode": tbl.mode, "rows": rows_float,
+                        "domain": [lo, hi],
+                        "guard": {  # scope (columns + descendants) filled in after the loop
+                            "severity": "invalid",
+                            "message": (
+                                f"{self.specs[target].name} is read from {tbl.name}, published only "
+                                f"for {self.specs[arg_sym].name} between {lo:g} and {hi:g}; outside "
+                                f"that range there is no data, so it (and anything computed from it) "
+                                f"is refused."
+                            ),
+                            "citation": tbl.citation,
+                            "scope": [],
+                        },
+                        "latex": latex,
+                    })
+                    ordered_steps.append(("table", target, table_id, at_expr))
+                    table_targets.add(target)
+                    seen_targets.append(target)
+                    targets_needed.discard(target)
+                    continue
                 if isinstance(sol, dict):  # multi-branch
                     any_branched = True
                     if branches_meta is None or list(sol) != labels:
@@ -354,6 +497,28 @@ class ThingCompiler:
                     f"but every authored solution is single-branch"
                 )
 
+            # scoped-refusal scope for each table step: the column(s) it fills
+            # PLUS every downstream eval target that reads them. A σ_b computed
+            # from a refused Y must blank too, or the page would show a
+            # trustworthy-looking number built on missing data. Walk the eval
+            # chain after each table step (forward DAG ⇒ one pass suffices).
+            table_plan_by_target = {p["targets"][0]: p for p in plan if p["type"] == "table"}
+            for idx, st in enumerate(ordered_steps):
+                if st[0] != "table":
+                    continue
+                tgt_sym = st[1]
+                reach = {tgt_sym}
+                for later in ordered_steps[idx + 1:]:
+                    if later[0] == "eval" and later[2].free_symbols & reach:
+                        reach.add(later[1])
+                for s in reach:
+                    if self.specs[s].role != "derived":
+                        raise BuildError(
+                            f"{c}: table scope symbol '{s}' has role "
+                            f"'{self.specs[s].role}' — scoped refusal poisons derived outputs only"
+                        )
+                table_plan_by_target[str(tgt_sym)]["guard"]["scope"] = sorted(str(s) for s in reach)
+
             # EVERY branch is independently resolved and proven against EVERY
             # relation, and the DOF check runs on each branch's own manifold —
             # an unverified crossed-circuit solution must fail the build, not
@@ -363,6 +528,12 @@ class ThingCompiler:
             residual_exprs += [sym - val for sym, val in constraints.items()]
             samples: list[dict] = []
             first_resolved: dict[sp.Symbol, sp.Expr] | None = None
+            # solve1d and table campaigns are separate dispatch arms (below); a
+            # config with BOTH would silently skip the table's residual
+            # certificate, miscount DOF, and mis-scope refusals — so refuse it
+            # loudly, exactly as the multi-branch combinations already do (v1).
+            if solve_targets and table_targets:
+                raise BuildError(f"{c}: solve1d and table steps cannot be combined in one configuration (v1)")
             if solve_targets:
                 # the numeric campaign: bracket sign-change + single-root scan
                 # + 60-dps bisection + total back-substitution, per sample —
@@ -379,6 +550,32 @@ class ThingCompiler:
                 # everything downstream is 'tainted' (no closed form exists)
                 resolved: dict[sp.Symbol, sp.Expr] = dict(constraints)
                 tainted: set[sp.Symbol] = set(solve_targets)
+                for st in ordered_steps:
+                    if st[0] != "eval":
+                        continue
+                    _, t_sym, t_expr = st
+                    flat = t_expr.subs(resolved)
+                    if flat.free_symbols & tainted:
+                        tainted.add(t_sym)
+                    else:
+                        resolved[t_sym] = sp.together(flat)
+                first_resolved = resolved
+                self.solve_tainted_by_cfg[cid] = tainted
+            elif table_targets:
+                # table campaign (ADR-0009): per-sample residual certificate.
+                # Each column counts as ONE relation in the DOF check — the
+                # table pins that unknown as surely as a closed form would.
+                if branches_meta:
+                    raise BuildError(f"{c}: tables cannot be combined with multi-branch solutions (v1)")
+                samples, pts = verify_table_configuration(
+                    inputs, material_syms, constraints, ordered_steps,
+                    self.residuals, self.tables, self.specs, c,
+                )
+                dof_check(non_material, residual_exprs + list(table_targets), inputs, pts, c)
+                # derivation prefix: table outputs (and everything downstream of
+                # them) have no closed form — taint exactly like solve1d outputs
+                resolved: dict[sp.Symbol, sp.Expr] = dict(constraints)
+                tainted: set[sp.Symbol] = set(table_targets)
                 for st in ordered_steps:
                     if st[0] != "eval":
                         continue
@@ -507,9 +704,10 @@ class ThingCompiler:
                 raise BuildError(f"{c}: check must be identity|definition")
             if check_mode == "identity" and expr.free_symbols & tainted:
                 raise BuildError(
-                    f"{c}: identity step references solve1d-dependent symbol(s) "
-                    f"{sorted(str(s) for s in expr.free_symbols & tainted)} — no closed form "
-                    f"exists to verify against; restate it over closed-form variables or "
+                    f"{c}: identity step references symbol(s) with no closed form "
+                    f"(solve1d root or table lookup): "
+                    f"{sorted(str(s) for s in expr.free_symbols & tainted)} — nothing to verify "
+                    f"the identity against; restate it over closed-form variables or "
                     f"mark it 'check: definition'"
                 )
             verify_derivation_step(expr, check_mode, local_defs, resolved, local_specs, c)
@@ -525,6 +723,7 @@ class ThingCompiler:
     def compile(self) -> tuple[dict, str]:
         self.load_variables()
         self.load_relations()
+        self.load_tables()
         self.load_configurations()
         self.load_derivation()
         self.artifact["sim"] = self.raw.get("sim")

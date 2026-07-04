@@ -106,6 +106,10 @@ a { color: var(--accent); }
 .gear-teeth { stroke: var(--ink); stroke-width: 1; fill: none; }
 .carrier-arm { stroke: var(--muted); stroke-width: 3; stroke-linecap: round; }
 .gear-hub { fill: var(--ink); }
+/* spur-gear-pair: transmitted tooth load W_t, and a tooth count off the table */
+.gear-force { stroke: #dc2626; stroke-width: 3; }
+.gear-force-head { fill: #dc2626; }
+.gear-refused-tooth { fill: none; stroke: var(--muted); stroke-width: 2; stroke-dasharray: 5 4; }
 .beam-wall { fill: var(--muted); }
 .beam-line { stroke: var(--accent); stroke-width: 5; stroke-linecap: round; }
 .beam-yielding { stroke: #dc2626; }
