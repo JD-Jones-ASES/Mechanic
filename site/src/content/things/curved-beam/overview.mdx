@@ -1,0 +1,62 @@
+A crane hook, a C-clamp, the throat of a press frame — these are beams, but they are **already
+curved before you load them**, and that changes the stress in a way the straight-beam formula
+[Mc/I](../cantilever-beam/) cannot see. When a curved bar bends, the fibers on the inside of the
+curve are shorter than those on the outside, so the strain is no longer linear across the depth and
+the **neutral axis shifts off the centroid, toward the inner fiber**. The inside runs hotter than
+Mc/I predicts — often 1.5 to 2 times hotter in a tight hook — and that is exactly where these parts
+crack. This page is the **Winkler** curved-beam theory for a rectangular section.
+
+$$\sigma(r) = \frac{M\,(r_n - r)}{A\,e\,r}, \qquad r_n = \frac{h}{\ln(r_o/r_i)}, \qquad e = r_c - r_n$$
+
+The whole effect lives in the small eccentricity $e = r_c - r_n$ between the centroidal radius and
+the neutral-axis radius. That neutral radius is a **logarithmic** average of the geometry — the
+curved-beam analogue of the exponential in the [belt/capstan](../belt-drive/) equation — and it is
+always slightly *less* than the centroid, which is why the neutral axis moves inward.
+
+## Why the inside runs hot
+
+Set the moment $M$ and watch the stress at each fiber:
+
+$$\sigma_i = \frac{M\,c_i}{A\,e\,r_i}\ \text{(inner, tension)}, \qquad \sigma_o = -\frac{M\,c_o}{A\,e\,r_o}\ \text{(outer, compression)}$$
+
+with $c_i = r_n - r_i$ and $c_o = r_o - r_n$ the distances from the shifted neutral axis. Because
+$r_i < r_o$ sits in the denominator, the inner fiber always carries the larger stress. The widget
+draws the curved-beam distribution (a hyperbola in $r$) against the straight-beam prediction (a
+straight line through the centroid): the two cross zero at **different** radii — $r_n$ for the real
+curved beam, $r_c$ for the straight-beam fiction — and the gap between them is the physics.
+
+The one number that says how much this matters is the **curvature penalty** at the inner fiber,
+
+$$K_i = \frac{\sigma_{b,i}}{\sigma_{str}} = \frac{c_i\,h}{6\,e\,r_i},$$
+
+the ratio of the true inner-fiber bending stress to the straight-beam $Mc/I$. It is pure geometry —
+no load, no material — and it climbs as the beam gets tighter (small $r_c/h$). Widen the radii or
+thin the section in the widget and watch $K_i \to 1$ as the two distributions slide into
+coincidence: at $r_c/h \gtrsim 10$ the curve is so gentle that ordinary $Mc/I$ is within a few
+percent and the widget tells you so. That the Winkler stress **collapses exactly to $Mc/I$ in the
+straight limit** is proven by series expansion in the build's physics test — it is not asserted, it
+is machine-checked.
+
+## The crane hook: bending plus a direct pull
+
+A hook is the combined-loading case (the same superposition idea as the
+[eccentric column](../eccentric-column/)). Its load $P$ runs through the center of curvature, so the
+critical throat section carries a direct tension $P/A$ **and** a bending moment $M = P\,r_c$ about
+the centroid at the same time. Both stress the inner fiber in tension, so they add:
+
+$$\sigma_i = \frac{P}{A} + \frac{M\,c_i}{A\,e\,r_i}, \qquad M = P\,r_c.$$
+
+That total inner-fiber stress is what the safety factor $\mathrm{SF} = \sigma_y/\sigma_i$ is taken
+against — the inside of the throat is the one spot in the hook that decides whether it holds.
+
+## A strength-only material axis
+
+Only $\sigma_y$ enters, and only through the safety factor and the yield warning. Stiffness $E$ and
+density $\rho$ **do not appear at all**: the Winkler stress distribution is pure statics and section
+geometry, just like the [transverse-shear](../beam-shear-flow/) distribution. (Curved-beam
+*deflection* would bring $E$ back in through Castigliano's theorem — that is a different page.)
+Swapping steel for titanium here moves the margin and nothing else. This is the same "geometry
+concentrates stress on the inside" family as the [thick-walled cylinder](../thick-walled-cylinder/)
+and the [pressure vessel](../pressure-vessel/), where the bore, not the outer wall, is the hot
+surface — the credibility of every number is recorded on the [/verification/](/Mechanic/verification/)
+page.

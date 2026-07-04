@@ -1,0 +1,478 @@
+id: curved-beam
+title: Curved Beam in Bending (Winkler — Crane Hook, C-Clamp, Press Frame)
+summary: >-
+  Bend a bar that is already curved and the neutral axis walks off the centroid, toward the inside
+  of the curve — the inner fibers run hotter than the straight-beam Mc/I ever predicts. This is the
+  Winkler formula behind a crane hook, a C-clamp, and a press frame: σ = M·c/(A·e·r), the tiny
+  eccentricity e = r_c − r_n doing all the work, plus the direct P/A a hook's load adds on top.
+facets: [stress]
+
+# Sign convention (Shigley §3-18, pinned once here and in overview.mdx): a POSITIVE
+# bending moment M straightens the curve (decreases curvature) and puts the INNER
+# fiber in tension — the crane-hook case. Sources differ; this page fixes that one.
+
+variables:
+  # --- free inputs (crane-hook configuration) ---
+  - symbol: P
+    name: Hook load (through the center of curvature)
+    latex: P
+    unit: N
+    quantity_kind: force
+    default: 12000
+    bounds: [100, 500000]
+    positive: true
+    display_units: [kN, N]
+  - symbol: r_i
+    name: Inner radius
+    latex: 'r_i'
+    unit: m
+    quantity_kind: length
+    default: 0.04
+    bounds: [0.005, 0.2]
+    positive: true
+    display_units: [mm, m]
+  - symbol: r_o
+    name: Outer radius
+    latex: 'r_o'
+    unit: m
+    quantity_kind: length
+    default: 0.10
+    bounds: [0.01, 0.25]
+    positive: true
+    display_units: [mm, m]
+  - symbol: w
+    name: Section width (into the page)
+    latex: b
+    unit: m
+    quantity_kind: length
+    default: 0.03
+    bounds: [0.002, 0.1]
+    positive: true
+    display_units: [mm, m]
+  # --- material (strength axis ONLY — see overview) ---
+  - symbol: sigma_y
+    name: Yield strength (tension)
+    latex: '\sigma_y'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 250.0e6
+    bounds: [10.0e6, 2.0e9]
+    positive: true
+    role: material
+    display_units: [MPa, Pa]
+  # --- derived: geometry ---
+  - symbol: h
+    name: Section depth (radial)
+    latex: h
+    unit: m
+    quantity_kind: length
+    default: 0.06
+    bounds: [0, 0.25]
+    positive: true
+    role: derived
+    display_units: [mm, m]
+  - symbol: r_c
+    name: Centroidal radius
+    latex: 'r_c'
+    unit: m
+    quantity_kind: length
+    default: 0.07
+    bounds: [0, 0.25]
+    positive: true
+    role: derived
+    display_units: [mm, m]
+  - symbol: A
+    name: Cross-sectional area
+    latex: A
+    unit: m**2
+    quantity_kind: area
+    default: 0.0018
+    bounds: [0, 1.0]
+    positive: true
+    role: derived
+    display_units: ["cm^2", "m**2"]
+  - symbol: I
+    name: Second moment of area (straight-beam)
+    latex: I
+    unit: m**4
+    quantity_kind: second_moment_of_area
+    default: 5.4e-7
+    bounds: [1.0e-12, 1.0e-2]
+    positive: true
+    role: derived
+  - symbol: r_n
+    name: Neutral-axis radius
+    latex: 'r_n'
+    unit: m
+    quantity_kind: length
+    default: 0.0654814
+    bounds: [0, 0.25]
+    positive: true
+    role: derived
+    display_units: [mm, m]
+  - symbol: e
+    name: Eccentricity (r_c − r_n)
+    latex: e
+    unit: m
+    quantity_kind: length
+    default: 0.0045186
+    bounds: [0, 0.1]
+    positive: true
+    role: derived
+    display_units: [mm, m]
+  - symbol: c_i
+    name: Inner-fiber distance from NA
+    latex: 'c_i'
+    unit: m
+    quantity_kind: length
+    default: 0.0254814
+    bounds: [0, 0.25]
+    positive: true
+    role: derived
+    display_units: [mm, m]
+  - symbol: c_o
+    name: Outer-fiber distance from NA
+    latex: 'c_o'
+    unit: m
+    quantity_kind: length
+    default: 0.0345186
+    bounds: [0, 0.25]
+    positive: true
+    role: derived
+    display_units: [mm, m]
+  # --- derived: loads and stresses ---
+  - symbol: M
+    name: Bending moment about the centroid
+    latex: M
+    unit: N*m
+    quantity_kind: bending_moment
+    default: 840
+    bounds: [0, 1.0e7]
+    positive: true
+    role: derived
+  - symbol: sigma_bi
+    name: Bending stress, inner fiber
+    latex: '\sigma_{b,i}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 6.5791e7
+    bounds: [0, 1.0e12]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: sigma_i
+    name: Total stress, inner fiber (hot)
+    latex: '\sigma_i'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 7.24576e7
+    bounds: [0, 1.0e12]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: sigma_o
+    name: Total stress, outer fiber
+    latex: '\sigma_o'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: -2.8983e7
+    bounds: [-1.0e12, 1.0e12]
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: sigma_str
+    name: Straight-beam stress (Mc/I)
+    latex: '\sigma_{str}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 4.66667e7
+    bounds: [0, 1.0e12]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: K_i
+    name: Curvature penalty, inner fiber
+    latex: 'K_i'
+    unit: '1'
+    quantity_kind: ratio
+    default: 1.40981
+    bounds: [1, 10]
+    positive: true
+    role: derived
+  - symbol: curv
+    name: Curvature ratio r_c/h
+    latex: 'r_c/h'
+    unit: '1'
+    quantity_kind: ratio
+    default: 1.16667
+    bounds: [0, 200]
+    positive: true
+    role: derived
+  - symbol: SF
+    name: Safety factor (inner-fiber yield)
+    latex: '\mathrm{SF}'
+    unit: '1'
+    quantity_kind: safety_factor
+    default: 3.45029
+    bounds: [0, 1.0e6]
+    positive: true
+    role: derived
+
+materials:
+  binds:
+    sigma_y: yield_strength
+
+relations:
+  - id: moment-arm
+    group: stress
+    latex: 'M = P\,r_c'
+    residual: M - P*r_c
+    assumptions:
+      - "crane-hook idealization: the load line passes through the center of curvature, so the
+        moment about the section centroid is the load times the centroidal radius"
+    citation: shigley
+  - id: geom-h
+    group: stress
+    latex: 'h = r_o - r_i'
+    residual: h - (r_o - r_i)
+    assumptions:
+      - radial depth of the rectangular section
+    citation: shigley
+  - id: geom-rc
+    group: stress
+    latex: 'r_c = \dfrac{r_i + r_o}{2}'
+    residual: r_c - (r_i + r_o)/2
+    assumptions:
+      - centroid of a rectangle sits at the mean radius
+    citation: shigley
+  - id: geom-A
+    group: stress
+    latex: 'A = b\,h'
+    residual: A - w*h
+    assumptions:
+      - solid rectangular cross-section, width b into the page
+    citation: shigley
+  - id: geom-I
+    group: stress
+    latex: 'I = \dfrac{b h^3}{12}'
+    residual: I - w*h**3/12
+    assumptions:
+      - second moment about the centroidal axis, used only for the straight-beam comparison
+    citation: shigley
+  - id: neutral-radius
+    group: stress
+    latex: 'r_n = \dfrac{h}{\ln(r_o/r_i)}'
+    residual: r_n - h/log(r_o/r_i)
+    assumptions:
+      - "Winkler assumption: plane sections remain plane and rotate about the neutral axis"
+      - "the neutral axis sits where the net axial force vanishes, r_n = A / ∫(dA/r); for a
+        rectangle ∫(dA/r) = b·ln(r_o/r_i), giving the log formula — always LESS than r_c"
+      - "requires r_i > 0 (enforced by the variable's positivity + bounds): as r_i → 0 the log
+        diverges and there is no material at the center of curvature"
+      - the exact closed form; the log is the curved-beam analogue of belt-drive's exponential
+    citation: shigley
+    validity:
+      - condition: r_o > r_i
+        severity: invalid
+        message: >-
+          The outer radius must exceed the inner radius — with r_o ≤ r_i there is no section and
+          the neutral-axis logarithm is undefined. This is a geometry error, not a beam.
+        citation: shigley
+  - id: eccentricity
+    group: stress
+    latex: 'e = r_c - r_n'
+    residual: e - (r_c - r_n)
+    assumptions:
+      - "the small positive gap between centroid and neutral axis — the whole curved-beam effect
+        lives in this difference of nearly equal radii (watch the conditioning at large r_c/h)"
+    citation: shigley
+  - id: dist-inner
+    group: stress
+    latex: 'c_i = r_n - r_i'
+    residual: c_i - (r_n - r_i)
+    assumptions:
+      - distance from the neutral axis out to the inner fiber
+    citation: shigley
+  - id: dist-outer
+    group: stress
+    latex: 'c_o = r_o - r_n'
+    residual: c_o - (r_o - r_n)
+    assumptions:
+      - distance from the neutral axis out to the outer fiber
+    citation: shigley
+  - id: bending-inner
+    group: stress
+    latex: '\sigma_{b,i} = \dfrac{M\,c_i}{A\,e\,r_i}'
+    residual: sigma_bi - M*c_i/(A*e*r_i)
+    assumptions:
+      - "curved-beam bending stress at the inner fiber; σ(r) = M(r_n − r)/(A e r) evaluated at
+        r = r_i — the eccentricity e in the denominator is why the inside runs hot"
+    citation: shigley
+  - id: stress-inner
+    group: stress
+    latex: '\sigma_i = \dfrac{P}{A} + \dfrac{M\,c_i}{A\,e\,r_i}'
+    residual: sigma_i - (P/A + M*c_i/(A*e*r_i))
+    assumptions:
+      - "total inner-fiber stress for the crane hook: the direct tension P/A superposed on the
+        curved bending stress; both are tensile at the inner fiber, so they add — the worst spot"
+      - linear elastic, plane sections; the inner fiber governs against first yield
+    citation: shigley
+    validity:
+      - condition: sigma_i < sigma_y
+        severity: warn
+        message: >-
+          Inner-fiber stress has reached the yield strength — past first yield the elastic Winkler
+          distribution stops being the truth and the hook is into plastic behavior.
+        citation: shigley
+  - id: stress-outer
+    group: stress
+    latex: '\sigma_o = \dfrac{P}{A} - \dfrac{M\,c_o}{A\,e\,r_o}'
+    residual: sigma_o - (P/A - M*c_o/(A*e*r_o))
+    assumptions:
+      - "outer-fiber stress: the curved bending puts the outside in compression (negative), and the
+        direct tension P/A offsets part of it — the outer fiber is never the governing one here"
+    citation: shigley
+  - id: straight-stress
+    group: stress
+    latex: '\sigma_{str} = \dfrac{M\,(h/2)}{I} = \dfrac{6M}{b h^2}'
+    residual: sigma_str - M*h/(2*I)
+    assumptions:
+      - "what a STRAIGHT beam of the same section and moment would predict at the extreme fiber
+        (Mc/I, c = h/2): symmetric tension/compression about the centroid — the wrong answer here,
+        shown for contrast"
+    citation: shigley
+  - id: penalty-inner
+    group: stress
+    latex: 'K_i = \dfrac{\sigma_{b,i}}{\sigma_{str}} = \dfrac{c_i\,h}{6\,e\,r_i}'
+    residual: K_i - c_i*h/(6*e*r_i)
+    assumptions:
+      - "curvature stress-concentration factor at the inner fiber: how many times the straight-beam
+        Mc/I the curved bending stress actually reaches — pure geometry, independent of load and
+        material; > 1, and it grows as the beam gets tighter (small r_c/h)"
+    citation: shigley
+  - id: curvature-ratio
+    group: stress
+    latex: '\dfrac{r_c}{h}'
+    residual: curv - r_c/h
+    assumptions:
+      - "how curved the beam is; the one number that says whether you need this page at all"
+    citation: shigley
+    validity:
+      - condition: curv < 10
+        severity: warn
+        message: >-
+          r_c/h ≥ 10: the beam is barely curved, the neutral axis has all but returned to the
+          centroid, and the straight-beam Mc/I result (shown alongside) is within a few percent —
+          you do not need the curved-beam formula here.
+        citation: shigley
+  - id: safety
+    group: stress
+    latex: '\mathrm{SF} = \dfrac{\sigma_y}{\sigma_i}'
+    residual: SF*sigma_i - sigma_y
+    assumptions:
+      - factor of safety against first yield, taken at the hot inner fiber
+    citation: shigley
+
+configurations:
+  - id: hook
+    label: Hook load and section geometry in — inner/outer stress, the curvature penalty, and the margin out
+    constraints: {}
+    inputs: [P, r_i, r_o, w]
+    solutions:
+      h: r_o - r_i
+      r_c: (r_i + r_o)/2
+      A: w*h
+      I: w*h**3/12
+      r_n: h/log(r_o/r_i)
+      e: r_c - r_n
+      c_i: r_n - r_i
+      c_o: r_o - r_n
+      M: P*r_c
+      sigma_bi: M*c_i/(A*e*r_i)
+      sigma_i: P/A + M*c_i/(A*e*r_i)
+      sigma_o: P/A - M*c_o/(A*e*r_o)
+      sigma_str: M*h/(2*I)
+      K_i: c_i*h/(6*e*r_i)
+      curv: r_c/h
+      SF: sigma_y/sigma_i
+
+derivation:
+  verifies_configuration: hook
+  steps:
+    - expr: Eq(r_n, h/log(r_o/r_i))
+      prose: >-
+        Winkler's move: assume plane cross-sections stay plane and simply rotate about some neutral
+        axis. A fiber at radius r then has strain proportional to (r_n − r)/r — not linear in r,
+        because the fibers started at different arc lengths. Requiring zero NET axial force over a
+        pure-bending section, ∫σ dA = 0, pins the neutral axis at r_n = A / ∫(dA/r); for the
+        rectangle ∫(dA/r) = b·ln(r_o/r_i), so r_n = h/ln(r_o/r_i). Because the harmonic-style average
+        undershoots the arithmetic one, r_n is always a hair LESS than the centroid r_c.
+      rule: "modeling: plane sections rotate about the NA; zero net axial force locates it"
+      check: definition
+    - expr: Eq(sigma_bi, M*c_i/(A*e*r_i))
+      prose: >-
+        The stress is σ(r) = M(r_n − r)/(A·e·r). Taking the moment of that distribution about the
+        centroid returns the applied moment M and fixes the constant, with e = r_c − r_n the small
+        eccentricity. Evaluate it at the inner fiber (r = r_i, distance c_i = r_n − r_i) and it
+        peaks: σ_{b,i} = M·c_i/(A·e·r_i). That e sitting in the denominator — a difference of nearly
+        equal radii — is exactly why the inner fiber runs so much hotter than a straight beam's.
+      rule: "modeling: moment balance about the centroid fixes the stress constant"
+      check: definition
+    - expr: Eq(sigma_i, P/A + sigma_bi)
+      prose: >-
+        A crane hook whose load P runs through the center of curvature loads the throat section two
+        ways at once: a direct tension P/A spread over the area, AND a bending moment M = P·r_c about
+        the centroid. Both put the inner fiber in tension, so superpose them — σ_i = P/A + σ_{b,i} —
+        and the inside of the throat is the single worst-stressed point in the whole hook. (Set the
+        hook aside and the P/A term is simply absent: pure curved bending.)
+      rule: "superposition: direct tension + curved bending (the crane hook)"
+      check: identity
+    - expr: Eq(K_i, sigma_bi/sigma_str)
+      prose: >-
+        Put the SAME moment on a straight bar of depth h and you would predict σ_{str} = M(h/2)/I,
+        equal and opposite about the centroid. The curved beam's inner fiber overshoots that by the
+        factor K_i = σ_{b,i}/σ_{str}, which collapses to the pure-geometry ratio c_i·h/(6·e·r_i) —
+        no load, no material in it. As r_c/h → ∞ the neutral axis slides back to the centroid
+        (e → I/(A r_c)) and K_i → 1: the Winkler formula becomes ordinary Mc/I. The build's physics
+        test proves that limit by series expansion.
+      rule: "definition: curvature penalty factor; the straight-beam limit"
+      check: identity
+    - expr: Eq(SF, sigma_y/sigma_i)
+      prose: >-
+        The inner fiber is the hot one, so the margin against first yield is taken there:
+        SF = σ_y/σ_i. Swap the material and only this number moves — the Winkler stresses are pure
+        statics and geometry (see the material-axis note in the overview).
+      rule: "definition: safety factor on the governing inner fiber"
+      check: definition
+
+sim:
+  engine: statics-cascade
+  config:
+    draw: curved-beam
+
+sources:
+  - id: shigley
+    citation: >-
+      Budynas, R. G., & Nisbett, J. K., Shigley's Mechanical Engineering Design, 10th ed.,
+      McGraw-Hill, 2015 — §3-18 (Curved Beams in Bending): the Winkler formula σ = M y/(A e (r_n − y)),
+      the rectangular-section neutral radius r_n = h/ln(r_o/r_i) (Table 3-4), the eccentricity
+      e = r_c − r_n, and the crane-hook combination of direct and bending stress.
+    verification: >-
+      Topic + formula pinned against Shigley §3-18 and Table 3-4 (rectangular-section r_n). The
+      Winkler stress is NOT taken on citation: pipeline/tests/test_curved_beam_physics.py re-derives
+      it from first principles — plane-sections strain, the neutral-axis location from ∫σ dA = 0, and
+      the moment balance ∫σ(r_n − r) dA = M — then proves the straight-beam limit (σ_i → Mc/I as
+      r_c/h → ∞) by series expansion, and cross-checks the numeric golden against Roark. The
+      rectangular r_n = h/ln(r_o/r_i) is an exact analytic fact (uncopyrightable, Feist), matched by
+      the independent integral. Golden (r_i=50, r_o=100 mm, b=20 mm, M=1 kN·m): σ_{b,i}=154.5 MPa,
+      σ_o=−97.25 MPa, straight Mc/I=120 MPa, K_i=1.288 — hand-checkable arithmetic on the formulas.
+  - id: roark
+    citation: >-
+      Young, W. C., Budynas, R. G., & Sadegh, A. M., Roark's Formulas for Stress and Strain, 8th ed.,
+      McGraw-Hill, 2012 — Chapter 9 (Curved Beams): the same Winkler/Bleich curved-beam bending
+      formulas and the rectangular-section neutral-axis radius, used here as an independent oracle.
+    verification: >-
+      Cross-check only. Roark Ch. 9 states the identical curved-beam bending stress and the
+      rectangular r_n = h/ln(r_o/r_i); the physics test evaluates the stress two independent ways
+      (the closed form and the raw ∫ definition κ = M/(A e), σ = κ(r_n − r)/r) and asserts they
+      agree, so the formula is pinned by re-derivation, not transcription. Topic-level; not
+      page-pinned.

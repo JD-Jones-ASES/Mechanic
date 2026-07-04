@@ -53,7 +53,7 @@ names ride in the Date cell (`<date> · <branch>`).
 | S02 | stepped-shaft-fillet (Kt fits; real-arg multi-column table)    | 19      | DONE   | #15 | 2026-07-04 | [S02](briefs/S02-stepped-shaft-fillet.md) |
 | S03 | rectangular-shaft-torsion (Saint-Venant; twist_rate kind)      | 20      | DONE | #16 | 2026-07-04 | [S03](briefs/S03-rectangular-shaft-torsion.md) |
 | S04 | beam-shear-flow (shear_flow kind)                              | 21      | DONE | #17 | 2026-07-04 | [S04](briefs/S04-beam-shear-flow.md) |
-| S05 | curved-beam (Winkler; zero new machinery)                      | 22      | QUEUED | —   | —          | [S05](briefs/S05-curved-beam.md) |
+| S05 | curved-beam (Winkler; zero new machinery)                      | 22      | IN_PROGRESS | —   | 2026-07-04 · thing/curved-beam | [S05](briefs/S05-curved-beam.md) |
 | S06 | circular-plate (ν in stress; flexural_rigidity kind)           | 23      | QUEUED | —   | —          | [S06](briefs/S06-circular-plate.md) |
 | S07 | torsional-oscillator (frequency kind; Hz/s/ms units)           | 24      | QUEUED | —   | —          | [S07](briefs/S07-torsional-oscillator.md) |
 | S08 | shaft-critical-speed (cited-constants mechanism: g)            | 25      | QUEUED | —   | —          | [S08](briefs/S08-shaft-critical-speed.md) |

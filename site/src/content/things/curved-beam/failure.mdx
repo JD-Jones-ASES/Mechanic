@@ -1,0 +1,33 @@
+The widget answers a narrow elastic question — *given this curved section and this load, what is the
+peak inner-fiber stress and the margin against first yield?* Real hooks, clamps, and frames get into
+trouble in ways that mostly live in what the Winkler model deliberately leaves out.
+
+- **The inner fiber yields first, and the elastic formula stops being true there.** The whole point
+  of the page is that the inside runs hottest, so that is where a hook first yields — and once it
+  does, the elastic Winkler distribution over-predicts the stress (the material sheds load by
+  flowing). The widget *warns* at $\sigma_i = \sigma_y$ rather than pretending the elastic number
+  still holds. Real hooks are often deliberately designed to yield a little at the inner fiber before
+  they fracture, so a bent-open hook is a warning, not yet a failure.
+
+- **Rectangular is the easy case; real hooks are trapezoidal or round.** A crane hook is thicker on
+  the inside than the outside — a trapezoidal or teardrop section — precisely to put more material
+  where the stress is highest. That shifts $r_n$ and changes $\int(dA/r)$: [Shigley Table
+  3-4](/Mechanic/verification/) lists the neutral-axis formula for trapezoid, T, and round sections,
+  and each is its own future THING. This page is the rectangle, where $r_n = h/\ln(r_o/r_i)$ is clean.
+
+- **The eccentricity is a difference of nearly equal numbers.** $e = r_c - r_n$ is small, and at
+  large $r_c/h$ it is *tiny* — a difference of two radii that agree to several digits. Compute it
+  carelessly (subtracting two rounded radii) and you can lose all your significant figures and get a
+  wildly wrong stress. The build computes $r_n$ and $e$ at high precision and the widget warns you
+  once $r_c/h \gtrsim 10$ that you are in the regime where the straight-beam formula is both simpler
+  and better conditioned. This is a real numerical trap, not a theoretical footnote.
+
+- **Stress concentrations sit on top of this.** The Winkler stress is the *nominal* curved-beam
+  stress. A hook with a cross-hole for a latch, a machining groove, or a sharp fillet multiplies it
+  further by a [stress-concentration factor](../stepped-shaft-fillet/) the page does not include —
+  and that local peak, on the already-hot inner fiber, is a classic crack initiation site.
+
+- **Static, elastic, in-plane only.** No fatigue (hooks fail in service by *fatigue* at the inner
+  fiber under repeated lifts, not by a single overload), no curved-beam deflection or wind-up, no
+  out-of-plane or twisting loads, no residual stresses from forging or heat treatment. Read the page
+  as *where the stress concentrates and how curvature makes it worse*, not as a finished hook design.
