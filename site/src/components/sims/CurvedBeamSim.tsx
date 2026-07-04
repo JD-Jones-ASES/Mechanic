@@ -38,7 +38,7 @@ export function CurvedBeamSim({ values, invalid = false }: { values: VarRecord; 
   const H = 250;
   const ok =
     !invalid &&
-    [ri, ro, rn, rc, e, A, I, M, sigmaI, sigmaBi, sigmaStr].every(Number.isFinite) &&
+    [ri, ro, rn, rc, e, A, I, M, sigmaI, sigmaO, sigmaBi, sigmaStr].every(Number.isFinite) &&
     ro > ri &&
     e > 0;
   if (!ok) {
