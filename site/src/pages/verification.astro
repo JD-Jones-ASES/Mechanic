@@ -81,6 +81,14 @@ const totals = {
         each build.
       </li>
       <li>
+        <strong>Tabulated data (tables)</strong> — a value published as a cited table rather than
+        a formula (the Lewis gear-tooth form factor) is looked up in your browser, and the build
+        proves, at every verification sample: the emitted lookup returns each published row
+        <em>bit-exactly</em>, interpolates linearly between rows (pinned against 50-digit mpmath in
+        the parity oracle), and <em>refuses</em> outside the tabulated domain — scoped to that
+        column and its dependents, carrying the table's citation. No clamp, no extrapolation.
+      </li>
+      <li>
         <strong>Derivation identities</strong> — every derivation line not badged as a modeling
         step is proven to follow from the verified solutions by computer algebra.
       </li>
@@ -115,6 +123,18 @@ const totals = {
       pinned against accessible documents where possible, and the pinning method is recorded
       below; a citation that says <em>topic-level</em> was not pinned to a section. Corrections
       land in the <a href={withBase("about/#errata")}>errata log</a> — dated, never silent.
+    </p>
+
+    <p>
+      <strong>Tabulated numbers are cited data, not proof.</strong> When a THING reads a value from
+      a published table — the Lewis form factor <em>Y</em> for a gear tooth, from Shigley Table 14-2
+      — the build proves the <em>machinery</em> (the lookup hits every published point exactly,
+      interpolates linearly between them, and refuses outside the range), but the tabulated numbers
+      themselves come from a book, and that interpolating between rows is legitimate is a cited
+      modeling choice. <em>Y</em> in particular is laid out graphically from the tooth profile and
+      cannot practically be re-derived from first principles, so its cross-check is a second
+      published table, not a computation — while the gear pair's kinematics and force path
+      <em>are</em> re-derived from equilibrium in the test pipeline.
     </p>
 
     <p class="citation">

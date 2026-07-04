@@ -1,0 +1,42 @@
+The widget answers one question — *will a tooth break in bending?* — with the oldest model that
+does so honestly. Real gears fail in several ways the Lewis equation cannot see, and the biggest
+one is not bending at all.
+
+- **Surface fatigue is usually the real limit (the deliberate non-model).** Two teeth touch along
+  a line and roll past under enormous contact pressure. The Hertzian contact stress
+  $\sigma_c = C_p\sqrt{W_t\,\ldots}$ — a *different* stress, on a *different* surface, checked
+  against a *different* strength — governs most well-lubricated industrial gears long before
+  bending does. It shows up as **pitting**: fatigue spalls that pock the flank until the mesh gets
+  noisy and rough. This page deliberately does **not** compute it. Contact stress needs an elastic
+  geometry factor $I$, the pair's combined elastic modulus, and a surface endurance strength
+  $S_c$ — a materials column and a mechanism this catalog has not built yet. Reading a green
+  bending margin here as "the gear is safe" is exactly the trap: check pitting separately.
+
+- **AGMA is the Lewis equation, grown up.** The bending number gears are actually designed to
+  (AGMA 2001 / ISO 6336) is $\sigma = W_t K_o K_v K_s \frac{1}{b m}\frac{K_H K_B}{Y_J}$ — the Lewis
+  stress with the tip-load form factor $Y$ replaced by a geometry factor $Y_J$ (load at the highest
+  point of single-tooth contact, stress concentration included), and a train of factors for
+  overload, size, load distribution across the face, and rim thinness. The velocity factor here is
+  Barth's crude linear fit; AGMA's $K_v$ depends on a measured transmission-accuracy grade. Treat
+  this page's $\sigma_b$ as the *right shape, textbook coefficients* — good for teaching which knob
+  moves stress which way, not for cutting metal.
+
+- **Undercut voids the model quietly.** Below the interference-free minimum tooth count (the warn
+  banner, Shigley eq 13-11) a generating cutter gouges the flank near the root — the very place the
+  Lewis parabola measures. The form factor is then fiction. The fix is more teeth, a higher
+  pressure angle, or profile shift; the widget only warns, because the algebra still returns a
+  number.
+
+- **Scoring and scuffing are thermal, not structural.** At high pitch-line velocity and load the
+  oil film breaks down and flanks weld-and-tear (scuffing). Nothing here — or in Barth's
+  velocity factor, which merely amplifies the bending stress — sees lubrication regime or flash
+  temperature. The velocity-factor warn marks where even the *bending* fit stops meaning what it
+  cites.
+
+- **The teeth are only as good as their carrier.** The tooth force $W_t$ this page computes is the
+  load the [torsion shaft](../torsion-shaft/) must carry as a twisting moment, the reaction the
+  bearings must react, and — stacked through a [planetary gearset](../planetary-gearset/) — the
+  torque that multiplies at every stage. A tooth that survives in isolation can still fail because
+  the shaft deflects and throws the mesh out of alignment, concentrating $W_t$ at one end of the
+  face. The same "a torque is a force at a radius" bookkeeping that starts this page also drives the
+  [power screw](../power-screw/) and every [belt drive](../belt-drive/) that feeds a gearbox.

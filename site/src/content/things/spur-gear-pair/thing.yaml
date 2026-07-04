@@ -1,0 +1,429 @@
+id: spur-gear-pair
+title: Spur Gear Pair (Lewis Bending)
+summary: >-
+  Two meshing spur gears carry power through one tangential tooth force. The Lewis equation turns
+  that force into a root-bending stress, and a cited form-factor table sets how much a tooth of N
+  teeth can take. Same load, same module — yet the pinion, with fewer teeth, always works harder.
+facets: [stress, torque-power]
+
+variables:
+  # --- knobs (free inputs) ---
+  - symbol: N_p
+    name: Pinion teeth
+    latex: 'N_p'
+    unit: '1'
+    quantity_kind: count
+    default: 18
+    bounds: [8, 200]
+    integer: true
+    positive: true
+  - symbol: N_g
+    name: Gear teeth
+    latex: 'N_g'
+    unit: '1'
+    quantity_kind: count
+    default: 36
+    bounds: [8, 400]
+    integer: true
+    positive: true
+  - symbol: m_mod
+    name: Module
+    latex: m
+    unit: m
+    quantity_kind: length
+    default: 0.004
+    bounds: [0.0005, 0.05]
+    positive: true
+    display_units: [mm, m]
+  - symbol: b
+    name: Face width
+    latex: b
+    unit: m
+    quantity_kind: length
+    default: 0.040
+    bounds: [0.003, 0.3]
+    positive: true
+    display_units: [mm, m]
+  - symbol: T
+    name: Pinion torque
+    latex: T
+    unit: N*m
+    quantity_kind: torque
+    default: 100
+    bounds: [0.1, 20000]
+    positive: true
+    display_units: ["N*m"]
+  - symbol: omega_p
+    name: Pinion speed
+    latex: '\omega_p'
+    unit: rad/s
+    quantity_kind: angular_velocity
+    default: 50
+    bounds: [1, 500]
+    positive: true
+    display_units: [rad/s, rpm]
+  # --- fixed constants (constrained per configuration) ---
+  - symbol: phi
+    name: Pressure angle
+    latex: '\phi'
+    unit: rad
+    quantity_kind: angle
+    default: 0.3490658503988659   # 20°, the basis of Table 14-2
+    bounds: [0.05, 0.7]
+    positive: true
+    display_units: [deg, rad]
+  - symbol: v_b
+    name: Barth reference velocity
+    latex: 'v_b'
+    unit: m/s
+    quantity_kind: velocity
+    default: 6.1                  # 6.1 m/s — the metric Barth constant (Shigley eq 14-4b)
+    bounds: [1, 20]
+    positive: true
+    display_units: ["m/s"]
+  # --- material ---
+  - symbol: sigma_y
+    name: Allowable bending strength
+    latex: '\sigma_{all}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 370.0e6
+    bounds: [1.0e6, 3.0e9]
+    positive: true
+    role: material
+    display_units: [MPa, GPa]
+  # --- derived outputs ---
+  - symbol: i
+    name: Gear ratio
+    latex: i
+    unit: '1'
+    quantity_kind: ratio
+    default: 2
+    bounds: [0.05, 30]
+    positive: true
+    role: derived
+  - symbol: c
+    name: Centre distance
+    latex: c
+    unit: m
+    quantity_kind: length
+    default: 0.108
+    bounds: [0.001, 5]
+    positive: true
+    role: derived
+    display_units: [mm, m]
+  - symbol: V
+    name: Pitch-line velocity
+    latex: V
+    unit: m/s
+    quantity_kind: velocity
+    default: 1.8
+    bounds: [0, 300]
+    positive: true
+    role: derived
+    display_units: ["m/s"]
+  - symbol: K_v
+    name: Velocity (Barth) factor
+    latex: 'K_v'
+    unit: '1'
+    quantity_kind: ratio
+    default: 1.2951
+    bounds: [1, 100]
+    positive: true
+    role: derived
+  - symbol: W_t
+    name: Transmitted (tangential) load
+    latex: 'W_t'
+    unit: N
+    quantity_kind: force
+    default: 2777.78
+    bounds: [0, 1.0e7]
+    positive: true
+    role: derived
+    display_units: [kN, N]
+  - symbol: P
+    name: Transmitted power
+    latex: P
+    unit: W
+    quantity_kind: power
+    default: 5000
+    bounds: [0, 1.0e7]
+    positive: true
+    role: derived
+    display_units: [kW, W]
+  - symbol: Y_p
+    name: Pinion Lewis form factor
+    latex: 'Y_p'
+    unit: '1'
+    quantity_kind: ratio
+    default: 0.309
+    bounds: [0.2, 0.5]
+    positive: true
+    role: derived
+  - symbol: Y_g
+    name: Gear Lewis form factor
+    latex: 'Y_g'
+    unit: '1'
+    quantity_kind: ratio
+    default: 0.3775
+    bounds: [0.2, 0.5]
+    positive: true
+    role: derived
+  - symbol: sigma_b_p
+    name: Pinion tooth bending stress
+    latex: '\sigma_{b,p}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 7.276e7
+    bounds: [0, 1.0e12]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: sigma_b_g
+    name: Gear tooth bending stress
+    latex: '\sigma_{b,g}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 5.956e7
+    bounds: [0, 1.0e12]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: SF_p
+    name: Pinion bending safety factor
+    latex: '\mathrm{SF}_p'
+    unit: '1'
+    quantity_kind: safety_factor
+    default: 5.085
+    bounds: [0, 1.0e6]
+    positive: true
+    role: derived
+  - symbol: SF_g
+    name: Gear bending safety factor
+    latex: '\mathrm{SF}_g'
+    unit: '1'
+    quantity_kind: safety_factor
+    default: 6.213
+    bounds: [0, 1.0e6]
+    positive: true
+    role: derived
+
+materials:
+  binds:
+    sigma_y: yield_strength
+
+tables:
+  - id: lewis-form-factor-20fd
+    name: Table 14-2
+    citation: shigley
+    provenance: >-
+      Lewis form factor Y as published in Shigley Table 14-2 — 20° full-depth involute teeth, load
+      applied at the tip of the tooth. Y is obtained by a graphical layout of the tooth form (or its
+      digital equivalent), not by a closed formula, so the values are cited DATA, not derived here.
+    interpolation_citation: shigley
+    arg: N_p
+    columns: [Y_p]
+    mode: interpolate-linear
+    rows:
+      - [12, 0.245]
+      - [13, 0.261]
+      - [14, 0.277]
+      - [15, 0.290]
+      - [16, 0.296]
+      - [17, 0.303]
+      - [18, 0.309]
+      - [19, 0.314]
+      - [20, 0.322]
+      - [21, 0.328]
+      - [22, 0.331]
+      - [24, 0.337]
+      - [26, 0.346]
+      - [28, 0.353]
+      - [30, 0.359]
+      - [34, 0.371]
+      - [38, 0.384]
+      - [43, 0.397]
+      - [50, 0.409]
+      - [60, 0.422]
+      - [75, 0.435]
+      - [100, 0.447]
+      - [150, 0.460]
+      - [300, 0.472]
+      - [400, 0.480]
+
+relations:
+  - id: gear-ratio
+    group: kinematics
+    latex: 'i = \frac{N_g}{N_p}'
+    residual: i - N_g/N_p
+    assumptions:
+      - external mesh; N_p is the pinion (the smaller, harder-working member)
+      - speed ratio is the inverse of the torque ratio for an ideal (lossless) mesh
+    citation: shigley
+    validity:
+      # interference / undercut minimum pinion teeth (Shigley eq 13-11, k = 1 for
+      # full-depth). Below it the flank is undercut and the Lewis tooth-form
+      # assumption breaks down — the algebra still evaluates, so this is a warn.
+      - condition: N_p >= 2*(N_g/N_p + sqrt((N_g/N_p)**2 + (1 + 2*N_g/N_p)*sin(phi)**2))/((1 + 2*N_g/N_p)*sin(phi)**2)
+        severity: warn
+        message: >-
+          The pinion has fewer teeth than the interference-free minimum for this ratio and pressure
+          angle (Shigley eq 13-11): the flank will be undercut, weakening the tooth and voiding the
+          Lewis form-factor geometry. Increase N_p, raise the pressure angle, or use profile shift.
+        citation: shigley
+  - id: centre-distance
+    group: kinematics
+    latex: 'c = \frac{m\,(N_p + N_g)}{2}'
+    residual: c - m_mod*(N_p + N_g)/2
+    assumptions:
+      - standard (non-profile-shifted) teeth on parallel axes; pitch diameter d = m N
+    citation: shigley
+  - id: pitch-line-velocity
+    group: kinematics
+    latex: 'V = \frac{\omega_p\, m\, N_p}{2}'
+    residual: V - omega_p*m_mod*N_p/2
+    assumptions:
+      - V is the tangential speed at the pitch circle, radius d_p/2 = m N_p / 2
+    citation: shigley
+  - id: velocity-factor
+    group: torque-power
+    latex: 'K_v = \frac{6.1 + V}{6.1}'
+    residual: K_v - (v_b + V)/v_b
+    assumptions:
+      - Barth velocity factor for cut or milled profile teeth (Shigley eq 14-4b, metric)
+      - the 6.1 carries units of m/s (v_b) — an empirical dynamic-load amplifier, not a first-principles result
+    citation: shigley
+    validity:
+      - condition: K_v <= 3
+        severity: warn
+        message: >-
+          Barth's linear velocity factor is an empirical fit for cut/milled teeth at moderate
+          pitch-line velocity; here the dynamic amplification K_v exceeds 3 (V above ≈ 12 m/s),
+          where the fit loses its cited meaning and AGMA dynamic-factor methods are preferred.
+        citation: shigley
+  - id: transmitted-load
+    group: torque-power
+    latex: 'W_t = \frac{2T}{m\,N_p}'
+    residual: W_t - 2*T/(m_mod*N_p)
+    assumptions:
+      - tangential tooth load from torque about the pinion axis, W_t = T / (d_p/2)
+      - the same W_t acts on both gears at the pitch point (action–reaction)
+    citation: shigley
+  - id: transmitted-power
+    group: torque-power
+    latex: 'P = T\,\omega_p'
+    residual: P - T*omega_p
+    assumptions:
+      - mechanical power through the mesh; ideal (lossless) transmission
+    citation: shigley
+  - id: lewis-bending-pinion
+    group: stress
+    latex: '\sigma_{b,p} = \frac{K_v\, W_t}{b\, m\, Y_p}'
+    residual: sigma_b_p - K_v*W_t/(b*m_mod*Y_p)
+    assumptions:
+      - Lewis equation (metric form σ = K_v W_t / (b m Y)); tooth as a cantilever, load at the tip
+      - static bending only — no surface/contact (pitting) check; that is the AGMA S_c story
+    citation: shigley
+  - id: lewis-bending-gear
+    group: stress
+    latex: '\sigma_{b,g} = \frac{K_v\, W_t}{b\, m\, Y_g}'
+    residual: sigma_b_g - K_v*W_t/(b*m_mod*Y_g)
+    assumptions:
+      - same transmitted load and velocity factor as the pinion; only the form factor Y differs
+    citation: shigley
+  - id: safety-pinion
+    group: stress
+    latex: '\mathrm{SF}_p = \frac{\sigma_{all}}{\sigma_{b,p}}'
+    residual: SF_p*sigma_b_p - sigma_y
+    assumptions:
+      - factor of safety on bending strength; σ_all taken as the material yield here (educational)
+    citation: shigley
+  - id: safety-gear
+    group: stress
+    latex: '\mathrm{SF}_g = \frac{\sigma_{all}}{\sigma_{b,g}}'
+    residual: SF_g*sigma_b_g - sigma_y
+    assumptions:
+      - same allowable stress; the gear's larger Y gives it the larger margin at equal geometry
+    citation: shigley
+
+configurations:
+  - id: default
+    label: Teeth, module, load and speed in — tooth stresses and margins out
+    constraints:
+      phi: pi/9      # 20° — the basis of Table 14-2
+      v_b: 6.1       # metric Barth reference velocity, m/s
+    inputs: [N_p, N_g, m_mod, b, T, omega_p]
+    solutions:
+      i: N_g/N_p
+      c: m_mod*(N_p + N_g)/2
+      V: omega_p*m_mod*N_p/2
+      K_v: (v_b + V)/v_b
+      W_t: 2*T/(m_mod*N_p)
+      P: T*omega_p
+      Y_p: { table: lewis-form-factor-20fd, at: N_p }
+      Y_g: { table: lewis-form-factor-20fd, at: N_g }
+      sigma_b_p: K_v*W_t/(b*m_mod*Y_p)
+      sigma_b_g: K_v*W_t/(b*m_mod*Y_g)
+      SF_p: sigma_y/sigma_b_p
+      SF_g: sigma_y/sigma_b_g
+
+derivation:
+  verifies_configuration: default
+  steps:
+    - expr: Eq(V, omega_p*m_mod*N_p/2)
+      prose: >-
+        The gears touch at the pitch point, a distance d_p/2 = m·N_p/2 from the pinion axis. That
+        point moves at the pitch-line velocity V = ω_p·(m·N_p/2) — the common rubbing speed the two
+        pitch circles share.
+      rule: 'kinematics: pitch-line velocity'
+    - expr: Eq(W_t, 2*T/(m_mod*N_p))
+      prose: >-
+        Resolve the pinion torque into a single tangential tooth force at that same radius:
+        W_t = T / (d_p/2) = 2T/(m·N_p). By action–reaction the identical force pushes back on the
+        gear, so both members carry the same W_t.
+      rule: 'statics: tangential force at the pitch circle'
+    - expr: Eq(K_v, (v_b + V)/v_b)
+      prose: >-
+        Real teeth strike each other slightly out of step, so the dynamic load exceeds the static
+        one. Barth's factor K_v = (6.1 + V)/6.1 (metric, cut/milled teeth) is the empirical multiplier
+        that captures this — physics entering by citation, not derivation.
+      rule: 'modeling: Barth velocity factor (empirical, Shigley 14-4b)'
+      check: definition
+    - expr: Eq(sigma_b_p, K_v*W_t/(b*m_mod*Y_p))
+      prose: >-
+        Lewis modelled the tooth as a cantilever loaded at its tip; the root bending stress is
+        σ = K_v·W_t/(b·m·Y), where the dimensionless form factor Y encodes the tooth's shape. Y is
+        read from Table 14-2 by tooth count — cited tabulated data, not a formula (see /verification/).
+      rule: 'modeling: Lewis bending stress; Y_p from Table 14-2'
+      check: definition
+    - expr: Eq(SF_p*sigma_b_p, sigma_y)
+      prose: >-
+        The margin is the allowable stress over the working stress. Because Y grows with tooth count,
+        the pinion (fewer teeth → smaller Y_p) always carries the higher stress at equal load and
+        module: the pinion governs the design, even in identical material.
+      rule: 'definition: bending factor of safety — the pinion governs'
+      check: definition
+
+sim:
+  engine: statics-cascade
+  config:
+    draw: gear-pair
+
+sources:
+  - id: shigley
+    citation: >-
+      Budynas, R. G., & Nisbett, J. K., Shigley's Mechanical Engineering Design, 10th ed.,
+      McGraw-Hill, 2015 — §13-5/13-7 (involute geometry; interference, eq 13-11), §14-1 (the Lewis
+      bending equation), Table 14-2 (Lewis form factor Y, 20° full-depth, tip load), eq 14-4b (Barth
+      velocity factor, metric).
+    verification: >-
+      Topic and formulas pinned 2026-07-04. Table 14-2 Y values cross-checked against multiple
+      independent reproductions of the standard 20° full-depth, tip-load Lewis form factors
+      (evolventdesign.com/pages/gear-strength-calculator-lewis confirms the "load near the tip"
+      basis; individual values 12→0.245, 15→0.290, 17→0.303, 20→0.322, 30→0.359, 50→0.409, 400→0.480
+      confirmed via web search) and are consistent with the tables in Juvinall & Marshek,
+      Fundamentals of Machine Component Design, and other standard references (they all derive from
+      the same standard tooth geometry). The KINEMATICS and FORCE PATH (V, W_t, i) are re-derived
+      from first principles in pipeline/tests/test_gear_physics.py; the Y values are cited data and
+      are NOT machine-proven physics (interpolation between rows is proven; the numbers between rows
+      are asserted by citation — see /verification/).

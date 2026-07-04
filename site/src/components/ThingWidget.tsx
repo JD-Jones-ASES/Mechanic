@@ -23,6 +23,7 @@ import { DiskBoreSim } from "./sims/DiskBoreSim";
 import { EccentricColumnSim } from "./sims/EccentricColumnSim";
 import { FlywheelSim } from "./sims/FlywheelSim";
 import { FourbarSim } from "./sims/FourbarSim";
+import { GearPairSim } from "./sims/GearPairSim";
 import { PlanetarySim } from "./sims/PlanetarySim";
 import { ScrewSim } from "./sims/ScrewSim";
 import { ShaftSim } from "./sims/ShaftSim";
@@ -43,6 +44,7 @@ const SIMS: Record<
   (p: { values: VarRecord; invalid?: boolean; invalidVars?: string[] }) => JSX.Element
 > = {
   planetary: PlanetarySim,
+  "gear-pair": GearPairSim,
   "cantilever-beam": BeamSim,
   "pressure-vessel": VesselSim,
   "torsion-shaft": ShaftSim,
