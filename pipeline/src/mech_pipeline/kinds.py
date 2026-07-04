@@ -28,6 +28,10 @@ QUANTITY_KINDS: frozenset[str] = frozenset({
     "acceleration",
     "angular_velocity",
     "angular_acceleration",
+    "twist_rate",  # rad/m — angle of twist per unit length (dθ/dz); dims [-1,0,…]
+                   # must NOT chain into curvature or wavenumber (both also 1/m): a
+                   # torsional twist rate is not a beam curvature nor a spatial frequency
+
     # mechanics
     "mass",
     "force",

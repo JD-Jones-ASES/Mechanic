@@ -262,7 +262,7 @@ test("verification page discloses authorship and the audit surface", async ({ pa
   await expect(page.getByText(/built end to end by an AI/i).first()).toBeVisible();
   await expect(page.getByText(/No human reviews the content/i).first()).toBeVisible();
   // every THING appears with its audit block (count is a deliberate change detector)
-  expect(await page.locator("section.relation-block").count()).toBe(19); // +stepped-shaft-fillet (S02)
+  expect(await page.locator("section.relation-block").count()).toBe(20); // +rectangular-shaft-torsion (S03)
   await expect(page.getByText(/Where physics enters/i).first()).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -964,4 +964,62 @@ test("stepped shaft: r/d past the fit range refuses K_t but keeps the looked-up 
   await expect(page.locator('[data-output="Kt"] output')).toHaveText("—");
   await expect(page.locator('[data-output="sigma_max"] output')).toHaveText("—");
   await expect(page.locator('[data-output="SF"] output')).toHaveText("—");
+});
+
+/*
+ * Rectangular shaft in torsion (S03) — the THIRD `table` consumer (c1, c2 vs a/b)
+ * and its first use outside a machine-element chart. Defaults T=200 N·m,
+ * a=60 mm, b=30 mm (a/b=2.0, an EXACT table row: c1=0.246, c2=0.229), L=0.5 m:
+ *   tau_max = T/(c1·a·b^2) = 200/(0.246·0.06·0.03^2) = 15.056 MPa (material-blind)
+ *   equal-area circle: r_eq=sqrt(ab/pi)=23.94 mm, tau_round=2T/(pi r_eq^3)=9.284 MPa
+ *   stress penalty eta_tau = 15.056/9.284 = 1.622  (the rectangle is a bad deal)
+ */
+test("rectangular torsion: peak-stress golden and the equal-area circle beats it, material-blind", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/rectangular-shaft-torsion/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  await page.getByTestId("material-select").selectOption("steel-4340");
+  expect(await readOutput(page, "tau_max")).toBeCloseTo(15.06, 1); // MPa, node lookup a/b=2
+  expect(await readOutput(page, "tau_round")).toBeCloseTo(9.284, 1); // equal-area circle, lower
+  expect(await readOutput(page, "eta_tau")).toBeCloseTo(1.622, 2); // rectangle carries MORE
+  expect(await readOutput(page, "eta_tau")).toBeGreaterThan(1); // ...always, the page's point
+  const tauSteel = await readOutput(page, "tau_max");
+  const twistSteel = await readOutput(page, "thetap"); // deg/m
+  const sfSteel = await readOutput(page, "SF");
+
+  // the torsion-shaft lesson repeats: tau_max is blind to the material; only the
+  // twist (G) and the margin (sigma_y) move
+  await page.getByTestId("material-select").selectOption("al-6061-t6");
+  expect(await readOutput(page, "tau_max")).toBeCloseTo(tauSteel, 5); // identical stress
+  expect(await readOutput(page, "thetap")).toBeGreaterThan(twistSteel); // lower G → more twist/m
+  expect(await readOutput(page, "SF")).toBeLessThan(sfSteel); //            lower σ_y → less margin
+  expect(errors).toEqual([]);
+});
+
+test("rectangular torsion: a/b past the tabulated 10 refuses globally — no fabricated coefficient", async ({ page }) => {
+  await page.goto("things/rectangular-shaft-torsion/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  // a=60 mm, drop b to 5 mm → a/b = 12 > 10 (past Timoshenko's last row). The
+  // authored envelope refuses the WHOLE evaluation rather than extrapolate.
+  await page.getByLabel("Short side (b) value").fill("5");
+  await expect(page.locator(".validity-invalid").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/table stops at a\/b = 10|interpolation would invent/i);
+  for (const sym of ["tau_max", "thetap", "eta_tau", "tau_round", "SF"]) {
+    await expect(page.locator(`[data-output="${sym}"] output`)).toHaveText("—");
+  }
+  await expect(page.locator(".sim figcaption")).toContainText(/nothing honest|outside the tabulated/i);
+});
+
+test("rectangular torsion: a/b below 1 tells you to swap the labels", async ({ page }) => {
+  await page.goto("things/rectangular-shaft-torsion/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  // a=20 mm with b=30 mm default → a/b = 0.667 < 1: the "long" side is shorter.
+  // The refusal names the fix rather than a bare "out of domain".
+  await page.getByLabel("Long side (a) value").fill("20");
+  await expect(page.locator(".validity-invalid").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/swap your labels|a is meant to be the LONG side/i);
+  await expect(page.locator('[data-output="tau_max"] output')).toHaveText("—");
 });

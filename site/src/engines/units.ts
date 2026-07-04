@@ -52,6 +52,8 @@ export const DISPLAY_FACTORS: Record<string, { factor: number; label: string }> 
   "1": { factor: 1, label: "" },
   rad: { factor: 1, label: "rad" },
   deg: { factor: Math.PI / 180, label: "°" },
+  "rad/m": { factor: 1, label: "rad/m" }, // twist rate (angle of twist per length); SI base
+  "deg/m": { factor: Math.PI / 180, label: "°/m" }, // 1 deg/m = π/180 rad/m
 };
 
 // Unknown units fall back to identity: the engine computes in SI, so showing
