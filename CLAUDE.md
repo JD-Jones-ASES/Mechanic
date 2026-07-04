@@ -57,6 +57,17 @@ mismatch, unrenderable LaTeX, or a display unit missing from the site's conversi
 (`check-units.mjs`). Compilation is incremental: unchanged THINGs (fingerprint = thing.yaml + pipeline
 source + SymPy version) are reused from cache, locally and in CI.
 
+## Autonomous sessions
+
+Work proceeds as autonomous working sessions — one session = one context window, one queue row =
+one merged PR — governed by `docs/sessions/protocol.md`: read it FIRST in any working session, then
+claim work from `docs/sessions/queue.md`. Rules that hold even if you read nothing else: **never
+lower a gate to make it pass** (BLOCKED protocol — record and stop); **never merge a partial THING**
+(PAUSED protocol); **never start a phase whose owner ruling line is absent from the queue**;
+sessions merge their own PRs only after ALL gates are green (ADR-0007 — **merge is publish**);
+**never round-trip repo files through PowerShell `Get-Content`/`Set-Content`** (PS 5.1 mojibakes
+UTF-8 — use the editor tools).
+
 ## Data provenance rules (full text: `docs/data-provenance.md`)
 
 - Every material value: original published value + original unit (converted programmatically, with tests),
@@ -87,8 +98,9 @@ Generated artifacts (`site/src/generated/`, `data/build/`) are **never committed
 
 ## Out of scope (v1)
 
-Feedback loops / cyclic solving (schema is ready; solver is not built) · full chaining UI (`/chain-demo/`
-is the one shipped demo) · Materials Project integration · fluids & time-integration dynamics engines ·
+Nonlinear/feedback cyclic solving (`solveND` — deferred by ADR-0008, accepted 2026-07-04 with split
+scope; certified linear `solve_linear` groups ARE approved and land in Phase 3) · full chaining UI
+(`/chain-demo/` is the one shipped demo until Phase 4) · Materials Project integration · fluids & time-integration dynamics engines ·
 Pyodide sandbox · integer tooth-count synthesis · eccentric-column solve-for-P (transcendental) ·
 coupler-curve inverse · custom domain · analytics (none, stated policy) · accounts/comments (static site).
 
@@ -97,11 +109,11 @@ coupler-curve inverse · custom domain · analytics (none, stated policy) · acc
 `docs/architecture.md` — pipeline + the unified compiled-artifact schema (single source of truth).
 `docs/authoring-things.md` — how to write a THING. `docs/data-provenance.md` — citation tiers + legal frame.
 `docs/decisions/` — ADRs (read before re-litigating a choice; ADR-0007 = the verification model).
-`docs/roadmap.md` — the phased plan toward the final product (Phase 3 items 1–2 shipped 2026-06-10:
-Johnson hand-off + scoped refusal + solve1d/eccentric column; item 3 = ADR-0008, PROPOSED, needs owner
-sign-off. Phase 2 radial-field complete: rotating-disk-bore and compound-cylinder shipped; the
-spur-gear tabulated-data stress test is the one Phase 2 item left — design that capability
-deliberately, not ad hoc; pause for owner direction between phases). Build: `pnpm build` in `site/` runs the
+`docs/roadmap.md` — the phased plan toward the final product (owner rulings 2026-07-04: ADR-0008
+ACCEPTED with split scope — solveLinear approved, solveND deferred; Phase 2 target ≈30 THINGs;
+sessions run autonomously within a phase and stop at phase boundaries for owner direction).
+`docs/sessions/` — session protocol, queue, briefs, log, and the owner runbook; the queue is the
+single source of truth for what to work on next. Build: `pnpm build` in `site/` runs the
 Python pipeline first; `uv run pytest` in `pipeline/` for math-layer tests. A cold build takes ≈ 3–4
 minutes — four-bar branch verification dominates; it is slow, not hung — but unchanged THINGs are
 cache-reused, so warm rebuilds take seconds plus the astro step. The repo is public and the site deploys

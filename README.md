@@ -97,6 +97,8 @@ unchanged THINGs in seconds (locally and in CI). The site deploys from CI on eve
 - [`docs/decisions/`](docs/decisions/) — ADRs for every load-bearing choice (ADR-0007 = the
   verification model).
 - [`docs/roadmap.md`](docs/roadmap.md) — the phased plan toward the final product.
+- [`docs/sessions/`](docs/sessions/) — the autonomous working-session system: protocol, queue,
+  per-session briefs, log, and the owner runbook.
 
 ## License
 

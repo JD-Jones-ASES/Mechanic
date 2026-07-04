@@ -107,13 +107,40 @@ sources:
 6. Material-bound variables can never appear in `inputs` or as solution targets.
 7. Every relation and every validity envelope carries a citation that resolves in `sources`.
 8. Every `display_units` entry (and the bare `si_unit` when `display_units` is empty) must resolve in
-   `site/src/engines/units.ts` `DISPLAY_FACTORS` — `check-units.mjs` fails the build otherwise. Add the
-   conversion entry in the same change as the unit.
+   `site/src/engines/units.ts` `DISPLAY_FACTORS` — `check-units.mjs` fails the build otherwise. The
+   lookup is exact-string (`kg/m**3` and `kg/m^3` are distinct keys; both exist); a non-empty
+   `display_units` means `si_unit` itself is NOT checked — it is only the unit Readouts/KnobPanel
+   fall back to when the list is empty. The trap the gate closes: units.ts falls back to factor 1
+   with the raw label for unknown units, so a missing prefixed unit shows the SI value under your
+   label — wrong-as-labeled, guarded only by a console.warn. Add the conversion entry in the same
+   change as the unit.
+
+### Display math in MDX — the exact structural rule
+
+`check-mdx-math.mjs` is line-based. Outside a fence, any line containing an ODD number of `$$`
+fails. A line that is exactly `$$` (whitespace aside) opens a fence; only another bare-`$$` line
+closes it — any other `$$` inside the fence fails, and a fence still open at end-of-file fails.
+Inline `$...$` is not this gate's business; bad TeX inside a well-formed block is caught by
+`throwOnError`.
+
+| Form | Verdict |
+|---|---|
+| `$$ \sigma = Mc/I $$` — opens and closes on one line | VALID |
+| bare `$$` line · content lines · bare `$$` line | VALID |
+| `$$ \sigma =` … closing `$$` on a later line | INVALID — odd `$$` count on the opening line |
+| `\frac{Mc}{I} $$` as a fence's closing line | INVALID — the close must be a bare `$$` line |
+| a `$$` fence never closed | INVALID — flagged at end of file |
 
 ## solve1d targets (the eccentric-column pattern)
 
 When a target genuinely has no closed form (the secant equation's $P_y$ sits inside and outside
-a secant), author it as a bracketed root of a DECLARED relation:
+a secant), author it as a bracketed root of a DECLARED relation.
+
+**First rule of solve1d: identity derivation steps may NOT reference the solve1d target — or
+anything computed from it.** There is no closed form to verify against; the compiler taints the
+target plus every later target whose expression reads it, and fails any `check: identity` step
+touching a tainted symbol. Write those lines as `check: definition` steps, or restate them over
+the closed-form variables upstream of the solve.
 
 ```yaml
 solutions:
@@ -138,8 +165,6 @@ What the build does with this (and fails loudly on):
 - The root is found by 60-digit bisection (never blind `solve()`), the rooted point is
   back-substituted into EVERY relation, and the roots land in the parity samples — so the
   browser's Brent is checked against them at every build.
-- Identity derivation steps may not reference the solve1d target or anything computed from it
-  (there is no closed form to verify against); use `check: definition` for those lines.
 - One solve1d target may not be combined with multi-branch solutions in the same configuration.
 
 ## Multi-branch configurations (the four-bar pattern)
@@ -165,6 +190,10 @@ What the build does with this:
   loop fails the build naming the branch — wrong sign pairings cannot ship.
 - Parity samples are generated per branch (`samples[].branch`), and the widget grows a selector
   (labelled with `selector`) that picks the branch at runtime.
+- `continuity` defaults to `follow-previous` and rides the artifact, but nothing at runtime reads
+  it yet (reserved): the branch selector simply holds its value while knobs sweep, and RESETS to
+  the first label on every configuration switch — knobs reset to the new configuration's defaults
+  at the same time. (verified against ThingWidget.tsx 2026-07-04)
 - The derivation is checked against the FIRST label's closed forms: keep steps branch-independent
   (loop equations, eliminations, the quadratic itself) or mark the branch-split step `definition`.
 - Partial-domain solutions are fine: where a branch evaluates complex (a non-assembling linkage),
@@ -172,6 +201,38 @@ What the build does with this:
   keep bounds honest.
 - `expected_branches` must equal `len(branches.labels)`, at least one solution must actually be
   branched, and single-branch configurations must not carry a `branches` block.
+
+## Scoped refusal — what the engine actually does
+
+- `scope` is taken at face value: when the envelope trips, every named symbol is added to
+  `invalidVars`. The engine never derives which variables the physics "really" poisons, so a
+  superset is legal and simply blanks more readouts; the compiler checks only that each name is a
+  declared variable with `role: derived` (file-global, not per configuration).
+- A scope symbol the active configuration never computes is legal and inert: it lands in
+  `invalidVars`, no readout matches it, nothing errors.
+- Order cannot matter: envelope predicates run after the plan, tripped scopes union into one set,
+  and a single UNscoped invalid refuses the whole evaluation regardless of any scoped envelopes.
+- Scoped refusal does not stop evaluation — the poisoned values are computed and sit finite in
+  `values`. Blanking them is entirely the UI's job via `invalidVars`, which is why sims must
+  consume it (checklist below). (verified against relation.ts + compile.py 2026-07-04)
+
+## Adding a quantity kind
+
+Mint a NEW kind exactly when two quantities share a dimension 7-vector but must never chain into
+each other (`torque` vs `bending_moment`; `line_load` vs `stiffness` — both N/m;
+`specific_energy` vs velocity²). If a connection between the two would be physically legitimate,
+reuse the existing kind. Then:
+
+- Add the string to `QUANTITY_KINDS` in `pipeline/src/mech_pipeline/kinds.py`, with a comment
+  naming what it must not chain into (the file's convention). `compile.py` rejects unknown kinds,
+  so a typo fails the build.
+- Touch nothing on the site: the kind string rides the compiled artifact and is compared by plain
+  string equality in `connectionLegal` (`site/src/engines/units.ts`) — there is no site-side kind
+  registry, and `check-units.mjs` checks unit strings, not kinds. A new **display unit** forces a
+  `DISPLAY_FACTORS` entry; a new **kind** does not. (verified against units.ts + check-units.mjs
+  2026-07-04)
+- `kinds.py` is pipeline source, so editing it changes the build fingerprint: the next build
+  re-verifies every THING (cold, ≈3–4 min). Expected, not hung.
 
 ## Things authors get wrong (checklist)
 
@@ -184,8 +245,14 @@ What the build does with this:
   `data-provenance.md`).
 - Incoherent declared defaults: every derived variable's `default:` must be computed from the
   free-variable AND material-variable defaults declared *in the same file* (compute with the
-  declared G, not the material you happened to be thinking about). Two real bugs shipped to
-  review this way; recompute the whole derived set whenever any default changes.
+  declared G, not the material you happened to be thinking about). The concrete rule: changing
+  ANY free or material default invalidates EVERY derived default — re-evaluate the
+  configuration's `solutions:` chain top to bottom (later entries read earlier targets) and
+  update the whole set in one edit. Nothing machine-checks this: `compile.py` copies `default:`
+  into the artifact verbatim, and the widget never reads derived defaults — it seeds knobs from
+  the configuration's input defaults and computes the rest live from the materials DB. An
+  incoherent value fails no build; it lies to every reader of the file. Two real bugs shipped to
+  review this way. (verified against compile.py + ThingWidget.tsx 2026-07-04)
 - Writing a "derivation" that's just the final formula. Steps should be the 3–8 lines a good TA would put
   on the board; prose carries the why.
 - New sim components with CSS classes that don't exist yet: SVG defaults to `stroke: none`, so the shape

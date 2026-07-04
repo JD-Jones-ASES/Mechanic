@@ -80,11 +80,45 @@ step before `astro build`).
    build fails naming thing/symbol/unit. (A missing entry would silently show SI values under prefixed
    labels — a 10^n error guarded only by a console.warn; this gate caught a live `kPa` case on its first run.)
 
+### Verification policy constants (`pipeline/src/mech_pipeline/verify.py`, module top)
+
+When a tolerance or cap trips, reason from this table; if the constants move, update it here
+(verified against verify.py 2026-07-04).
+
+| Constant | Value | Governs |
+|---|---|---|
+| `NUM_SAMPLES` | 30 | numeric-tier target sample count. Certification quota: `max(10, NUM_SAMPLES//3)` REAL samples within `20×NUM_SAMPLES` attempts — fewer ⇒ "cannot certify" failure. Fix the variable bounds; retrying cannot help (sampling is seeded). |
+| `PRECISION_DPS` | 50 | mpmath dps for numeric-tier evaluation and the numeric Jacobian rank |
+| `TOLERANCE` | 1e-40 | max abs(residual) at any numeric-tier sample of a closed-form identity |
+| `SOLVE1D_TOLERANCE` | 1e-25 | max abs(relation residual) after back-substituting a bisection root — looser than `TOLERANCE` only because the root is numeric (60 dps), not symbolic |
+| `SOLVE1D_GRID` | 33 | interior sign-scan points per bracket; >1 sign change ⇒ "bracket contains MULTIPLE roots — tighten the bracket" |
+| `SIMPLIFY_OPS_CAP` | 200 | `count_ops` above which ALL symbolic tiers (`simplify`, `.equals`, exp-rewrite) are skipped and the numeric tier decides alone. A large authored solution silently taking the numeric-only path is BY DESIGN, not a bug. |
+| `RANK_CHOP` | 1e-30 | zero threshold for the numeric-rank fallback of the DOF check on transcendental manifolds (a dependent Jacobian row collapses to ~1e-49; generic entries are O(1)) |
+
+Two precisions are inline, NOT named constants: the solve1d campaign evaluates its eval-chain, brackets
+and `nsolve(..., solver='bisect', maxsteps=500)` at **60 dps** (verify.py), and closed-form parity
+samples are computed at **25 dps** (compile.py `_samples`) before being floated.
+
 Compilation is **incremental**: `compile_all` fingerprints each THING (thing.yaml bytes + all pipeline
 source + the pinned SymPy version) and reuses unchanged artifacts via `.hashes.json` inside the
 gitignored generated tree; artifacts of deleted THINGs are removed so the site cannot render orphans.
 Sound because compilation is deterministic (seeded sampling). CI persists the artifact directory with
 `actions/cache` keyed on the same inputs — warm builds skip the four-bar re-verification entirely.
+
+The fingerprint, precisely (compile.py `_build_fingerprint`, verified 2026-07-04): sha256 over the raw
+bytes of every `pipeline/src/mech_pipeline/*.py` (sorted, non-recursive) plus the `sympy.__version__`
+string; each THING's cache key = sha256(fingerprint + its `thing.yaml` bytes). So ANY pipeline-source
+edit or a SymPy bump invalidates EVERY THING; editing `overview.mdx`/`failure.mdx` or the materials seed
+invalidates NOTHING (they never feed the compiled artifact). Local manifest:
+`site/src/generated/things/.hashes.json`; reuse requires a manifest hit AND both emitted files present.
+CI cache (`.github/workflows/ci.yml`): `actions/cache@v4` on `site/src/generated/things`, key
+`things-` + `hashFiles('site/src/content/things/**/thing.yaml', 'pipeline/src/**/*.py', 'pipeline/uv.lock')`,
+restore-key prefix `things-` — a stale restore is safe because compile.py's per-THING keys decide what
+is actually reused (`uv.lock` stands in for the SymPy version in the CI key). Trap: cache keys hash
+INPUTS, not outputs — a hand-edited `.compiled.json`/`.fns.ts` is silently reused until the fingerprint
+changes (verified against compile.py 2026-07-04). Never hand-edit or commit anything under
+`site/src/generated/` or `data/build/` (gitignored); to force a full recompile, delete `.hashes.json`
+(or the whole generated tree).
 
 ## Compiled-artifact schema (`<slug>.compiled.json`) — single source of truth
 
@@ -127,7 +161,8 @@ Sound because compilation is deterministic (seeded sampling). CI persists the ar
       { "type": "solve1d", "target": "P_y",  // bracketed Brent on a DECLARED relation's residual;
         "residual_fn": "rel_secant_yield",   // bracket endpoints are FUNCTIONS of the evaluated env
         "bracket_fns": ["cfg_a_P_y__blo", "cfg_a_P_y__bhi"], "latex": "…" }
-      // { "type": "solveND", … }          // RESERVED — feedback loops; ADR-0008 (proposed)
+      // { "type": "solveND", … }          // RESERVED — nonlinear/feedback solving; deferred by
+                                            // ADR-0008 (accepted, split scope) pending its own future ADR
     ],
     "branches": null,                      // or { "selector": "circuit", "labels": ["open","crossed"],
                                            //      "continuity": "follow-previous" } with per-branch fns;
@@ -147,6 +182,24 @@ Sound because compilation is deterministic (seeded sampling). CI persists the ar
 
 `<slug>.fns.ts` shape: `export const fns: Record<string,(v:Record<string,number>)=>number>` — every `fn`/
 `guard_fn`/`residual_fn` id above keys into it. Branch-valued solutions emit one function per branch.
+
+**Parity-sample encoding** (verified against compile.py `_samples`, verify.py
+`verify_solve1d_configuration`, and check-parity.mjs, 2026-07-04): 3 samples per configuration per
+branch label. `inputs` = the declared knobs PLUS every material-role variable, as floats.
+`outputs` = every plan target, not just leaves; closed-form samples ALSO include the constrained
+variables, solve1d samples exclude them but DO carry the 60-dps mpmath bisection roots as plain
+floats — that is how the browser's Brent gets oracle-checked (the asymmetry is real, not a doc
+error). The two paths are seeded and capped differently: closed-form samples (compile.py
+`_samples`) are seeded by `<thing>/<cfg>/samples[/<branch>]`, discard any sample that hits a
+complex/±∞/NaN value anywhere in its chain WHOLE (no per-value omission), and fail the build
+("could not generate parity samples") if `40×n` attempts can't produce `n` clean samples; solve1d
+samples are the first 3 certified points of `verify_solve1d_configuration`'s 30-sample campaign,
+seeded by the configuration's context string, capped at `20×NUM_SAMPLES` attempts with its own
+failure message ("only N real-valued solve1d samples found"). Multi-branch samples are keyed by a top-level `"branch": <label>`; `check-parity.mjs`
+evaluates each sample on exactly that branch's fns. The gate replays the whole plan in Node against the
+emitted `fns.ts` (solve1d steps run the site's actual `brent.ts`) and requires every output within
+relative `1e-9` (`RTOL`, scale floored at 1e-30); numeric constraints are seeded into the env,
+string-valued constraints are skipped.
 
 ## KaTeX — three rendering paths (decided; do not add client KaTeX)
 
@@ -189,3 +242,17 @@ elastic panel and points at the still-valid load margin). Shared presentational 
 `site/src/components/sims/`: `useSimClock` (rAF + reduced-motion; stops while refused), `StressBands`
 (the heat-ramp field encoding), `SimRefusal`. Exception by design: FourbarSim draws crank-only partial
 geometry for non-assembling poses (its inputs are always honest) with a caption saying so.
+
+## Invariant → gate map
+
+Which of CLAUDE.md's five invariants is enforced by WHICH machine gate — and where enforcement is
+convention only. The convention column is the point: do not cite this table as if a check exists there.
+(Gates verified against the named files 2026-07-04.)
+
+| Invariant | Machine gates | Convention only (no gate) |
+|---|---|---|
+| 1 Relational core | Relations are `residual` strings in `content.config.ts` — no input→output form is expressible. `verify.py dof_check`: knob count = unknowns − Jacobian rank at on-manifold points, per configuration AND per branch; mismatch fails the build. Planetary reference case pinned by `pipeline/tests/test_compile_e2e.py` goldens + `e2e/things.spec.ts` ("different knob sets over the same relations"). | Choosing relations that genuinely model the THING — a residual can still encode a directed formula in spirit. |
+| 2 Dimensional type system | `dims.py check_homogeneous` on every residual, solution, solve1d bracket, validity condition, and derivation step; `quantity_kind` must exist in `kinds.py` (compile.py); `check-units.mjs` (every display unit resolves in `DISPLAY_FACTORS`); chaining legality = dim 7-vector AND kind, plus planner cycle rejection, pinned by `site/tests/chain.test.mjs`. | Assigning the RIGHT quantity_kind — the gate checks membership in kinds.py, not semantics. |
+| 3 Material axis | compile.py: `role: material` ⇔ `materials.binds` entry (both directions checked) and material vars can never be input knobs; programmatic unit conversion with goldens (`pipeline/tests/test_ingest.py`, `test_dims.py` — the 1000× gram-scale trap); `basis` enum required by ingest + the materials schema; the stiffness≠strength moment (Ti-6Al-4V vs A36) is a hard golden in `e2e/things.spec.ts`. | UI legibility of the cascade and the Ashby tie-back — design judgment, no gate. |
+| 4 Shared engines | Engine behavior pinned by `site/tests/engine.test.mjs` (scoped/global refusal contract) and `chain.test.mjs`; `check-parity.mjs` runs the browser's own Brent inside the build oracle; `sim.engine` is a required schema field. | `sim.engine` is a FREE STRING (`z.string()`, not an enum — verified against content.config.ts 2026-07-04); nothing machine-detects bespoke math inside a sim component. "Needs custom math = missing engine capability" is review discipline. |
+| 5 Credibility spine | compile.py: every relation requires a `citation` resolving to a `sources` entry; validity severities and `scope` (derived vars only) are validated; every emitted number passes tiered/solve1d certification + the parity gate; KaTeX gates (stage 7); material provenance fields (source, basis, published value/unit) required by the materials schema; refusal contract pinned by `engine.test.mjs` and e2e; `/verification/` renders it all (`verification.astro`). | The per-THING first-principles cross-check (`pipeline/tests/test_<slug>_physics.py`) and hand-checkable golden are REQUIRED by process, but NO gate checks that a new THING added one — the authoring checklist is the only enforcement. `sources[].verification` pinning is optional in the schema. |

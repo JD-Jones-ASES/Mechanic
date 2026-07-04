@@ -1,8 +1,12 @@
 # ADR-0008: Cyclic / N-dimensional solving (solveND)
 
-**Status:** PROPOSED — awaiting owner sign-off (roadmap Phase 3 item 3 requires it before any
-build). Drafted 2026-06-10 alongside the solve1d work so the decision has a concrete shape to
-react to. Nothing in this ADR is implemented.
+**Status:** ACCEPTED (split scope) — owner sign-off JD 2026-07-04, adopting the Recommendation
+below as written: **(a) `solveLinear` is approved to build** (statically indeterminate elastic
+structures — exact solve, full certificate; direction: prove linearity, solve exactly at build
+time, desugar to ordinary verified closed forms — zero new runtime engine); **(b) full nonlinear
+`solveND` remains deferred** and requires its own ADR with the basin-certification question
+answered before any build. Drafted 2026-06-10 alongside the solve1d work. As of sign-off, nothing
+in this ADR is implemented; execution is session S15 in `docs/sessions/queue.md`.
 
 ## What it would unlock
 
