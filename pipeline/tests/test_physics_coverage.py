@@ -21,6 +21,7 @@ PHYSICS_TESTS = {
     "beam-shear-flow": "test_shear_flow_physics.py",
     "belt-drive": "test_belt_physics.py",
     "cantilever-beam": "test_beam_physics.py",
+    "circular-plate": "test_plate_physics.py",
     "combined-shaft": "test_combined_physics.py",
     "compound-cylinder": "test_shrinkfit_physics.py",
     "curved-beam": "test_curved_beam_physics.py",

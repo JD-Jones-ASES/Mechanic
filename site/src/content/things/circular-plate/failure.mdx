@@ -1,0 +1,41 @@
+The widget answers a narrow elastic question — *given this circular plate, this pressure, and this
+rim condition, how far does it deflect and where is it hottest?* Flat plates get into trouble in ways
+that mostly live at the edges of that question.
+
+- **A flat head is the expensive way to close a pressure vessel.** This page is precisely the
+  calculation the [pressure-vessel](../pressure-vessel/) page warns about: bending stress grows as
+  $q\,a^2/t^2$, so a flat plate large enough to matter needs to be *thick*. That is why real vessels
+  are capped with dished, torispherical, or hemispherical heads — a curved head carries pressure
+  mostly in membrane tension, at a small fraction of the stress and weight of the flat plate the same
+  pressure would demand. Reach for a flat head only for small diameters, low pressures, or where a
+  flat face is required. The widget shows you the penalty you are paying.
+
+- **The real edge is neither perfectly clamped nor perfectly simply supported — the two cases bracket
+  it.** A welded-in plate is close to clamped; a plate resting on a gasket with a few bolts is close
+  to simply supported; a bolted flange with a real gasket is *somewhere in between*, and its true
+  deflection and stress lie **between** the two curves the widget draws. That is the practical value of
+  showing both: the honest answer for a partially restrained edge is bracketed, not pinpointed, and
+  reading only one case can be unconservative by up to the factor $(3+\nu)/2$ in stress or
+  $(5+\nu)/(1+\nu)$ in deflection.
+
+- **A brittle flat head fractures at the tensile hot spot with no warning.** The demonstration
+  includes gray cast iron on purpose. Gray iron has no yield point — it is roughly three times
+  stronger in compression than in tension and fails by brittle cleavage from the *tensile* surface. On
+  a pressure-loaded plate that tensile surface is the loaded-side face at the clamped edge, or the far
+  face at a simply-supported center, and a graphite flake or casting pore there is a ready crack
+  starter. A ductile steel plate yields and redistributes first; a cast-iron one simply cracks. Same
+  geometry, completely different failure mode — which is exactly why this page binds stiffness and
+  Poisson's ratio but not a single "yield strength".
+
+- **Stress concentrations sit on top of the nominal number.** The clamped-edge stress is the *nominal*
+  bending stress at a clean built-in rim. A real bolted head has bolt holes, a fillet or weld toe at
+  the shell junction, and a gasket seating groove — each a [stress
+  raiser](../stepped-shaft-fillet/) that multiplies the local peak on the already-hot edge. The
+  central point-load, edge-moment, and annular-plate cases (each its own family in the references) are
+  out of scope here; this page is the uniform-pressure solid plate.
+
+- **Static, small-deflection, axisymmetric, elastic only.** No pressure-cycling fatigue (a head that
+  survives one proof pressure can still crack after thousands of cycles at the edge), no large-deflection
+  membrane stiffening past $\delta \approx t/2$ (the widget *warns* rather than lie), no transverse-shear
+  correction past $t/a \approx 0.1$, no thermal gradients or bolt-preload stresses. Read the page as
+  *how the rim condition and the material set the stiffness and the stress*, not as a finished head design.

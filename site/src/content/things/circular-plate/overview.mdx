@@ -1,0 +1,76 @@
+A flat circular plate closing off a pressure — a tank head, a submarine porthole, a valve cover, a
+manhole lid — is one of the most common structural jobs there is, and its answer depends almost
+entirely on **one detail at the rim**. Weld or bolt the edge down (*clamped*) and the plate is stiff
+and cracks first at the edge. Set the same plate on a ring gasket (*simply supported*) and it sags
+about four times as far and cracks first at the center. This page puts both classical cases
+side by side for a uniformly loaded plate of radius $a$ and thickness $t$ under pressure $q$.
+
+A plate bends in two directions at once, so its stiffness is not a beam's $EI$ but the **flexural
+rigidity**
+
+$$D = \frac{E\,t^3}{12\,(1 - \nu^2)}, \qquad \nabla^4 w = \frac{q}{D}$$
+
+— the $1/(1-\nu^2)$ is the plate paying for curving both ways at once: the material cannot contract
+sideways freely, so it comes out stiffer than a strip of the same thickness. The small transverse
+deflection $w(r)$ then obeys the axisymmetric plate equation $\nabla^4 w = q/D$, and the only thing
+that separates the two cases is the boundary condition at $r = a$.
+
+## Two rims, two very different plates
+
+$$\delta_c = \frac{q\,a^4}{64\,D}, \qquad \sigma_c = \frac{3\,q\,a^2}{4\,t^2}\quad\text{(clamped: max at the EDGE)}$$
+
+$$\delta_{ss} = \frac{5+\nu}{1+\nu}\,\frac{q\,a^4}{64\,D}, \qquad \sigma_{ss} = \frac{3\,(3+\nu)\,q\,a^2}{8\,t^2}\quad\text{(simply supported: max at the CENTER)}$$
+
+Clamping the edge does two things: it holds the plate down **and** it holds it flat ($w(a)=0$ *and*
+$w'(a)=0$), so a bending moment builds up at the clamp — that edge moment is the clamped plate's hot
+spot. A simple support holds the plate down but lets it tilt, so the moment at the rim is zero and
+the plate is hottest at its center instead. Divide the two center deflections and everything but the
+rim condition cancels:
+
+$$\frac{\delta_{ss}}{\delta_c} = \frac{5+\nu}{1+\nu} \approx 4.08, \qquad \frac{\sigma_{ss}}{\sigma_c} = \frac{3+\nu}{2} \approx 1.65$$
+
+Simply supported is worse on *both* counts — four times the sag and about two-thirds again the peak
+stress. The clamp was quietly carrying that much. The widget draws the two dished profiles together:
+watch the clamped plate meet its wall with a flat tangent while the simply-supported plate tilts into
+its ring support — the boundary condition is visible in the shape of the curve.
+
+## The page where Poisson's ratio moves a stress
+
+On most stress pages, swapping material moves only stiffness-driven quantities (deflection) and the
+strength margin; the stresses themselves are pure statics. Not here. Look again at the two peak
+stresses: $\sigma_c$ contains **no material property at all** — not $E$, not $\nu$ — so the
+clamped-edge stress is *identical* for steel, aluminium, or gray iron. But $\sigma_{ss}$ carries
+$\nu$ directly, because the simply-supported plate is defined by a **moment** condition at the rim,
+and the plate bending moment is where Poisson's ratio lives:
+
+$$M_r = -D\left(w'' + \nu\,\frac{w'}{r}\right), \qquad M_r(a) = 0 \ \text{(simply supported)}$$
+
+So of the four plate outputs, swapping material moves three ($\delta_c$, $\delta_{ss}$, $\sigma_{ss}$)
+and leaves one ($\sigma_c$) exactly where it was. Switch the widget from A36 steel ($\nu = 0.30$) to
+gray iron ($\nu = 0.26$): $\sigma_{ss}$ shifts, $\sigma_c$ does not budge, and the deflections jump
+(gray iron's $E$ is well under half of steel's, so the plate sags more than twice as far). This is
+the "[Ti deflects more than steel](../euler-column/)" material moment, sharpened — here a material
+change reaches all the way into a *stress*.
+
+## A stiffness-and-Poisson material axis (no yield column)
+
+The material enters through exactly two properties, $E$ and $\nu$, and both are genuinely load-bearing
+— $E$ and $\nu$ set $D$ and hence both deflections, and $\nu$ additionally sets $\sigma_{ss}$. There
+is deliberately **no bound yield strength** on this page, because the demonstration pair spans ductile
+steel (which yields) and brittle gray cast iron (which has no yield point — it fractures). No single
+"yield strength" column honestly describes both, so the strength check takes an **allowable stress you
+set** as a design input, and reports a margin at each plate's hot spot,
+$\mathrm{SF}_c = \sigma_{allow}/\sigma_c$ and $\mathrm{SF}_{ss} = \sigma_{allow}/\sigma_{ss}$. The
+[failure note](./) says more about why a brittle flat head is a different design problem from a
+ductile one.
+
+## Where it stops being true
+
+Two global warnings mark the edges of the model, and both are honest about *which way* they are wrong.
+Past $t/a \approx 0.1$ the plate is thick enough that transverse shear — which this thin-plate
+(Kirchhoff) theory neglects — matters, and the real plate deflects a bit *more* than the widget says.
+Past a center deflection of about half the thickness, membrane (in-plane stretching) action kicks in,
+the real plate stiffens, and the linear numbers *under*-predict the strength — wrong on the safe side,
+but still wrong. This flat-plate bending calculation is exactly the one the
+[pressure-vessel](../pressure-vessel/) page warns about for flat heads; every number's provenance is
+recorded on the [/verification/](/Mechanic/verification/) page.

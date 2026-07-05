@@ -419,3 +419,68 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   not the 3–4 min cold cost. (g) Pre-verifying every relation residual + identity step + the limit proof
   in a throwaway SymPy script BEFORE authoring thing.yaml caught the design early and made the first cold
   build pass on the physics; cheap insurance against a 4-min build cycle.
+
+## S06 — circular-plate — 2026-07-05 — PR #19 — MERGED
+
+- Shipped: THING 23 `circular-plate` (uniformly loaded circular plate; clamped AND simply-supported
+  edge cases as two always-valid PARALLEL models on one page — the euler-column one-page pattern, no
+  branches/no scoped refusal). The FIRST page where Poisson's ratio moves a STRESS: σ_ss =
+  3(3+ν)qa²/(8t²) carries ν, σ_c = 3qa²/(4t²) is material-blind. New `flexural_rigidity` quantity kind
+  (kinds.py) — the 4th on the [2,1,-2,…] N·m dimension vector (torque/bending_moment/energy/flexural_
+  rigidity). Catalog 22 → 23.
+- Gates: pytest 235 passed (225 baseline + 10 test_plate_physics.py); pnpm build clean (cold — kinds.py
+  edit busts every fingerprint; parity 1005 values / 23 artifacts, katex 954, mdx 46 prose files, units
+  532 refs); unit 17; e2e 66 (+3 circular-plate: material-moment goldens + material-blind σ_c, small-
+  deflection warn, thin-plate warn; verification relation-block count 22→23); visual pass (built dist
+  /Mechanic/): both plate cross-sections render, the BC is VISIBLE in the curves (clamped meets its wall
+  with a flat tangent; SS tilts into its supports and sags ~4× deeper), two plan-view StressBands discs;
+  drove material steel-a36 → iron-gray-class30 and SAW σ_c hold bit-identical (33.75→33.75) while σ_ss
+  moved (55.688→55.013) and deflections grew (D 18310→8011); drove q=300 kPa and SAW the small-deflection
+  warn + the SS plate line & disc turn red (SF_ss 0.748<1) while clamped stayed blue (SF_c 1.23); drove
+  t=40 mm and SAW the thin-plate warn; KaTeX + console clean; /things/ card + /verification/ block present.
+  review: 5 independent fresh-context passes (physics + invariants + code/tests subagents, + /code-review
+  correctness & cleanup finders) — 0 correctness bugs across all angles. 4 cosmetic findings fixed (dead
+  D read in sim; redundant "sags deeper" SVG annotation overlapping a disc label; 2 tautological asserts
+  in test_timoshenko_tabulated_factors now derive 1/64 & 3/4 from the closed forms; monotic→monotonic +
+  a monotonicity assert). 3 rebutted (fmtMm/fmtMPa dup = repo-wide convention; single q label = one
+  shared input; defl_ratio bounds loose = display-only).
+- Golden: q=100 kPa, a=0.3 m, t=0.01 m, steel E=200 GPa, ν=0.3: D=18315.0 N·m, σ_c=67.5 MPa, σ_ss=111.375
+  MPa, δ_ss/δ_c=53/13≈4.077 (test_plate_physics.py::test_numeric_golden; source Timoshenko §16-17, pinned
+  in docstring; exact arithmetic). Widget DEFAULT is q=50 kPa (a separate self-consistent state, chosen so
+  the default is clean even for the soft default material — see Notes-for-next).
+- Citations pinned: `timoshenko` (Theory of Plates and Shells 2nd ed. Ch.3 §16-17) + `roark` (Formulas
+  for Stress and Strain 8th ed. Table 11.2 cases 10a/10b), both with verification:. HONEST: textbook PDFs
+  not web-accessible this session (same block as S02–S05); the four closed forms are re-derived from the
+  axisymmetric plate ODE and the (5+ν)/(1+ν) & (3+ν)/2 factors proven with ν SYMBOLIC — a stronger check
+  than transcription (exact analytic facts, Feist), cross-checked by an independent mpmath BVP oracle.
+- Deviations from brief: (1) σ_y NOT bound; sigma_allow is a free "allowable stress" knob → SF_c, SF_ss.
+  The brief's demo material iron-gray-class30 is brittle and has NO yield_strength in the seed, and
+  site/src/pages/things/[slug].astro filters out any material missing a bound property — so binding σ_y
+  would silently drop gray iron from the picker and destroy the page's core material moment. Binding E+ν
+  (both present) keeps gray iron selectable; brittle-vs-ductile becomes pedagogy in failure.mdx. Both the
+  invariants reviewer and the conventions finder confirmed this is invariant-3-sound. (2) Warn-only THING
+  (no hard-invalid envelope): the plate formulas are finite for all positive q,a,t and 0<ν<½, so there is
+  no honest refusal to author (the beam-shear-flow / simply-supported-beam precedent). The brief's
+  "refusal SEEN" is met by the two warn banners; SimRefusal stays the defensive contract. (3) Widget
+  default q=50 kPa rather than a round 100 kPa (Notes-for-next e).
+- New capabilities future briefs may rely on: `flexural_rigidity` kind (N·m; must not chain into
+  torque/bending_moment/energy). Pattern: a free "allowable stress" knob when a material demo spans
+  ductile+brittle and no single yield column honestly fits both. The euler-column parallel-models-on-one-
+  page structure (two always-valid variable sets, one derivation block, NO branches/scope) reused cleanly.
+- Notes-for-next (S07 = torsional-oscillator, frequency kind, Hz/s/ms units): traps I hit — (a) materials
+  are ordered by SORTED FILENAME (ingest.py:98) and [slug].astro filters to those carrying EVERY bound
+  property, PRESERVING order — so materials[0] (the widget default) is the alphabetically-first QUALIFYING
+  material, which for E+ν binding is `al-2024-t3` (soft aluminum), NOT steel. If your default-state depends
+  on the material (e.g. a deflection/stress envelope), pick free-input defaults clean for that soft default
+  material, or your page loads with a warn already showing. (b) The widget computes with the REAL seeded
+  material value: steel-a36 E = 29 Msi = 199.95 GPa (NOT a round 200), so a material-dependent readout
+  golden (D here) must pin the real value (18310, not 18315) — the material-blind readouts (σ_c) and
+  ν-only readouts (defl_ratio) are exact. (c) A warn-only THING is legitimate; do NOT invent an invalid
+  envelope to satisfy "refusal SEEN" (invariant 5) — pin the warn banners (S04/S05 precedent). (d) Validity
+  `condition` states the VALID region; the banner fires when it's FALSE (e.g. `10*t <= a` valid ⇒ fires
+  when t/a>0.1). Write the condition as the valid region, not the trigger. (e) The physics-test golden and
+  the widget default do NOT have to be the same input state — I pinned the golden at a clean round q=100 kPa
+  and set the widget default lower (q=50 kPa) so the soft-aluminum default loads without a warn; both are
+  self-consistent. (f) Pre-verifying ALL physics + every relation residual + identity step in a throwaway
+  SymPy script BEFORE authoring (and a fast yaml-parse residual/DOF/default-coherence check after) made the
+  FIRST cold build pass green — worth the 5 minutes against a 4-min build cycle (S05 note-g, confirmed again).

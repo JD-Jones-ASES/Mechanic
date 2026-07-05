@@ -42,6 +42,12 @@ QUANTITY_KINDS: frozenset[str] = frozenset({
                    # (stiffness), and a shear flow all share dims [0,1,-2,…] and must NEVER chain
                    # into one another — this trio is why quantity_kind exists (invariant 2).
     "energy",
+    "flexural_rigidity",  # plate bending stiffness D = E t^3/(12(1-nu^2)), unit N*m — the
+                          # FOURTH kind to share the [2,1,-2,…] dimension vector (with torque,
+                          # bending_moment, and energy). A deliberate stress test of the registry:
+                          # four physically distinct N*m quantities that must NEVER chain into one
+                          # another — a plate's stiffness is not a twisting moment, not a bending
+                          # moment, and not an energy (invariant 2 is exactly why this is a kind).
     "power",
     "pressure_stress",
     "elastic_modulus",

@@ -94,6 +94,19 @@ factory capability, the way the flywheel exercised `poisson_ratio` and new quant
   limit: σ_i → Mc/I as r_c/h → ∞, verified by series expansion (K_i = 1 + (h/r_c)/3 + …) in the physics
   test, which also re-derives r_n and κ from the two section-equilibrium conditions and cross-checks
   against Roark. Strength-only material axis (σ_y; E and ρ genuinely do not enter). Catalog 21 → 22.
+- **Poisson's ratio in a stress + a new kind:** circular-plate (uniform-pressure bending) ✅ shipped
+  2026-07-05 (S06) — a tank head / porthole / valve cover, with the clamped and simply-supported edge
+  cases side by side as two always-valid parallel models (the euler-column one-page pattern, no
+  branches, no scoped refusal). The FIRST page where Poisson's ratio moves a STRESS: the
+  simply-supported center stress σ_ss = 3(3+ν)qa²/(8t²) carries ν, while the clamped-edge stress
+  σ_c = 3qa²/(4t²) is material-blind (no E, no ν) — swap steel for gray iron and σ_ss shifts while σ_c
+  holds for ANY material. Ships the new `flexural_rigidity` quantity kind, the FOURTH on the [2,1,-2,…]
+  N·m dimension vector (with torque, bending_moment, energy) — a deliberate registry stress test. The
+  material axis binds E and ν (not σ_y: the demo pair includes brittle gray iron, which has no yield
+  point, so the strength check takes a user-set allowable stress). All four closed forms are re-derived
+  from the axisymmetric plate ODE D∇⁴w = q, and the (5+ν)/(1+ν) deflection ratio and (3+ν)/2 stress
+  ratio are proven with ν symbolic. Two global warns (thin-plate t/a>0.1, small-deflection δ>t/2).
+  Catalog 22 → 23.
 
 Per-THING gate (standard practice, from the flywheel/cylinder sessions): machine verification +
 independent first-principles cross-check in `pipeline/tests/` + hand-checkable numeric golden +

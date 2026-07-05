@@ -16,6 +16,7 @@ import { Readouts } from "./Readouts";
 import { ValidityBanner } from "./ValidityBanner";
 import { BeamSim } from "./sims/BeamSim";
 import { BeltSim } from "./sims/BeltSim";
+import { CircularPlateSim } from "./sims/CircularPlateSim";
 import { ColumnSim } from "./sims/ColumnSim";
 import { CombinedShaftSim } from "./sims/CombinedShaftSim";
 import { CurvedBeamSim } from "./sims/CurvedBeamSim";
@@ -69,6 +70,7 @@ const SIMS: Record<
   "rectangular-shaft-torsion": RectTorsionSim,
   "beam-shear-flow": ShearFlowSim,
   "curved-beam": CurvedBeamSim,
+  "circular-plate": CircularPlateSim,
 };
 
 interface Props {

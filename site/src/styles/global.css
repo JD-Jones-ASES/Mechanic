@@ -171,6 +171,15 @@ a { color: var(--accent); }
 .curvedbeam-axis { stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 2 2; }
 .curvedbeam-fiber { fill: var(--accent); }
 .curvedbeam-fiber-hot { fill: #dc2626; }
+/* circular-plate (CircularPlateSim): the dished plate cross-section (accent, red
+   past the allowable), the edge/center hot-spot markers, and the plan-view stress
+   disc outline. Built-in walls / knife supports reuse .beam-wall; the datum reuses
+   .beam-ghost; the stress-map shading reuses .stress-band (StressBands.tsx). */
+.circplate-plate { stroke: var(--accent); stroke-width: 4; fill: none; stroke-linecap: round; }
+.circplate-plate-hot { stroke: #dc2626; stroke-width: 4; fill: none; stroke-linecap: round; }
+.circplate-hotspot { fill: var(--accent); stroke: var(--accent); }
+.circplate-hotspot-hot { fill: #dc2626; stroke: #dc2626; }
+.circplate-disc { fill: none; stroke: var(--ink); stroke-width: 1.5; }
 /* shared sim vocabulary: stress bands (StressBands.tsx) shade where a field
    concentrates and turn red past first yield; .sim-outline is a figure's
    structural outline */
