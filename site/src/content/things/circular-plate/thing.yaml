@@ -1,0 +1,371 @@
+id: circular-plate
+title: Circular Plate under Uniform Pressure (Clamped vs Simply Supported)
+summary: >-
+  Push uniform pressure on a flat circular plate — a tank head, a porthole, a valve cover — and how
+  hard it deflects and where it cracks depend entirely on the RIM. Bolt it down (clamped) and it is
+  stiff and hottest at the edge; rest it on a ring (simply supported) and it sags four times as far
+  and is hottest at the center. This is the page where Poisson's ratio moves a STRESS: the
+  simply-supported stress carries ν, the clamped-edge stress carries no material property at all.
+facets: [stress]
+
+# Two ALWAYS-VALID models share this page (clamped and simply supported), each with its own
+# variables — not two branches of one solution and not a model hand-off (no scoped refusal). The
+# only refusals here are two GLOBAL warns (thin-plate, small-deflection) that flag where the shared
+# Kirchhoff plate model itself stops being trustworthy. Sign convention: q presses on one face, w
+# and every stress reported as a downward-positive magnitude (Timoshenko §16-17).
+
+variables:
+  # --- free inputs ---
+  - symbol: q
+    name: Uniform pressure
+    latex: q
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 50000
+    bounds: [1000, 500000]
+    positive: true
+    display_units: [kPa, Pa]
+  - symbol: a
+    name: Plate radius
+    latex: a
+    unit: m
+    quantity_kind: length
+    default: 0.30
+    bounds: [0.05, 1.0]
+    positive: true
+    display_units: [mm, m]
+  - symbol: t
+    name: Plate thickness
+    latex: t
+    unit: m
+    quantity_kind: length
+    default: 0.01
+    bounds: [0.002, 0.05]
+    positive: true
+    display_units: [mm, m]
+  - symbol: sigma_allow
+    name: Allowable stress (design input)
+    latex: '\sigma_{allow}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 250.0e6
+    bounds: [10.0e6, 1.0e9]
+    positive: true
+    display_units: [MPa, Pa]
+  # --- material (stiffness E and Poisson ν only — see overview: the demo pair
+  #     includes brittle gray iron, which has no yield point to bind) ---
+  - symbol: E
+    name: Young's modulus
+    latex: E
+    unit: Pa
+    quantity_kind: elastic_modulus
+    default: 200.0e9
+    bounds: [1.0e9, 450.0e9]
+    positive: true
+    role: material
+    display_units: [GPa, Pa]
+  - symbol: nu
+    name: Poisson's ratio
+    latex: '\nu'
+    unit: '1'
+    quantity_kind: poisson_ratio
+    default: 0.30
+    bounds: [0.0, 0.5]
+    positive: true
+    role: material
+  # --- derived: shared plate stiffness ---
+  - symbol: D
+    name: Flexural rigidity
+    latex: D
+    unit: N*m
+    quantity_kind: flexural_rigidity
+    default: 18315.02
+    bounds: [1, 1.0e9]
+    positive: true
+    role: derived
+  # --- derived: clamped-edge plate ---
+  - symbol: delta_c
+    name: Clamped max deflection (center)
+    latex: '\delta_c'
+    unit: m
+    quantity_kind: length
+    default: 3.45515e-4
+    bounds: [0, 1.0]
+    positive: true
+    role: derived
+    display_units: [mm, m]
+  - symbol: sigma_c
+    name: Clamped max stress (edge)
+    latex: '\sigma_c'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 3.375e7
+    bounds: [0, 1.0e12]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  # --- derived: simply-supported plate ---
+  - symbol: delta_ss
+    name: Simply-supported max deflection (center)
+    latex: '\delta_{ss}'
+    unit: m
+    quantity_kind: length
+    default: 1.40864e-3
+    bounds: [0, 1.0]
+    positive: true
+    role: derived
+    display_units: [mm, m]
+  - symbol: sigma_ss
+    name: Simply-supported max stress (center)
+    latex: '\sigma_{ss}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 5.56875e7
+    bounds: [0, 1.0e12]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  # --- derived: the ν headline and the margins ---
+  - symbol: defl_ratio
+    name: Deflection ratio (SS / clamped)
+    latex: '\delta_{ss}/\delta_c'
+    unit: '1'
+    quantity_kind: ratio
+    default: 4.07692
+    bounds: [1, 10]
+    positive: true
+    role: derived
+  - symbol: SF_c
+    name: Safety factor, clamped (edge)
+    latex: '\mathrm{SF}_c'
+    unit: '1'
+    quantity_kind: safety_factor
+    default: 7.40741
+    bounds: [0, 1.0e6]
+    positive: true
+    role: derived
+  - symbol: SF_ss
+    name: Safety factor, simply supported (center)
+    latex: '\mathrm{SF}_{ss}'
+    unit: '1'
+    quantity_kind: safety_factor
+    default: 4.48934
+    bounds: [0, 1.0e6]
+    positive: true
+    role: derived
+
+materials:
+  binds:
+    E: youngs_modulus
+    nu: poisson_ratio
+
+relations:
+  - id: flexural-rigidity
+    group: stress
+    latex: 'D = \dfrac{E\,t^3}{12\,(1 - \nu^2)}'
+    residual: D - E*t**3/(12*(1 - nu**2))
+    assumptions:
+      - "plate flexural rigidity — the bending stiffness of a unit-width strip (E t^3/12) stiffened
+        by the factor 1/(1-nu^2) because the plate curves in two directions at once and the material
+        cannot contract sideways freely (biaxial constraint)"
+      - "Kirchhoff thin-plate theory: straight normals stay straight and normal (transverse shear
+        neglected); valid while the plate is thin (t/a small)"
+    citation: timoshenko
+    validity:
+      - condition: 10*t <= a
+        severity: warn
+        message: >-
+          Thickness-to-radius ratio t/a exceeds ~0.1: the plate is thick enough that transverse
+          shear deformation — which Kirchhoff thin-plate theory neglects — becomes significant. The
+          true deflection is somewhat LARGER than this model predicts; treat it as a lower bound.
+        citation: timoshenko
+  - id: clamped-deflection
+    group: stress
+    latex: '\delta_c = \dfrac{q\,a^4}{64\,D}'
+    residual: delta_c - q*a**4/(64*D)
+    assumptions:
+      - "clamped (built-in) rim: the plate can neither deflect nor rotate at the edge, w(a)=0 and
+        w'(a)=0 — the maximum deflection is at the center, w(0) = q a^4/(64 D)"
+    citation: timoshenko
+  - id: clamped-stress
+    group: stress
+    latex: '\sigma_c = \dfrac{3\,q\,a^2}{4\,t^2}'
+    residual: sigma_c - 3*q*a**2/(4*t**2)
+    assumptions:
+      - "clamped plate: the largest bending moment is the radial moment at the EDGE, M_r(a) = -q a^2/8,
+        where the clamp reacts; the surface bending stress sigma = 6M/t^2 gives sigma_c = 3 q a^2/(4 t^2)"
+      - "material-blind: neither E nor nu appears — the clamped-edge stress is identical for steel,
+        aluminium, or gray iron (it is set purely by the moment and the section)"
+    citation: timoshenko
+  - id: ss-deflection
+    group: stress
+    latex: '\delta_{ss} = \dfrac{5+\nu}{1+\nu}\;\dfrac{q\,a^4}{64\,D}'
+    residual: delta_ss - (5 + nu)/(1 + nu)*q*a**4/(64*D)
+    assumptions:
+      - "simply-supported rim: the plate cannot deflect at the edge, w(a)=0, but is free to ROTATE,
+        so the radial bending moment vanishes there, M_r(a)=0 — that moment condition is where nu
+        first enters, and it lifts the center deflection to (5+nu)/(1+nu) times the clamped value"
+    citation: timoshenko
+    validity:
+      - condition: 2*delta_ss <= t
+        severity: warn
+        message: >-
+          Maximum deflection exceeds half the plate thickness (delta > t/2): deflections are no
+          longer small, and membrane (in-plane stretching) action stiffens the real plate. It then
+          deflects LESS and carries MORE than this linear bending theory says — so these stresses
+          UNDER-predict. Wrong-but-conservative is still wrong; small-deflection plate theory no
+          longer applies here.
+        citation: timoshenko
+  - id: ss-stress
+    group: stress
+    latex: '\sigma_{ss} = \dfrac{3\,(3+\nu)\,q\,a^2}{8\,t^2}'
+    residual: sigma_ss - 3*(3 + nu)*q*a**2/(8*t**2)
+    assumptions:
+      - "simply-supported plate: the largest moment is at the CENTER, M_r(0)=M_t(0)=(3+nu) q a^2/16;
+        the surface stress sigma = 6M/t^2 gives sigma_ss = 3(3+nu) q a^2/(8 t^2) — nu rides directly
+        in the stress here, the whole point of the page"
+    citation: timoshenko
+  - id: deflection-ratio
+    group: stress
+    latex: '\dfrac{\delta_{ss}}{\delta_c} = \dfrac{5+\nu}{1+\nu}'
+    residual: defl_ratio - delta_ss/delta_c
+    assumptions:
+      - "the ratio of the two center deflections: load q, radius a and rigidity D all cancel, leaving
+        a pure function of Poisson's ratio, (5+nu)/(1+nu) ~ 4.08 at nu=0.3 — how much the clamp was
+        carrying, and where a material change shows up in the deflection even though both share D"
+    citation: timoshenko
+  - id: clamped-safety
+    group: stress
+    latex: '\mathrm{SF}_c = \dfrac{\sigma_{allow}}{\sigma_c}'
+    residual: SF_c*sigma_c - sigma_allow
+    assumptions:
+      - "margin against the chosen allowable stress at the clamped plate's hot spot (the edge)"
+    citation: timoshenko
+  - id: ss-safety
+    group: stress
+    latex: '\mathrm{SF}_{ss} = \dfrac{\sigma_{allow}}{\sigma_{ss}}'
+    residual: SF_ss*sigma_ss - sigma_allow
+    assumptions:
+      - "margin against the chosen allowable stress at the simply-supported plate's hot spot (the
+        center) — the governing case, since the center stress exceeds the clamped edge stress by
+        (3+nu)/2"
+    citation: timoshenko
+
+configurations:
+  - id: uniform-pressure
+    label: Pressure and plate geometry in — deflection, peak stress and margin for BOTH edge conditions out
+    constraints: {}
+    inputs: [q, a, t, sigma_allow]
+    solutions:
+      D: E*t**3/(12*(1 - nu**2))
+      delta_c: q*a**4/(64*D)
+      sigma_c: 3*q*a**2/(4*t**2)
+      delta_ss: (5 + nu)/(1 + nu)*q*a**4/(64*D)
+      sigma_ss: 3*(3 + nu)*q*a**2/(8*t**2)
+      defl_ratio: (5 + nu)/(1 + nu)
+      SF_c: sigma_allow/sigma_c
+      SF_ss: sigma_allow/sigma_ss
+
+derivation:
+  verifies_configuration: uniform-pressure
+  steps:
+    - expr: Eq(D, E*t**3/(12*(1 - nu**2)))
+      prose: >-
+        A plate carries pressure by bending in two directions at once. Integrating the linear-elastic
+        bending stress through the thickness gives a unit strip the stiffness E t^3/12, but the plate
+        is stiffer than that: curving both ways means the material cannot contract sideways freely, so
+        the rigidity picks up a factor 1/(1-nu^2), D = E t^3/(12(1-nu^2)) — the plate analogue of a
+        beam's EI. Under a uniform pressure q the small transverse deflection w(r) obeys the
+        axisymmetric plate equation D∇⁴w = q, whose solution regular at the center (no ln r, no r² ln r)
+        is w(r) = q r^4/(64 D) + C₁ + C₂ r². Everything else is fixed by what the rim does.
+      rule: 'modeling: plate flexural rigidity and the axisymmetric plate equation D∇⁴w = q'
+      check: definition
+    - expr: Eq(delta_c, q*a**4/(64*D))
+      prose: >-
+        Bolt the rim down — clamp it — and the plate can neither move nor tilt there: w(a)=0 and
+        w'(a)=0. Those two conditions pin C₂ = -q a²/(32 D) and C₁ = q a^4/(64 D), and the plate dishes
+        down most at the center: δ_c = w(0) = q a^4/(64 D).
+      rule: 'clamped edge: w(a)=0 and w′(a)=0 pin the constants'
+      check: definition
+    - expr: Eq(sigma_c, 3*q*a**2/(4*t**2))
+      prose: >-
+        The radial bending moment per unit width is M_r = -D(w″ + ν w'/r). For the clamped plate it is
+        largest not at the center but at the EDGE, where the clamp does the reacting: M_r(a) = -q a²/8.
+        The surface stress of a bent strip is σ = 6M/t², so σ_c = 3 q a²/(4 t²). Look at what dropped
+        out: D cancels, taking E and ν with it. The clamped-edge stress is the same number for every
+        material — that is the anchor the rest of the page is measured against.
+      rule: 'clamped: peak radial moment at the edge, σ = 6M/t²'
+      check: definition
+    - expr: Eq(delta_ss, (5 + nu)/(1 + nu)*q*a**4/(64*D))
+      prose: >-
+        Now just rest the same plate on a ring — simply supported. It still cannot deflect at the rim,
+        w(a)=0, but it is now free to ROTATE, so instead the radial moment there must vanish:
+        M_r(a) = -D(w″ + ν w'/r) = 0. That moment condition is the first place Poisson's ratio enters,
+        and it changes C₁. The center now drops to δ_ss = (5+ν)/(1+ν) · q a^4/(64 D) — about 4.08× the
+        clamped plate at ν = 0.3. Same plate, same load: the clamp had been carrying that much.
+      rule: 'simply supported: w(a)=0, M_r(a)=0 — ν enters through the moment'
+      check: definition
+    - expr: Eq(defl_ratio, delta_ss/delta_c)
+      prose: >-
+        Divide the two center deflections and the load q, the radius a, and the rigidity D all cancel:
+        δ_ss/δ_c = (5+ν)/(1+ν). The ratio is pure Poisson — the one number that measures how much work
+        the clamp was doing. Both plates share the same D, yet a change of material still moves this
+        ratio, because ν alone survives the division. (The build's physics test proves this factor with
+        ν left symbolic.)
+      rule: 'identity: the SS/clamped deflection ratio is a pure function of ν'
+      check: identity
+    - expr: Eq(sigma_ss, 3*(3 + nu)*q*a**2/(8*t**2))
+      prose: >-
+        For the simply-supported plate the moment is largest at the CENTER, M_r(0) = M_t(0) = (3+ν) q a²/16,
+        and the peak stress σ_ss = 3(3+ν) q a²/(8 t²) sits right there. Here ν rides directly inside the
+        stress. Swap steel (ν = 0.30) for gray iron (ν = 0.26) and σ_ss moves, while σ_c across the page
+        does not budge for ANY material — putting both plates side by side is what makes that contrast
+        visible. And σ_ss/σ_c = (3+ν)/2 > 1: simply supported is worse on stress as well as deflection.
+      rule: 'simply supported: peak moment at the center, σ = 6M/t²'
+      check: definition
+    - expr: Eq(SF_ss, sigma_allow/sigma_ss)
+      prose: >-
+        The margins are taken where each plate is hottest — the clamped plate at its rim, SF_c = σ_allow/σ_c,
+        and the simply-supported plate at its center, SF_ss = σ_allow/σ_ss (the governing one, since the
+        center stress is the larger). The allowable is a design input you set, not a bound material
+        property: the demonstration pair spans ductile steel, which yields, and brittle gray iron, which
+        has no yield point and fractures — one allowable-stress column cannot honestly describe both.
+      rule: 'definition: safety factors on each hot spot against the chosen allowable'
+      check: identity
+
+sim:
+  engine: statics-cascade
+  config:
+    draw: circular-plate
+
+sources:
+  - id: timoshenko
+    citation: >-
+      Timoshenko, S. P., & Woinowsky-Krieger, S., Theory of Plates and Shells, 2nd ed., McGraw-Hill,
+      1959 — Ch. 3 (Symmetrical Bending of Circular Plates), §16-17: the uniformly loaded circular
+      plate, flexural rigidity D = E t³/(12(1-ν²)), the clamped case (max deflection q a⁴/(64 D) at
+      the center, max stress 3 q a²/(4 t²) at the edge) and the simply-supported case (center
+      deflection (5+ν)/(1+ν)·q a⁴/(64 D), center stress 3(3+ν) q a²/(8 t²)).
+    verification: >-
+      Topic + formulas pinned against Timoshenko & Woinowsky-Krieger Ch. 3 §16-17 (the standard
+      reference for circular-plate bending; textbook PDF not web-accessible this session, as for
+      S02-S05). The results are NOT taken on citation: pipeline/tests/test_plate_physics.py
+      re-derives all four closed forms from the axisymmetric plate ODE D∇⁴w = q — regularity at the
+      center kills the ln r and r² ln r homogeneous terms, then each rim condition (clamped:
+      w(a)=w′(a)=0; simply supported: w(a)=0, M_r(a)=0) is applied independently — and proves the
+      (5+ν)/(1+ν) deflection factor and the (3+ν)/2 stress ratio with ν left SYMBOLIC (the
+      ν-cancellation-proof pattern from compound-cylinder). These are exact analytic facts
+      (uncopyrightable, Feist), matched by the independent ODE solution. Golden (q=100 kPa, a=0.3 m,
+      t=0.01 m, steel E=200 GPa, ν=0.3): σ_c=67.5 MPa, σ_ss=111.375 MPa, δ_ss/δ_c=53/13≈4.077 —
+      hand-checkable arithmetic on the formulas.
+  - id: roark
+    citation: >-
+      Young, W. C., Budynas, R. G., & Sadegh, A. M., Roark's Formulas for Stress and Strain, 8th ed.,
+      McGraw-Hill, 2012 — Table 11.2 (Flat circular plates of constant thickness, uniform load over
+      the entire plate): case 10a (simply supported edge) and case 10b (fixed/clamped edge), used
+      here as an independent oracle for the four closed forms.
+    verification: >-
+      Cross-check only. Roark Table 11.2 cases 10a/10b state the identical maximum deflections and
+      stresses for the uniformly loaded circular plate; the physics test evaluates the closed forms
+      against the independently-integrated ODE solution at sampled geometries and asserts agreement,
+      so the formulas are pinned by re-derivation, not transcription. Topic-level; not page-pinned.

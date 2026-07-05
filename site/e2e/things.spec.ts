@@ -262,7 +262,7 @@ test("verification page discloses authorship and the audit surface", async ({ pa
   await expect(page.getByText(/built end to end by an AI/i).first()).toBeVisible();
   await expect(page.getByText(/No human reviews the content/i).first()).toBeVisible();
   // every THING appears with its audit block (count is a deliberate change detector)
-  expect(await page.locator("section.relation-block").count()).toBe(22); // +curved-beam (S05)
+  expect(await page.locator("section.relation-block").count()).toBe(23); // +circular-plate (S06)
   await expect(page.getByText(/Where physics enters/i).first()).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -1139,4 +1139,61 @@ test("curved beam: a nearly-straight beam (r_c/h ≥ 10) warns you don't need th
   await expect(page.locator(".validity")).not.toContainText(/yield/i); // no competing yield warn
   // the curvature penalty has all but vanished — the two curves have converged
   expect(await readOutput(page, "K_i")).toBeLessThan(1.03);
+});
+
+test("circular plate: ν moves the simply-supported stress while the clamped-edge stress is material-blind", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/circular-plate/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  // steel-a36 (ν=0.30) at q=100 kPa, a=0.3 m, t=0.01 m — the hand-checkable goldens
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  await page.getByLabel("Uniform pressure value").fill("100"); // kPa
+  const sigmaC = await readOutput(page, "sigma_c");
+  const sigmaSS = await readOutput(page, "sigma_ss");
+  const deltaC = await readOutput(page, "delta_c");
+  expect(sigmaC).toBeCloseTo(67.5, 1); // MPa — clamped edge, material-blind
+  expect(sigmaSS).toBeCloseTo(111.375, 1); // MPa — SS center, carries ν
+  expect(await readOutput(page, "D")).toBeCloseTo(18310, 0); // N·m — the new flexural_rigidity kind (steel-a36 E≈199.95 GPa)
+  expect(await readOutput(page, "defl_ratio")).toBeCloseTo(4.0769, 3); // (5+ν)/(1+ν)
+  expect(sigmaSS).toBeGreaterThan(sigmaC); // σ_ss/σ_c = (3+ν)/2 > 1 — SS is hotter too
+
+  // swap to gray iron (ν=0.26, softer): σ_c IDENTICAL, σ_ss MOVES, deflection grows.
+  // THE material moment this page is built around.
+  await page.getByTestId("material-select").selectOption("iron-gray-class30");
+  expect(await readOutput(page, "sigma_c")).toBeCloseTo(sigmaC, 5); // bit-identical anchor
+  const sigmaSSiron = await readOutput(page, "sigma_ss");
+  expect(sigmaSSiron).toBeLessThan(sigmaSS); // ν 0.26 < 0.30 lowers σ_ss
+  expect(sigmaSS - sigmaSSiron).toBeGreaterThan(0.5); // and visibly so (~1.35 MPa)
+  expect(await readOutput(page, "delta_c")).toBeGreaterThan(deltaC); // softer iron sags more
+  expect(errors).toEqual([]);
+});
+
+test("circular plate: overload past δ > t/2 warns that small-deflection theory has broken down", async ({ page }) => {
+  await page.goto("things/circular-plate/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  // steel at a modest pressure: a clean thin, small-deflection plate — no warnings
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  await page.getByLabel("Uniform pressure value").fill("40"); // kPa
+  await expect(page.locator(".validity-warn")).toHaveCount(0);
+
+  // crank the pressure to 300 kPa: δ_ss ≈ 8.4 mm > t/2 = 5 mm → small-deflection warn
+  await page.getByLabel("Uniform pressure value").fill("300");
+  await expect(page.locator(".validity-warn").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/half the plate thickness|no longer small|membrane/i);
+  await expect(page.locator(".validity")).not.toContainText(/transverse shear/i); // not the thin-plate warn
+});
+
+test("circular plate: a thick plate (t/a > 0.1) warns that transverse shear is being neglected", async ({ page }) => {
+  await page.goto("things/circular-plate/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  // a = 300 mm, t = 40 mm → t/a = 0.133 > 0.1; the low pressure keeps δ well under t/2
+  await page.getByLabel("Uniform pressure value").fill("40"); // kPa
+  await page.getByLabel("Plate thickness value").fill("40"); // mm
+  await expect(page.locator(".validity-warn").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/transverse shear|t\/a/i);
+  await expect(page.locator(".validity")).not.toContainText(/membrane|no longer small/i); // not the deflection warn
 });
