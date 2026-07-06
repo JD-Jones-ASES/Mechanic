@@ -76,7 +76,8 @@ In dependency order:
    indeterminate elastic structures; exact solve, full per-sample certificate) is approved to
    build; nonlinear `solveND` is deferred to a future ADR and remains out of scope until a THING
    demands it and the owner signs that ADR. Execution: sessions S15–S20 in
-   `docs/sessions/queue.md`.
+   `docs/sessions/queue.md`. **`solveLinear` ✅ shipped (S15, PR #32, 2026-07-06 — propped-cantilever
+   the reference consumer, catalog → 31); `solveND` remains PROPOSED/unbuilt.** S16–S20 in progress.
 
 ## Phase 4 — Chaining as the product
 

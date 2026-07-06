@@ -1096,3 +1096,76 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   QC cycle is CLOSED: audit (QC0) → fixes (QC1) same day; remaining owner decisions are the
   revolution_count kind and the sources[].verification backfill row. (d) Nothing is paused; S15 is the
   topmost QUEUED row of active Phase 3.
+
+## S15 — solveLinear capability + propped-cantilever — 2026-07-06 — PR #32 — MERGED
+- Shipped: the `solve_linear` capability (ADR-0008 part a — certified linear-group solving) + THING 31
+  `propped-cantilever` (its reference consumer). The pipeline certifies a coupled square system AFFINE in
+  its targets (∂²r/∂tᵢ∂tⱼ ≡ 0 per target pair + target-free coefficients), solves it EXACTLY at build time
+  with `sp.linsolve` (never blind solve()), and DESUGARS the closed forms into ordinary eval steps that flow
+  through the EXISTING verify path (total back-substitution, manifold DOF, parity oracle) — zero new runtime
+  engine; det(A) rides an existing `nonzero` guard. propped-cantilever solves the 3×3 {R_A, R_B, M_A} from
+  two equilibrium + one compatibility relation; reactions are material-BLIND (EI cancels — a machine-checked
+  identity step), σ/δ/SF/mass cascade downstream. Catalog 30 → 31.
+- Gates: pytest 311 (297 baseline + 9 test_solve_linear + 5 test_propped_physics); pnpm build clean (COLD —
+  verify.py+compile.py edits changed the fingerprint, all 31 THINGs re-verified ~3-4 min; then WARM after the
+  review fixes, 30 cache-reused + propped recompiled; 38 pages, katex 1330, mdx 62 files, parity 1359, units
+  748, pagefind); unit 19 (no new kind → no new unit test); e2e 88 (85 baseline + 2 propped things pins
+  [material-blind reactions + δ/SF cascade; yield warn] + 1 a11y axe on the new page; relation-block 30→31);
+  visual pass (built dist /Mechanic/ via preview + Playwright screenshots): sim renders VISIBLY (blue beam
+  curve dipping to the teal roller prop, green wall hatch, teal reaction arrows scaled 5:3 + M_A moment arc,
+  13 UDL arrows, 47 SVG els — beam-line stroke rgb(147,197,253), NOT the invisible-SVG trap), drove w→50 kN/m
+  on nylon and SAW the beam turn RED (rgb(220,38,38)) with BOTH warn banners (yield + small-deflection),
+  switched steel→Ti and SAW δ 1.20→2.18 mm / SF 3.45→12.07 while R_A/R_B/M_A/σ HELD material-blind, KaTeX 0
+  errors, console clean, /things/ card + /verification/(31) + solveLinear gate bullet present; normal + warn
+  screenshotted. review: 5 independent fresh-context subagents — physics / invariants / code-tests (the 3 §4
+  angles) + /code-review high's cleanup and altitude-conventions finders. ZERO correctness bugs, ZERO wrong
+  emitted numbers, no lowered/weakened tests, no committed artifacts; invariants + altitude passes fully CLEAN
+  (they recompiled the planetary 2-DOF reference to confirm it survives, and confirmed solve_tainted is empty
+  so the identity derivation steps are genuinely verified not skipped). FIXED 5 findings (3 prose + 2 test
+  quality): (i) failure.mdx "eight times the tip deflection" was wrong (removing the prop, the free end goes
+  0→wL⁴/8EI = 24× the propped midspan, not 8×; the paired "wall moment 4× larger" IS correct) → reworded;
+  (ii)+(iii) overview.mdx + thing.yaml step-7 prose "titanium a third as stiff / δ triples" overstated (Ti
+  E≈110 vs 200 GPa → ~half as stiff, δ ~1.8× — matches the live 1.81× and the sibling) → corrected both;
+  (iv) test_solve_linear singular-at-sample match tightened "singular|~ 0 at sample"→"~ 0 at sample" to pin
+  the per-sample path; (v) op-count comment de-specified. REBUTTED (idiom/defensive): the det-sampling loop
+  echoing tiered_zero's scaffold (every verify campaign rolls its own loop — inverse accept polarity here, a
+  shared extraction is a cross-cutting refactor out of scope); the constant-det fast-path branch (one eval vs
+  30, catches a tiny-nonzero constant simplify misses); srepr-exact guard dedup (harmless double guard at
+  worst, moot for propped where det cancels).
+- Golden: steel-a36 at declared defaults (w=12 kN/m, L=2 m, b=50 mm, h=100 mm, E=200/σ_y=250/ρ=7850):
+  R_A=15 kN, R_B=9 kN, M_A=6000 N·m, σ_max=72 MPa, δ_mid=1.2003 mm, SF=3.4474, m=78.5 kg. Source Gere &
+  Goodno ch.10; all arithmetic in test_propped_physics.py, reactions re-derived TWO independent ways (force
+  method + solving EI·v''''=w BVP with dsolve) agreeing symbolically — nothing on citation.
+- Citations pinned: gere (Gere & Goodno 9th ch.10 indeterminate beams, force method; §5.5 flexure) topic-level
+  (textbook PDF not web-accessible, same limit as S02-S13), reactions web-corroborated 2026-07-06 (testbook,
+  prepp.in, ScienceDirect all give prop reaction 3wL/8 & FEM wL²/8) AND re-derived in the physics test;
+  hibbeler (ch.12 superposition cross-check) topic-level, equilibrium re-derived from the free body.
+- Deviations from brief: (1) COMPATIBILITY RELATION authored EI-CANCELLED (`w·L⁴/8 − R_B·L³/3`) not the
+  brief's `w·L⁴/(8EI) − R_B·L³/(3EI)`. FORCED by the DECIDED ordering rule: a group coefficient may read only
+  inputs/constraints/materials/earlier-groups, and `I` is a downstream derived `solutions` target — the EI
+  form would make the group read I (a forward-DAG violation; test_solve_linear's ordering test proves it).
+  Physically IDENTICAL (EI ≠ 0 divides out); the material-blindness of the reactions is preserved and becomes
+  a MACHINE-CHECKED identity step in the derivation. (2) BRIEF ERROR CORRECTED (rule 6): the brief stated the
+  true deflection max at x=(1+√33)L/16 ≈ 0.42L; independent re-derivation (test_propped_physics) gives
+  x=(15−√33)L/16 ≈ 0.5785L — the brief's point is on the wrong side of midspan and deflects LESS than midspan,
+  so cannot be the max. δ_max ≈ wL⁴/185EI value is correct; only the location was mis-transcribed. overview.mdx
+  ships the correct 0.578L. ⚠️ OWNER ACTION: the S15 brief Physics-scope line should be corrected to
+  (15−√33)L/16. (3) M_A display unit is N*m only (kN*m not in units.ts DISPLAY_FACTORS; no new unit added per
+  "no new columns/units").
+- New capabilities future briefs may rely on (S16-S19): `solve_linear` groups — certified exact linear-system
+  solving. Author `solve_linear: [{targets:[...], relations:[...]}]` at configuration level; groups run after
+  constraints, before solutions; coefficients read only inputs/constraints/materials/earlier-groups (forward
+  DAG); ≤4 targets/group, op cap 200 on coeffs+solved-forms (trip → future LU-runtime ADR). det(A) emits a
+  nonzero/invalid guard; combining with solve1d/table/branches is refused (v1). solveND stays reserved/unbuilt.
+- Notes-for-next: (a) det(A) frequently CANCELS in the solved forms (propped's L³/3 divides out — that IS the
+  material-blindness), so auto_guards emits NO det guard; the EXPLICIT det guard in compile.py is the only
+  non-singularity check. A future non-cancelling det (S17 composite-bar) WILL get an auto denominator guard on
+  the solved forms too — harmless (both invalid, trip together), and seen_guards dedups an exact-srepr match.
+  (b) The "singular-at-sample" test uses det=(n-2) with n an integer knob [1,3]: the seeded RNG deterministically
+  draws n=2 and the per-sample det check fires — reproducible, not flaky. (c) e2e knob sliders read in the FIRST
+  display unit: #knob-w max=50 is 50 kN/m (=50000 N/m), fill "50" not "50000". (d) The EI-cancel compatibility is
+  the pattern for S16's fixed-fixed family too; S17's composite-bar is where EI does NOT cancel (two materials)
+  and det carries the stiffness distribution — that is where the auto det guard first appears. (e) The desugar
+  makes solve_linear STRONGER than solve1d for the audit surface: because closed forms exist, derivation
+  `identity` steps CAN reference the solved targets (solve_tainted stays empty), so the compatibility/solve is a
+  machine-verified derivation line — do this for S16-S19 too.
