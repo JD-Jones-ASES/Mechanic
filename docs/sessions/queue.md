@@ -56,7 +56,7 @@ names ride in the Date cell (`<date> · <branch>`).
 | S05 | curved-beam (Winkler; zero new machinery)                      | 22      | DONE | #18 | 2026-07-04 | [S05](briefs/S05-curved-beam.md) |
 | S06 | circular-plate (ν in stress; flexural_rigidity kind)           | 23      | DONE | #19 | 2026-07-05 | [S06](briefs/S06-circular-plate.md) |
 | S07 | torsional-oscillator (frequency kind; Hz/s/ms units)           | 24      | DONE | #20 | 2026-07-06 | [S07](briefs/S07-torsional-oscillator.md) |
-| S08 | shaft-critical-speed (cited-constants mechanism: g)            | 25      | IN_PROGRESS | —   | 2026-07-06 · phase2/shaft-critical-speed | [S08](briefs/S08-shaft-critical-speed.md) |
+| S08 | shaft-critical-speed (cited-constants mechanism: g)            | 25      | DONE | #21 | 2026-07-06 | [S08](briefs/S08-shaft-critical-speed.md) |
 | S09 | impact-loading (energy method; 2nd constants consumer)         | 26      | QUEUED | —   | —          | [S09](briefs/S09-impact-loading.md) |
 | S10 | slider-crank (exact kinematics at a knob angle)                | 27      | QUEUED | —   | —          | [S10](briefs/S10-slider-crank.md) |
 | S11 | ball-bearing-life (probability kind; optional threshold table) | 28      | QUEUED | —   | —          | [S11](briefs/S11-ball-bearing-life.md) |
