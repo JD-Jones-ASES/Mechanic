@@ -57,7 +57,7 @@ names ride in the Date cell (`<date> · <branch>`).
 | S06 | circular-plate (ν in stress; flexural_rigidity kind)           | 23      | DONE | #19 | 2026-07-05 | [S06](briefs/S06-circular-plate.md) |
 | S07 | torsional-oscillator (frequency kind; Hz/s/ms units)           | 24      | DONE | #20 | 2026-07-06 | [S07](briefs/S07-torsional-oscillator.md) |
 | S08 | shaft-critical-speed (cited-constants mechanism: g)            | 25      | DONE | #21 | 2026-07-06 | [S08](briefs/S08-shaft-critical-speed.md) |
-| S09 | impact-loading (energy method; 2nd constants consumer)         | 26      | IN_PROGRESS | —   | 2026-07-06 · thing/impact-loading | [S09](briefs/S09-impact-loading.md) |
+| S09 | impact-loading (energy method; 2nd constants consumer)         | 26      | DONE | #22 | 2026-07-06 | [S09](briefs/S09-impact-loading.md) |
 | S10 | slider-crank (exact kinematics at a knob angle)                | 27      | QUEUED | —   | —          | [S10](briefs/S10-slider-crank.md) |
 | S11 | ball-bearing-life (probability kind; optional threshold table) | 28      | QUEUED | —   | —          | [S11](briefs/S11-ball-bearing-life.md) |
 | S12 | disk-clutch (uniform wear vs uniform pressure)                 | 29      | QUEUED | —   | —          | [S12](briefs/S12-disk-clutch.md) |
