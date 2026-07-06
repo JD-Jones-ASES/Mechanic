@@ -979,3 +979,53 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   the Relational check is at parse time, before config-constraint substitution, so `mode > 0` on a free integer
   stays a Relational and works. Default config is compression (configs[0]); the α slider bounds reach 92° so
   the α≥90° global refusal is knob-reachable.
+
+## QC0 — Phase-2 QC audit + Phase-3 stage-setting docs (owner-directed) — 2026-07-06 — PRs #29, #30 — MERGED
+- Shipped: the Phase 3 ruling recorded on the owner's in-chat instruction (PR #29: literal ruling line +
+  header flip in one edit per runbook 2e; routed via PR instead of direct-to-main so CI validates before
+  publish); Phase-3 stage-setting docs (PR #30): authoring-things.md gains `role: constant` and
+  configuration-discriminator (`mode`) sections + a correction of the stale "multi-column not built in v1"
+  line (S02 shipped it — consecutive same-`(table, at)` entries merge into one lookup, verified against
+  compile.py); architecture.md artifact schema gains the `table` plan step (exact emitted shape) and the
+  `constant` role; data-provenance.md gains the THING-level `sources[].verification` section; protocol.md
+  gains rule 6 (**a brief is a spec, not a source**) echoed in §3.4; roadmap.md Phase-2 section condensed
+  187 → 31 lines (the per-THING record lives in THIS log + reports/phase-2.md) and Phase 3 marked ACTIVE;
+  CLAUDE.md rulings/rules lines updated; NEW `reports/phase-2-qc-audit.md` (the QC findings report,
+  brief-grade). ZERO THING/site/pipeline changes.
+- Gates: docs-only PRs, but the QC's Track A re-ran the full suite from COLD on main first: generated tree
+  deleted → cold `pnpm build` clean (all 30 THINGs re-verified from scratch, 37 pages, katex/mdx/parity/
+  units green, ≈4 min); pytest 297 passed (15 s); unit 19 passed; e2e 82 passed vs built dist (24 s;
+  confirms the logged 82 — static grep sees 75, parameterized loops add 7). Live-site spot checks:
+  /verification/ = 30 audit blocks with the gate story; two-bar-truss ships cos²α (no cos³ anywhere),
+  refusals + material cascade described correctly. CI green on both PRs before merge.
+- QC audit (Track B): a 75-agent workflow — 15 fresh-context auditors (13 Phase-2 THINGs + kind-registry
+  + e2e-pins), every actionable finding verified by a 3-lens adversarial panel (technical / file-evidence /
+  materiality; ≥2 of 3 to survive). Result: **20 confirmed findings (3 critical, 16 minor, 1 note-grade) +
+  23 notes; ZERO wrong emitted numbers** — every governing formula independently re-derived and matched,
+  every golden recomputed. Criticals: (1) stepped-shaft-fillet cites nonexistent "Roark Table 6-1 case
+  III-2" (actual fetched source per the S02 log = Pilkey); (2) torsional-oscillator's static twist has no
+  yield envelope (θ_st renders banner-free at T_app far past shear yield — invariant-5 silent region);
+  (3) slider-crank sim draws the paused-overlay torque arrow clockwise for positive (counterclockwise) T.
+  Full structured report: `docs/sessions/reports/phase-2-qc-audit.md`. NONE fixed this session — all touch
+  thing.yaml/site (full per-THING gate work); recommended to the owner as 1–2 QC-fix queue rows, report =
+  the brief.
+- Golden: n/a (docs). Citations pinned: n/a (docs) — but NOTE: the audit's PROPOSED citation corrections
+  (14-6b, §16, §9.10, §4-17, Pilkey table) are themselves recall+web claims; the fix session must
+  independently re-verify each before shipping (rule 6 applies to fixes too).
+- Deviations from brief: owner-directed interactive session — no queue row, no brief; plan approved
+  in-chat. One adaptation: the runbook's direct-to-main ruling commit was denied by the environment's
+  permission layer, so the ruling rode PR #29 (same one-edit content, plus CI validation).
+- New capabilities future briefs may rely on: none in code. In docs: role:constant, the discriminator
+  idiom, and multi-column tables are now in authoring-things.md; protocol rule 6 exists and is load-bearing.
+- Notes-for-next (S15 = solveLinear + propped-cantilever, a solo L-size engine session, NEVER claimed via
+  continuation): (a) Phase 3 is RULED and the header flipped — S15 is the topmost QUEUED row; its entry
+  criteria were verified twice (phase close + this session's spot-verify), all green. (b) Read
+  `reports/phase-2-qc-audit.md` before touching any of the 9 THINGs it names; if the owner queues QC-fix
+  rows they should precede or interleave early Phase 3 — none of the findings blocks S15 itself. (c) The
+  `sources[].verification` backfill for the 5 pre-Phase-1 THINGs at 0% pinned (cantilever-beam,
+  fourbar-linkage, planetary-gearset, pressure-vessel, torsion-shaft; catalog average ≈18% of ~328 source
+  entries) is real verification labor — recommended as a later-phase row, never a bulk text edit.
+  (d) roadmap.md's Phase-2 detail was deliberately condensed; the authoritative per-THING record is THIS
+  log — do not re-inflate the roadmap. (e) The QC audit found the gates' blind spots are exactly
+  cross-THING consistency (sibling envelope patterns dropped in reuse; asymmetric warns) and citation
+  locators — worth a standing audit line in future phase-close briefs.
