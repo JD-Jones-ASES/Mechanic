@@ -270,6 +270,16 @@ a { color: var(--accent); }
 .clutch-p-up { stroke: var(--accent); stroke-width: 2.5; }
 .clutch-p-uw { fill: none; stroke: #10b981; stroke-width: 2.5; }
 .clutch-p-uw-hot { fill: none; stroke: #dc2626; stroke-width: 2.5; }
+/* two-bar truss: members coloured by sense (accent = tension, amber =
+   compression), red when the governing capacity is exceeded; the joint dot, the
+   pin-support triangles, and the dashed vertical/α reference. Undeformed members
+   reuse .beam-ghost, the load arrow reuses .load-arrow(-head). */
+.truss-member { fill: none; stroke: var(--accent); stroke-width: 4.5; stroke-linecap: round; }
+.truss-member-comp { fill: none; stroke: #f59e0b; stroke-width: 4.5; stroke-linecap: round; }
+.truss-member-hot { fill: none; stroke: #dc2626; stroke-width: 4.5; stroke-linecap: round; }
+.truss-joint { fill: var(--ink); }
+.truss-anchor { fill: var(--muted); }
+.truss-vref { stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 3 3; }
 /* shared sim vocabulary: stress bands (StressBands.tsx) shade where a field
    concentrates and turn red past first yield; .sim-outline is a figure's
    structural outline */

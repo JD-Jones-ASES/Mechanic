@@ -42,6 +42,7 @@ import { SpringSim } from "./sims/SpringSim";
 import { SSBeamSim } from "./sims/SSBeamSim";
 import { SteppedShaftSim } from "./sims/SteppedShaftSim";
 import { TorsionalOscillatorSim } from "./sims/TorsionalOscillatorSim";
+import { TrussSim } from "./sims/TrussSim";
 import { TubeSim } from "./sims/TubeSim";
 import { VesselSim } from "./sims/VesselSim";
 
@@ -84,6 +85,7 @@ const SIMS: Record<
   "slider-crank": SliderCrankSim,
   "ball-bearing-life": BearingSim,
   "disk-clutch": ClutchSim,
+  "two-bar-truss": TrussSim,
 };
 
 interface Props {

@@ -1,0 +1,71 @@
+Hang a weight from two bars pinned to a wall, or prop it up on two struts — either way the load
+splits between the members, and simple statics tells you exactly how. This is the smallest real
+truss, and the cleanest place to see the single most important idea in structural analysis:
+**determinacy**. Two members, two unknown forces, and the joint gives you two equilibrium equations.
+The count matches, so equilibrium *alone* fixes the forces — you never have to ask how stiff the bars
+are or how far the joint moves.
+
+$$F_m = \frac{P}{2\cos\alpha}$$
+
+Here $\alpha$ is measured **from the vertical** (the axis the load points along) — worth stating out
+loud, because reading it from the horizontal silently swaps every $\cos$ for a $\sin$ and inverts the
+whole story. Read this formula and watch what a shallow truss costs: as $\alpha \to 90^\circ$ the bars
+flatten toward horizontal, lose their vertical bite, and the member force runs away to infinity. A
+nearly-flat cable holding a tightrope walker carries a tension many times their weight; the truss is
+the same trap. Drive the $\alpha$ knob toward $90^\circ$ in the widget and the force readouts blow up
+— until the geometry degenerates and the page refuses to answer, because at $\alpha = 90^\circ$ there
+is no upward component left to carry anything.
+
+## Why this is the determinate case — and where Phase 3 begins
+
+The member force above needed nothing but equilibrium. **Add a third bar** straight down from the same
+joint and the tidy count breaks: three unknown forces, still only two joint equations. Equilibrium can
+no longer decide how the load shares out — the stiff bars steal more of it, and you must bring in
+*compatibility* (all three members meet at one joint, so their elongations are geometrically linked)
+and solve equilibrium and compatibility *together*. That statically indeterminate truss is exactly the
+kind of coupled linear system the **`solveLinear` engine (Phase 3)** exists to handle; this page is the
+determinate rung right below it, built so the jump is visible. Everything here falls out of
+back-substitution with no solver at all.
+
+## The joint deflection — and the material's first appearance
+
+Nothing above involved the modulus $E$: the forces and stresses are **material-blind** (swap steel for
+titanium and $F_m$, $\sigma = F_m/A$ don't move by a newton). The material makes its entrance in the
+*deflection*. Each bar stretches by its Hooke's-law amount $e = F_m L/(AE)$, and the joint drops by the
+projection of that stretch back onto the vertical:
+
+$$\delta = \frac{P L}{2 A E \cos^2\alpha}$$
+
+The exponent is **two, not three** — one $\cos\alpha$ rides in through the member force (which already
+grows as the truss flattens), and a second comes from projecting the joint's drop onto the inclined
+member ($e = \delta\cos\alpha$). This is the unit-load theorem made visible, re-derived two independent
+ways in the tests. Now the material *does* matter: a titanium truss ($E \approx 114$ GPa) deflects
+almost twice as far as a steel one ($E \approx 200$ GPa) under the same load, even though both carry the
+identical member force — stiffness and strength are independent axes, and the deflection is where
+stiffness shows up. As $\alpha \to 90^\circ$ the deflection diverges too, and the small-displacement
+assumption (member angles taken fixed under load) breaks down first — the widget warns when
+$\delta > L/10$.
+
+## Compression adds a second way to fail
+
+Flip the load so it presses the joint instead of pulling it and the members go into compression — where
+a slender bar has a second failure mode the tension member never faces: it can **buckle**. Each bar is
+pinned at both ends, so it is an ideal Euler strut ($K = 1$), and its critical load is taken verbatim
+from the [Euler Column](../euler-column/) page:
+
+$$P_{cr} = \frac{\pi^2 E I}{L^2}, \qquad \mathrm{SF}_{buck} = \frac{P_{cr}}{F_m}$$
+
+At the default geometry the buckling margin is *smaller* than the yield margin, so buckling — not yield
+— governs the compression member. That is why real trusses put their stubby members in compression and
+their thin ones in tension. Toggle to the tension configuration and the buckling readouts are withheld
+(a tension member cannot buckle); drive the bar short enough and they are withheld again, this time
+because Euler overpredicts a short column — the inelastic Johnson regime governs there, and the [Euler
+Column](../euler-column/) page carries that hand-off.
+
+## Mass, and a merit index in waiting
+
+The mass $m = 2\rho A L$ adds the third independent material axis — density, which touches neither the
+stiffness nor the strength story. Put the three together and a design question appears: for a tension
+member that must not yield at the least weight, the bar that wins maximizes the **specific strength**
+$\sigma_y/\rho$. That merit index — and the map of material classes it draws — is the Ashby work of
+Phase 5; this page is one of the many that feed it.

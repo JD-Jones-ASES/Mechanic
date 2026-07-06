@@ -262,7 +262,7 @@ test("verification page discloses authorship and the audit surface", async ({ pa
   await expect(page.getByText(/built end to end by an AI/i).first()).toBeVisible();
   await expect(page.getByText(/No human reviews the content/i).first()).toBeVisible();
   // every THING appears with its audit block (count is a deliberate change detector)
-  expect(await page.locator("section.relation-block").count()).toBe(29); // +disk-clutch (S12)
+  expect(await page.locator("section.relation-block").count()).toBe(30); // +two-bar-truss (S13)
   await expect(page.getByText(/Where physics enters/i).first()).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -1542,4 +1542,74 @@ test("disk-clutch: r_i ≥ r_o refuses the whole page (the annulus does not exis
   await expect(page.locator('[data-output="T_up"] output')).toHaveText("—");
   await expect(page.locator('[data-output="T_uw"] output')).toHaveText("—");
   await expect(page.locator('[data-output="p_max"] output')).toHaveText("—");
+});
+
+test("two-bar-truss: determinate joint force, material-blind stress, buckling governs in compression", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/two-bar-truss/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+  await page.getByTestId("material-select").selectOption("steel-a36");
+
+  // defaults: compression config, P = 80 kN, α = 30° from vertical, L = 2 m, d = 50 mm.
+  // F_m = P/(2cos30°) = 80/(2·0.8660254) = 46.188 kN — from equilibrium ALONE
+  // (statically determinate) and MATERIAL-BLIND (no E anywhere in it)
+  expect(await readOutput(page, "F_m")).toBeCloseTo(46.19, 1); // kN
+  expect(await readOutput(page, "N_m")).toBeCloseTo(-46.19, 1); // kN, compression ⇒ signed negative
+  // σ = F_m/A = 46188/1.9635e-3 = 23.52 MPa — also material-blind
+  expect(await readOutput(page, "sigma")).toBeCloseTo(23.52, 1); // MPa
+  expect(await readOutput(page, "lam")).toBeCloseTo(160, 0); // λ = 4L/d, pure geometry
+
+  // buckling is an active check in compression, and at this slenderness it is the
+  // SMALLER margin — buckling, not yield, governs the compression member
+  const sfY = await readOutput(page, "SF_y");
+  const sfBuck = await readOutput(page, "SF_buck");
+  expect(sfBuck).toBeLessThan(sfY);
+  expect(sfBuck).toBeGreaterThan(1); // still safe at the default geometry
+  expect(errors).toEqual([]);
+});
+
+test("two-bar-truss material cascade: titanium deflects more than steel though the member force is identical", async ({ page }) => {
+  await page.goto("things/two-bar-truss/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  const fSteel = await readOutput(page, "F_m");
+  const dSteel = await readOutput(page, "delta"); // mm
+
+  await page.getByTestId("material-select").selectOption("ti-6al-4v");
+  const fTi = await readOutput(page, "F_m");
+  const dTi = await readOutput(page, "delta");
+
+  // the member force is material-blind — identical across the swap
+  expect(fTi).toBeCloseTo(fSteel, 2);
+  // but titanium's lower E means the joint deflects MORE: the deflection is where
+  // stiffness (not strength) shows up — the truss version of the beam moment
+  expect(dTi).toBeGreaterThan(dSteel);
+});
+
+test("two-bar-truss: tension withholds the buckling check (scoped); α ≥ 90° refuses the whole page (global)", async ({ page }) => {
+  await page.goto("things/two-bar-truss/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  // default compression is warn-clear and the buckling readouts are LIVE (slender)
+  await expect(page.locator(".validity-invalid")).toHaveCount(0);
+  expect(await readOutput(page, "P_cr")).toBeGreaterThan(0);
+  expect(await readOutput(page, "SF_buck")).toBeGreaterThan(0);
+
+  // switch to tension: a tension member cannot buckle ⇒ SCOPED refusal withholds
+  // P_cr and SF_buck, while the yield check and the rest of the page stand
+  await page.getByTestId("config-select").selectOption("tension");
+  await expect(page.locator(".validity-invalid").first()).toBeVisible();
+  await expect(page.locator('[data-output="P_cr"] output')).toHaveText("—");
+  await expect(page.locator('[data-output="SF_buck"] output')).toHaveText("—");
+  expect(await readOutput(page, "N_m")).toBeCloseTo(46.19, 1); // tension ⇒ now positive
+  expect(await readOutput(page, "SF_y")).toBeGreaterThan(0); // yield check NOT poisoned
+
+  // now flatten the truss toward horizontal: α = 91° ≥ 90° degenerates the geometry
+  // (no vertical component to carry the load) ⇒ GLOBAL refusal, every readout blanks
+  await page.getByLabel("Member angle from vertical value").fill("91"); // degrees
+  await expect(page.locator(".validity-invalid").first()).toBeVisible();
+  await expect(page.locator('[data-output="F_m"] output')).toHaveText("—");
+  await expect(page.locator('[data-output="SF_y"] output')).toHaveText("—");
+  await expect(page.locator('[data-output="delta"] output')).toHaveText("—");
 });
