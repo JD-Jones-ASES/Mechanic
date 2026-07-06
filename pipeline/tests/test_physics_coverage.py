@@ -38,6 +38,7 @@ PHYSICS_TESTS = {
     "rotating-disk-bore": "test_disk_physics.py",
     "shaft-critical-speed": "test_shaft_critical_speed_physics.py",
     "simply-supported-beam": "test_ssbeam_physics.py",
+    "slider-crank": "test_slider_crank_physics.py",
     "spur-gear-pair": "test_gear_physics.py",
     "stepped-shaft-fillet": "test_stepped_shaft_physics.py",
     "thick-walled-cylinder": "test_cylinder_physics.py",

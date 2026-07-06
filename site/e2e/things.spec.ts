@@ -262,7 +262,7 @@ test("verification page discloses authorship and the audit surface", async ({ pa
   await expect(page.getByText(/built end to end by an AI/i).first()).toBeVisible();
   await expect(page.getByText(/No human reviews the content/i).first()).toBeVisible();
   // every THING appears with its audit block (count is a deliberate change detector)
-  expect(await page.locator("section.relation-block").count()).toBe(26); // +impact-loading (S09)
+  expect(await page.locator("section.relation-block").count()).toBe(27); // +slider-crank (S10)
   await expect(page.getByText(/Where physics enters/i).first()).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -1394,4 +1394,55 @@ test("impact loading: the config toggle switches the loading, and a big drop war
   await page.getByLabel("Drop height value").fill("300"); // mm — a 0.3 m drop
   await expect(page.locator(".validity-warn").first()).toBeVisible();
   await expect(page.locator(".validity")).toContainText(/yield/i);
+});
+
+test("slider-crank: the θ=90° kinematics goldens (v=−ωr, T=Fr) fall out exactly", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/slider-crank/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  // there is no material picker — kinematics and the quasi-static force path are
+  // pure geometry (the flywheel/torsional-shaft pages own the material story)
+  await expect(page.getByTestId("material-select")).toHaveCount(0);
+
+  // set the crank to 90° (defaults r=50 mm, l=150 mm ⇒ r/l = 1/3, ω=100 rad/s,
+  // F=4000 N). At 90° several results collapse to clean, hand-checkable values:
+  //   q = √(l²−r²) = √0.02 = 141.42 mm, x = q (cos90°=0)
+  //   v = −ω·r·sin90°·(1+0) = −100·0.05 = −5.0 m/s   (exactly −ωr)
+  //   φ = asin(1/3) = 19.47°,  T = F·r·sin(90°+φ)/cosφ = F·r = 200 N·m (exactly Fr)
+  await page.getByLabel("Crank angle (from TDC) value").fill("90");
+  expect(await readOutput(page, "v")).toBeCloseTo(-5.0, 2);
+  expect(await readOutput(page, "T")).toBeCloseTo(200, 1);
+  expect(await readOutput(page, "x")).toBeCloseTo(141.42, 1); // mm
+  expect(await readOutput(page, "phi")).toBeCloseTo(19.47, 1); // deg
+  // a piston velocity is signed — it is negative moving toward the crank
+  expect(await readOutput(page, "v")).toBeLessThan(0);
+  expect(errors).toEqual([]);
+});
+
+test("slider-crank: the force config scales torque with F; obliquity warns; l≤r refuses", async ({ page }) => {
+  await page.goto("things/slider-crank/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  // default (kinematics) config is warn-clear: r/l = 1/3, well under the 0.5 threshold
+  await expect(page.locator(".validity-warn")).toHaveCount(0);
+
+  // force config: gas force F becomes the knob (crank speed held at the reference);
+  // crank torque is proportional to F, so doubling F doubles T
+  await page.getByTestId("config-select").selectOption("force");
+  const t0 = await readOutput(page, "T");
+  await page.getByLabel("Gas force on piston value").fill("8"); // kN — double the 4 kN default
+  expect(await readOutput(page, "T")).toBeCloseTo(2 * t0, 0);
+
+  // obliquity WARN (not a refusal): shorten the rod to l = 80 mm ⇒ r/l = 0.625 > 0.5,
+  // still assembles (l > r), so the number stands but the page warns
+  await page.getByLabel("Connecting-rod length value").fill("80"); // mm
+  await expect(page.locator(".validity-warn").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/obliquity/i);
+
+  // l ≤ r is the honest REFUSAL: the mechanism cannot assemble through a rotation
+  await page.getByLabel("Connecting-rod length value").fill("30"); // mm < r = 50 mm
+  await expect(page.locator(".validity-invalid").first()).toBeVisible();
+  await expect(page.locator('[data-output="x"] output')).toHaveText("—");
+  await expect(page.locator('[data-output="v"] output')).toHaveText("—");
 });

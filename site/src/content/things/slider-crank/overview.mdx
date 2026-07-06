@@ -1,0 +1,46 @@
+Take a [four-bar linkage](../fourbar-linkage/) and push one ground pivot off to infinity: the rocker
+that used to swing on an arc now slides in a straight line, and the four-bar becomes a **slider-crank**
+— crank, connecting rod, piston. It is the mechanism that turns the up-and-down of a piston into the
+round-and-round of a crankshaft (and back): every internal-combustion engine, every reciprocating
+compressor and pump, every old steam locomotive's driving wheel. One degree of freedom — set the crank
+angle $\theta$ and the whole mechanism is decided.
+
+Unlike its four-bar parent, the in-line slider-crank assembles on a **single branch**. The parent's
+open/crossed pair came from a quadratic; here the position problem is a right triangle — rod length $l$
+as the hypotenuse, the crank pin's transverse offset $r\sin\theta$ as one leg, and the rod's axial reach
+$q=\sqrt{l^2-r^2\sin^2\theta}$ as the other — with only the positive root physical. The piston sits at
+
+$$x = r\cos\theta + \sqrt{l^2 - r^2\sin^2\theta}$$
+
+measured from the crankshaft axis: $x=r+l$ at top dead centre, $x=l-r$ half a turn later, a stroke of
+exactly $2r$ no matter how long the rod.
+
+## Two passes: motion, then force
+
+The page carries the two analyses an engine designer runs in turn, as its two configurations:
+
+- **Kinematics.** Spin the crank at a *constant* speed $\omega$ and the piston velocity and acceleration
+  are just $v=\omega\,\mathrm{d}x/\mathrm{d}\theta$ and $a=\omega^2\,\mathrm{d}^2x/\mathrm{d}\theta^2$ —
+  space derivatives scaled by $\omega$, never a time integral. The results are *not* sinusoids: the
+  piston spends longer near bottom dead centre than near top, and the acceleration carries a
+  twice-per-revolution term that a simple counterweight can never balance. Alongside the exact velocity
+  and acceleration sits the classic **two-term approximation** $s\approx r(1-\cos\theta)+\frac{r^2}{4l}(1-\cos 2\theta)$,
+  shown with its own error readout so you can watch it drift — negligible at real engine proportions
+  ($r/l\approx\frac14$ to $\frac13$), visibly wrong once the rod gets short.
+- **Force path.** The connecting rod is not aligned with the cylinder; it tilts by the obliquity angle
+  $\phi$, where $\sin\phi=(r/l)\sin\theta$. Push on the piston with a gas force $F$ and that tilt does
+  two things: it drives the rod force up to $F/\cos\phi$ (with the leftover $F\tan\phi$ shoved sideways
+  into the cylinder wall as side thrust), and it turns the piston force into a crank torque
+  $T=F r\,\sin(\theta+\phi)/\cos\phi$. That torque is zero at both dead centres and peaks near
+  mid-stroke — the ripple every engine smooths with a flywheel.
+
+Each configuration hands you the knobs for that pass and holds the other driver — gas force $F$ in the
+kinematic pass, crank speed $\omega$ in the force pass — at a labelled reference value, so the full
+quasi-static state is always on screen.
+
+There is no material picker here, and that is the point: kinematics and the quasi-static force path are
+pure geometry. Steel, aluminium, or titanium, the piston follows the same path and the same gas force
+makes the same torque. Material re-enters the moment inertia and stiffness matter — the crank's own
+whirl and torsional vibration, the rod's buckling, the bearing loads — which is where the
+[combined bending + torsion shaft](../combined-shaft/) and the [torsional oscillator](../torsional-oscillator/)
+pick the story back up.

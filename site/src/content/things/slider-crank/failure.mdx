@@ -1,0 +1,56 @@
+A slider-crank, like its [four-bar](../fourbar-linkage/) parent, mostly *misbehaves* kinematically and
+dynamically long before a link breaks — and several of its troubles are written directly into the
+obliquity angle $\phi$ this page computes.
+
+- **Side thrust and bore wear.** The connecting-rod force $F/\cos\phi$ is never aligned with the
+  cylinder; the leftover $F\tan\phi$ presses the piston sideways against the bore, reversing direction
+  each stroke. That is the "piston slap" that wears cylinder walls oval and the reason engines keep
+  $l/r$ generous — a longer rod means a smaller $\phi$ and less side thrust. Drive $r/l$ past about
+  $0.5$ on this page and the warning fires for exactly this reason.
+- **Secondary imbalance.** The exact acceleration carries a twice-per-revolution term — the
+  $\frac{r}{l}\cos 2\theta$ piece of $a\approx -r\omega^2(\cos\theta+\frac{r}{l}\cos 2\theta)$. A rotating
+  counterweight on the crank can cancel the once-per-rev shaking force, but nothing rotating at crank
+  speed cancels a force at *twice* crank speed. This "secondary" shake is why inline-four engines carry
+  balance shafts spinning at $2\omega$, and it grows with $r/l$.
+- **Dead centres.** At top and bottom dead centre the crank torque $T=Fr\sin(\theta+\phi)/\cos\phi$ is
+  zero: the gas force points straight through the crank axis with no moment arm. An engine coasts through
+  on flywheel inertia, but a mechanism that must *start* against load from a dead centre cannot — the
+  same toggle geometry that locking pliers exploit on purpose.
+
+## The torque ripple, and why the flywheel exists
+
+The single clearest lesson of the force pass is that crank torque is not constant. Over one revolution
+$T(\theta)$ swings from zero at a dead centre to a mid-stroke peak and back — and in a real engine it
+goes *negative* over the compression stroke, when the crank drives the piston rather than the other way
+round. A load, meanwhile, wants steady torque. The mismatch between the engine's lumpy delivery and the
+load's steady demand is stored and released twice a revolution by a [flywheel](../flywheel-disk/): its
+rotational inertia soaks up the excess near the torque peak and gives it back through the dead centres,
+holding the speed fluctuation to a chosen coefficient.
+
+Sizing that flywheel means **integrating** the torque curve — accumulating the energy $\int(T-T_\text{mean})\,\mathrm{d}\theta$
+between the speed extremes to get the required inertia. This page refuses to do that honestly: it
+evaluates $T$ *at* the crank angle you set, exactly, but it does not integrate over the cycle, because
+time- and angle-integration of a varying quantity is a dynamics capability the catalog has deliberately
+not built yet. So the flywheel story is told here and *sized* on the [flywheel](../flywheel-disk/) page —
+the torque ripple is the input that page's energy method consumes, and wiring one THING's output into the
+next is the job of the chaining work still to come. Naming the hand-off rather than faking the integral
+is the honest version.
+
+## Where material finally re-enters
+
+Everything on this page is geometry and quasi-static force, so nothing here depends on what the parts are
+made of. The failures that *do* depend on material live one link away:
+
+- **Crankshaft torsional vibration.** The crankshaft is not rigid — it is a torsional spring carrying
+  disks (the cranks and flywheel), and the very torque ripple above feeds it at multiples of crank speed.
+  Hit a torsional natural frequency and the shaft winds and unwinds enough to fail in fatigue; big
+  engines fit tuned dampers for precisely this. That is the [torsional oscillator](../torsional-oscillator/)
+  story, and its stiffness and inertia carry $G$ and $\rho$.
+- **Rod buckling and bearing loads.** The connecting rod is a column under the compressive force
+  $F/\cos\phi$ computed here, alternating with tension — a fatigue-and-buckling problem the
+  [combined bending + torsion shaft](../combined-shaft/) and column pages own. The rod force and its
+  obliquity are the loads those analyses start from.
+
+So the slider-crank's own page stops at the clean, material-blind skeleton: where the piston is, how fast
+it moves, and what torque a given gas force makes. Every failure that needs a modulus, a density, or a
+yield strength is deliberately handed to the THING that carries it.
