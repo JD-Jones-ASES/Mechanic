@@ -71,7 +71,9 @@ export function ClutchSim({
   const chY = 30;
   const chH = 150;
   const p_up = F / (Math.PI * (r_o * r_o - r_i * r_i)); // uniform pressure (const)
-  const pScale = Math.max(p_max, p_up, Number.isFinite(p_allow) ? p_allow : 0) * 1.1;
+  // scale the chart to the pressure PROFILES so the flat-vs-1/r contrast stays
+  // legible; p_allow enters the frame exactly when it starts to matter (near/over p_max)
+  const pScale = Math.max(p_max, p_up) * 1.25;
   const rx = (r: number) => chX + (chW * (r - r_i)) / (r_o - r_i);
   const py = (p: number) => chY + chH - (chH * p) / pScale;
   const NPT = 28;
@@ -123,6 +125,10 @@ export function ClutchSim({
               p_allow
             </text>
           </>
+        ) : Number.isFinite(p_allow) ? (
+          <text x={chX + chW} y={chY + 9} text-anchor="end" class="sim-label-small">
+            p_allow ↑ (off scale)
+          </text>
         ) : null}
         {/* uniform pressure: flat */}
         <line x1={rx(r_i)} y1={py(p_up)} x2={rx(r_o)} y2={py(p_up)} class="clutch-p-up" />
