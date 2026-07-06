@@ -161,10 +161,10 @@ def test_numeric_golden():
            = 196.133/40500                 = 4.84279e-3 m   (4.84 mm)
       σ_st = W·L·(d/2)/I = 196.133·0.015/6.75e-8
            = 43.585 MPa
-      2h/δ_st = 0.12/4.84279e-3            = 24.7789
-      n    = 1 + √(1 + 24.7789)            = 6.07729
-      δ_i  = n·δ_st = 6.07729·4.84279e-3   = 29.431 mm
-      σ_i  = n·σ_st = 6.07729·43.585 MPa   = 264.88 MPa
+      2h/δ_st = 0.12/4.84279e-3            = 24.7791
+      n    = 1 + √(1 + 24.7791)            = 6.07731
+      δ_i  = n·δ_st = 6.07731·4.84279e-3   = 29.431 mm
+      σ_i  = n·σ_st = 6.07731·43.585 MPa   = 264.88 MPa
       SF   = σ_y/σ_i; for σ_y = 250 MPa    = 0.944  (this member yields)
     """
     E_, L_, b_, d_, m_, hh, gg = 200e9, 1.0, 0.03, 0.03, 20.0, 0.06, 9.80665
@@ -179,7 +179,7 @@ def test_numeric_golden():
     assert math.isclose(sigma_st_v, 43.5851e6, rel_tol=1e-5)
 
     n_v = 1 + math.sqrt(1 + 2 * hh / delta_st_v)
-    assert math.isclose(n_v, 6.07729, rel_tol=1e-5)
+    assert math.isclose(n_v, 6.07731, rel_tol=1e-5)
 
     delta_i_v = n_v * delta_st_v
     assert math.isclose(delta_i_v, 29.431e-3, rel_tol=1e-4)

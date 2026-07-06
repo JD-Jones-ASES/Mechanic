@@ -43,7 +43,11 @@ export function ImpactLoadingSim({
     !Number.isFinite(SF) ||
     SF <= 0 ||
     !Number.isFinite(sigma_i) ||
-    sigma_i <= 0;
+    sigma_i <= 0 ||
+    // σ_st is drawn (the static bar) but not implied finite by the σ_i guard in
+    // isolation — gate it too so every drawn value is proven finite past here
+    !Number.isFinite(sigma_st) ||
+    sigma_st <= 0;
 
   const { t, playing, setPlaying } = useSimClock(!refused);
 
@@ -63,7 +67,7 @@ export function ImpactLoadingSim({
 
   const W = 340;
   const H = 300;
-  const danger = Number.isFinite(SF) && SF < 1;
+  const danger = SF < 1; // SF is finite and > 0 past the refused gate above
   // yield stress reconstructed from the readouts (SF = σ_y / σ_i) so the bars are
   // absolute and the yield line is a real threshold, not an arbitrary scale
   const sigma_y = sigma_i * SF;
@@ -193,9 +197,8 @@ export function ImpactLoadingSim({
         <button type="button" onClick={() => setPlaying((p) => !p)} aria-pressed={playing}>
           {playing ? "Pause" : "Animate"}
         </button>{" "}
-        Impact factor n ≈ {Number.isFinite(n) ? n.toFixed(1) : "—"}: static stress {mpa(sigma_st)} MPa
-        → impact stress {mpa(sigma_i)} MPa (safety factor{" "}
-        {Number.isFinite(SF) ? SF.toFixed(2) : "—"}). Drop and deflection shown exaggerated for
+        Impact factor n ≈ {n.toFixed(1)}: static stress {mpa(sigma_st)} MPa → impact stress{" "}
+        {mpa(sigma_i)} MPa (safety factor {SF.toFixed(2)}). Drop and deflection shown exaggerated for
         visibility; the spike is played back, not integrated.
         {danger ? " Impact stress exceeds yield — shown red." : ""}
       </figcaption>
