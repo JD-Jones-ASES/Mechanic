@@ -188,7 +188,7 @@ def test_numeric_golden():
     assert math.isclose(k_tv, 20106.19, rel_tol=1e-5)
     assert math.isclose(Jdv, 0.186081, rel_tol=1e-5)
     assert math.isclose(omega_n, 328.711, rel_tol=1e-5)
-    assert math.isclose(f, 52.3155, rel_tol=1e-5)
+    assert math.isclose(f, 52.3160, rel_tol=1e-5)  # 328.711/(2π) = 52.31597 (was mis-rounded 52.3155)
     assert math.isclose(T, 0.0191146, rel_tol=1e-5)      # 19.11 ms
     assert math.isclose(tau_max, 32.0e6, rel_tol=1e-9)   # exactly 32 MPa
     assert math.isclose(SF, 6.25, rel_tol=1e-9)          # exactly 6.25

@@ -84,8 +84,12 @@ def test_cantilever_static_from_double_integration():
     sol = sp.solve([vv.subs(x, 0), vp.subs(x, 0)], [C1, C2], dict=True)[0]
     v_tip = vv.subs(sol).subs(x, L)
     assert sp.simplify(v_tip - W * L**3 / (3 * E * I)) == 0
-    # bending stress at the wall, outer fibre c = d/2, M_max = WL
-    sigma_st = (W * L) * (d / 2) / I
+    # Bending stress at the wall DERIVED from the same construction (the original
+    # assert here compared the flexure formula to a copy of itself — a tautology,
+    # fixed 2026-07-06): plane sections give the outer-fibre strain ε = c·v''(x)
+    # with c = d/2, Hooke gives σ = E·ε, and v''(0) = M(0)/(EI) comes from the
+    # integrated equilibrium model — so a slip in c or in M(x) now fails this.
+    sigma_st = E * (d / 2) * vpp.subs(x, 0)
     assert sp.simplify(sigma_st - W * L * (d / 2) / I) == 0
 
 

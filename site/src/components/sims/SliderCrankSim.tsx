@@ -126,7 +126,13 @@ export function SliderCrankSim({
   const vDir = v < 0 ? -1 : 1;
   const vY = qy - pistHalfH - 12;
 
-  // crank torque T: an arc over the top of the crank circle, arrowhead sense = sign(T)
+  // crank torque T: an arc over the top of the crank circle, arrowhead sense = sign(T).
+  // Sense convention: positive T is counterclockwise AS DRAWN — the same sense the pin
+  // moves for increasing theta (world y-up plus the Y() screen flip make world CCW render
+  // CCW), confirmed by the free body at theta = 90 deg. The arc endpoints live in raw
+  // screen angles (y down), where "visually CCW" means DECREASING angle — so the positive
+  // head sits at the up-LEFT end pointing left-and-down. (The original mapping used the
+  // screen-angle sense directly and drew positive T clockwise — QC audit fix 2026-07-06.)
   const rT = rCircle * 0.72;
   const ta1 = -Math.PI * 0.82;
   const ta2 = -Math.PI * 0.18;
@@ -134,11 +140,11 @@ export function SliderCrankSim({
   const [t1x, t1y] = pA(ta1);
   const [t2x, t2y] = pA(ta2);
   const Tpos = !Number.isFinite(T) || T >= 0;
-  const headAng = Tpos ? ta2 : ta1;
+  const headAng = Tpos ? ta1 : ta2;
   const [thx, thy] = pA(headAng);
   const tang: [number, number] = Tpos
-    ? [-Math.sin(ta2), Math.cos(ta2)]
-    : [Math.sin(ta1), -Math.cos(ta1)];
+    ? [Math.sin(ta1), -Math.cos(ta1)] // visually CCW at the up-left end (positive T, matches +theta)
+    : [-Math.sin(ta2), Math.cos(ta2)]; // visually CW at the up-right end (negative T)
   const showTorque = showForces && Number.isFinite(T) && Math.abs(T) > 1e-9 && rT > 12;
 
   // obliquity phi arc at the piston pin, between the axis and the rod

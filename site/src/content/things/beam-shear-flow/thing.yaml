@@ -190,6 +190,20 @@ relations:
           criterion) — the neutral-axis fibers have yielded and the elastic parabola stops being
           the truth.
         citation: shigley
+      # wide-flat guard (QC audit 2026-07-06): τ = VQ/(Ib) assumes the shear is uniform
+      # across the width, which degrades fast once the section is wider than it is tall —
+      # 2-D elasticity puts the true edge peak ≈13% above 3V/2A at b/h = 1, ≈40% at
+      # b/h = 2, ~2× at b/h = 4. The knob bounds reach b/h = 80; without this warn that
+      # whole region rendered plausible-but-low numbers silently. The same threshold also
+      # covers the "bending about the strong axis" assumption (false once b > h).
+      - condition: b < 2*h
+        severity: warn
+        message: >-
+          Wide-flat section (b ≥ 2h): the shear formula's uniform-across-width assumption is
+          breaking down — 2-D elasticity puts the true edge-of-width peak roughly 40% above
+          3V/2A at b/h = 2 and worse beyond — and bh³/12 is no longer the strong-axis inertia.
+          Read τ_max here as a lower bound on the real peak.
+        citation: gere
   - id: avg-shear
     group: stress
     latex: '\tau_{avg} = \dfrac{V}{A}'

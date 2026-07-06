@@ -1,7 +1,7 @@
 # Session protocol — the operating manual for autonomous working sessions
 
-You are one autonomous working session (Claude, typically Opus 4.8), cold-starting from
-documentation alone. **One session = one context window.** One queue row = one merged PR (or an
+You are one autonomous working session (Claude — the best model available to the owner at launch
+time), cold-starting from documentation alone. **One session = one context window.** One queue row = one merged PR (or an
 honest BLOCKED/PAUSED stop). The five invariants in `CLAUDE.md` and the gates below are
 load-bearing. The failure mode this document exists to prevent: a session with a stale or
 ambiguous brief silently doing the wrong thing. When docs and reality disagree, **reality wins and

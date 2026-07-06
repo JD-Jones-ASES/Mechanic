@@ -12,7 +12,7 @@ facets: [stress]
 # variables — not two branches of one solution and not a model hand-off (no scoped refusal). The
 # only refusals here are two GLOBAL warns (thin-plate, small-deflection) that flag where the shared
 # Kirchhoff plate model itself stops being trustworthy. Sign convention: q presses on one face, w
-# and every stress reported as a downward-positive magnitude (Timoshenko §16-17).
+# and every stress reported as a downward-positive magnitude (Timoshenko §15-16).
 
 variables:
   # --- free inputs ---
@@ -211,10 +211,11 @@ relations:
         severity: warn
         message: >-
           Maximum deflection exceeds half the plate thickness (delta > t/2): deflections are no
-          longer small, and membrane (in-plane stretching) action stiffens the real plate. It then
-          deflects LESS and carries MORE than this linear bending theory says — so these stresses
-          UNDER-predict. Wrong-but-conservative is still wrong; small-deflection plate theory no
-          longer applies here.
+          longer small, and membrane (in-plane stretching) action stiffens the real plate. The
+          real plate then deflects LESS than this linear bending theory says, and its true
+          stresses sit BELOW these linear values — the readouts drift conservative on stress
+          while under-predicting the plate's actual load capacity. Small-deflection plate theory
+          no longer applies; read these numbers as increasingly loose upper bounds.
         citation: timoshenko
   - id: ss-stress
     group: stress
@@ -342,13 +343,16 @@ sources:
   - id: timoshenko
     citation: >-
       Timoshenko, S. P., & Woinowsky-Krieger, S., Theory of Plates and Shells, 2nd ed., McGraw-Hill,
-      1959 — Ch. 3 (Symmetrical Bending of Circular Plates), §16-17: the uniformly loaded circular
-      plate, flexural rigidity D = E t³/(12(1-ν²)), the clamped case (max deflection q a⁴/(64 D) at
-      the center, max stress 3 q a²/(4 t²) at the edge) and the simply-supported case (center
-      deflection (5+ν)/(1+ν)·q a⁴/(64 D), center stress 3(3+ν) q a²/(8 t²)).
+      1959 — Ch. 3 (Symmetrical Bending of Circular Plates), §15-16: the symmetrical-bending ODE
+      (§15) and the uniformly loaded circular plate (§16), flexural rigidity D = E t³/(12(1-ν²)),
+      the clamped case (max deflection q a⁴/(64 D) at the center, max stress 3 q a²/(4 t²) at the
+      edge) and the simply-supported case (center deflection (5+ν)/(1+ν)·q a⁴/(64 D), center
+      stress 3(3+ν) q a²/(8 t²)).
     verification: >-
-      Topic + formulas pinned against Timoshenko & Woinowsky-Krieger Ch. 3 §16-17 (the standard
-      reference for circular-plate bending; textbook PDF not web-accessible this session, as for
+      Section pin corrected §16-17 → §15-16 on 2026-07-06 against published TOC listings of the
+      2nd ed. (§16 = Uniformly Loaded Circular Plates; §17 = Circular Plate with a Circular Hole
+      at the Center — an annular plate, out of this page's scope; §15 carries the governing ODE).
+      Originally pinned topic-level (textbook PDF not web-accessible that session, as for
       S02-S05). The results are NOT taken on citation: pipeline/tests/test_plate_physics.py
       re-derives all four closed forms from the axisymmetric plate ODE D∇⁴w = q — regularity at the
       center kills the ln r and r² ln r homogeneous terms, then each rim condition (clamped:

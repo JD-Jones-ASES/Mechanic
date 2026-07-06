@@ -44,7 +44,9 @@ Append-only; one structured entry per session, newest LAST. The entry template i
 - Golden: hand-worked Lewis at defaults (N_p=18, N_g=36, m=4mm, b=40mm, T=100 N·m, ω_p=50 rad/s):
   W_t=2777.8 N, K_v=1.29508, Y_p=0.309, Y_g=0.3775, σ_b,p=72.764 MPa > σ_b,g=59.560 MPa (pinion
   governs). Source Shigley §14-1; computed from first principles in test_gear_physics.py.
-- Citations pinned: Shigley 10th ed §13-5/13-7, §14-1, Table 14-2, eq 14-4b — topic + Table 14-2
+- Citations pinned: Shigley 10th ed §13-5/13-7, §14-1, Table 14-2, eq 14-4b [ERRATUM QC1
+  2026-07-06: the metric Barth form is eq 14-6b; 14-4b is the ft/min form — corrected on the site,
+  see reports/phase-2-qc-audit.md] — topic + Table 14-2
   values web-corroborated (evolventdesign tip-load basis; discrete values via search), consistent
   with Juvinall & Marshek. HONEST: Y is cited data, not machine-proven; kinematics/force path ARE
   re-derived. Could NOT access Juvinall's exact table this session → cross-pinned against the
@@ -110,7 +112,11 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   a lending scan. Recalled `(A,b)` corroborate Roark only in the mid-`D/d` band (≈2–8%) and diverge
   to ~19% at `D/d→1.01`, and a few-% Roark match cannot certify a 5-digit value *attributed to*
   Shigley/Norton I never read — shipping them = inventing precision + a false citation (credibility
-  spine). **VERIFIED cross-check data (reuse; do NOT re-fetch):** Roark, *Formulas for Stress and
+  spine). **VERIFIED cross-check data (reuse; do NOT re-fetch):** [ERRATUM QC1 2026-07-06: the
+  locator below is MIS-ATTRIBUTED — "Table 6-1 part III case 2" is Pilkey's (*Formulas for Stress,
+  Strain, and Structural Matrices*) numbering, not Roark's (Roark 7th/8th prints these fits as
+  Table 17.1); the closed form and coefficients themselves are correct and unchanged — see
+  reports/phase-2-qc-audit.md] Roark, *Formulas for Stress and
   Strain*, Table 6-1 part III case 2 "Shoulder fillet in stepped circular shaft" — `h=(D−d)/2`,
   `K_t = C1 + C2(2h/D) + C3(2h/D)² + C4(2h/D)³`, matched EXACTLY by the independently-fetched
   Pilkey/Peterson form:

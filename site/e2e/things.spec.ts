@@ -1613,3 +1613,54 @@ test("two-bar-truss: tension withholds the buckling check (scoped); α ≥ 90° 
   await expect(page.locator('[data-output="SF_y"] output')).toHaveText("—");
   await expect(page.locator('[data-output="delta"] output')).toHaveText("—");
 });
+
+/*
+ * QC-audit envelope pins (2026-07-06, hotfix/qc-audit-fixes): three of the seven
+ * silent-region warns added after the Phase-2 fresh-eyes audit, pinned at the
+ * exact states the audit showed rendering banner-free.
+ */
+test("torsional oscillator: a steady torque past shear yield warns instead of showing a fictional twist", async ({ page }) => {
+  await page.goto("things/torsional-oscillator/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+  // pin the material — the page defaults to the alphabetically-first qualifying one, so
+  // an unpinned test would silently depend on DB file ordering (review finding). With
+  // steel-a36 (σ_y = 248 MPa): static yield onset = (σ_y/2)·πd³/16 ≈ 195 N·m at d = 20 mm.
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  // defaults (T_app = 20 N·m): far below onset — clean
+  await expect(page.locator(".validity-warn")).toHaveCount(0);
+  // 1000 N·m is 5× past onset: θ_st is fiction there — the new warn must land
+  await page.getByLabel("Applied static torque value").fill("1000");
+  await expect(page.locator(".validity-warn").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/yield before holding|permanent set/i);
+});
+
+test("spur gear: the undercut warn is symmetric — a 14-tooth gear driven by a 100-tooth pinion warns too", async ({ page }) => {
+  await page.goto("things/spur-gear-pair/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+  // defaults 18/36: the eq 13-11 minimum for the smaller member is ≈ 14.2 — clean
+  await expect(page.locator(".validity-warn")).toHaveCount(0);
+  // role-reversed mesh: the SMALL member is now the GEAR (14 teeth vs mate ratio
+  // 100/14 ⇒ minimum ≈ 16.1) — the old N_p-only check was silent exactly here
+  await page.getByLabel("Pinion teeth value").fill("100");
+  await page.getByLabel("Gear teeth value").fill("14");
+  await expect(page.locator(".validity-warn").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/smaller member/i);
+});
+
+test("shaft critical speed: the resonance guard now covers the Dunkerley end of the bracket", async ({ page }) => {
+  await page.goto("things/shaft-critical-speed/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+  // pin the material: the page defaults to the alphabetically-first qualifying material
+  // (an aluminum), which shifts both bands; steel-a36 (E ≈ 200 GPa, ρ ≈ 7806) matches the
+  // declared defaults this window was computed from (ω_c ≈ 264, ω_cD ≈ 247 rad/s)
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  // defaults: ω_op = 1000 rpm (104.7 rad/s), far below both bands — clean
+  await expect(page.locator(".validity-warn")).toHaveCount(0);
+  // 1958 rpm ≈ 205 rad/s sits INSIDE ±20% of ω_cD (246.8) but OUTSIDE ±20% of the
+  // Rayleigh ω_c (264.2) — the state the audit showed running near the true first
+  // critical with a safe-looking speed ratio and no banner
+  await page.getByLabel("Operating speed value").fill("1958"); // rpm (display unit)
+  await expect(page.locator(".validity-warn").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/Dunkerley/);
+  await expect(page.locator(".validity")).not.toContainText("the resonance band");
+});
