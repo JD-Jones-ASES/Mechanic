@@ -127,7 +127,13 @@ export interface CompiledThing {
   variables: Record<string, VariableMeta>;
   relations: RelationMeta[];
   configurations: Configuration[];
-  material_binding: Record<string, string> | null;
+  /**
+   * Slot-keyed material binding (S17): slot name -> {symbol: property_key}.
+   * Legacy single-binding THINGs carry one `default` slot (compile.py normalizes
+   * a flat authored map into it), so every consumer sees one shape. null when the
+   * THING binds no materials.
+   */
+  material_binding: Record<string, Record<string, string>> | null;
   /** cited sources (always emitted); role: constant variables reference these by id for display */
   sources: SourceRecord[];
 }

@@ -245,6 +245,90 @@ test("fixed-fixed shaft: overload past shear yield warns, never a silent wrong n
   await expect(page.locator(".validity")).toContainText(/shear/i);
 });
 
+/**
+ * Composite bar (S17 — multi-material slots + solveLinear 2×2). Defaults P = 100 kN,
+ * L = 0.5 m, A_1 = 4 cm², A_2 = 6 cm². With an A36-steel core (E ≈ 199.95 GPa,
+ * σ_y = 248.2 MPa) and a 6061-T6-aluminium sleeve (E ≈ 68.26 GPa, σ_y = 276 MPa,
+ * TYPICAL basis) the load splits in proportion to A_iE_i:
+ *   A₁E₁ = 7.998e7, A₂E₂ = 4.095e7 → f₁ = 0.6613 (core 66%), f₂ = 0.3387
+ *   σ₁ = 165.3 MPa, σ₂ = 56.4 MPa (σ₁/σ₂ = 2.929 = E₁/E₂ — equal strain)
+ *   δ = 0.4134 mm; SF₁ = 1.50 (steel core), SF₂ = 4.89 (Al sleeve)
+ *   → THE slots+solveLinear moment: the stiffer steel core carries 2/3 of the load
+ *     and, against a spec-min yield, is the FIRST to yield despite being "stronger".
+ */
+test("composite bar: two materials, load splits by stiffness A·E; the stiffer core carries — and yields — first", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/composite-bar/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  // two independent labelled slots exist (S17)
+  await expect(page.getByTestId("material-select-core")).toBeVisible();
+  await expect(page.getByTestId("material-select-sleeve")).toBeVisible();
+
+  await page.getByTestId("material-select-core").selectOption("steel-a36");
+  await page.getByTestId("material-select-sleeve").selectOption("al-6061-t6");
+  const f1 = await readOutput(page, "f_1");
+  const f2 = await readOutput(page, "f_2");
+  const p1 = await readOutput(page, "P_1"); // kN
+  const p2 = await readOutput(page, "P_2");
+  const s1 = await readOutput(page, "sigma_1"); // MPa
+  const s2 = await readOutput(page, "sigma_2");
+  const sf1 = await readOutput(page, "SF_1");
+  const sf2 = await readOutput(page, "SF_2");
+  expect(f1).toBeCloseTo(0.6613, 3); // core takes 66% — its A·E dominates
+  expect(f1 + f2).toBeCloseTo(1, 5); // shares partition the load
+  expect(p1 + p2).toBeCloseTo(100, 1); // kN, equilibrium P₁+P₂ = P
+  expect(s1).toBeCloseTo(165.34, 1); // MPa
+  expect(s2).toBeCloseTo(56.44, 1);
+  expect(s1 / s2).toBeCloseTo(199.948 / 68.258, 1); // equal-strain: σ₁/σ₂ = E₁/E₂
+  expect(await readOutput(page, "delta")).toBeCloseTo(0.4134, 3); // mm, common elongation
+  expect(sf1).toBeCloseTo(1.501, 2); // steel core near first yield
+  expect(sf2).toBeCloseTo(4.89, 1); // aluminium sleeve, comfortable
+  expect(sf1).toBeLessThan(sf2); // the stiff core yields first
+  expect(errors).toEqual([]);
+});
+
+test("composite bar: swapping the sleeve migrates the load share; the core slot is isolated", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/composite-bar/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  await page.getByTestId("material-select-core").selectOption("steel-a36");
+  await page.getByTestId("material-select-sleeve").selectOption("al-6061-t6");
+  const f1Before = await readOutput(page, "f_1"); // ≈ 0.661 (steel core dominates a compliant sleeve)
+  const s2Before = await readOutput(page, "sigma_2"); // ≈ 56.4 MPa
+  const ratioBefore = (await readOutput(page, "sigma_1")) / s2Before; // ≈ 2.93 = E_steel/E_al
+
+  // stiffen the sleeve to steel — load migrates AWAY from the core toward the sleeve
+  await page.getByTestId("material-select-sleeve").selectOption("steel-a36");
+  const f1After = await readOutput(page, "f_1");
+  const s2After = await readOutput(page, "sigma_2");
+  const ratioAfter = (await readOutput(page, "sigma_1")) / s2After;
+
+  expect(f1After).toBeLessThan(f1Before); // the core's share dropped — load moved to the sleeve
+  expect(f1After).toBeCloseTo(0.4, 2); // both steel → share is purely geometric A_1/(A_1+A_2)
+  expect(s2After).not.toBeCloseTo(s2Before, 0); // the sleeve stress moved (its own material changed)
+  // σ₁/σ₂ = E₁/E₂ collapses to 1.0 — proof the CORE's modulus is still steel (unchanged),
+  // only the sleeve's changed: the two slots fan out independently (isolation).
+  expect(ratioBefore).toBeCloseTo(2.93, 1);
+  expect(ratioAfter).toBeCloseTo(1.0, 2);
+  // the core selector itself was never touched by operating the sleeve selector
+  await expect(page.getByTestId("material-select-core")).toHaveValue("steel-a36");
+  expect(errors).toEqual([]);
+});
+
+test("composite bar: a member past its own yield warns, never a silent wrong number", async ({ page }) => {
+  await page.goto("things/composite-bar/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+  await page.getByTestId("material-select-core").selectOption("steel-a36");
+  await page.getByTestId("material-select-sleeve").selectOption("al-6061-t6");
+  // crank the load to its max (the P slider reads in kN, max 1000 = 1 MN): σ_1 = P₁/A₁
+  // runs the steel core far past its yield, so the yield warn must fire.
+  await page.locator("#knob-P").fill("1000");
+  await expect(page.locator(".validity-warn, .validity-invalid").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/yield/i);
+});
+
 test("derivations and equations render as KaTeX with MathML", async ({ page }) => {
   await page.goto("things/planetary-gearset/");
   expect(await page.locator(".katex").count()).toBeGreaterThan(5);
@@ -434,7 +518,7 @@ test("verification page discloses authorship and the audit surface", async ({ pa
   await expect(page.getByText(/built end to end by an AI/i).first()).toBeVisible();
   await expect(page.getByText(/No human reviews the content/i).first()).toBeVisible();
   // every THING appears with its audit block (count is a deliberate change detector)
-  expect(await page.locator("section.relation-block").count()).toBe(33); // +fixed-fixed-beam, +fixed-fixed-torsion-shaft (S16)
+  expect(await page.locator("section.relation-block").count()).toBe(34); // +composite-bar (S17)
   await expect(page.getByText(/Where physics enters/i).first()).toBeVisible();
   expect(errors).toEqual([]);
 });

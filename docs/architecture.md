@@ -209,7 +209,10 @@ changes (verified against compile.py 2026-07-04). Never hand-edit or commit anyt
                                            // "branch" present only on multi-branch configurations
   }],
   "derivation": [{ "latex": "…", "prose": "…", "rule": "…" }],   // pre-verified; rendered build-time
-  "material_binding": null,                // or { "E": "youngs_modulus", "sigma_y": "yield_strength", … }
+  "material_binding": null,                // or slot-keyed (S17): { "default": { "E": "youngs_modulus", … } }
+                                           // for a single-material THING, or { "core": {…}, "sleeve": {…} }
+                                           // when a THING binds two independent materials (composite-bar);
+                                           // a flat authored map normalizes to one "default" slot (compile.py)
   "sim": { "engine": "kinematic-rotation", "config": { } },
   "sources": [{ "id": "…", "citation": "…",
                 "verification": "how the citation was pinned (optional; rendered on /verification/)" }]

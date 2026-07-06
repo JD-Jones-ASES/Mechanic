@@ -24,6 +24,7 @@ PHYSICS_TESTS = {
     "cantilever-beam": "test_beam_physics.py",
     "circular-plate": "test_plate_physics.py",
     "combined-shaft": "test_combined_physics.py",
+    "composite-bar": "test_composite_physics.py",
     "compound-cylinder": "test_shrinkfit_physics.py",
     "curved-beam": "test_curved_beam_physics.py",
     "disk-clutch": "test_clutch_physics.py",

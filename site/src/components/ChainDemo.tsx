@@ -96,8 +96,12 @@ export default function ChainDemo({ gear, shaft, materials }: Props) {
     };
     const mat = materials.find((m) => m.id === materialId);
     const matVals: VarRecord = {};
-    if (mat && shaft.material_binding) {
-      for (const [sym, key] of Object.entries(shaft.material_binding)) {
+    // the chain demo wires a single-material THING (the torsion shaft, one
+    // `default` binding slot); multi-slot node support is deferred to Phase 4 (S17
+    // out of scope — a multi-slot THING is excluded from chaining, not supported).
+    const shaftBinds = shaft.material_binding?.default ?? {};
+    if (mat) {
+      for (const [sym, key] of Object.entries(shaftBinds)) {
         const p = pickProperty(mat, key);
         if (p) matVals[sym] = p.value_si;
       }
@@ -164,7 +168,7 @@ export default function ChainDemo({ gear, shaft, materials }: Props) {
           <MaterialPicker
             materials={materials}
             selectedId={materialId}
-            binding={shaft.material_binding ?? {}}
+            binding={shaft.material_binding?.default ?? {}}
             onSelect={setMaterialId}
           />
           <KnobPanel

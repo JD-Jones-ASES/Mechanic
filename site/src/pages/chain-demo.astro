@@ -16,7 +16,8 @@ const shaft = (await getEntry("compiled", "torsion-shaft"))!.data;
 const fourbar = (await getEntry("compiled", "fourbar-linkage"))!.data;
 const column = (await getEntry("compiled", "euler-column"))!.data;
 
-const boundKeys = Object.values(shaft.material_binding ?? {});
+// the shaft is single-material (one `default` binding slot, S17 normalization)
+const boundKeys = Object.values(shaft.material_binding?.default ?? {});
 const materials = (await getCollection("materials"))
   .map((m) => m.data)
   .filter((m) => boundKeys.every((k) => m.properties.some((p) => p.key === k)));

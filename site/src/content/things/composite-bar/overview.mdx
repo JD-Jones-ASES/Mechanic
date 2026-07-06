@@ -1,0 +1,59 @@
+Bond a solid core inside a close-fitting sleeve of a **different** material, cap the ends with
+plates stiff enough to stay flat, and push the assembly with a centric axial load $P$. A steel
+reinforcing bar cast in a concrete column, a copper wire drawn through an aluminium conductor, a
+bolt clamping a gasketed flange, a shrink-fitted bushing carrying thrust — all are two members
+forced to act as one. The question is the same every time: **how does the load split between them?**
+
+Equilibrium gives one equation — the two internal forces add up to the applied load, $P_1 + P_2 = P$
+— but there are two unknowns. Like the [propped cantilever](../propped-cantilever/), the bar is
+**statically indeterminate**, and the missing equation comes from geometry, not force balance.
+
+## The missing equation is equal elongation
+
+The rigid end plates hold the core and the sleeve to the **same elongation** $\delta$. Both are
+the same length $L$, so both see the same strain $\varepsilon = \delta/L$. For a linear-elastic
+member $\delta = P_i L /(A_i E_i)$, and setting the core's elongation equal to the sleeve's is the
+compatibility condition. Solve the two equations together and the load splits **in proportion to
+each member's axial stiffness** $A_i E_i$:
+
+$$ P_1 = P\,\frac{A_1 E_1}{A_1 E_1 + A_2 E_2}, \qquad P_2 = P\,\frac{A_2 E_2}{A_1 E_1 + A_2 E_2} $$
+
+The build does not hand you these to trust. It certifies that the two relations (equilibrium and
+equal-elongation compatibility) form a system **linear in the unknowns** $\{P_1, P_2\}$, solves that
+$2\times2$ system **exactly** at build time, and checks the solution back through every relation.
+This is the same `solveLinear` capability the propped cantilever introduced — but with a crucial
+difference spelled out next. What the machine proves and what still rests on a book is on the
+[verification page](../../verification/).
+
+## Here the material does *not* cancel out
+
+In the propped cantilever the flexural rigidity $EI$ divided out of the compatibility equation, so
+its reactions were **material-blind**. Here it is the opposite: the stiffnesses $A_1 E_1$ and
+$A_2 E_2$ sit right in the load-share formula and in the system determinant $A_1 E_1 + A_2 E_2$, so
+**the load split depends on what each member is made of.** This is the whole reason to build a
+two-material member — and it makes the stress result almost paradoxical:
+
+$$ \frac{\sigma_1}{\sigma_2} = \frac{E_1}{E_2} $$
+
+Because the two members share one strain, Hooke's law $\sigma = E\varepsilon$ puts their stresses in
+the ratio of their moduli — **independent of area.** The *stiffer* material always carries the
+*higher* stress. Put a steel core (E $\approx 200$ GPa) in an aluminium sleeve (E $\approx 69$ GPa)
+and the steel runs about three times the stress of the aluminium, even though every fibre of both
+stretched by exactly the same amount. Swap the sleeve's metal in the widget and watch the load
+migrate toward the stiffer member while $\delta$ and the margins all move — the load share, the
+stresses, and the deflection are three faces of one material choice:
+
+- **Young's modulus $E$** sets the share and the stresses (above), and the elongation
+  $\delta = PL/(A_1E_1 + A_2E_2)$ — the two members act as **springs in parallel**.
+- **Yield strength $\sigma_y$** sets each member's own margin $\mathrm{SF}_i = \sigma_{yi}/\sigma_i$,
+  and it is independent of stiffness: a stiff-but-weak member can be the first to yield.
+- **Density $\rho$** sets the mass $m = (\rho_1 A_1 + \rho_2 A_2)L$ and nothing else.
+
+## Sign convention and scope
+
+Both members carry the same-sense centric axial load (all of $P_1, P_2, P > 0$), share the free
+length $L$, and stretch by the common elongation $\delta$; $\sigma_i = P_i/A_i$ is the uniform
+member stress and $\mathrm{SF}_i = \sigma_{yi}/\sigma_i$ its margin to first yield. The model assumes
+rigid end plates, a perfect bond (no slip), equal free lengths, and a centric load so neither member
+bends. It is linear-elastic: the moment **either** member reaches its yield stress the
+proportional load-share stops being the truth, and the widget says so.

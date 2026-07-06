@@ -40,16 +40,26 @@ interface Props {
   selectedId: string;
   binding: Record<string, string>; // variable symbol -> property key
   onSelect: (id: string) => void;
+  /**
+   * Material slot key (S17). Omitted or "default" → the legacy single-binding
+   * picker: legend/aria "Material", data-testid "material-select" (so every
+   * previously shipped THING renders and pins byte-identically). A named slot
+   * ("core") → labelled "Core material", data-testid "material-select-core".
+   */
+  slot?: string;
 }
 
-export function MaterialPicker({ materials, selectedId, binding, onSelect }: Props) {
+export function MaterialPicker({ materials, selectedId, binding, onSelect, slot }: Props) {
   const selected = materials.find((m) => m.id === selectedId);
+  const named = slot != null && slot !== "default";
+  const label = named ? `${slot[0]!.toUpperCase()}${slot.slice(1)} material` : "Material";
+  const testid = named ? `material-select-${slot}` : "material-select";
   return (
     <fieldset class="material-picker">
-      <legend>Material</legend>
+      <legend>{label}</legend>
       <select
-        aria-label="Material"
-        data-testid="material-select"
+        aria-label={label}
+        data-testid={testid}
         value={selectedId}
         onInput={(e) => onSelect(e.currentTarget.value)}
       >
