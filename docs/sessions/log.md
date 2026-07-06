@@ -1232,3 +1232,80 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   a compound `.shaft-body.ff-yielding` selector (higher specificity, order-independent); torsion-shaft still needs
   the one-line `.shaft-body.beam-yielding { stroke:#dc2626 }` fix. (d) Nothing is paused; S17 is the topmost QUEUED
   row of active Phase 3.
+
+## S17 — multi-material binding slots + composite-bar — 2026-07-06 — PR #36 — MERGED
+- Shipped: the material-binding SLOTS capability (one THING binds two INDEPENDENT materials via named slots, each
+  with its own labelled native `<select>`) + THING 34 `composite-bar` (its reference consumer). Authored
+  `materials.binds` now accepts EITHER a flat `{sym: prop}` map OR named slots `{slot: {sym: prop}}`; a flat map
+  normalizes to a lone `default` slot in exactly ONE place (compile.py `_normalize_material_binds`), so every
+  previously shipped THING is byte-for-byte unchanged (the `default` slot keeps the legacy legend "Material",
+  testid "material-select", aria "Material"). Compiled `material_binding` is now slot-keyed
+  `Record<slot, Record<sym, prop>>`. composite-bar (core + sleeve, rigid end plates, centric axial P) solves the
+  2×2 `{P_1,P_2}` load share by axial stiffness A·E — the FIRST non-cancelling-determinant `solve_linear` consumer,
+  so its reactions are material-DEPENDENT (unlike propped/fixed-fixed, where EI/GJ cancelled): swap the sleeve and
+  the load migrates to the stiffer member (invariant 3's legibility moment). Catalog 33 → 34.
+- Gates: pytest 336 (322 baseline + 14: 5 test_composite_physics + 9 test_material_slots); pnpm build clean (COLD
+  once — compile.py fingerprint changed, all 34 re-verified; then WARM after the review NIT fix, 34 cache-reused;
+  41 pages, katex/mdx/parity/units green); unit 19 (no new kind → no new unit test); e2e 99 (95 baseline + 4: 3
+  composite-bar `things` pins [A·E share + equal-strain σ ratio + first-yield ordering; slot-isolation swap; yield
+  warn] + 1 axe on the new page with TWO labelled selects); relation-block detector 33→34; tsc clean on the
+  changed .tsx/.ts (only a pre-existing playwright.config.ts @types/node nit). visual pass (built dist /Mechanic/
+  via preview + Playwright screenshots to scratchpad): sim renders VISIBLY (concentric-annulus cross-section to the
+  true area ratio — violet sleeve r=46, blue core disk r=29.09=46·√0.4 — + side elevation with end plates & P
+  arrow + a load-share bar; 32 SVG els, real fills, NOT the invisible-SVG trap); set BOTH members steel → share
+  40:60 (geometric), SWAPPED the sleeve steel→aluminium and SAW the blue core segment grow 40%→66% while every
+  readout cascaded (σ_1 100→165 MPa, SF_1 2.48→1.50, δ 0.25→0.41 mm) and the core stayed steel (isolation); cranked
+  P→1000 kN and SAW BOTH members turn red with TWO separate yield-warn banners, each naming its member. Legacy
+  cantilever-beam confirmed byte-identical (one "Material" picker, testid material-select, default al-2024-t3).
+  /things/ card + /verification/(34) present, KaTeX 0 errors, console clean. review: 3 INDEPENDENT fresh-context
+  subagents (§4) — (a) physics, (b) invariants, (c) code/tests — TWO of which recompiled the THING through the real
+  verifier AND re-ran the pytest suite. ZERO SHOULD-FIX across all three; ZERO wrong emitted numbers; no
+  weakened/deleted tests (the only touched assertion is the relation-block change-detector 33→34); no committed
+  artifacts. Physics re-derived the A·E share two ways, all 10 declared defaults, and all 12 golden assertions;
+  invariants recomputed DOF (4=inputs) and confirmed the planetary 2-DOF canary still compiles; code/tests
+  confirmed every SVG class exists + the e2e slot-isolation is real. FIXED 1 NIT (failure.mdx: "the stiffer
+  material carries the larger share" → precise "the member with the greater axial stiffness A_iE_i carries the
+  larger share" — share ∝ A·E, distinct from stress ∝ E). RECORDED (no change): the redundant-but-harmless det
+  guard (non-cancelling det → both the explicit det guard AND an auto-denominator guard, both invalid, trip
+  together — exactly as S15/S16 predicted).
+- Golden: seeded steel-a36 core + al-6061-t6 sleeve, A_1=4 cm², A_2=6 cm², P=100 kN, L=0.5 m: f_1=0.6613 (core
+  66%), P_1=66.13 kN, σ_1=165.34 MPa, σ_2=56.44 MPa, σ_1/σ_2=2.929=E_1/E_2 (equal strain), δ=0.4134 mm, SF_1=1.501
+  (steel core), SF_2=4.890 (Al sleeve) → the STIFF steel core, taking 2/3 of the load against a spec-minimum yield,
+  yields FIRST despite steel being the "stronger" metal. All hand-derived in test_composite_physics.py from the
+  seed files' PUBLISHED values (29/9.9 Msi; 36 ksi spec-min / 276 MPa typical; 0.282/0.098 lb/in³), cross-checked
+  against an independent sympy solve of the coupled 2×2.
+- Citations pinned: gere (Gere & Goodno 9th ch.2 axially-loaded statically-indeterminate members / compatibility
+  method) + hibbeler (ch.4 cross-check) — topic-level (textbook PDFs not web-accessible, same limit as S02–S16);
+  the stiffness-proportional share P_i = P·A_iE_i/ΣAE and δ = PL/ΣAE web-corroborated 2026-07-06 AND re-derived
+  from first principles (springs in parallel: k_i = A_iE_i/L) in the physics test.
+- Deviations from brief: (1) LANDING DEFAULT is al-2024-t3 core + al-6061-t6 sleeve, NOT the brief's literal
+  "steel core + aluminum sleeve". FORCED: the live per-slot default is the alphabetically-first QUALIFYING material
+  by slot position (both slots share the same qualifying list), and hardcoding "steel core" would require a
+  per-slot default-material SCHEMA field — capability creep beyond the DECIDED slots design (§9.2), which the brief
+  forbids ("anything beyond this → BLOCK") AND would change every legacy THING's default (breaking "renders
+  identically"). The brief's PURPOSE (unequal, material-driven shares at landing + the swap moment) is met: the two
+  slots default to DISTINCT materials (slot i → qualifying[i], clamped; legacy single-slot unchanged =
+  qualifying[0]), the DECLARED material defaults ARE steel (E_1=200e9) core + aluminium (E_2=69e9) sleeve for file
+  coherence + the golden, and the e2e + visual pass select steel+al explicitly. ⚠️ OWNER: if a literal steel-core
+  LANDING state is wanted, a future session needs an approved per-slot default-material field. (2) The optional
+  mass readout SHIPPED (trivial; exercises the ρ binding on BOTH slots — the independent density axis).
+- New capabilities future briefs may rely on (S18–S19): `materials.binds` accepts named slots
+  `{slot: {sym: prop}}` (a flat map still normalizes to a `default` slot); compiled `material_binding` is slot-keyed
+  `Record<slot, Record<sym, prop>>`; the UI renders one labelled native `<select>` per slot (label =
+  TitleCase(slot) + " material"; the `default` slot keeps the legacy "Material" DOM/testid); [slug].astro filters
+  each slot's dropdown by that slot's OWN bound properties; ThingWidget fans out each slot over ONLY its own symbols
+  (slot isolation, e2e-pinned). Bound symbols must be globally unique across slots (all `role: material`). No
+  per-slot default-material selection exists (slot i → qualifying[i] by position).
+- Notes-for-next (S18 = thermal-assembly + CTE column): (a) THE authored slot syntax is a NESTED map —
+  `materials:` → `binds:` → `core:` → `E_1: youngs_modulus …` → `sleeve: …` — NOT a flat map; see
+  composite-bar/thing.yaml. IMPORTANT: the S18 brief's entry-criterion `rg -A4 "material_binding"
+  site/src/content/things/composite-bar/thing.yaml` will find NOTHING — the AUTHORED key is `binds:` (the string
+  "material_binding" appears only in the COMPILED artifact / generated JSON, which is gitignored). Grep `binds:` +
+  the slot names, or the compiled artifact, instead. (b) A new property COLUMN (CTE) is added to
+  data/materials/*.yaml + the ingest, NOT to the slots mechanism — bind it in whichever slot(s) need it; per-slot
+  filtering auto-drops materials lacking CTE from that slot's dropdown. (c) e2e material-qualification trap persists
+  PER SLOT: each slot's page-default is the alphabetically-first QUALIFYING material for THAT slot — always
+  selectOption explicit materials, and target the slot testid `material-select-<slot>` (named slots) or
+  `material-select` (a `default` slot). (d) composite-bar's det does NOT cancel, so it carries BOTH an explicit det
+  guard and an auto-denominator guard (harmless, both invalid, trip together). (e) Nothing is paused; S18 is the
+  topmost QUEUED row of active Phase 3.

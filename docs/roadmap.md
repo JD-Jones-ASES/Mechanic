@@ -79,7 +79,9 @@ In dependency order:
    `docs/sessions/queue.md`. **`solveLinear` ✅ shipped (S15, PR #32, 2026-07-06 — propped-cantilever
    the reference consumer, catalog → 31); `solveND` remains PROPOSED/unbuilt.** S16 ✅ shipped
    (fixed-fixed beam 4×4 + fixed-fixed torsion shaft 2×2, the range-exercising pure solveLinear
-   consumers, catalog → 33); S17–S20 in progress.
+   consumers, catalog → 33). S17 ✅ shipped (multi-material binding slots — one THING binds two
+   independent materials — + composite-bar, the first non-cancelling-determinant solveLinear
+   consumer where the load share is material-DEPENDENT, catalog → 34); S18–S20 in progress.
 
 ## Phase 4 — Chaining as the product
 
