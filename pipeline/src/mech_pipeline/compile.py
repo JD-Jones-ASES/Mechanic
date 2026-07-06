@@ -364,11 +364,9 @@ class ThingCompiler:
             # targets that read the SAME table at the SAME arg share ONE plan
             # step, each filling its own column (real-arg multi-column lookup).
             table_groups: dict[tuple, dict] = {}
-            material_syms = [s for s in self.specs if self.specs[s].role == "material"]
-            constant_syms = [s for s in self.specs if self.specs[s].role == "constant"]
             # materials + constants: injected known values, sampled alongside the
             # inputs for verification/DOF/parity and never counted toward the DOF
-            known_syms = material_syms + constant_syms
+            known_syms = [s for s in self.specs if self.specs[s].role in ("material", "constant")]
             any_branched = False
             fn_prefix_base = f"cfg_{cid.replace('-', '_')}"
             for target_name, sol in solutions_raw.items():
@@ -766,12 +764,13 @@ class ThingCompiler:
         rng = random.Random(seed)
         out = []
         attempts = 0
+        # materials + constants are the injected knowns carried in each parity
+        # sample's inputs; the oracle (check-parity.mjs) feeds them straight to the
+        # engine, so a constant is sampled exactly like a material value (hoisted:
+        # self.specs does not change across sampling attempts)
+        known_syms = [s for s in self.specs if self.specs[s].role in ("material", "constant")]
         while len(out) < n and attempts < 40 * n:
             attempts += 1
-            # materials + constants are the injected knowns carried in each parity
-            # sample's inputs; the oracle (check-parity.mjs) feeds them straight to
-            # the engine, so a constant is sampled exactly like a material value
-            known_syms = [s for s in self.specs if self.specs[s].role in ("material", "constant")]
             subs = {s: _sample_value(self.specs[s], rng) for s in [*inputs, *known_syms]}
             sample_in = {str(k): float(v) for k, v in subs.items()}
             sample_out = {}

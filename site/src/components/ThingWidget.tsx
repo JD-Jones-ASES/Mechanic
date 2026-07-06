@@ -191,7 +191,7 @@ export default function ThingWidget({ artifact, materials, sim }: Props) {
       ) : null}
 
       {constants.length ? (
-        <ConstantsPanel constants={constants} sources={artifact.sources ?? []} />
+        <ConstantsPanel constants={constants} sources={artifact.sources} />
       ) : null}
 
       <div class="widget-grid">

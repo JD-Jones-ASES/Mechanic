@@ -32,7 +32,7 @@ export function ConstantsPanel({ constants, sources }: Props) {
                 <td class="constant-value">
                   {Number(toDisplay(v.default, unit).toPrecision(6))} {unitLabel(unit)}
                 </td>
-                <td class="constant-source" title={src?.citation ?? v.citation ?? ""}>
+                <td class="constant-source" title={src?.citation ?? ""}>
                   {v.citation}
                 </td>
               </tr>

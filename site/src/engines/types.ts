@@ -114,8 +114,8 @@ export interface CompiledThing {
   relations: RelationMeta[];
   configurations: Configuration[];
   material_binding: Record<string, string> | null;
-  /** cited sources; role: constant variables reference these by id for display */
-  sources?: SourceRecord[];
+  /** cited sources (always emitted); role: constant variables reference these by id for display */
+  sources: SourceRecord[];
 }
 
 export interface ValidityMessage {
