@@ -234,8 +234,12 @@ def test_authored_solutions_match_first_principles():
 # ---------------------------------------------------------------------------
 
 def test_warn_boundaries_reachable_and_directional():
-    """At the widget's aluminium default the page is warn-clear; each warn trips
-    when a knob is pushed. Both boundaries are checked from first principles."""
+    """At the widget's live default MATERIAL (al-2024-t3 aluminium, the first
+    seed publishing G+rho+sigma_y) the page is warn-clear; each warn trips when
+    a knob is pushed. (The thing.yaml G/rho/sigma_y *defaults* are nominal steel
+    for file coherence, per the torsion-shaft/flywheel convention; the live
+    widget seeds from the materials DB, so aluminium is what a reader first sees.)
+    Both boundaries are checked from first principles."""
     # J_shaft/J_d = L d^4/(16 R^4 t_d) — purely geometric (material cancels)
     ratio = lambda dd, LL, RR, td: LL * dd**4 / (16 * RR**4 * td)
     assert ratio(0.02, 0.5, 0.12, 0.02) < 0.1          # default: shaft inertia negligible
