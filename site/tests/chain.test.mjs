@@ -8,6 +8,7 @@ import { brent } from "../src/engines/brent.ts";
 import { connectionLegal } from "../src/engines/units.ts";
 
 const ANGVEL = { dim: [0, 0, -1, 0, 0, 0, 0], quantity_kind: "angular_velocity" };
+const FREQ = { dim: [0, 0, -1, 0, 0, 0, 0], quantity_kind: "frequency" };
 const FORCE = { dim: [1, 1, -2, 0, 0, 0, 0], quantity_kind: "force" };
 const TORQUE = { dim: [2, 1, -2, 0, 0, 0, 0], quantity_kind: "torque" };
 const ENERGY = { dim: [2, 1, -2, 0, 0, 0, 0], quantity_kind: "energy" };
@@ -32,6 +33,16 @@ test("torque -> energy is rejected on quantity kind despite equal dimensions", (
 
 test("angle -> ratio is rejected despite both being dimensionless", () => {
   assert.equal(connectionLegal(ANGLE, RATIO).ok, false);
+});
+
+test("frequency -> angular_velocity is rejected despite equal dimensions (f-port never wires into an ω-port)", () => {
+  const r = connectionLegal(FREQ, ANGVEL);
+  assert.equal(r.ok, false);
+  assert.match(r.reason, /quantity kind/);
+  // and the reverse direction is equally illegal — the 2π is always explicit
+  assert.equal(connectionLegal(ANGVEL, FREQ).ok, false);
+  // a frequency port DOES accept another frequency port
+  assert.equal(connectionLegal(FREQ, FREQ).ok, true);
 });
 
 test("planner rejects feedback loops (v1 forward-only DAG)", () => {

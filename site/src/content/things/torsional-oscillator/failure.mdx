@@ -1,0 +1,34 @@
+The widget reports one clean natural frequency and the shear stress at a given amplitude. Real
+torsional systems fail in ways that clean single number quietly hides:
+
+- **Resonance is the whole danger.** A natural frequency is harmless until something *drives* the
+  system at it — and engines drive their crankshafts at every firing pulse, whose frequency sweeps
+  with rpm. When a firing harmonic crosses $\omega_n$, the amplitude no longer stays where you put
+  it: it builds, cycle on cycle, until damping (small, in a bare shaft) or a fractured shaft stops
+  it. Marine and aircraft drivelines have *torsional critical speeds* they must pass through
+  quickly or avoid entirely, and crankshafts carry tuned dampers built for exactly this. This page
+  computes *where* the resonance sits; it says nothing about how hard reality will push on it.
+- **Fatigue lives at the amplitude, not the frequency.** The safety factor here is against *first*
+  shear yield in a single swing. But a shaft that rings passes through its peak stress twice per
+  cycle, tens of millions of times a day at running speed. Torsional fatigue cracks start at the
+  surface where $\tau_{max}$ lives — and far below the yield line — nucleating at the usual
+  suspects: keyway corners, fillet steps, spline roots, press-fit edges. The clean $16T/\pi d^3$
+  field this page assumes is exactly what a stress concentration destroys.
+- **The lumped model throws away the shaft's own inertia.** Treating the shaft as a massless spring
+  is only good while its rotational inertia is small next to the disk's — the warn banner fires past
+  $J_{shaft}/J_d > 0.1$. A heavier shaft stores kinetic energy too, so the true frequency is lower
+  than $\sqrt{k_t/J_d}$ (a first correction lumps about one-third of the shaft's inertia into the
+  disk). A long uniform shaft is really a *continuous* system with an infinite ladder of higher
+  torsional modes this one-disk model cannot see at all.
+- **Two disks, or ten, change the question.** Add a second rotor and the system has two natural
+  frequencies and an internal node where the shaft twists hardest; a full driveline (engine,
+  clutch, gearbox, propeller) is a chain of inertias and torsional springs with a whole spectrum of
+  modes, solved by the Holzer method or eigenvalues, not by one square root. This page is the single
+  degree of freedom you build all of that from.
+- **Big amplitudes leave linear elasticity behind.** Everything here assumes the shaft stays
+  linear-elastic so that $k_t$ is a constant. Ring it hard enough to yield (the shear-stress warn)
+  and the spring rate softens, the motion stops being a clean sinusoid, and the frequency itself
+  drifts with amplitude — the isochronism that defined the page quietly breaks.
+
+None of these are edge cases; they are the reason torsional-vibration analysis is its own discipline.
+The natural frequency is where that analysis *starts*, not where it ends.

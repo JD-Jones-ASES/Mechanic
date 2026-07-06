@@ -1,0 +1,445 @@
+id: torsional-oscillator
+title: Torsional Oscillator (Disk on a Shaft)
+summary: >-
+  A disk on an elastic shaft is a torsion pendulum: twist it and let go and it rings at one natural
+  frequency, ω_n = √(k_t/J_d). The pitch is set entirely by the shaft's stiffness and the disk's
+  inertia — not by how hard you twist it — while the stress it survives is set by the amplitude.
+facets: [dynamics, stress, torque-power]
+
+variables:
+  - symbol: d
+    name: Shaft diameter
+    latex: d
+    unit: m
+    quantity_kind: length
+    default: 0.02
+    bounds: [0.005, 0.1]
+    positive: true
+    display_units: [mm, m]
+  - symbol: L
+    name: Shaft length
+    latex: L
+    unit: m
+    quantity_kind: length
+    default: 0.5
+    bounds: [0.05, 3.0]
+    positive: true
+    display_units: [m, mm]
+  - symbol: R
+    name: Disk radius
+    latex: R
+    unit: m
+    quantity_kind: length
+    default: 0.12
+    bounds: [0.03, 0.4]
+    positive: true
+    display_units: [mm, m]
+  - symbol: t_d
+    name: Disk thickness
+    latex: t_d
+    unit: m
+    quantity_kind: length
+    default: 0.02
+    bounds: [0.005, 0.15]
+    positive: true
+    display_units: [mm, m]
+  - symbol: Theta
+    name: Oscillation amplitude
+    latex: '\Theta'
+    unit: rad
+    quantity_kind: angle
+    default: 0.05
+    bounds: [0.005, 0.5]
+    positive: true
+    display_units: [deg, rad]
+  - symbol: T_app
+    name: Applied static torque
+    latex: 'T_{app}'
+    unit: N*m
+    quantity_kind: torque
+    default: 20
+    bounds: [1, 5000]
+    positive: true
+    display_units: ["N*m"]
+  - symbol: G
+    name: Shear modulus
+    latex: G
+    unit: Pa
+    quantity_kind: elastic_modulus
+    default: 79.0e9
+    bounds: [0.5e9, 200.0e9]
+    positive: true
+    role: material
+    display_units: [GPa, Pa]
+  - symbol: rho
+    name: Density
+    latex: '\rho'
+    unit: kg/m**3
+    quantity_kind: density
+    default: 7800
+    bounds: [400, 9000]
+    positive: true
+    role: material
+    display_units: ["kg/m^3"]
+  - symbol: sigma_y
+    name: Yield strength (tension)
+    latex: '\sigma_y'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 250.0e6
+    bounds: [10.0e6, 2.0e9]
+    positive: true
+    role: material
+    display_units: [MPa, Pa]
+  - symbol: J_p
+    name: Polar second moment of area (shaft)
+    latex: J_p
+    unit: m**4
+    quantity_kind: second_moment_of_area
+    default: 1.5708e-8
+    bounds: [1.0e-11, 1.0e-4]
+    positive: true
+    role: derived
+    display_units: ["m**4"]
+  - symbol: m_disk
+    name: Disk mass
+    latex: m_d
+    unit: kg
+    quantity_kind: mass
+    default: 7.05727
+    bounds: [0.01, 5000]
+    positive: true
+    role: derived
+    display_units: [kg]
+  - symbol: J_d
+    name: Disk mass moment of inertia (spin axis)
+    latex: J_d
+    unit: kg*m**2
+    quantity_kind: moment_of_inertia
+    default: 0.0508124
+    bounds: [1.0e-7, 1.0e4]
+    positive: true
+    role: derived
+    display_units: ["kg*m^2"]
+  - symbol: J_shaft
+    name: Shaft mass moment of inertia
+    latex: J_s
+    unit: kg*m**2
+    quantity_kind: moment_of_inertia
+    default: 6.12611e-5
+    bounds: [1.0e-11, 1.0e3]
+    positive: true
+    role: derived
+    display_units: ["kg*m^2"]
+  - symbol: omega_n
+    name: Natural angular frequency
+    latex: '\omega_n'
+    unit: rad/s
+    quantity_kind: angular_velocity
+    default: 221.006
+    bounds: [0.1, 1.0e6]
+    positive: true
+    role: derived
+    # rad/s first so it is directly comparable to a shaft speed ω; the sim
+    # caption and the f readout carry the everyday Hz value
+    display_units: [rad/s, rpm]
+  - symbol: f
+    name: Natural frequency
+    latex: f
+    unit: Hz
+    quantity_kind: frequency
+    default: 35.1742
+    bounds: [0.01, 1.0e5]
+    positive: true
+    role: derived
+    display_units: [Hz]
+  - symbol: T_per
+    name: Period
+    latex: T
+    unit: s
+    quantity_kind: time
+    default: 0.02843
+    bounds: [1.0e-6, 1.0e3]
+    positive: true
+    role: derived
+    # sub-second periods read most naturally in ms; s one click away
+    display_units: [ms, s]
+  - symbol: T_dyn
+    name: Peak restoring torque (at amplitude)
+    latex: 'T_{dyn}'
+    unit: N*m
+    quantity_kind: torque
+    default: 124.093
+    bounds: [0, 1.0e7]
+    positive: true
+    role: derived
+    display_units: ["N*m"]
+  - symbol: tau_max
+    name: Peak surface shear stress (at amplitude)
+    latex: '\tau_{max}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 7.9e7
+    bounds: [0, 5.0e9]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: SF
+    name: Safety factor (shear yield at amplitude)
+    latex: '\mathrm{SF}'
+    unit: '1'
+    quantity_kind: safety_factor
+    default: 1.58228
+    bounds: [0, 1.0e4]
+    positive: true
+    role: derived
+  - symbol: theta_st
+    name: Static twist under applied torque
+    latex: '\theta_{st}'
+    unit: rad
+    quantity_kind: angle
+    default: 0.00805848
+    bounds: [0, 60]
+    positive: true
+    role: derived
+    display_units: [deg, rad]
+
+materials:
+  binds:
+    G: shear_modulus
+    sigma_y: yield_strength
+    rho: density
+
+relations:
+  - id: polar-moment
+    group: stress
+    latex: 'J_p = \frac{\pi d^4}{32}'
+    residual: J_p - pi*d**4/32
+    assumptions:
+      - solid circular shaft cross-section
+    citation: gere
+  - id: disk-mass
+    group: mass-cost
+    latex: 'm_d = \rho\,\pi R^2 t_d'
+    residual: m_disk - rho*pi*R**2*t_d
+    assumptions:
+      - uniform solid disk — constant thickness, no hub, no rim band, no central hole
+    citation: hibbeler-dyn
+  - id: disk-inertia
+    group: dynamics
+    latex: 'J_d = \tfrac{1}{2} m_d R^2'
+    residual: 2*J_d - m_disk*R**2
+    assumptions:
+      - rigid uniform disk, polar mass moment about its own spin axis (the shaft axis)
+    citation: hibbeler-dyn
+  - id: shaft-inertia
+    group: dynamics
+    latex: 'J_s = \rho\,\frac{\pi d^4}{32}\,L'
+    residual: J_shaft - rho*pi*d**4*L/32
+    assumptions:
+      - polar mass moment of the solid shaft about its own axis (ρ·J_p·L), used only to check
+        the lumped-parameter assumption — it is NOT added to J_d in this model
+    citation: hibbeler-dyn
+  - id: natural-frequency
+    group: dynamics
+    latex: '\omega_n^2 = \frac{k_t}{J_d} = \frac{G J_p}{L\,J_d}'
+    residual: omega_n**2*L*J_d - G*J_p
+    assumptions:
+      - simple harmonic motion of a single disk on a massless torsion spring — the lumped
+        one-degree-of-freedom model (physics enters here by citation; no ODE is integrated)
+      - small amplitude, so the shaft stays linear-elastic and k_t = G J_p/L is constant
+    citation: timoshenko-vib
+    validity:
+      - condition: J_shaft < J_d/10
+        severity: warn
+        message: >-
+          The shaft's own rotational inertia is no longer negligible next to the disk's
+          (J_shaft/J_d exceeds 0.1). The lumped model treats the shaft as a massless torsion
+          spring; a heavy shaft stores kinetic energy too, which lowers the true frequency
+          (a first correction adds about one-third of J_shaft to J_d), so ω_n here reads high.
+        citation: juvinall
+  - id: frequency-def
+    group: dynamics
+    latex: 'f = \frac{\omega_n}{2\pi}'
+    residual: f*2*pi - omega_n
+    assumptions:
+      - frequency in cycles per second; ω_n is the same motion measured in radians per second
+    citation: shigley
+  - id: period
+    group: dynamics
+    latex: 'T = \frac{1}{f} = 2\pi\sqrt{\frac{J_d}{k_t}}'
+    residual: T_per*f - 1
+    assumptions:
+      - the time for one full oscillation
+    citation: shigley
+  - id: dynamic-torque
+    group: torque-power
+    latex: 'T_{dyn} = k_t\,\Theta = \frac{G J_p}{L}\,\Theta'
+    residual: T_dyn*L - G*J_p*Theta
+    assumptions:
+      - peak torque the shaft carries at the extremes of the swing, where twist equals the
+        amplitude Θ; linear torsion spring
+    citation: gere
+  - id: shear-stress
+    group: stress
+    latex: '\tau_{max} = \frac{16\,T_{dyn}}{\pi d^3}'
+    residual: tau_max*pi*d**3 - 16*T_dyn
+    assumptions:
+      - linear-elastic torsion, shear stress maximal at the shaft surface (same field as a
+        statically twisted shaft, evaluated at twist Θ)
+      - pure torsion — no bending, no stress concentrations (keyways, fillets, press-fits)
+    citation: gere
+    validity:
+      - condition: tau_max < sigma_y/2
+        severity: warn
+        message: >-
+          Surface shear stress at the swing extremes exceeds the shear yield strength
+          (σ_y/2 by the maximum-shear-stress criterion). The shaft yields during each cycle,
+          the spring rate k_t stops being constant, and every elastic number here — starting
+          with the frequency — drifts. This is also where torsional fatigue lives.
+        citation: shigley
+  - id: safety-factor
+    group: stress
+    latex: '\mathrm{SF} = \frac{\sigma_y/2}{\tau_{max}}'
+    residual: SF*tau_max - sigma_y/2
+    assumptions:
+      - margin against shear yield at the oscillation amplitude (Tresca; conservative next to
+        the distortion-energy value 0.577 σ_y)
+    citation: shigley
+  - id: static-twist
+    group: stress
+    latex: '\theta_{st} = \frac{T_{app}\,L}{G J_p}'
+    residual: theta_st*G*J_p - T_app*L
+    assumptions:
+      - the same shaft acting as a static torsion spring — the twist a steady torque T_app would
+        hold (the reciprocal of k_t, θ_st = T_app/k_t), a bridge to the shaft-in-torsion page
+    citation: gere
+
+configurations:
+  - id: geometry-in
+    label: Shaft and disk geometry in — natural frequency, period, and the stress at amplitude out
+    constraints: {}
+    inputs: [d, L, R, t_d, Theta, T_app]
+    solutions:
+      J_p: pi*d**4/32
+      m_disk: rho*pi*R**2*t_d
+      J_d: m_disk*R**2/2
+      J_shaft: rho*pi*d**4*L/32
+      omega_n: sqrt(G*J_p/(L*J_d))
+      f: omega_n/(2*pi)
+      T_per: 1/f
+      T_dyn: G*J_p*Theta/L
+      tau_max: 16*T_dyn/(pi*d**3)
+      SF: sigma_y/(2*tau_max)
+      theta_st: T_app*L/(G*J_p)
+
+derivation:
+  verifies_configuration: geometry-in
+  locals:
+    - symbol: k_t
+      unit: N*m
+      positive: true
+      define: G*J_p/L
+      bounds: [0.01, 1.0e9]
+  steps:
+    - expr: Eq(k_t, G*J_p/L)
+      prose: >-
+        Start with the shaft as a torsion spring. The shaft-in-torsion page gives the twist under
+        a torque, θ = T L/(G J_p); invert it and the shaft's torsional stiffness — the torque it
+        takes to wind it up one radian — is k_t = T/θ = G J_p/L. Fatter shaft (d⁴), stiffer spring;
+        longer shaft, softer spring.
+      rule: 'torsion: stiffness is the inverse of compliance'
+    - expr: Eq(omega_n**2, k_t/J_d)
+      prose: >-
+        The modeling step, where the physics enters by citation. Displace the disk by a small angle
+        φ from rest; the shaft pulls it back with a torque −k_t φ, and Newton's law for rotation is
+        J_d φ'' = −k_t φ. That is the equation of simple harmonic motion, whose solution
+        φ(t) = Θ sin(ω_n t) oscillates at ω_n² = k_t/J_d. We do NOT integrate this ODE in the
+        build — the SHM result is taken from the vibration literature and verified only as a
+        consistent definition (invariant 5: SymPy checks algebra, not physics).
+      rule: 'dynamics: single-DOF simple harmonic motion (cited)'
+      check: definition
+    - expr: Eq(omega_n, sqrt(G*J_p/(L*J_d)))
+      prose: >-
+        Substitute k_t = G J_p/L. Notice what is NOT here: the amplitude Θ has cancelled. A big
+        swing and a tiny swing ring at exactly the same pitch — the isochronism that made the
+        pendulum clock possible. Stiffness raises the pitch, inertia lowers it; the drive that set
+        the swing going does not.
+      rule: substitute the shaft stiffness
+    - expr: Eq(f, omega_n/(2*pi))
+      prose: >-
+        Cycles per second is radians per second over 2π. This 2π is the whole reason f and ω_n are
+        different quantity kinds even though they share units of 1/s: on this site an f-port can
+        never be wired into an ω-port without the explicit factor, so a 35 Hz ring is never
+        mistaken for a 35 rad/s spin. The period is its reciprocal, T = 1/f = 2π√(J_d/k_t).
+      rule: definition of frequency
+    - expr: Eq(tau_max, G*d*Theta/(2*L))
+      prose: >-
+        Now the amplitude comes back — in the stress. At the extremes of the swing the shaft is
+        twisted by Θ, so its peak restoring torque is T_dyn = k_t Θ and the surface shear is
+        τ_max = 16 T_dyn/(π d³), which collapses to G d Θ/(2L) — exactly the shaft-in-torsion stress
+        evaluated at twist Θ. The frequency ignores the amplitude; the stress is proportional to it.
+        Ring it twice as hard and the pitch holds while the stress doubles.
+      rule: surface shear at the swing extreme
+    - expr: Eq(omega_n**2, G*d**4/(16*rho*L*R**4*t_d))
+      prose: >-
+        Expand J_p and J_d and the material collapses to a single group: ω_n² = (G/ρ)·d⁴/(16 L R⁴ t_d).
+        Frequency depends on the material ONLY through G/ρ — the square of the shear-wave speed. That
+        ratio barely moves across metals, so a steel disk-shaft and an aluminium one of the same
+        geometry ring at nearly the same pitch; swap in a polymer (much lower G/ρ) and the pitch drops
+        hard. Strength (σ_y) sets what amplitude it survives, not what note it plays.
+      rule: eliminate geometry — the material index G/ρ
+sim:
+  engine: statics-cascade
+  config:
+    draw: torsional-oscillator
+
+sources:
+  - id: gere
+    citation: >-
+      Gere, J. M., & Goodno, B. J., Mechanics of Materials, 9th ed., Cengage, 2018 — §3.3–3.5
+      (circular shafts in torsion: the torsion formula τ = 16T/πd³, the angle of twist θ = TL/GJ,
+      and hence the torsional stiffness k_t = GJ/L).
+    verification: >-
+      Chapter/section topic (circular-shaft torsion) confirmed against the published 9th-edition
+      table of contents, 2026-07-06; the torsion formulas themselves are re-derived from the
+      surface-strain kinematics in pipeline/tests/test_torsional_oscillator_physics.py and are
+      shared verbatim with the torsion-shaft page.
+  - id: hibbeler-dyn
+    citation: >-
+      Hibbeler, R. C., Engineering Mechanics: Dynamics, 14th ed., Pearson, 2016 — §17.1 (mass
+      moments of inertia; the uniform solid disk I = ½ m R² about its spin axis) and ch. 22
+      (undamped free vibration: a single mass on a spring oscillates at ω_n = √(k/m), the
+      translational analogue of the torsional system here).
+    verification: >-
+      §17.1 and the vibrations chapter confirmed against published 14th-edition chapter listings,
+      2026-07-06; the disk inertia integral I = ½ m R² is re-run symbolically in the physics test.
+  - id: timoshenko-vib
+    citation: >-
+      Timoshenko, S. P., Young, D. H., & Weaver, W., Vibration Problems in Engineering, 4th ed.,
+      Wiley, 1974 — the torsional pendulum / disk-on-shaft system: a rotor of mass moment J on a
+      shaft of torsional stiffness k_t oscillates in simple harmonic motion at ω_n = √(k_t/J).
+    verification: >-
+      Classical result attributed to the standard vibration text (the disk-on-shaft torsional
+      pendulum is the archetypal single-DOF example); topic-level, not page-pinned — the textbook
+      is not web-accessible. The result is independently re-derived by the ENERGY method
+      (½ J ω_n² Θ² = ½ k_t Θ²) in the physics test, so nothing rests on the citation alone.
+  - id: juvinall
+    citation: >-
+      Juvinall, R. C., & Marshek, K. M., Fundamentals of Machine Component Design, 5th ed., Wiley,
+      2011 — shaft design and torsional vibration: when the shaft's own inertia is not small
+      compared with the attached rotor, a lumped one-disk model over-predicts the natural
+      frequency, and roughly one-third of the shaft inertia should be added to the disk.
+    verification: >-
+      Topic-level (shaft torsional vibration; the one-third-shaft-inertia rule of thumb is standard
+      and also stated in Den Hartog, Mechanical Vibrations); not page-pinned. Used only to cite the
+      lumped-model warn envelope, not any emitted number.
+  - id: shigley
+    citation: >-
+      Budynas, R. G., & Nisbett, J. K., Shigley's Mechanical Engineering Design, 10th ed.,
+      McGraw-Hill, 2015 — ch. 7 (shafts and torsional systems), §3-12 (power transmission), and
+      §5-4 (maximum-shear-stress theory, shear yield at S_sy = 0.5 S_y).
+    verification: >-
+      Chapter 7 (shafts) and §5-4 (maximum-shear-stress theory) topics confirmed against
+      10th-edition course materials, 2026-07-06; used for f = ω_n/2π, the period, and the σ_y/2
+      shear-yield margin — the last of which is re-derived, not taken on faith, in the physics test.

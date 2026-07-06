@@ -484,3 +484,74 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   self-consistent. (f) Pre-verifying ALL physics + every relation residual + identity step in a throwaway
   SymPy script BEFORE authoring (and a fast yaml-parse residual/DOF/default-coherence check after) made the
   FIRST cold build pass green — worth the 5 minutes against a 4-min build cycle (S05 note-g, confirmed again).
+
+## S07 — torsional-oscillator — 2026-07-06 — PR #20 — MERGED
+
+- Shipped: THING 24 `torsional-oscillator` (disk on an elastic shaft; the catalog's first vibration
+  page) — ω_n = √(k_t/J_d) computed entirely from algebra at the knob state, NO ODE integrated (the
+  SHM step enters as a cited `check: definition`, the declared audit surface). New `frequency` quantity
+  kind (Hz) deliberately incompatible with `angular_velocity` despite the identical [0,0,-1,…] vector
+  (the f-port-never-chains-into-ω move); new `Hz`/`s`/`ms` display units (the `time` kind had none
+  before). Single config, 6 inputs (d,L,R,t_d,Θ,T_app), material binds G/σ_y/ρ. Catalog 23 → 24.
+- Gates: pytest 246 passed (235 baseline + 11 test_torsional_oscillator_physics.py); pnpm build clean
+  (COLD — kinds.py edit busts every fingerprint; 31 pages, pagefind); unit 18 (+1 chain.test.mjs
+  frequency→angular_velocity rejection, both directions); e2e 69 (+3 torsional-oscillator: isochronism,
+  √(G/ρ) material-blindness, both warns w/ clean separation; verification relation-block count 23→24);
+  visual pass (built dist /Mechanic/): opened /things/torsional-oscillator/ — sim renders AND animates
+  (marker endpoint moved 15px/450ms, stroke rgb(147,197,253), NOT the invisible-SVG trap): disk face +
+  swinging spoke + hub + Θ envelope + shaft-from-wall labelled "shaft k_t (fixed far end)"; default
+  al-2024-t3 warn-clear (f=34.887 Hz, Period 28.664 ms via the ms dropdown, τ=27.579 MPa, SF=5.875);
+  aluminium→steel-a36 moved f only 34.9→35.2 Hz (the √(G/ρ) point) while τ tripled 27.6→79.3 and SF
+  collapsed 5.9→1.6; cranked Θ ×7 and f held EXACTLY (isochronism) while τ→553 MPa tripped the
+  shear-yield warn and the marker turned red (osc-marker-hot, rgb(220,38,38)); 43 KaTeX blocks 0 errors;
+  console clean; /things/ card + /verification/ block present. review: 4 independent fresh-context passes
+  (physics + invariants + code/tests subagents + /code-review high) — ALL SHIP, 0 blockers/majors/minors.
+  1 nit fixed (physics-test docstring clarified live-material-default vs nominal-steel file-default);
+  rest rebutted (k_t-in-LaTeX display-only; visOmega/AMP_EXAG cosmetic clamped magic constants;
+  invalidVars passed-but-unused = warn-only-THING convention; rpm-equivalent honestly labelled; sim-red
+  at SF<1 vs warn at τ≥σ_y/2 coincide exactly at SF=1).
+- Golden: G=80 GPa, d=40 mm, L=1 m, R=150 mm, t_d=30 mm, ρ=7800, Θ=0.02 rad, σ_y=400 MPa →
+  k_t=20106.2 N·m/rad, J_d=0.18608 kg·m², ω_n=328.71 rad/s, f=52.316 Hz, T=19.11 ms, τ_max=32.0 MPa
+  (exact), SF=6.25 (exact) — test_torsional_oscillator_physics.py::test_numeric_golden, arithmetic +
+  source (Timoshenko/Young/Weaver *Vibration Problems*; Den Hartog; Gere ch.3) in the module docstring.
+- Citations pinned: gere, hibbeler-dyn, timoshenko-vib, juvinall, shigley — each with verification:.
+  Web-accessible topics (Gere §3.3-3.5, Shigley §5-4/ch.7) confirmed vs published TOC 2026-07-06;
+  timoshenko-vib + juvinall are honestly "topic-level, not page-pinned" (textbooks not web-accessible),
+  and the SHM result is re-derived by the ENERGY method in the physics test rather than resting on the
+  citation — a stronger check.
+- Deviations from brief: (1) k_t is a derivation LOCAL, not a first-class variable/port. Torsional
+  stiffness (N·m/rad) has no honest existing quantity kind and the brief authorized ONLY `frequency` +
+  Hz/s/ms — minting `torsional_stiffness` = §9.2 capability creep. So k_t=GJ_p/L lives in
+  derivation.locals (prose/LaTeX/steps), and the honest existing-kind chain-bridge to torsion-shaft is
+  exposed as T_dyn (a genuine `torque` = k_t·Θ) instead. The brief's chain-teaser physics is intact; the
+  overview names it; ports (T_dyn, J_d) are authored, chaining is Phase 4. The invariants reviewer
+  confirmed this is the invariant-2-correct call (the S04 Q-as-local precedent). (2) Warn-only THING (no
+  invalid envelope) — the brief §3.6 refusal-pin becomes a warn-banner pin, as the brief itself
+  authorizes; τ=VQ-style formulas here are finite for all positive inputs, so there is no honest
+  hard-refusal (S04/S05/S06 precedent). (3) Single configuration (the brief didn't mandate multiple).
+  (4) Disk thickness symbol is `t_d` not flywheel's `t` (avoids collision with time on a frequency page).
+- New capabilities future briefs may rely on: `frequency` quantity kind (Hz; must NOT chain into
+  angular_velocity — the 2π is explicit) and `Hz`/`s`/`ms` display units now in the registries. Pattern
+  reconfirmed: a quantity that would need an unauthorized new kind (torsional stiffness) is cleanly a
+  derivation LOCAL, with an existing-kind sibling (T_dyn torque) exposed as the real chain port (S04's
+  Q-as-local, generalized). The disk-on-shaft ports (T_dyn torque out, J_d moment_of_inertia) are the
+  Phase-4 curated-chain teaser motor→shaft→flywheel.
+- Notes-for-next (S08 = shaft-critical-speed, cited-constants mechanism g): traps I hit — (a) YAML plain
+  (unquoted) list scalars (e.g. an `assumptions:` line) MUST NOT contain a colon-space `": "` — YAML
+  reads it as a mapping key and the parse dies with a cryptic "could not find expected ':'". Use an em-dash
+  or a `>-` block scalar. Bit me once on a "spring: the twist" phrase. (b) The `frequency`/`time` display
+  units are now live — S08's critical speed is an angular_velocity (rad/s→rpm), NOT a frequency; do not
+  reflexively reuse Hz. (c) `Hz` and `s` already parse in dims.py UNIT_NAMESPACE (u.hertz/u.second), so a
+  `unit: Hz` variable's 7-vector comes out [0,0,-1] with no dims.py change — the display unit is the only
+  addition a new time/frequency unit needs. (d) The material FILE defaults follow the torsion-shaft/flywheel
+  convention: nominal steel (G=79e9, ρ=7800/7850, σ_y=250e6) for derived-default coherence, EVEN THOUGH the
+  live widget default material is the alphabetically-first qualifying seed (al-2024-t3 for a G+ρ+σ_y binding).
+  Keep the derived `default:` set computed from the STEEL file defaults; verify the LIVE (aluminium) default
+  state is warn-clear separately (that's what the reader sees). (e) A first-class cited-constant `g` is S08's
+  actual new mechanism — the constrained-constant idiom (a positive variable pinned by a `constraints: {g: 9.80665}`
+  or a residual) is the established workaround (S01's Barth v_b/φ, S02's load_case), but S08 is authorized to
+  build the real thing; read its brief before reaching for the workaround. (f) Pre-verifying ALL physics +
+  residuals + DOF + the energy-route equivalence in a throwaway SymPy script BEFORE authoring (then a
+  seconds-fast standalone `ThingCompiler(dir).compile()` after) made the first cold build pass green — S05/S06
+  note-g, confirmed a third time; the standalone compile catches YAML/dim/kind/DOF errors in ~2s vs the 4-min
+  full build.

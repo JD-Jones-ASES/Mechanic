@@ -262,7 +262,7 @@ test("verification page discloses authorship and the audit surface", async ({ pa
   await expect(page.getByText(/built end to end by an AI/i).first()).toBeVisible();
   await expect(page.getByText(/No human reviews the content/i).first()).toBeVisible();
   // every THING appears with its audit block (count is a deliberate change detector)
-  expect(await page.locator("section.relation-block").count()).toBe(23); // +circular-plate (S06)
+  expect(await page.locator("section.relation-block").count()).toBe(24); // +torsional-oscillator (S07)
   await expect(page.getByText(/Where physics enters/i).first()).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -1196,4 +1196,94 @@ test("circular plate: a thick plate (t/a > 0.1) warns that transverse shear is b
   await expect(page.locator(".validity-warn").first()).toBeVisible();
   await expect(page.locator(".validity")).toContainText(/transverse shear|t\/a/i);
   await expect(page.locator(".validity")).not.toContainText(/membrane|no longer small/i); // not the deflection warn
+});
+
+/**
+ * Torsional oscillator (S07) — a disk on an elastic shaft, ω_n = √(k_t/J_d).
+ * Builds the `frequency` kind (Hz) and the s/ms display units for the `time`
+ * kind. Defaults d=20 mm, L=0.5 m, R=120 mm, t_d=20 mm, Θ=0.05 rad, T_app=20 N·m.
+ * steel-4340 (G=11 Msi=75.84 GPa, ρ=0.283 lb/in³=7833 kg/m³, σ_y=217 ksi):
+ *   ω_n = √(G d⁴/(16 L ρ R⁴ t_d)) = 216.1 rad/s ⇒ f = 34.39 Hz, T = 29.08 ms
+ *   τ_max = G d Θ/(2L) = 75.84 MPa, SF = (σ_y/2)/τ = 9.86.
+ * THE page pin: doubling the amplitude leaves f and ω_n untouched (isochronism)
+ * while τ_max doubles and SF halves — the frequency ignores how hard you ring it.
+ */
+test("torsional oscillator: the pitch is amplitude-independent while the stress scales with it", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/torsional-oscillator/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  await page.getByTestId("material-select").selectOption("steel-4340");
+  const f0 = await readOutput(page, "f"); // Hz — the new `frequency` kind
+  const w0 = await readOutput(page, "omega_n"); // rad/s
+  const T0 = await readOutput(page, "T_per"); // ms — the new time display unit
+  const tau0 = await readOutput(page, "tau_max"); // MPa
+  const sf0 = await readOutput(page, "SF");
+  expect(f0).toBeCloseTo(34.39, 1);
+  expect(w0).toBeCloseTo(216.1, 0);
+  expect(tau0).toBeCloseTo(75.84, 0);
+  expect(sf0).toBeCloseTo(9.86, 1);
+  expect(T0).toBeCloseTo(1000 / f0, 1); // period(ms) is the reciprocal of f(Hz): the units line up
+
+  // double the amplitude (Θ shows in degrees: 5.72958° = 0.1 rad)
+  await page.getByLabel("Oscillation amplitude value").fill("5.72958");
+  const f1 = await readOutput(page, "f");
+  const w1 = await readOutput(page, "omega_n");
+  const tau1 = await readOutput(page, "tau_max");
+  const sf1 = await readOutput(page, "SF");
+  expect(f1).toBeCloseTo(f0, 2); // ISOCHRONISM: the pitch does not move with amplitude
+  expect(w1).toBeCloseTo(w0, 1);
+  expect(tau1).toBeCloseTo(2 * tau0, 0); // stress is proportional to amplitude
+  expect(sf1).toBeCloseTo(sf0 / 2, 1); //  ...so the margin halves
+  expect(tau1 * sf1).toBeCloseTo(tau0 * sf0, 0); // τ·SF = σ_y/2, a material constant
+  expect(errors).toEqual([]);
+});
+
+test("torsional oscillator: the pitch is nearly material-blind (√(G/ρ)) while the stress margin is not", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/torsional-oscillator/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  // one material sets both disk and shaft; 9 of 13 seed materials publish a
+  // shear modulus (same exclusion as torsion-shaft, its stiffness sibling)
+  expect(await page.getByTestId("material-select").locator("option").count()).toBe(9);
+
+  await page.getByTestId("material-select").selectOption("steel-4340");
+  const fSteel = await readOutput(page, "f");
+  const tauSteel = await readOutput(page, "tau_max");
+  const sfSteel = await readOutput(page, "SF");
+
+  // aluminium has ~1/3 the shear modulus but ~1/3 the density: G/ρ barely moves,
+  // so the frequency barely moves — the shear-wave-speed index
+  await page.getByTestId("material-select").selectOption("al-6061-t6");
+  const fAl = await readOutput(page, "f");
+  const tauAl = await readOutput(page, "tau_max");
+  const sfAl = await readOutput(page, "SF");
+  expect(Math.abs(fAl / fSteel - 1)).toBeLessThan(0.05); // ω_n ∝ √(G/ρ): ~0.1 % apart
+  // ...but the stress at a given amplitude tracks G directly, so it moves a lot
+  expect(tauAl).toBeLessThan(tauSteel * 0.5); // softer aluminium shaft: far less stress
+  expect(sfAl).not.toBeCloseTo(sfSteel, 0); // and the margin genuinely changes
+  expect(errors).toEqual([]);
+});
+
+test("torsional oscillator: ringing past shear yield warns, and a heavy shaft warns the lumped model is fading", async ({ page }) => {
+  await page.goto("things/torsional-oscillator/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  // WARN 1 — shear yield at the amplitude. steel-a36 (σ_y/2 = 124 MPa) rung to
+  // 20° swings τ_max = G d Θ/(2L) ≈ 550 MPa, well past shear yield.
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  await page.getByLabel("Oscillation amplitude value").fill("20"); // degrees
+  await expect(page.locator(".validity-warn").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/shear yield|maximum-shear-stress/i);
+
+  // WARN 2 — the lumped model. A fat shaft into a small disk pushes J_shaft/J_d
+  // past 0.1; use strong 4340 and the default amplitude so ONLY this warn fires.
+  await page.getByTestId("material-select").selectOption("steel-4340");
+  await page.getByLabel("Oscillation amplitude value").fill("2.8648"); // back to the 0.05 rad default
+  await page.getByLabel("Shaft diameter value").fill("60"); // mm (was 20)
+  await page.getByLabel("Disk radius value").fill("50"); // mm (was 120) → J_shaft/J_d ≈ 3.2
+  await expect(page.locator(".validity-warn").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/shaft.*inertia|lumped|negligible/i);
+  await expect(page.locator(".validity")).not.toContainText(/shear yield/i); // clean separation
 });

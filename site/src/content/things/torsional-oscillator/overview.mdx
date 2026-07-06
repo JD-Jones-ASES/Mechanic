@@ -1,0 +1,52 @@
+Clamp one end of a shaft, hang a disk on the other, give it a twist, and let go: it rings. The
+disk winds the shaft up, the shaft winds it back, and the two trade energy back and forth at one
+fixed rate — the system's **natural frequency**. This is the torsional cousin of a mass bobbing on
+a spring, and it is the single most important idea in machine dynamics, because every real
+driveline, crankshaft, and torsion-bar is one of these hiding in plain sight.
+
+$$\omega_n = \sqrt{\frac{k_t}{J_d}}, \qquad k_t = \frac{G J_p}{L}, \qquad f = \frac{\omega_n}{2\pi}, \qquad T = \frac{1}{f}$$
+
+The shaft is a torsion spring of stiffness $k_t = G J_p/L$ — literally the inverse of the twist the
+[shaft-in-torsion](/Mechanic/things/torsion-shaft/) page computes, $\theta = TL/GJ_p$. The disk is
+the inertia $J_d = \tfrac12 m_d R^2$ — literally what the [flywheel](/Mechanic/things/flywheel-disk/)
+page computes. Bolt the two together and you get an oscillator. Three things to notice:
+
+- **The pitch ignores how hard you ring it.** There is no amplitude $\Theta$ anywhere in $\omega_n$.
+  A violent swing and a gentle one oscillate at exactly the same frequency — the *isochronism* that
+  Galileo spotted in a swinging lamp and that made the pendulum clock possible. What the amplitude
+  *does* set is the **stress**: the peak surface shear $\tau_{max} = G d\,\Theta/(2L)$ is directly
+  proportional to $\Theta$. Ring it twice as hard and the note holds while the stress doubles. Drive
+  the amplitude knob up and watch the frequency sit still while the safety factor falls.
+- **The material enters only as $G/\rho$.** Expand everything and the frequency is
+  $\omega_n^2 = (G/\rho)\,d^4/(16 L R^4 t_d)$ — the material shows up *only* through the ratio of
+  shear modulus to density, which is the square of the shear-wave speed. That ratio barely changes
+  across metals, so a steel disk-shaft and an aluminium one of the same size ring at nearly the same
+  pitch (swap the material in the widget and watch the frequency hardly move). Reach for a polymer,
+  with a much lower $G/\rho$, and the pitch drops hard. Strength ($\sigma_y$) decides what amplitude
+  the shaft *survives*, never what note it *plays*.
+- **Stiffness up, inertia down.** A fatter (the $d^4$ is brutal) or shorter shaft is a stiffer
+  spring and rings higher; a bigger or heavier disk carries more inertia and rings lower. This is
+  why engine flywheels are sized as much for the torsional frequencies they create as for the energy
+  they store.
+
+**One material, one simplification.** Here a single material sets *both* the shaft and the disk, so
+you cannot make only the disk denser in the widget — increasing density raises $J_d$ (lowering the
+pitch) and changes $G$ at the same time. The counter-intuitive "a heavier disk rings lower" story
+still lives in the readouts: watch $J_d$ climb with density. Independent disk-and-shaft materials
+are a Phase 3 capability (multi-material binding slots); this page states the shared-material
+assumption up front rather than fake it.
+
+**The chain teaser (coming in Phase 4).** This page is built to be *chained*. Its two governing
+inputs are exactly two other pages' outputs: the shaft stiffness that
+[torsion-shaft](/Mechanic/things/torsion-shaft/) embodies and the disk inertia that
+[flywheel-disk](/Mechanic/things/flywheel-disk/) produces. The peak restoring torque $T_{dyn}$ it
+reports back is an honest torque you could feed *into* the shaft page to size it. Wire
+motor → shaft → flywheel and you have simulated a real driveline's natural frequency, every number
+carrying its citation. The chain-builder that lets you draw those wires arrives in Phase 4; for now
+the ports are here, waiting.
+
+A note on units: the natural frequency $f$ is measured in hertz and the spin-like $\omega_n$ in
+radians per second, and although both are "per second" the site treats them as *different quantity
+kinds* — you cannot silently wire a 35 Hz ring into a port expecting a 35 rad/s spin. The factor of
+$2\pi$ between them is always explicit. That distinction is exactly what the dimensional type system
+exists to protect.

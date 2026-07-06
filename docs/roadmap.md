@@ -107,6 +107,21 @@ factory capability, the way the flywheel exercised `poisson_ratio` and new quant
   from the axisymmetric plate ODE D∇⁴w = q, and the (5+ν)/(1+ν) deflection ratio and (3+ν)/2 stress
   ratio are proven with ν symbolic. Two global warns (thin-plate t/a>0.1, small-deflection δ>t/2).
   Catalog 22 → 23.
+- **The catalog's first dynamics page + a new kind:** torsional-oscillator (disk on an elastic shaft)
+  ✅ shipped 2026-07-06 (S07) — a torsion pendulum / crankshaft-flywheel / driveline resonance. The
+  natural frequency ω_n = √(k_t/J_d) is computed entirely from algebra at the knob state — NO ODE is
+  integrated anywhere; the SHM step enters as a cited `check: definition` (the declared audit surface).
+  Ships the new `frequency` quantity kind (Hz), deliberately incompatible with `angular_velocity` despite
+  the identical [0,0,-1,…] dimension vector — an f-port can never chain silently into an ω-port, the 2π is
+  always explicit — plus the `Hz`/`s`/`ms` display units (the `time` kind had none before). Two pedagogical
+  headlines: the pitch is amplitude-independent (ω_n carries no Θ — isochronism) while the stress at the
+  amplitude is proportional to it; and ω_n ∝ √(G/ρ), so the frequency is nearly material-blind across
+  metals while the shear margin σ_y/G is not. k_t = GJ_p/L is a derivation local (no unauthorized
+  `torsional_stiffness` kind); the honest chain-bridge to torsion-shaft is the peak restoring torque
+  T_dyn = k_t·Θ. One material drives both disk and shaft (a stated simplification; multi-material is S17).
+  Two warns (shaft-inertia J_shaft/J_d>0.1, shear-yield τ≥σ_y/2). The overview names the Phase 4 curated
+  chain (motor → shaft → flywheel). ω_n re-derived two independent ways (Rayleigh energy + the equation of
+  motion) in the physics test. Catalog 23 → 24.
 
 Per-THING gate (standard practice, from the flywheel/cylinder sessions): machine verification +
 independent first-principles cross-check in `pipeline/tests/` + hand-checkable numeric golden +
