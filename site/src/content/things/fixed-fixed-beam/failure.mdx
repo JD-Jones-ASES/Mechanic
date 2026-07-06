@@ -1,0 +1,39 @@
+The widget's safety factor guards one thing — first yield at the wall's outer fiber, where the
+hogging moment $M_A = wL^2/12$ peaks. A real fixed-fixed beam has more exits, and the most interesting
+ones are specific to it being **statically indeterminate**:
+
+- **Support settlement or rotation — the assumption that can quietly move every number.** The whole
+  solution rests on two premises per wall: zero deflection and zero rotation. Let one support settle by
+  $\Delta$ or one built-in end rotate slightly (a column that flexes, a connection that is not truly
+  rigid) and the compatibility equations pick up those movements. The reactions redistribute, the wall
+  moments can swing sharply, and the "material-blind" result stops being material-blind — now $EI$
+  *does* appear, multiplied by the movement. In a determinate beam a support that moves just goes along
+  for the ride; in a doubly-clamped one, support movement is a load case in its own right, and a stiff
+  structure is a temperamental one.
+
+- **Yielding at the walls, then a collapse mechanism.** Because the peak moment is at the built-in
+  ends, plastic hinges form there first. Unlike a simply-supported beam, the fixed-fixed beam does not
+  collapse when the ends yield — the wall hinges cap their moment and the span picks up more, until a
+  *third* hinge forms at midspan and the beam becomes a mechanism. That reserve (three hinges to
+  collapse, not one) is a genuine advantage of the clamped beam, and it is entirely beyond the elastic
+  formulas here. The $\sigma_{max} > \sigma_y$ warning marks where they stop telling the truth.
+
+- **Thermal stress with no room to expand.** This is the clamped beam's signature failure. Pin-ended
+  beams expand freely; a beam built into rigid walls at both ends cannot. Heat it and it cannot grow,
+  so it develops a compressive axial stress $\sigma = E\,\alpha\,\Delta T$ that this bending-only page
+  never computes — enough to buckle rails in summer heat (the classic "sun kink") or crush a
+  fixed-fixed member that a simply-supported one would have shrugged off. Fixing both ends trades
+  flexibility for a thermal liability.
+
+- **Lateral-torsional buckling and thin webs.** A tall, narrow section ($h \gg b$) can twist and flop
+  sideways before it yields — a stiffness failure, not a strength one — and the high shear near the
+  walls can buckle a thin web.
+
+- **Fatigue at the fixed ends.** A fixed-fixed beam that vibrates cycles its largest stress at the
+  walls, usually at a welded or bolted connection full of stress raisers. Fatigue strength sits far
+  below static yield, and nothing on this page addresses cyclic life.
+
+- **Short, deep beams and brittle materials.** For $L < 10h$ (the validity warning) shear deflection,
+  neglected by Euler–Bernoulli theory, is no longer negligible. And a brittle material such as gray
+  cast iron has no yield plateau — rate it against ultimate strength with a generous factor instead of
+  the yield-based safety factor shown here.

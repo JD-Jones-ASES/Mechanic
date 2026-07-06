@@ -1,0 +1,76 @@
+Take a beam and build **both** ends rigidly into the walls — no rotation, no deflection at either
+support — then load it with a uniform load $w$. A [simply-supported beam](../simply-supported-beam/)
+rests on pins that are free to rotate; a [propped cantilever](../propped-cantilever/) clamps one end
+and props the other. Clamp *both* ends and you get the stiffest of the lot, and the most
+indeterminate. Each wall now supplies a vertical reaction **and** a fixing moment, so there are
+**four** unknown reactions — $R_A, M_A$ at the left wall, $R_B, M_B$ at the right — but statics still
+offers only **two** equations. The beam is *statically indeterminate to the second degree*, and
+equilibrium alone is two equations short.
+
+This is the workhorse end condition of real structures: a beam welded to columns at both ends, a
+machine bed bolted down at each end, a bridge deck continuous over rigid piers, the fixed-fixed guide
+rails inside a press. Fixing the ends is what a designer does to make a member stiff.
+
+## The missing equations are compatibility — two of them
+
+Being indeterminate to the *second* degree means two extra equations are needed, and both come from
+**geometry**. Release the right end to a plain cantilever fixed at $A$ (the primary structure). Its
+free end $B$ would, under the load, both drop and rotate — but the real wall allows neither. So we
+impose two conditions at $B$ at once:
+
+- **Zero deflection:** the UDL drops $B$ by $wL^4/8EI$, the redundant force $R_B$ lifts it by
+  $R_B L^3/3EI$, and the redundant couple $M_B$ contributes $M_B L^2/2EI$ — together they must cancel.
+- **Zero slope:** a built-in end cannot rotate either, so the tip rotations $wL^3/6EI$, $R_B L^2/2EI$,
+  and $M_B L/EI$ must also cancel.
+
+Four equations now — two equilibrium, two compatibility — for four unknowns. By symmetry the answer
+is clean:
+
+$$ R_A = R_B = \tfrac{1}{2} w L, \qquad M_A = M_B = \tfrac{1}{12} w L^2 $$
+
+The build does not hand you these to trust. It certifies that the four relations form a system that
+is **linear in the four unknowns**, solves that $4\times4$ system **exactly** at build time, and checks
+the solution back through every relation. This is the `solveLinear` capability at the top of its
+range — the [propped cantilever](../propped-cantilever/) is the reference $3\times3$ case, and this
+clamped beam is the four-unknown one. What the machine proves and what still rests on a book is on the
+[verification page](../../verification/).
+
+## The ends govern — and the whole beam is stiffer for it
+
+Fixing the ends does two good things at once, both visible in the widget. First, the peak bending
+moment moves to the walls and *shrinks*: the hogging wall moment $wL^2/12$ is only two-thirds of a
+simply-supported beam's $wL^2/8$ under the same load, and it is exactly **twice** the sagging moment
+at midspan, $wL^2/24$. Because the walls carry the larger moment, first yield happens there — which is
+why the safety factor is taken at the wall's outer fiber. Second, the midspan deflection collapses to
+
+$$ \delta_{max} = \frac{w L^4}{384\,E I} $$
+
+— **one-fifth** of the simply-supported beam's $5wL^4/384EI$. Clamping the ends is the single most
+effective thing you can do to a beam short of changing its section.
+
+## The reactions do not care what the beam is made of
+
+Look at the compatibility steps in the derivation below. Every deflection and slope term carries the
+same flexural rigidity $EI$, and because the beam is *prismatic*, $EI$ divides out completely — the
+reaction equations have no $E$ and no $I$ in them. That cancellation is **machine-checked**, and it is
+the lesson: **the reactions are material-blind.** Switch the material in the widget from A36 steel to
+Ti-6Al-4V and watch $R_A$, $R_B$, $M_A$, and $M_B$ **not move at all**, even as:
+
+- **Young's modulus $E$** changes the midspan deflection $\delta_{max} = wL^4/384EI$ — titanium is
+  about half as stiff ($E \approx 110$ vs $200$ GPa), so it deflects nearly twice as far.
+- **Yield strength $\sigma_y$** changes the safety factor $\mathrm{SF} = \sigma_y/\sigma_{max}$.
+- **Density $\rho$** changes the mass.
+
+A redundant restraint redistributes load by **geometry**, not by material. (Make the beam
+*non*-prismatic — a tapered section, or two materials spliced together — and $EI$ no longer cancels;
+the reactions would then follow the stiffness distribution. That is the composite-bar story, a later
+THING.)
+
+## What governs, and the sign convention
+
+Throughout: $x$ runs from wall $A$ to wall $B$, downward load and deflection are positive, $R_A$ and
+$R_B$ are the **upward** reactions, and $M_A$, $M_B$ are the **magnitudes** of the hogging fixing
+moments at the two walls. The bending moment is largest at the walls: $|M|_{max} = wL^2/12$ (hogging)
+beats the sagging midspan value $wL^2/24$ by a factor of two, so the walls' outer fibers are where
+first yield happens and what the safety factor guards. The midspan deflection $wL^4/384EI$ is the true
+maximum, exactly at the centre by symmetry.

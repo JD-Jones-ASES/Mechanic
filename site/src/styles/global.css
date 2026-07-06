@@ -133,6 +133,17 @@ a { color: var(--accent); }
 .load-arrow-head { fill: var(--ink); }
 .sim-label { font-size: 12px; fill: var(--ink); }
 .sim-label-small { font-size: 9px; fill: var(--muted); }
+/* fixed-fixed family (FixedFixedShaftSim, FixedFixedBeamSim): both reuse
+   .beam-wall + .propped-hatch (the two built-in walls), .beam-ghost (scribe /
+   datum), .shaft-body or .beam-line(+.beam-yielding). The BEAM also reuses
+   .propped-reaction (its two reaction arrows) and .propped-moment (its two
+   end-moment arcs) and .load-arrow-light (the UDL). NEW here for the SHAFT:
+   the interior APPLIED-torque arc (ink) kept visually distinct from the two
+   REACTION-torque arcs (teal) so an applied twist never reads as a reaction. */
+.ff-reaction { stroke: #0d9488; stroke-width: 2.5; }
+.ff-reaction-head { fill: #0d9488; }
+.ff-applied { stroke: var(--ink); stroke-width: 2.5; }
+.ff-applied-head { fill: var(--ink); }
 /* capacity chart (ColumnSim): the Euler-Johnson hand-off made visible */
 .chart-axis { stroke: var(--ink); stroke-width: 1.5; }
 .chart-ref { stroke: var(--line); stroke-dasharray: 3 3; }

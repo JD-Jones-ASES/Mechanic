@@ -26,6 +26,8 @@ import { CurvedBeamSim } from "./sims/CurvedBeamSim";
 import { CylinderSim } from "./sims/CylinderSim";
 import { DiskBoreSim } from "./sims/DiskBoreSim";
 import { EccentricColumnSim } from "./sims/EccentricColumnSim";
+import { FixedFixedBeamSim } from "./sims/FixedFixedBeamSim";
+import { FixedFixedShaftSim } from "./sims/FixedFixedShaftSim";
 import { FlywheelSim } from "./sims/FlywheelSim";
 import { FourbarSim } from "./sims/FourbarSim";
 import { GearPairSim } from "./sims/GearPairSim";
@@ -88,6 +90,8 @@ const SIMS: Record<
   "disk-clutch": ClutchSim,
   "two-bar-truss": TrussSim,
   "propped-cantilever": ProppedCantileverSim,
+  "fixed-fixed-torsion-shaft": FixedFixedShaftSim,
+  "fixed-fixed-beam": FixedFixedBeamSim,
 };
 
 interface Props {

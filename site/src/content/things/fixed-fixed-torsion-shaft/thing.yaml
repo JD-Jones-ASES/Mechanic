@@ -1,0 +1,385 @@
+id: fixed-fixed-torsion-shaft
+title: Fixed-Fixed Torsion Shaft (Interior Torque)
+summary: >-
+  A solid circular shaft built into a wall at BOTH ends, with a torque applied at an interior
+  station. Equilibrium gives one equation for the two wall reaction torques; the missing equation is
+  compatibility — the twist at the load point is single-valued — and the build solves the coupled
+  2×2 system exactly. The larger reaction lands on the SHORTER segment, and the material cancels out.
+facets: [stress, mass-cost]
+
+# Sign / geometry convention (fixed for this whole THING): x runs from the left wall A (x=0) to the
+# right wall B (x=L). The applied torque T acts at the interior station x=a; the left segment has
+# length a, the right segment length b, and L=a+b. T_A and T_B are the reaction torques the two walls
+# apply, both taken as positive magnitudes (their senses oppose the applied torque and each other).
+# τ_1 is the surface shear in the left segment (carrying T_A), τ_2 the right segment (carrying T_B);
+# φ is the rotation at the load point. The larger reaction (hence larger stress) is on the shorter
+# segment: T_A = T·b/L, T_B = T·a/L.
+
+variables:
+  - symbol: T
+    name: Applied torque
+    latex: T
+    unit: N*m
+    quantity_kind: torque
+    default: 500
+    bounds: [1, 20000]
+    positive: true
+    display_units: ["N*m"]
+  - symbol: a
+    name: Left segment length
+    latex: a
+    unit: m
+    quantity_kind: length
+    default: 0.4
+    bounds: [0.05, 3.0]
+    positive: true
+    display_units: [m, mm]
+  - symbol: b
+    name: Right segment length
+    latex: b
+    unit: m
+    quantity_kind: length
+    default: 0.6
+    bounds: [0.05, 3.0]
+    positive: true
+    display_units: [m, mm]
+  - symbol: r
+    name: Shaft radius
+    latex: r
+    unit: m
+    quantity_kind: length
+    default: 0.02
+    bounds: [0.0025, 0.15]
+    positive: true
+    display_units: [mm, m]
+  - symbol: G
+    name: Shear modulus
+    latex: G
+    unit: Pa
+    quantity_kind: elastic_modulus
+    default: 79.0e9
+    bounds: [0.5e9, 200.0e9]
+    positive: true
+    role: material
+    display_units: [GPa, Pa]
+  - symbol: sigma_y
+    name: Yield strength (tension)
+    latex: '\sigma_y'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 250.0e6
+    bounds: [10.0e6, 2.0e9]
+    positive: true
+    role: material
+    display_units: [MPa, Pa]
+  - symbol: rho
+    name: Density
+    latex: '\rho'
+    unit: kg/m**3
+    quantity_kind: density
+    default: 7800
+    bounds: [400, 9000]
+    positive: true
+    role: material
+    display_units: ["kg/m^3"]
+  # --- the two coupled reaction torques, solved as ONE linear group (ADR-0008) ---
+  - symbol: T_A
+    name: Left wall reaction torque
+    latex: T_A
+    unit: N*m
+    quantity_kind: torque
+    default: 300
+    bounds: [0, 2.0e7]
+    positive: true
+    role: derived
+    display_units: ["N*m"]
+  - symbol: T_B
+    name: Right wall reaction torque
+    latex: T_B
+    unit: N*m
+    quantity_kind: torque
+    default: 200
+    bounds: [0, 2.0e7]
+    positive: true
+    role: derived
+    display_units: ["N*m"]
+  # --- downstream readouts (ordinary closed forms that read the reactions) ---
+  - symbol: L
+    name: Total length
+    latex: L
+    unit: m
+    quantity_kind: length
+    default: 1.0
+    bounds: [0.1, 6.0]
+    positive: true
+    role: derived
+    display_units: [m, mm]
+  - symbol: J
+    name: Polar second moment of area
+    latex: J
+    unit: m**4
+    quantity_kind: second_moment_of_area
+    default: 2.5132741e-7
+    bounds: [1.0e-12, 1.0e-2]
+    positive: true
+    role: derived
+  - symbol: tau_1
+    name: Left segment shear stress
+    latex: '\tau_1'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 2.3873241e7
+    bounds: [0, 5.0e9]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: tau_2
+    name: Right segment shear stress
+    latex: '\tau_2'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 1.5915494e7
+    bounds: [0, 5.0e9]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: phi
+    name: Twist at the load point
+    latex: '\varphi'
+    unit: rad
+    quantity_kind: angle
+    default: 6.0438586e-3
+    bounds: [0, 60]
+    positive: true
+    role: derived
+    display_units: [deg, rad]
+  - symbol: SF_1
+    name: Safety factor, left segment
+    latex: '\mathrm{SF}_1'
+    unit: '1'
+    quantity_kind: safety_factor
+    default: 5.2359878
+    bounds: [0, 1000]
+    positive: true
+    role: derived
+  - symbol: SF_2
+    name: Safety factor, right segment
+    latex: '\mathrm{SF}_2'
+    unit: '1'
+    quantity_kind: safety_factor
+    default: 7.8539816
+    bounds: [0, 1000]
+    positive: true
+    role: derived
+  - symbol: m_shaft
+    name: Shaft mass
+    latex: m
+    unit: kg
+    quantity_kind: mass
+    default: 9.80177
+    bounds: [0, 5000]
+    positive: true
+    role: derived
+    display_units: [kg]
+
+materials:
+  binds:
+    G: shear_modulus
+    sigma_y: yield_strength
+    rho: density
+
+relations:
+  # --- the coupled system: one equilibrium equation + one compatibility equation ---
+  - id: torque-balance
+    group: stress
+    latex: 'T_A + T_B = T'
+    residual: T_A + T_B - T
+    assumptions:
+      - torsional equilibrium of the whole shaft; the two wall reactions carry the applied torque T
+    citation: gere
+  - id: twist-compatibility
+    group: stress
+    latex: 'T_A\,a = T_B\,b'
+    residual: T_A*a - T_B*b
+    assumptions:
+      - >-
+        compatibility: the shaft is continuous at the load point, so the rotation there computed from
+        the left segment (T_A·a/GJ) must equal the rotation computed from the right segment (T_B·b/GJ)
+      - >-
+        the common torsional rigidity GJ divides out of both twist terms — legal because the shaft is
+        prismatic (uniform G and J along its length), and it is exactly why the reaction torques are
+        material-blind
+      - linear elastic, uniform circular section, torque constant within each segment
+    citation: gere
+  # --- downstream geometry / stress / twist / margin / mass ---
+  - id: total-length
+    group: stress
+    latex: 'L = a + b'
+    residual: L - (a + b)
+    assumptions:
+      - the two segment lengths sum to the span between the walls
+    citation: gere
+  - id: polar-moment
+    group: stress
+    latex: 'J = \frac{\pi r^4}{2}'
+    residual: J - pi*r**4/2
+    assumptions:
+      - solid circular cross-section, polar second moment about the axis
+    citation: gere
+  - id: shear-left
+    group: stress
+    latex: '\tau_1 = \frac{T_A\,r}{J}'
+    residual: tau_1*J - T_A*r
+    assumptions:
+      - linear elastic torsion; surface shear stress in the left segment, which carries torque T_A
+      - pure torsion — no bending, no axial load, no stress concentrations (keyways, steps)
+    citation: gere
+    validity:
+      - condition: tau_1 < sigma_y/2
+        severity: warn
+        message: >-
+          Left-segment surface shear stress exceeds the shear yield strength (σ_y/2 by the
+          maximum-shear-stress criterion) — the outer fibers have yielded and every elastic number
+          here, the reaction torques included, stops being the truth.
+        citation: shigley
+  - id: shear-right
+    group: stress
+    latex: '\tau_2 = \frac{T_B\,r}{J}'
+    residual: tau_2*J - T_B*r
+    assumptions:
+      - linear elastic torsion; surface shear stress in the right segment, which carries torque T_B
+    citation: gere
+    validity:
+      - condition: tau_2 < sigma_y/2
+        severity: warn
+        message: >-
+          Right-segment surface shear stress exceeds the shear yield strength (σ_y/2 by the
+          maximum-shear-stress criterion) — the outer fibers have yielded and the elastic solution no
+          longer holds.
+        citation: shigley
+  - id: twist-angle
+    group: stress
+    latex: '\varphi = \frac{T_A\,a}{G\,J}'
+    residual: phi*G*J - T_A*a
+    assumptions:
+      - >-
+        rotation at the load point from the left segment, T_A·a/GJ; equal to the right-segment value
+        T_B·b/GJ by compatibility. This is the one readout the material moves — G sets the twist.
+      - linear elastic, plane sections rotate rigidly (exact for circular sections)
+    citation: gere
+  - id: safety-left
+    group: stress
+    latex: '\mathrm{SF}_1 = \frac{\sigma_y/2}{\tau_1}'
+    residual: SF_1*tau_1 - sigma_y/2
+    assumptions:
+      - maximum-shear-stress (Tresca) criterion — shear yield at σ_y/2; margin for the left segment
+    citation: shigley
+  - id: safety-right
+    group: stress
+    latex: '\mathrm{SF}_2 = \frac{\sigma_y/2}{\tau_2}'
+    residual: SF_2*tau_2 - sigma_y/2
+    assumptions:
+      - maximum-shear-stress (Tresca) criterion; margin for the right segment
+    citation: shigley
+  - id: mass
+    group: mass-cost
+    latex: 'm = \rho\, \pi r^2 L'
+    residual: m_shaft - rho*(pi*r**2)*L
+    assumptions:
+      - prismatic solid shaft, uniform density
+    citation: gere
+
+configurations:
+  - id: analyze
+    label: Torque, position, and geometry in — reactions, stresses, twist, margins out
+    constraints: {}
+    inputs: [T, a, b, r]
+    # the two reaction torques {T_A, T_B} are a coupled 2×2 linear system with no
+    # evaluation order — solved EXACTLY at build time (ADR-0008, certify_linear_group),
+    # then desugared into ordinary verified closed forms. Everything below reads them.
+    solve_linear:
+      - targets: [T_A, T_B]
+        relations: [torque-balance, twist-compatibility]
+    solutions:
+      L: a + b
+      J: pi*r**4/2
+      tau_1: T_A*r/J
+      tau_2: T_B*r/J
+      phi: T_A*a/(G*J)
+      SF_1: sigma_y/(2*tau_1)
+      SF_2: sigma_y/(2*tau_2)
+      m_shaft: rho*(pi*r**2)*L
+
+derivation:
+  verifies_configuration: analyze
+  steps:
+    - expr: Eq(T_A + T_B, T)
+      prose: >-
+        Torsional equilibrium of the whole shaft: the two wall reactions T_A and T_B together carry
+        the applied torque T. One equation, two unknowns — the shaft is statically indeterminate to
+        the first degree, so equilibrium alone cannot split the torque between the walls.
+      rule: 'statics: torsional equilibrium'
+      check: definition
+    - expr: Eq(T_A*a/(G*J), T_B*b/(G*J))
+      prose: >-
+        The missing equation is compatibility. The shaft is one continuous piece, so the rotation at
+        the load point is single-valued. Computed from the left, the point has twisted φ = T_A·a/GJ
+        (the left segment carries T_A over length a); computed from the right, it has twisted
+        T_B·b/GJ. These must be equal.
+      rule: 'compatibility: single-valued rotation at the load point'
+      check: definition
+    - expr: Eq(T_A*a, T_B*b)
+      prose: >-
+        The torsional rigidity GJ is common to both segments and cancels completely — which is why
+        the reaction torques do not depend on the material or the shaft radius at all. This
+        machine-checked line is where "stiffer or thicker shaft, same reaction split" becomes a proof.
+      rule: GJ is common and cancels (prismatic shaft)
+    - expr: Eq(T_A, T*b/L)
+      prose: >-
+        Solve the two equations together (with L = a + b): T_A = T·b/L and T_B = T·a/L. The build does
+        not solve these one at a time — it certifies the 2×2 system is linear in {T_A, T_B} and solves
+        it exactly. Note the geometry: the LARGER reaction lands on the SHORTER segment. Put the load
+        near the left wall (small a, large b) and the left wall takes the bigger torque.
+      rule: exact linear solve of the coupled system
+    - expr: Eq(tau_1, T_A*r/J)
+      prose: >-
+        Each segment carries its own reaction torque, so each has its own surface shear stress,
+        τ = T·r/J with J = πr⁴/2. The shorter, harder-working segment sees the higher stress — that
+        is where first yield arrives, and what the smaller of the two safety factors guards.
+      rule: torsion formula, per segment
+    - expr: Eq(phi, T_A*a/(G*J))
+      prose: >-
+        Only now does the material appear — in the twist, never in the reactions. The rotation at the
+        load point is φ = T_A·a/GJ; swap steel for aluminium (about a third the shear modulus) and φ
+        nearly triples while T_A, T_B, τ_1, τ_2 do not move at all. Stiffness and the load path are
+        independent axes.
+      rule: angle of twist at the load point
+sim:
+  engine: statics-cascade
+  config:
+    draw: fixed-fixed-torsion-shaft
+
+sources:
+  - id: gere
+    citation: >-
+      Gere, J. M., & Goodno, B. J., Mechanics of Materials, 9th ed., Cengage, 2018 — §3.8
+      (statically indeterminate torsional members: a bar fixed at both ends with an intermediate
+      torque, solved by combining equilibrium with the compatibility of the angle of twist); §3.3–3.4
+      (torsion formula τ = Tr/J, angle of twist TL/GJ).
+    verification: >-
+      Topic-level citation, not page-pinned (the textbook PDF is not web-accessible for a page-exact
+      quote, the same limit as the sibling beam/shaft THINGs). The governing result — reaction torques
+      T_A = T·b/L and T_B = T·a/L for an intermediate torque on a doubly built-in shaft — was
+      web-corroborated 2026-07-06 against multiple independent statements (Gere & Goodno §3.8 worked
+      example "bar ACB fixed at both ends"; engineering references give the fixed-end torque split in
+      inverse proportion to the segment lengths) AND re-derived from first principles two independent
+      ways in pipeline/tests/test_fixedfixed_shaft_physics.py (compatibility of twist, and Castigliano's
+      theorem minimising the torsional strain energy over the redundant reaction).
+  - id: shigley
+    citation: >-
+      Budynas, R. G., & Nisbett, J. K., Shigley's Mechanical Engineering Design, 10th ed.,
+      McGraw-Hill, 2015 — §5-4 (maximum-shear-stress theory, shear yield S_sy = 0.5 S_y).
+    verification: >-
+      Topic-level cross-check citation for the shear-yield criterion (σ_y/2). Not section-pinned; the
+      maximum-shear-stress criterion is standard and is applied identically in the sibling torsion-shaft
+      THING. Consistent with Gere §3.3 for the torsion formula itself.

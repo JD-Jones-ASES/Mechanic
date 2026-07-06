@@ -1,0 +1,418 @@
+id: fixed-fixed-beam
+title: Fixed-Fixed Beam (UDL)
+summary: >-
+  A beam built rigidly into a wall at BOTH ends under a uniform load. Two equilibrium equations, four
+  unknown reactions — indeterminate to the second degree — so two compatibility conditions (zero slope
+  and zero deflection at a released end) close the system, and the build solves the coupled 4×4 group
+  exactly. The fixing moment at each wall governs, and none of the reactions cares about the material.
+facets: [stress, mass-cost]
+
+# Sign convention (fixed for this whole THING): x runs from wall A (x=0) to wall B (x=L); downward
+# load and downward deflection are positive; R_A and R_B are the UPWARD support reactions;
+# M_A and M_B are the MAGNITUDES of the hogging fixing moments at the two walls. By symmetry
+# R_A = R_B = wL/2 and M_A = M_B = wL²/12; the hogging wall moment wL²/12 governs the stress (it is
+# exactly TWICE the sagging midspan moment wL²/24 — see the overview). The two wall couples are
+# mirror images, so as free vectors they oppose: they enter moment equilibrium with opposite signs.
+
+variables:
+  - symbol: w
+    name: Distributed load
+    latex: w
+    unit: N/m
+    quantity_kind: line_load
+    default: 12000
+    bounds: [0, 50000]
+    positive: true
+    display_units: ["kN/m", "N/m"]
+  - symbol: L
+    name: Span
+    latex: L
+    unit: m
+    quantity_kind: length
+    default: 3.0
+    bounds: [0.5, 8.0]
+    positive: true
+    display_units: [m, mm]
+  - symbol: b
+    name: Section width
+    latex: b
+    unit: m
+    quantity_kind: length
+    default: 0.05
+    bounds: [0.005, 0.3]
+    positive: true
+    display_units: [mm, m]
+  - symbol: h
+    name: Section height
+    latex: h
+    unit: m
+    quantity_kind: length
+    default: 0.1
+    bounds: [0.005, 0.4]
+    positive: true
+    display_units: [mm, m]
+  - symbol: E
+    name: Young's modulus
+    latex: E
+    unit: Pa
+    quantity_kind: elastic_modulus
+    default: 200.0e9
+    bounds: [1.0e9, 400.0e9]
+    positive: true
+    role: material
+    display_units: [GPa, Pa]
+  - symbol: sigma_y
+    name: Yield strength
+    latex: '\sigma_y'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 250.0e6
+    bounds: [10.0e6, 2.0e9]
+    positive: true
+    role: material
+    display_units: [MPa, Pa]
+  - symbol: rho
+    name: Density
+    latex: '\rho'
+    unit: kg/m**3
+    quantity_kind: density
+    default: 7850
+    bounds: [400, 9000]
+    positive: true
+    role: material
+    display_units: ["kg/m^3"]
+  - symbol: I
+    name: Second moment of area
+    latex: I
+    unit: m**4
+    quantity_kind: second_moment_of_area
+    default: 4.1666667e-6
+    bounds: [1.0e-10, 1.0e-2]
+    positive: true
+    role: derived
+  # --- the four coupled reactions, solved as ONE linear group (ADR-0008) ---
+  - symbol: R_A
+    name: Left wall reaction
+    latex: R_A
+    unit: N
+    quantity_kind: force
+    default: 18000
+    bounds: [0, 1.0e7]
+    positive: true
+    role: derived
+    display_units: [kN, N]
+  - symbol: M_A
+    name: Left wall moment (hogging)
+    latex: M_A
+    unit: N*m
+    quantity_kind: bending_moment
+    default: 9000
+    bounds: [0, 1.0e7]
+    positive: true
+    role: derived
+    display_units: ["N*m"]
+  - symbol: R_B
+    name: Right wall reaction
+    latex: R_B
+    unit: N
+    quantity_kind: force
+    default: 18000
+    bounds: [0, 1.0e7]
+    positive: true
+    role: derived
+    display_units: [kN, N]
+  - symbol: M_B
+    name: Right wall moment (hogging)
+    latex: M_B
+    unit: N*m
+    quantity_kind: bending_moment
+    default: 9000
+    bounds: [0, 1.0e7]
+    positive: true
+    role: derived
+    display_units: ["N*m"]
+  # --- downstream readouts (ordinary closed forms that read the reactions) ---
+  - symbol: M_mid
+    name: Midspan moment (sagging)
+    latex: 'M_{mid}'
+    unit: N*m
+    quantity_kind: bending_moment
+    default: 4500
+    bounds: [0, 1.0e7]
+    positive: true
+    role: derived
+    display_units: ["N*m"]
+  - symbol: sigma_max
+    name: Max bending stress
+    latex: '\sigma_{max}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 1.08e8
+    bounds: [0, 5.0e9]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: delta_max
+    name: Midspan deflection
+    latex: '\delta_{max}'
+    unit: m
+    quantity_kind: length
+    default: 3.0375e-3
+    bounds: [0, 2]
+    positive: true
+    role: derived
+    display_units: [mm, m]
+  - symbol: SF
+    name: Safety factor (yield)
+    latex: '\mathrm{SF}'
+    unit: '1'
+    quantity_kind: safety_factor
+    default: 2.3148148
+    bounds: [0, 100]
+    positive: true
+    role: derived
+  - symbol: m_beam
+    name: Beam mass
+    latex: m
+    unit: kg
+    quantity_kind: mass
+    default: 117.75
+    bounds: [0, 5000]
+    positive: true
+    role: derived
+    display_units: [kg]
+
+materials:
+  binds:
+    E: youngs_modulus
+    sigma_y: yield_strength
+    rho: density
+
+relations:
+  - id: rect-section
+    group: stress
+    latex: 'I = \frac{b h^3}{12}'
+    residual: I - b*h**3/12
+    assumptions:
+      - solid rectangular cross-section, bending about the strong axis
+    citation: gere
+  # --- the coupled system: two equilibrium equations + two compatibility equations ---
+  - id: sum-forces
+    group: stress
+    latex: 'R_A + R_B = w L'
+    residual: R_A + R_B - w*L
+    assumptions:
+      - vertical force equilibrium of the whole beam; the total downward load is wL
+    citation: hibbeler
+  - id: sum-moments
+    group: stress
+    latex: 'M_A + R_B\,L = M_B + \tfrac{1}{2} w L^2'
+    residual: M_A - M_B + R_B*L - w*L**2/2
+    assumptions:
+      - moment equilibrium about wall A; the UDL resultant wL acts at the span midpoint L/2
+      - >-
+        M_A and M_B are the hogging fixing-moment magnitudes at the two walls; a hogging couple at the
+        left wall and a hogging couple at the right wall are mirror images, so as free vectors they
+        oppose — they enter this balance with opposite signs
+    citation: hibbeler
+  - id: defl-compat
+    group: stress
+    latex: '\frac{w L^4}{8} + \frac{M_B L^2}{2} = \frac{R_B\,L^3}{3}'
+    residual: w*L**4/8 - R_B*L**3/3 + M_B*L**2/2
+    assumptions:
+      - >-
+        force method: release the right end to a cantilever fixed at A (the primary structure), with
+        redundants R_B (the reaction force) and M_B (the reaction couple). The net deflection at the
+        released end B must be zero: the UDL deflects it down by wL⁴/8EI, R_B lifts it R_B·L³/3EI, and
+        the couple M_B contributes M_B·L²/2EI — together they cancel
+      - >-
+        the common flexural rigidity EI has been divided out of every term — legal because the beam is
+        prismatic (uniform EI), and it is exactly why the reactions are material-blind
+      - linear elastic, small deflections, Euler–Bernoulli kinematics
+    citation: gere
+  - id: slope-compat
+    group: stress
+    latex: '\frac{w L^3}{6} + M_B L = \frac{R_B\,L^2}{2}'
+    residual: w*L**3/6 - R_B*L**2/2 + M_B*L
+    assumptions:
+      - >-
+        the second compatibility condition: the net slope at the released end B must also be zero (a
+        fixed end neither deflects nor rotates). The UDL rotates it wL³/6EI, R_B rotates it R_B·L²/2EI,
+        and the couple M_B rotates it M_B·L/EI; EI again divides out
+      - linear elastic, small deflections, Euler–Bernoulli kinematics
+    citation: gere
+  # --- downstream moment / stress / deflection / margin / mass ---
+  - id: midspan-moment
+    group: stress
+    latex: 'M_{mid} = \frac{w L^2}{24}'
+    residual: M_mid - w*L**2/24
+    assumptions:
+      - >-
+        the sagging bending moment at midspan; it is exactly half the hogging wall moment wL²/12, so
+        the walls govern the stress, not the span
+    citation: gere
+  - id: flexure
+    group: stress
+    latex: '\sigma_{max} = \frac{M_A\,(h/2)}{I}'
+    residual: sigma_max*I - M_A*(h/2)
+    assumptions:
+      - >-
+        the largest bending moment is the hogging moment M_A = wL²/12 at the wall (twice the sagging
+        midspan value), so the peak stress is at the wall's outer fiber, c = h/2
+    citation: gere
+    validity:
+      - condition: sigma_max < sigma_y
+        severity: warn
+        message: >-
+          Bending stress at the wall exceeds the yield strength — the outer fiber has yielded and
+          every linear-elastic number here (the reactions included, since they assume linear
+          superposition) stops being the truth.
+        citation: gere
+  - id: deflection
+    group: stress
+    latex: '\delta_{max} = \frac{w L^4}{384\,E I}'
+    residual: delta_max*384*E*I - w*L**4
+    assumptions:
+      - >-
+        deflection at midspan (x = L/2), which is the maximum by symmetry — cleaner than the propped
+        cantilever, whose maximum sits slightly off-centre
+      - linear elastic, small deflections, Euler–Bernoulli kinematics
+    citation: gere
+    validity:
+      - condition: delta_max < L/10
+        severity: warn
+        message: >-
+          Midspan deflection exceeds L/10 — the small-deflection assumption is breaking down, and with
+          it the linear superposition the reaction solve depends on.
+        citation: gere
+      - condition: L > 10*h
+        severity: warn
+        message: >-
+          This is a short, deep beam (L < 10h): shear deflection, neglected by Euler–Bernoulli theory,
+          is no longer negligible.
+        citation: gere
+  - id: safety-factor
+    group: stress
+    latex: '\mathrm{SF} = \frac{\sigma_y}{\sigma_{max}}'
+    residual: SF*sigma_max - sigma_y
+    assumptions:
+      - margin against first yield at the wall's outer fiber, not against plastic collapse
+    citation: gere
+  - id: mass
+    group: mass-cost
+    latex: 'm = \rho\, b\, h\, L'
+    residual: m_beam - rho*b*h*L
+    assumptions:
+      - prismatic beam, uniform density
+    citation: gere
+
+configurations:
+  - id: analyze
+    label: Load and geometry in — the four reactions, stress, deflection, margin out
+    constraints: {}
+    inputs: [w, L, b, h]
+    # the redundant reactions {R_A, M_A, R_B, M_B} are a coupled 4×4 linear system with no
+    # evaluation order — solved EXACTLY at build time (ADR-0008, certify_linear_group),
+    # then desugared into ordinary verified closed forms. Everything below reads them.
+    solve_linear:
+      - targets: [R_A, M_A, R_B, M_B]
+        relations: [sum-forces, sum-moments, defl-compat, slope-compat]
+    solutions:
+      I: b*h**3/12
+      M_mid: w*L**2/24
+      sigma_max: M_A*(h/2)/I
+      delta_max: w*L**4/(384*E*I)
+      SF: sigma_y/sigma_max
+      m_beam: rho*b*h*L
+
+derivation:
+  verifies_configuration: analyze
+  steps:
+    - expr: Eq(R_A + R_B, w*L)
+      prose: >-
+        Vertical equilibrium of the whole beam: the two upward reactions carry the total downward
+        load, wL. One equation — but four unknowns (R_A, M_A, R_B, M_B), because each wall supplies
+        both a force and a fixing moment. The beam is statically indeterminate to the SECOND degree,
+        so equilibrium alone falls two equations short.
+      rule: 'statics: ΣF_y = 0'
+      check: definition
+    - expr: Eq(M_A + R_B*L, M_B + w*L**2/2)
+      prose: >-
+        Moment equilibrium about wall A: the fixing moment M_A and the far reaction's moment R_B·L
+        balance the far wall couple M_B and the UDL's moment wL²/2. Watch the signs — a hogging couple
+        at the left wall and one at the right are mirror images, so they oppose. A second equation,
+        still two short of the four we need.
+      rule: 'statics: ΣM_A = 0'
+      check: definition
+    - expr: Eq(w*L**4/(8*E*I) + M_B*L**2/(2*E*I), R_B*L**3/(3*E*I))
+      prose: >-
+        The missing equations come from compatibility. Release the right end to a plain cantilever
+        fixed at A (the primary structure); its two redundants are the reaction force R_B and the
+        reaction couple M_B. First condition: the deflection at B must be zero. The UDL pushes B down
+        by wL⁴/8EI, R_B lifts it R_B·L³/3EI, and the couple M_B contributes M_B·L²/2EI.
+      rule: 'force method: zero deflection at the released end'
+      check: definition
+    - expr: Eq(w*L**3/(6*E*I) + M_B*L/(E*I), R_B*L**2/(2*E*I))
+      prose: >-
+        Second condition: a built-in end cannot rotate either, so the slope at B must also be zero.
+        The same three load systems each contribute a tip rotation — wL³/6EI, R_B·L²/2EI, M_B·L/EI —
+        and they cancel. Now there are four equations for four unknowns.
+      rule: 'force method: zero slope at the released end'
+      check: definition
+    - expr: Eq(R_B, w*L/2)
+      prose: >-
+        Every compatibility term carries the same flexural rigidity EI, which divides out completely —
+        which is why the reactions do not depend on the material. The build does not solve these one at
+        a time: it certifies the 4×4 system is linear in {R_A, M_A, R_B, M_B} and solves it exactly.
+        By symmetry the two forces are equal, R_A = R_B = wL/2.
+      rule: exact linear solve of the coupled system (EI cancels — material-blind)
+    - expr: Eq(M_A, w*L**2/12)
+      prose: >-
+        And the two fixing moments are equal too, M_A = M_B = wL²/12 (hogging, at the walls). This is
+        the largest bending moment anywhere on the beam, so it is what sets the peak stress. Swap steel
+        for titanium and this number does not budge — the redundant load path is pure geometry.
+      rule: back-substitution into equilibrium
+    - expr: Eq(M_A, 2*M_mid)
+      prose: >-
+        Compare the wall moment to the sagging peak at midspan, M_mid = wL²/24: the walls carry exactly
+        TWICE the moment the middle does. That is the signature of building in the ends — it halves the
+        span moment by pushing the work out to the supports, which is why a fixed-fixed beam is so much
+        stiffer than a simply-supported one.
+      rule: the ends govern — hogging wall moment is twice the sagging midspan moment
+    - expr: Eq(delta_max, w*L**4/(384*E*I))
+      prose: >-
+        Only now does E appear — in the deflection, never in the reactions. The midspan sag is
+        wL⁴/384EI, five times smaller than the simply-supported beam's 5wL⁴/384EI under the same load.
+        Swap steel for titanium (about half the stiffness) and δ nearly doubles while every reaction
+        holds. Stiffness, strength, and the load path are independent axes.
+      rule: integrate the moment–curvature relation at midspan
+sim:
+  engine: statics-cascade
+  config:
+    draw: fixed-fixed-beam
+
+sources:
+  - id: gere
+    citation: >-
+      Gere, J. M., & Goodno, B. J., Mechanics of Materials, 9th ed., Cengage, 2018 — ch. 10
+      (Statically Indeterminate Beams): the force (flexibility) method, fixed-fixed (clamped) beam
+      reactions by superposition; §5.5 flexure formula; App. E section properties.
+    verification: >-
+      Topic-level citation, not section-pinned (the textbook PDF is not web-accessible for a
+      page-exact quote, the same limit as the sibling beam THINGs). The governing results — fixed-end
+      moment M = wL²/12, reactions R = wL/2, midspan moment wL²/24, midspan deflection wL⁴/384EI — were
+      web-corroborated 2026-07-06 against multiple independent statements (standard fixed-end-moment
+      tables and beam formula references give the clamped-beam UDL fixing moment as wL²/12 and the
+      centre deflection as wL⁴/384EI) AND re-derived from first principles in
+      pipeline/tests/test_fixedfixed_beam_physics.py (solving the Euler–Bernoulli BVP EI·v'''' = w with
+      v = v' = 0 at both ends, and independently by the force method).
+  - id: hibbeler
+    citation: >-
+      Hibbeler, R. C., Mechanics of Materials, 10th ed., Pearson, 2017 — ch. 12 (Deflection of
+      Beams and Shafts): statically indeterminate beams by the method of superposition; equilibrium
+      of the fixed-fixed beam.
+    verification: >-
+      Topic-level cross-check citation for the equilibrium equations (ΣF, ΣM). Not section-pinned; the
+      two equilibrium relations are elementary statics and are re-derived from the free body in the
+      physics test. Hibbeler ch. 12 is the standard cross-reference for the superposition method used
+      here, consistent with Gere ch. 10.

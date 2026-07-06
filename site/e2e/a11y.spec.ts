@@ -11,6 +11,8 @@ for (const path of [
   "things/flywheel-disk/",
   "things/thick-walled-cylinder/",
   "things/propped-cantilever/", // S15: a new sim component (ProppedCantileverSim)
+  "things/fixed-fixed-beam/", // S16: new sim component (FixedFixedBeamSim)
+  "things/fixed-fixed-torsion-shaft/", // S16: new sim component (FixedFixedShaftSim)
   "materials/",
   "verification/",
   "",
