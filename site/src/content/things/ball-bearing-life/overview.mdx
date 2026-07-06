@@ -1,0 +1,95 @@
+A rolling-contact bearing does not have a strength you compare a load against. It has a **rating**,
+and the rating is a statement about a *population*: the basic dynamic load rating $C_{10}$ is the
+radial load at which 90% of a large batch of identical bearings survive one million revolutions
+before the races and balls spall from rolling-contact fatigue. Load a bearing below $C_{10}$ and it
+lasts longer; load it above and it lasts less — and the trade is steep. This page turns the two
+numbers stamped in the catalog, $C_{10}$ and the static rating $C_0$, into a life you can read in
+hours, and turns the reliability you *demand* into the life you actually get.
+
+## The load–life law is a power law, and the exponent is the whole story
+
+Rolling-contact fatigue life scales as the load ratio raised to a fixed exponent, calibrated so that
+the rating load gives exactly the rating life:
+
+$$ L_{10} = 10^{6}\left(\frac{C_{10}}{P}\right)^{a} $$
+
+The $10^{6}$ is not decoration — it is the definition of $C_{10}$ (the load for $10^6$ revolutions at
+90% reliability, ISO 281 / ABMA), so it belongs in the relation, not in the readout. The exponent $a$
+is where ball and roller bearings part company, and it is a **cited constant, not a knob**:
+
+- **Ball bearings** make *point* contact, and $a = 3$. Halve the load and life multiplies by
+  $2^3 = 8$.
+- **Roller bearings** make *line* contact, spreading the stress, and $a = 10/3$. The same halving
+  multiplies life by $2^{10/3} \approx 10$.
+
+Switch the configuration and watch the rated-life bar jump for the identical loads — that gap *is*
+the difference between point and line contact. The lesson bearing designers live by falls straight
+out of the exponent: a modest reduction in load buys a large increase in life, so oversizing a
+bearing pays back far faster than intuition suggests.
+
+## From revolutions to hours
+
+A life in revolutions is turned into a life in time by the speed. Each revolution is $2\pi$ radians,
+so $L_{10}$ revolutions at angular speed $\omega$ take
+
+$$ L_{10h} = \frac{2\pi\,L_{10}}{\omega} = \frac{10^{6}\,L_{10}}{60\,n} $$
+
+The right-hand form — with $n$ in rev/min — is how Shigley prints it, and it is the *same fact*: the
+$60$ and the $10^{6}$ are unit conversions folded into the display. This page keeps the engine in SI
+(the left form) and lets the readout show hours, so the arithmetic you can check by hand and the
+number an engineer quotes are visibly one thing. Bearing life is quoted in hours because that is what
+a maintenance schedule is written in; the page adds the **hour** and **million-revolution** (Mrev)
+display units for exactly this readout.
+
+## Reliability is bought with life
+
+The rated life $L_{10}$ is the life *90%* of bearings beat. Ask for a higher survival fraction and
+the life you can count on drops, because you are now designing for the unluckier tail of the
+population. The scatter in rolling-contact fatigue life is described by a **three-parameter Weibull
+distribution** of the dimensionless life $x = L/L_{10}$:
+
+$$ R = \exp\!\left[-\left(\frac{x - x_0}{\theta - x_0}\right)^{b}\right] $$
+
+Inverting it for the life at a chosen reliability gives the reliability life factor
+
+$$ x(R) = x_0 + (\theta - x_0)\left(\ln\tfrac{1}{R}\right)^{1/b} $$
+
+and the usable life is $L_R = x(R)\,L_{10}$. At $R = 0.90$ the factor returns $\approx 1$ — a
+self-consistency check that $L_{10}$ really is the 90% life. Push the reliability knob to 0.99 and
+the factor falls to about $0.22$: demanding that 99% survive instead of 90% cuts the usable life to
+roughly a *fifth* of the catalog number. That is not pessimism, it is the geometry of the tail. The
+Weibull fit is cited only on its calibrated domain, so below $R = 0.90$ the reliability-adjusted
+readouts are **refused** (the adjusted-life bar is withheld and a banner explains why) while the
+rated life $L_{10}$ keeps standing — a scoped refusal, the same machinery the
+[eccentric column](../eccentric-column/) uses to hand off between two models on one page.
+
+## The Weibull parameters are cited data, carried as constants
+
+The numbers $x_0 = 0.02$, $\theta = 4.459$, $b = 1.483$ are not universal — they are a manufacturer's
+fit to a specific bearing family (Shigley's Table 11-6, the 02-series set on the $10^6$-revolution
+rating basis). They appear on the page the way the [standard gravity](../shaft-critical-speed/) does
+on the critical-speed page: **labeled, sourced values that are never sliders**. Reading them off the
+constants panel is the point — a reliability number that traces to a cited fit is honest in a way a
+magic coefficient buried in a formula is not.
+
+## Why there is no material dropdown
+
+Every other stress page here has a material axis. This one deliberately does **not**, and the reason
+is worth stating: the bearing steel is already *inside* the catalog ratings. $C_{10}$ and $C_0$ are
+measured on the finished bearing — its steel, its heat treatment, its geometry, its surface finish
+all baked in — so exposing a separate "material" would double-count the very thing the rating
+encapsulates. Like the [planetary gearset](../planetary-gearset/), this is a geometry-and-catalog
+THING: the honest user axes are the loads, the speed, and the reliability goal, and the page teaches
+what the catalog number *means* rather than pretending to recompute it. The bearing's material story
+lives one page over, in the shafts it carries.
+
+## Reading the widget and where it connects
+
+Set the catalog ratings and the equivalent load, pick a speed and a reliability, and toggle ball
+versus roller. The two bars are on a **logarithmic** scale so the power law is legible at a glance:
+one decade of life is a fixed width, and halving the load slides the ball bar a full three doublings
+(8×) to the right. Drive the load past the static rating $C_0$ and it warns — that is a *different*
+failure (brinelling, covered in the failure note). The radial load $P$ here is exactly the gear
+separating force a [spur gear pair](../spur-gear-pair/) throws onto its shaft, and the shaft it rides
+is the [combined bending-and-torsion shaft](../combined-shaft/) — an explicit hand-off the chaining
+work will wire together.

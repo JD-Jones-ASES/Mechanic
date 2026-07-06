@@ -14,6 +14,8 @@ const TORQUE = { dim: [2, 1, -2, 0, 0, 0, 0], quantity_kind: "torque" };
 const ENERGY = { dim: [2, 1, -2, 0, 0, 0, 0], quantity_kind: "energy" };
 const ANGLE = { dim: [0, 0, 0, 0, 0, 0, 0], quantity_kind: "angle" };
 const RATIO = { dim: [0, 0, 0, 0, 0, 0, 0], quantity_kind: "ratio" };
+const PROBABILITY = { dim: [0, 0, 0, 0, 0, 0, 0], quantity_kind: "probability" };
+const EFFICIENCY = { dim: [0, 0, 0, 0, 0, 0, 0], quantity_kind: "efficiency" };
 
 test("rad/s -> rad/s is legal", () => {
   assert.equal(connectionLegal(ANGVEL, ANGVEL).ok, true);
@@ -43,6 +45,18 @@ test("frequency -> angular_velocity is rejected despite equal dimensions (f-port
   assert.equal(connectionLegal(ANGVEL, FREQ).ok, false);
   // a frequency port DOES accept another frequency port
   assert.equal(connectionLegal(FREQ, FREQ).ok, true);
+});
+
+test("probability -> ratio / efficiency is rejected despite all being dimensionless (a reliability is not a ratio)", () => {
+  const r = connectionLegal(PROBABILITY, RATIO);
+  assert.equal(r.ok, false);
+  assert.match(r.reason, /quantity kind/);
+  // both a geometric ratio and a power efficiency are off-limits, both directions
+  assert.equal(connectionLegal(RATIO, PROBABILITY).ok, false);
+  assert.equal(connectionLegal(PROBABILITY, EFFICIENCY).ok, false);
+  assert.equal(connectionLegal(EFFICIENCY, PROBABILITY).ok, false);
+  // a reliability DOES accept another reliability port
+  assert.equal(connectionLegal(PROBABILITY, PROBABILITY).ok, true);
 });
 
 test("planner rejects feedback loops (v1 forward-only DAG)", () => {
