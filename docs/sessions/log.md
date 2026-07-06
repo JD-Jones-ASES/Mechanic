@@ -1035,3 +1035,64 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   log — do not re-inflate the roadmap. (e) The QC audit found the gates' blind spots are exactly
   cross-THING consistency (sibling envelope patterns dropped in reuse; asymmetric warns) and citation
   locators — worth a standing audit line in future phase-close briefs.
+
+## QC1 — Phase-2 QC-fix batch (owner-directed) — 2026-07-06 — PR #31 — MERGED
+- Shipped: ALL 20 confirmed findings of the Phase-2 QC audit dispositioned (the audit report IS the brief;
+  its Dispositions section is the item-by-item record). 3 criticals FIXED: stepped-shaft-fillet phantom
+  "Roark Table 6-1 case III-2" attribution → Pilkey + Roark Table 17.1 with dated correction notes in
+  yaml/test-docstring/log-errata; torsional-oscillator static-twist shear-yield warn (16·T_app/(πd³) <
+  σ_y/2 — the 5000 N·m knob on a ≈196 N·m onset rendered fictional twist banner-free); slider-crank sim
+  torque-arrowhead sense swapped (positive T now CCW, matching +θ, the animation sweep, and the θ=90°
+  free body; drawn-frame convention documented in the component). 4 citation locators corrected AFTER
+  independent re-verification (rule 6): spur-gear 14-4b→14-6b (×5), circular-plate §16-17→§15-16, impact
+  Gere §9.7-9.8→§9.8/§9.10, impact Shigley §4-18→§4-17. 7 envelope warns close the silent regions:
+  spur-gear SYMMETRIC undercut (Min/Max on the smaller member — old N_p-only check provably vacuous at
+  inverted ratios), stepped-shaft torsion-SF disclaimer (load_case < 3, discriminator idiom at warn
+  severity), beam-shear-flow wide-flat b < 2h, scs slenderness L > 10d (ssbeam sibling pattern restored)
+  + Dunkerley-side resonance band, impact δ_i < L/10, torsional static yield. Test quality: torsional
+  golden 52.3155→52.3160 (true 52.316017); impact tautological stress assert → genuine σ = E·c·v″(0)
+  derivation; _norton_kt refuses out-of-domain like table.ts. Bearing overview L₁₀h display math
+  rewritten (both forms plain revolutions; old chain off by 10⁶ under its own definitions);
+  circular-plate warn direction corrected (linear theory OVER-predicts; capacity under-predicted);
+  stepped SF default 1.6927. Runbook launch prompt now carries rule 6 verbatim + model-agnostic wording
+  (protocol header likewise). RECORDED not fixed: revolution_count kind question (owner), note-grade
+  items, mid-bracket resonance observation — all in reports/phase-2-qc-audit.md Dispositions.
+- Gates: pnpm build clean (7 THINGs recompiled + re-verified; katex/mdx/parity/units green); pytest 297;
+  unit 19; e2e 85 (82 + 3 new warn pins — torsional static yield @1000 N·m steel-a36, spur-gear
+  role-reversed 100/14 mesh, scs Dunkerley-only window @1958 rpm steel-a36); visual pass (built dist
+  /Mechanic/ via preview): slider-crank paused overlay arrowhead tip up-LEFT of hub pointing left-down
+  = CCW at T = +199.87 N·m (verified in DOM coordinates + screenshot), torsional amber static-yield
+  banner at T_app = 1000 beside θ_st = 66.1° (screenshot), defaults banner-free, console 0 errors;
+  review: 3 independent fresh-context subagents (§4). (a) Physics PASS 13/13 — re-derived the
+  Saint-Venant flexure correction from scratch (edge factors 1.126/1.396/1.988 = the quoted
+  13%/40%/2×), confirmed the old undercut check silent exactly where the new one fires, redid the sim
+  free-body + screen-tangent arithmetic. (b) Invariants PASS 7/7 — recompiled all changed THINGs
+  cache-evicted proving the new conditions survive parse as Relationals; truth-tabled them; every
+  touched test strengthens or stays neutral. (c) Code/tests PASS — every e2e margin recomputed from raw
+  DB values; _norton_kt float-membership + interpolation-branch coverage verified programmatically; tsc
+  clean. Findings: 1 should-fix FIXED pre-merge (torsional e2e pin selects steel-a36 — was silently
+  dependent on materials-DB file ordering); 2 nits REBUTTED ("2-D elasticity" banner shorthand kept,
+  the numbers are the exact classical values; rounded-input comment kept as a deliberate hand-check);
+  1 observation RECORDED (mid-bracket resonance gap — enforcement weaker than advice, errs safe).
+- Golden: 52.3160 Hz (recomputed full-precision 52.316017 independently by three reviewers + me);
+  SF 1.6927 (default chain recomputed, 1.692734).
+- Citations pinned: every corrected locator re-verified BEFORE editing — 14-6b vs a published Shigley
+  §14 worked-example excerpt; Timoshenko §15/16/17 vs published TOC listings; Gere ch. 9 vs the 9th-ed
+  contents listing; Shigley §4-17 vs the ch. 4 contents; Roark Table 17.1 (ch. 17, pp. 809-822) vs
+  publisher listings. HONEST: Pilkey's internal table number is NOT independently pinnable from
+  accessible sources today — attributed at book level, with the part/case designation credited to
+  Pilkey's numbering and the original mis-attribution preserved in dated correction notes.
+- Deviations from brief: executed as ONE batch (the report recommended 1-2 rows) per owner instruction
+  in-session. S01/S02 log entries carry dated ERRATUM annotations preserving the original wrong text —
+  the errata pattern, not silent edits (invariants reviewer: compliant in spirit).
+- New capabilities future briefs may rely on: none (no engine/pipeline/schema/kind/unit change).
+  Pattern worth reusing: a discriminator-gated WARN (load_case < 3) surfaces a per-configuration
+  disclaimer on a shared relation set — the S13 scoped-refusal idiom's warn-severity sibling.
+- Notes-for-next (S15 = solveLinear, solo, full-context): (a) e2e pins on material-dependent values
+  MUST select a material explicitly — the page default is the alphabetically-first QUALIFYING material
+  (al-2024-t3 on most pages) and DB file ordering is not a contract; yaml-comment numbers (ω_c, yield
+  onsets) are computed from DECLARED defaults and differ from the live default material. (b) The
+  launch prompt in runbook.md changed (rule 6 sentence added) — JD's paste-block is current. (c) The
+  QC cycle is CLOSED: audit (QC0) → fixes (QC1) same day; remaining owner decisions are the
+  revolution_count kind and the sources[].verification backfill row. (d) Nothing is paused; S15 is the
+  topmost QUEUED row of active Phase 3.
