@@ -5,14 +5,16 @@ run builds, or touch repo files with PowerShell.
 
 ## The launch prompt
 
-Paste this verbatim to start every session (Claude Code, Opus 4.8, repo at
-`C:\GitHub_Files\Mechanic`). It never needs editing:
+Paste this verbatim to start every session (Claude Code, best available model — Fable 5 as of
+2026-07 — repo at `C:\GitHub_Files\Mechanic`). It never needs editing:
 
 > Read docs/sessions/protocol.md and follow it exactly. You are one autonomous working session.
 > Do the startup sequence, claim the next session per the queue rules (resuming any PAUSED work
 > first), execute it to a merged PR with every gate honestly green, do the session-end
 > bookkeeping, and stop. If the queue says AWAITING OWNER, an entry criterion fails, or you hit
 > the BLOCKED protocol — stop and report clearly instead of improvising. Never lower a gate.
+> A brief is a spec, not a source: independently re-derive emitted formulas and web-corroborate
+> cited constants before they ship.
 
 ## What you do, when
 

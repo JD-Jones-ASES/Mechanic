@@ -63,7 +63,7 @@ def test_centre_distance_is_tangent_pitch_circles():
 # ---------------------------------------------------------------------------
 # Inputs: N_p=18, N_g=36, m=4 mm, b=40 mm, T=100 N·m, omega_p=50 rad/s,
 #         sigma_all=370 MPa, phi=20°, Barth v_b=6.1 m/s.
-# By hand (Shigley §14-1, eq 14-4b metric):
+# By hand (Shigley §14-1, eq 14-6b metric):
 #   W_t = 2T/(m N_p)      = 200 / 0.072            = 2777.78 N
 #   V   = omega_p m N_p/2 = 50 * 0.004 * 9         = 1.8 m/s
 #   K_v = (6.1 + V)/6.1   = 7.9/6.1                = 1.29508

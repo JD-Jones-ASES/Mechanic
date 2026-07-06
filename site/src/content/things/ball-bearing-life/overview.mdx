@@ -30,13 +30,16 @@ bearing pays back far faster than intuition suggests.
 ## From revolutions to hours
 
 A life in revolutions is turned into a life in time by the speed. Each revolution is $2\pi$ radians,
-so $L_{10}$ revolutions at angular speed $\omega$ take
+so $L_{10}$ revolutions at angular speed $\omega$ (rad/s) — equivalently $n$ (rev/min) — take
 
-$$ L_{10h} = \frac{2\pi\,L_{10}}{\omega} = \frac{10^{6}\,L_{10}}{60\,n} $$
+$$ L_{10h} = \frac{2\pi\,L_{10}}{3600\,\omega} = \frac{L_{10}}{60\,n} $$
 
-The right-hand form — with $n$ in rev/min — is how Shigley prints it, and it is the *same fact*: the
-$60$ and the $10^{6}$ are unit conversions folded into the display. This page keeps the engine in SI
-(the left form) and lets the readout show hours, so the arithmetic you can check by hand and the
+hours, with $L_{10}$ in plain revolutions in **both** forms (the $2\pi$ trades revolutions for
+radians; the $3600$ and $60$ trade seconds and minutes for hours). Shigley prints the same fact as
+$L_{10h} = 10^{6}L_{10}'/(60\,n)$ with the life $L_{10}'$ expressed in *millions* of revolutions —
+the catalog convention — so his $10^{6}$ merely unpacks the Mrev; feeding this page's
+plain-revolution $L_{10}$ into that form would overshoot by a factor of a million. This page keeps
+the engine in SI and lets the readout show hours, so the arithmetic you can check by hand and the
 number an engineer quotes are visibly one thing. Bearing life is quoted in hours because that is what
 a maintenance schedule is written in; the page adds the **hour** and **million-revolution** (Mrev)
 display units for exactly this readout.

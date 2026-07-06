@@ -26,7 +26,53 @@ two-bar-truss ships cos²α).
 **Caveat on the citation findings**: the *corrections* below cite book sections partly from model
 recall corroborated by web checks — exactly the kind of input protocol rule 6 distrusts. A fix
 session must independently re-verify each corrected locator before shipping it (the finding that a
-cited locator is WRONG is solid; the proposed replacement needs its own pin).
+cited locator is WRONG is solid; the proposed replacement needs its own pin). *(Done — see
+Dispositions.)*
+
+## Dispositions — executed same day (2026-07-06, owner-directed QC-fix session, `hotfix/qc-audit-fixes`)
+
+**FIXED (with rule-6 re-verification where a locator changed):**
+
+- **All 3 criticals.** stepped-shaft-fillet attribution → the Peterson-derived C1–C4 fits credited
+  to Pilkey (whose "Table 6-1 part III case 2" numbering the S02 session had mis-attributed to
+  Roark) and Roark **Table 17.1** (re-verified: ch. 17 pp. 809–822), with a dated correction note
+  in the yaml, the test docstring, and errata annotations in the S02 log entry. ·
+  torsional-oscillator static-twist shear-yield warn added (mirrors the page's amplitude warn;
+  e2e-pinned at T_app = 1000 N·m vs onset ≈196). · slider-crank torque-arc arrowhead sense
+  swapped, with the drawn-frame convention documented in the component (positive T now renders
+  counterclockwise, matching +θ and the θ=90° free body).
+- **Citation locators, each independently re-verified before editing:** spur-gear 14-4b → **14-6b**
+  in all 5 places (metric Barth form corroborated against a published Shigley §14 worked-example
+  excerpt); circular-plate **§15-16** (TOC re-checked: §17 is the annular plate); impact-loading
+  Gere **§9.8/§9.10** (9th-ed contents listing: §9.7 is Nonprismatic Beams) and Shigley
+  **§4-17** (Ch. 4 contents end at 4-17, Shock and Impact).
+- **All 7 envelope gaps → warns** (none needed an invalid): spur-gear symmetric undercut via
+  Min/Max on the smaller member (e2e-pinned at the role-reversed 100/14 mesh); stepped-shaft
+  torsion-config SF disclaimer (discriminator-gated, load_case < 3); beam-shear-flow wide-flat
+  b < 2h; shaft-critical-speed slenderness L > 10d (the sibling ssbeam pattern, restored) AND the
+  Dunkerley-side resonance band (e2e-pinned at 1958 rpm, inside ±20% of ω_cD but outside the
+  Rayleigh band); impact-loading δ_i < L/10 (the two-bar-truss convention). All defaults verified
+  warn-clean.
+- **Test quality:** torsional golden 52.3155 → **52.3160**; impact-loading's tautological
+  cantilever-stress assert replaced with a genuine derivation (σ = E·c·v″(0) from plane sections +
+  Hooke + the integrated equilibrium moment); `_norton_kt` now REFUSES out-of-domain like the
+  shipped lookup instead of clamping.
+- **Display math:** ball-bearing-life overview's L₁₀h chain rewritten with L₁₀ in plain
+  revolutions in both forms (2πL₁₀/(3600ω) = L₁₀/(60n)), Shigley's Mrev-packaged form given its
+  own symbol. · circular-plate warn direction corrected (membrane action makes linear theory
+  OVER-predict deflection/stress; it's the capacity that's under-predicted). · stepped-shaft SF
+  default 1.6928 → 1.6927 (recomputed).
+
+**RECORDED, deliberately not fixed:** the `revolution_count` kind-granularity question (owner
+registry decision); ball-bearing's unreachable R < 1 envelope (harmless defense-in-depth); the
+note-grade items (two tautological sub-assertions in otherwise-genuine test modules, the
+stepped-shaft bending-branch 0.1-vs-0.25 lower bound, the spur-gear material-cascade e2e gap,
+the `load_derivation()` placeholder-kind latency, the a/b = 5→10 interpolation-density note);
+and one fix-review observation — the two ±20% end-band resonance warns on shaft-critical-speed
+still don't cover the *middle* of a wide [ω_cD, ω_c] bracket (enforcement is weaker than the
+message's advice, erring safe since the true critical sits near ω_cD; a single
+"inside [0.8 ω_cD, 1.2 ω_c]" condition would enforce exactly what the message preaches, if
+wanted later).
 
 ## Critical findings (3)
 

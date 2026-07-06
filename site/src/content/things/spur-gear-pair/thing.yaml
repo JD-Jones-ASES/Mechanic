@@ -77,7 +77,7 @@ variables:
     latex: 'v_b'
     unit: m/s
     quantity_kind: velocity
-    default: 6.1                  # 6.1 m/s — the metric Barth constant (Shigley eq 14-4b)
+    default: 6.1                  # 6.1 m/s — the metric Barth constant (Shigley eq 14-6b)
     bounds: [1, 20]
     positive: true
     display_units: ["m/s"]
@@ -261,15 +261,18 @@ relations:
       - speed ratio is the inverse of the torque ratio for an ideal (lossless) mesh
     citation: shigley
     validity:
-      # interference / undercut minimum pinion teeth (Shigley eq 13-11, k = 1 for
-      # full-depth). Below it the flank is undercut and the Lewis tooth-form
-      # assumption breaks down — the algebra still evaluates, so this is a warn.
-      - condition: N_p >= 2*(N_g/N_p + sqrt((N_g/N_p)**2 + (1 + 2*N_g/N_p)*sin(phi)**2))/((1 + 2*N_g/N_p)*sin(phi)**2)
+      # interference / undercut minimum teeth on the SMALLER member (Shigley eq 13-11,
+      # k = 1 for full-depth, evaluated with the mate ratio Max/Min ≥ 1). Below it the
+      # flank is undercut and the Lewis tooth-form assumption breaks down — the algebra
+      # still evaluates, so this is a warn. Min/Max keep the check symmetric under
+      # pinion/gear role reversal (the i bounds allow either member to be smaller).
+      - condition: Min(N_p, N_g) >= 2*(Max(N_p, N_g)/Min(N_p, N_g) + sqrt((Max(N_p, N_g)/Min(N_p, N_g))**2 + (1 + 2*Max(N_p, N_g)/Min(N_p, N_g))*sin(phi)**2))/((1 + 2*Max(N_p, N_g)/Min(N_p, N_g))*sin(phi)**2)
         severity: warn
         message: >-
-          The pinion has fewer teeth than the interference-free minimum for this ratio and pressure
-          angle (Shigley eq 13-11): the flank will be undercut, weakening the tooth and voiding the
-          Lewis form-factor geometry. Increase N_p, raise the pressure angle, or use profile shift.
+          The smaller member of this mesh has fewer teeth than the interference-free minimum for
+          this ratio and pressure angle (Shigley eq 13-11): its flank will be undercut, weakening
+          the tooth and voiding the Lewis form-factor geometry. Add teeth to the small member,
+          raise the pressure angle, or use profile shift.
         citation: shigley
   - id: centre-distance
     group: kinematics
@@ -290,7 +293,7 @@ relations:
     latex: 'K_v = \frac{6.1 + V}{6.1}'
     residual: K_v - (v_b + V)/v_b
     assumptions:
-      - Barth velocity factor for cut or milled profile teeth (Shigley eq 14-4b, metric)
+      - Barth velocity factor for cut or milled profile teeth (Shigley eq 14-6b, metric)
       - the 6.1 carries units of m/s (v_b) — an empirical dynamic-load amplifier, not a first-principles result
     citation: shigley
     validity:
@@ -387,7 +390,7 @@ derivation:
         Real teeth strike each other slightly out of step, so the dynamic load exceeds the static
         one. Barth's factor K_v = (6.1 + V)/6.1 (metric, cut/milled teeth) is the empirical multiplier
         that captures this — physics entering by citation, not derivation.
-      rule: 'modeling: Barth velocity factor (empirical, Shigley 14-4b)'
+      rule: 'modeling: Barth velocity factor (empirical, Shigley 14-6b)'
       check: definition
     - expr: Eq(sigma_b_p, K_v*W_t/(b*m_mod*Y_p))
       prose: >-
@@ -414,10 +417,13 @@ sources:
     citation: >-
       Budynas, R. G., & Nisbett, J. K., Shigley's Mechanical Engineering Design, 10th ed.,
       McGraw-Hill, 2015 — §13-5/13-7 (involute geometry; interference, eq 13-11), §14-1 (the Lewis
-      bending equation), Table 14-2 (Lewis form factor Y, 20° full-depth, tip load), eq 14-4b (Barth
+      bending equation), Table 14-2 (Lewis form factor Y, 20° full-depth, tip load), eq 14-6b (Barth
       velocity factor, metric).
     verification: >-
-      Topic and formulas pinned 2026-07-04. Table 14-2 Y values cross-checked against multiple
+      Topic and formulas pinned 2026-07-04. Velocity-factor equation number corrected 14-4b → 14-6b
+      on 2026-07-06: eq 14-4b is the US-customary (1200+V)/1200 ft/min form; the metric
+      (6.1+V)/6.1 m/s form is eq (14-6b) — corroborated against a published worked-example excerpt
+      of Shigley §14 (mguler.etu.edu.tr Spur_Gear_Example) and the 10th-ed solutions manual's usage. Table 14-2 Y values cross-checked against multiple
       independent reproductions of the standard 20° full-depth, tip-load Lewis form factors
       (evolventdesign.com/pages/gear-strength-calculator-lewis confirms the "load near the tip"
       basis; individual values 12→0.245, 15→0.290, 17→0.303, 20→0.322, 30→0.359, 50→0.409, 400→0.480

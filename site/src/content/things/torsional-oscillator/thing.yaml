@@ -314,6 +314,19 @@ relations:
       - the same shaft acting as a static torsion spring — the twist a steady torque T_app would
         hold (the reciprocal of k_t, θ_st = T_app/k_t), a bridge to the shaft-in-torsion page
     citation: gere
+    validity:
+      # static counterpart of the amplitude shear-yield warn above: the T_app knob spans
+      # far past yield onset (≈196 N·m at the file defaults), and without this check the
+      # page rendered a fictional elastic twist banner-free (QC audit 2026-07-06). The
+      # static surface shear is τ = 16 T_app/(π d³) = T_app·(d/2)/J_p.
+      - condition: 16*T_app/(pi*d**3) < sigma_y/2
+        severity: warn
+        message: >-
+          The steady torque's surface shear stress (16 T_app/πd³) exceeds the shear yield
+          strength (σ_y/2, maximum-shear-stress criterion): the shaft would yield before holding
+          this twist, so the elastic θ_st shown here is fictional past this point — the real
+          shaft takes a permanent set instead.
+        citation: shigley
 
 configurations:
   - id: geometry-in

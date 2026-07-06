@@ -101,7 +101,7 @@ variables:
     latex: '\mathrm{SF}'
     unit: '1'
     quantity_kind: safety_factor
-    default: 1.6928
+    default: 1.6927
     bounds: [0, 1.0e6]
     positive: true
     role: derived
@@ -224,6 +224,19 @@ relations:
       - static factor of safety on first yield; the allowable is taken as the yield strength (educational)
       - for torsion sigma_nom is a shear stress, so SF here is illustrative — a shear-yield criterion is proper
     citation: norton
+    validity:
+      # the torsion configuration divides a TENSILE yield allowable by a peak SHEAR
+      # stress — surface the prose disclaimer as a banner there (load_case = 3 selects
+      # torsion; the discriminator is a free integer, so the condition stays a
+      # Relational at parse and the constrained value trips it at runtime).
+      - condition: load_case < 3
+        severity: warn
+        message: >-
+          Torsion: this SF divides the tensile yield strength by a peak SHEAR stress, so it
+          overstates the true static margin by roughly 1.7× — a shear-yield criterion
+          (τ_allow ≈ 0.577 σ_y, von Mises) is the proper check. Read this number as
+          illustrative geometry pedagogy, not a design margin.
+        citation: norton
 
 configurations:
   - id: axial
@@ -295,9 +308,14 @@ sources:
       K_t = A·(r/d)^b for a shoulder fillet in a stepped circular shaft, credited to Peterson's charts.
     verification: >-
       Read digit-for-digit from Norton App. C Figs C-1/C-2/C-3 (owner-provided scan, 2026-07-04);
-      cross-checked against Roark, Formulas for Stress and Strain, Table 6-1 case III-2 closed form
-      (C1..C4 polynomial in 2h/D) — the two independently published fits agree within the sources'
-      stated few-percent accuracy over the well-stepped D/d >= 1.5 band (see
-      pipeline/tests/test_stepped_shaft_physics.py). The (A, b) numbers are cited DATA, not
-      machine-proven physics; interpolation between D/d rows is proven in the parity oracle. Shigley
+      cross-checked against the independently published Peterson-derived C1..C4 closed-form fits
+      (polynomials in sqrt(h/r) evaluated at 2h/D) for the shoulder fillet in a stepped circular
+      shaft, as tabulated in Pilkey, Formulas for Stress, Strain, and Structural Matrices, and
+      printed as Table 17.1 in Roark's Formulas for Stress and Strain, 7th/8th ed. — the two
+      independently published fits agree within the sources' stated few-percent accuracy over the
+      well-stepped D/d >= 1.5 band (see pipeline/tests/test_stepped_shaft_physics.py). Attribution
+      corrected 2026-07-06: this field originally cited "Roark Table 6-1 case III-2", a
+      designation that exists in no Roark edition (that part/case numbering is Pilkey's); the
+      closed form itself is unchanged. The (A, b) numbers are cited DATA, not machine-proven
+      physics; interpolation between D/d rows is proven in the parity oracle. Shigley
       Fig. A-15-8/9 is the same chart family and is named as a cross-reference only, never digitized.

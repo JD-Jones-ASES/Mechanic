@@ -301,6 +301,18 @@ relations:
     assumptions:
       - the peak dynamic deflection is the impact factor times the static deflection
     citation: gere
+    validity:
+      # small-displacement guard (the two-bar-truss δ/L < 0.1 convention): the static
+      # relation assumes "small static deflection" but nothing enforced it on the peak —
+      # a compliant cantilever within bounds can reach δ_i/L ≈ 0.14 with the yield and
+      # member-mass warns both silent.
+      - condition: delta_i < L/10
+        severity: warn
+        message: >-
+          Peak impact deflection exceeds L/10 — the small-displacement assumption behind the
+          linear load–deflection line (and therefore the energy balance) is breaking down, and
+          these numbers drift from the real geometry.
+        citation: gere
   - id: impact-stress
     group: dynamics
     latex: '\sigma_{i} = n\,\sigma_{st}'
@@ -423,10 +435,13 @@ sources:
     citation: >-
       Gere, J. M., & Goodno, B. J., Mechanics of Materials, 9th ed., Cengage, 2018 — §2.8 (impact
       loading: the falling-collar energy balance, the impact factor, and the suddenly-applied-load
-      n = 2 result) and Ch. 2 / §9.7-9.8 strain energy and the end-loaded cantilever deflection.
+      n = 2 result), §9.8 (strain energy of bending), §9.10 (deflections produced by impact); the
+      end-loaded cantilever tip deflection WL³/3EI is Ch. 9 material (worked examples / Appendix H).
     verification: >-
-      §2.8 (impact loading) and the strain-energy sections confirmed against the published 9th-edition
-      chapter listing, 2026-07-06; the textbook PDF is not web-accessible for a page-exact quote. The
+      Beam-section pins corrected 2026-07-06 against the published 9th-edition contents (§9.7 is
+      Nonprismatic Beams, so the original "§9.7-9.8" span was half-wrong; strain energy of bending
+      is §9.8, deflections produced by impact is §9.10). §2.8 (impact loading) re-confirmed against
+      the same listing; the textbook PDF is not web-accessible for a page-exact quote. The
       impact factor n = 1 + √(1 + 2h/δ_st), the n = 2 suddenly-applied limit, and the σ → √(2mghE/V)
       strain-energy-density asymptote are all re-derived from the energy balance (not taken on the
       citation) in pipeline/tests/test_impact_loading_physics.py.
@@ -438,7 +453,9 @@ sources:
       unconservative against stress-wave and contact effects.
     verification: >-
       Topic-level cross-check (impact / energy loading; the impact factor and the energy-per-volume
-      design argument are standard and also given in Shigley §4-18 and Boresi). Not page-pinned; used
+      design argument are standard and also given in Shigley §4-17 "Shock and Impact" — corrected
+      from "§4-18" on 2026-07-06 against the published Ch. 4 contents, which end at §4-17 — and
+      Boresi). Not page-pinned; used
       to corroborate the treatment and the failure notes, not any single emitted number. The member-
       inertia warn (member not massless) follows Juvinall's stated limitation of the method.
   - id: nist

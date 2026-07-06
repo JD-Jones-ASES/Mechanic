@@ -4,13 +4,18 @@ This RE-DERIVES the nominal-stress formulas from section geometry (I, J, A) — 
 does NOT import thing.yaml's residuals. The fitted stress-concentration
 coefficients (A, b) cannot be re-derived from first principles (they digitize
 Peterson's photoelastic charts), so the DATA is cross-checked a different, honest
-way: the authored Norton A·(r/d)^b fit is compared against Roark's INDEPENDENT
-closed-form fit of the same shoulder-fillet charts (Roark, Formulas for Stress
-and Strain, Table 6-1 part III case 2). Two independently published digitizations
-of the same photoelastic data agreeing within their stated few-percent accuracy
-is genuinely independent verification — stronger than most THINGs get.
+way: the authored Norton A·(r/d)^b fit is compared against the INDEPENDENT
+Peterson-derived C1..C4 closed-form fit of the same shoulder-fillet charts, as
+tabulated in Pilkey (Formulas for Stress, Strain, and Structural Matrices) and
+printed as Table 17.1 in Roark 7th/8th ed. [Attribution corrected 2026-07-06:
+this docstring originally located the fit at "Roark Table 6-1 part III case 2" —
+a designation that exists in no Roark edition; that part/case numbering is
+Pilkey's. The closed form and every coefficient below are unchanged.] Two
+independently published digitizations of the same photoelastic data agreeing
+within their stated few-percent accuracy is genuinely independent verification —
+stronger than most THINGs get.
 
-Roark's fit (verbatim, Roark Table 6-1 / preserved in the S02 session log):
+The Pilkey/Roark fit (verbatim, preserved in the S02 session log):
     K_t = C1 + C2·(2h/D) + C3·(2h/D)^2 + C4·(2h/D)^3,     h = (D - d)/2
 with C1..C4 polynomials in sqrt(h/r), valid over 0.1 <= h/r <= 2.0 (axial,
 bending) and 0.25 <= h/r <= 4.0 (torsion). In the chart ratios,
@@ -46,29 +51,31 @@ def _tables():
 
 
 def _norton_kt(rows, Dd, rd):
-    """Norton K_t = A·(r/d)^b with (A, b) interpolated linearly by D/d — the same
-    two-column linear interpolation the pipeline/runtime perform, computed here
-    independently of the emitted artifact."""
+    """Norton K_t = A·(r/d)^b with (A, b) interpolated linearly by D/d — node-exact at
+    rows, linear between, and REFUSING outside the tabulated domain exactly like the
+    shipped lookup (site/src/engines/table.ts returns NaN there — no clamp, no
+    extrapolation). Failing loudly here means an out-of-domain cross-check point can
+    never silently compare Roark/Pilkey against a clamped Norton value."""
     xs = sorted(rows)
-    if Dd <= xs[0]:
-        A, b = rows[xs[0]]
-    elif Dd >= xs[-1]:
-        A, b = rows[xs[-1]]
+    if Dd < xs[0] or Dd > xs[-1]:
+        raise AssertionError(
+            f"cross-check point D/d={Dd} lies outside the tabulated domain [{xs[0]}, {xs[-1]}] "
+            "— the shipped lookup refuses there; move the point in-domain"
+        )
+    if Dd in rows:
+        A, b = rows[Dd]
     else:
         lo = max(x for x in xs if x <= Dd)
         hi = min(x for x in xs if x >= Dd)
-        if lo == hi:
-            A, b = rows[lo]
-        else:
-            (Alo, blo), (Ahi, bhi) = rows[lo], rows[hi]
-            f = (Dd - lo) / (hi - lo)
-            A, b = Alo + (Ahi - Alo) * f, blo + (bhi - blo) * f
+        (Alo, blo), (Ahi, bhi) = rows[lo], rows[hi]
+        f = (Dd - lo) / (hi - lo)
+        A, b = Alo + (Ahi - Alo) * f, blo + (bhi - blo) * f
     return A * rd ** b
 
 
-# ---- Roark's independent closed-form fit (Table 6-1 part III case 2) ----
+# ---- The Pilkey/Roark (Peterson-derived) independent closed-form fit ----
 def _roark_C(load, u, hr):
-    """C1..C4 as polynomials in u = sqrt(h/r); coefficients verbatim from Roark."""
+    """C1..C4 as polynomials in u = sqrt(h/r); coefficients verbatim from the Pilkey/Roark fit."""
     if load == "axial":
         return (
             0.926 + 1.157 * u - 0.099 * hr,

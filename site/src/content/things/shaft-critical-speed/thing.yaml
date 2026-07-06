@@ -224,6 +224,18 @@ relations:
           The static sag exceeds L/100 — a very flexible rotor. The small-deflection beam theory
           behind δ_st is stretched, and the single-mode Rayleigh estimate loses accuracy.
         citation: gere
+      # slenderness guard (QC audit 2026-07-06): the simply-supported-beam page this
+      # δ_st is reused from carries exactly this warn (L > 10·h there); it was dropped
+      # in the reuse. The bounds reach L/d = 0.67, where Euler–Bernoulli grossly
+      # overpredicts stiffness (shear deformation neglected) and ω_c comes out high —
+      # non-conservative for a rotor meant to run subcritical.
+      - condition: L > 10*d
+        severity: warn
+        message: >-
+          This is a short, stubby shaft (L < 10d): shear deflection, neglected by the
+          Euler–Bernoulli theory behind δ_st and ω_s, is no longer small — the real shaft is
+          more flexible than modeled, so the critical speeds shown here are OVERestimates.
+        citation: gere
   - id: crit-frequency
     group: dynamics
     latex: 'f_c = \frac{\omega_c}{2\pi}'
@@ -263,6 +275,18 @@ relations:
           The operating speed is within 20% of the critical speed — the resonance band. Near ω_c an
           undamped rotor's whirl amplitude grows without bound, so running speeds are kept clear of
           the band (below about 0.8 ω_c or above about 1.2 ω_c).
+        citation: shigley
+      # Dunkerley-side band (QC audit 2026-07-06): the page itself teaches the true first
+      # critical lies BETWEEN ω_cD and ω_c. With a light disk that bracket is wide, and the
+      # old warn guarded only the Rayleigh end — a rotor could run ~1% off the true critical
+      # while sr read a safe-looking 0.55. Guard both ends of the bracket.
+      - condition: Abs(omega_op - omega_cD) >= omega_cD/5
+        severity: warn
+        message: >-
+          The operating speed is within 20% of the Dunkerley estimate ω_cD — the LOWER end of
+          the bracket that contains the true first critical speed (ω_cD ≤ ω_true ≤ ω_c). The
+          Rayleigh-based speed ratio sr can look safe here while the rotor runs near the real
+          resonance; keep clear of the whole [0.8 ω_cD, 1.2 ω_c] band.
         citation: shigley
 
 configurations:
