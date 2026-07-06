@@ -83,6 +83,10 @@ def test_compile_planetary_fixture(things_dir, tmp_path):
     assert all(st["check"] == "identity" for st in artifact["derivation"])
     # the Willis singularity guard was auto-derived
     assert any(g["kind"] == "nonzero" for g in cfg["guards"]) or cfg["guards"] == []
+    # the role: constant mechanism leaves a no-constant THING untouched — no
+    # variable record grows the constant-only `citation` key (planetary is the
+    # 2-DOF invariant-1 reference case; the mechanism must not perturb it)
+    assert all("citation" not in v for v in artifact["variables"].values())
 
 
 def test_wrong_solution_fails_build(things_dir, tmp_path):
@@ -202,3 +206,113 @@ def test_cache_removes_artifacts_of_deleted_things(things_dir, tmp_path):
     assert compile_all(things_dir, out) == []
     assert not (out / "planetary-fixture.compiled.json").exists()
     assert not (out / "planetary-fixture.fns.ts").exists()
+
+
+# ---------- role: constant mechanism (S08) ----------
+# A cited physical constant is a known injected value excluded from the DOF/knob
+# arithmetic exactly like a material, but its fixed value + provenance ride the
+# variable (not the materials DB) and its citation is mandatory (invariant 5).
+CONSTANT_YAML = textwrap.dedent("""
+    id: constant-fixture
+    title: Constant fixture
+    facets: [dynamics]
+    variables:
+      - {symbol: m, name: Mass, unit: kg, quantity_kind: mass, default: 5, bounds: [0.1, 100], positive: true}
+      - {symbol: g, name: Standard gravity, unit: m/s**2, quantity_kind: acceleration, default: 9.80665, bounds: [9.78, 9.83], positive: true, role: constant, citation: si}
+      - {symbol: W, name: Weight, unit: N, quantity_kind: force, default: 49.03, bounds: [0, 100000], positive: true, role: derived}
+    relations:
+      - id: weight
+        group: dynamics
+        latex: W = m g
+        residual: W - m*g
+        assumptions: ["the disk's weight under gravity"]
+        citation: si
+    configurations:
+      - id: default
+        label: Mass in, weight out
+        constraints: {}
+        inputs: [m]
+        solutions:
+          W: m*g
+    derivation:
+      steps:
+        - expr: Eq(W, m*g)
+          prose: "Weight is mass times the gravitational field — g flows through as a known."
+          rule: definition of weight
+    sim: {engine: statics-cascade, config: {}}
+    sources:
+      - {id: si, citation: "BIPM, The International System of Units (SI Brochure), 9th ed., 2019."}
+""")
+
+
+@pytest.fixture
+def constant_dir(tmp_path):
+    d = tmp_path / "things" / "constant-fixture"
+    d.mkdir(parents=True)
+    (d / "thing.yaml").write_text(CONSTANT_YAML, encoding="utf-8")
+    return tmp_path / "things"
+
+
+def test_constant_compiles_and_is_excluded_from_dof(constant_dir, tmp_path):
+    out = tmp_path / "generated"
+    assert compile_all(constant_dir, out) == ["constant-fixture"]
+    artifact = json.loads((out / "constant-fixture.compiled.json").read_text(encoding="utf-8"))
+
+    # g rides the artifact as a constant with its cited source id
+    gvar = artifact["variables"]["g"]
+    assert gvar["role"] == "constant"
+    assert gvar["citation"] == "si"
+    # a constant is NOT a knob: only the free mass is an input, and DOF balances
+    # (2 unknowns m,W − 1 relation = 1 input) with g excluded from the count
+    cfg = artifact["configurations"][0]
+    assert cfg["inputs"] == ["m"]
+    # g is injected into the parity samples exactly like a material value (the
+    # oracle feeds sample.inputs straight to the engine), never a solved output
+    for s in cfg["samples"]:
+        assert 9.7 < s["inputs"]["g"] < 9.9
+        assert "g" not in s["outputs"]
+        assert abs(s["outputs"]["W"] - s["inputs"]["m"] * s["inputs"]["g"]) < 1e-6
+    # the identity derivation step referencing g verified (g cancels/flows as a known)
+    assert artifact["derivation"][0]["check"] == "identity"
+
+
+def test_constant_without_citation_fails_build(constant_dir, tmp_path):
+    bad = CONSTANT_YAML.replace(", role: constant, citation: si}", ", role: constant}")
+    (constant_dir / "constant-fixture" / "thing.yaml").write_text(bad, encoding="utf-8")
+    with pytest.raises(BuildError, match="role 'constant' requires a 'citation'"):
+        compile_all(constant_dir, tmp_path / "generated")
+
+
+def test_constant_with_unresolved_citation_fails_build(constant_dir, tmp_path):
+    bad = CONSTANT_YAML.replace("role: constant, citation: si}", "role: constant, citation: nope}")
+    (constant_dir / "constant-fixture" / "thing.yaml").write_text(bad, encoding="utf-8")
+    with pytest.raises(BuildError, match="citation 'nope' not found in sources"):
+        compile_all(constant_dir, tmp_path / "generated")
+
+
+def test_constant_as_input_knob_fails_build(constant_dir, tmp_path):
+    bad = CONSTANT_YAML.replace("inputs: [m]", "inputs: [m, g]")
+    (constant_dir / "constant-fixture" / "thing.yaml").write_text(bad, encoding="utf-8")
+    with pytest.raises(BuildError, match="constant variable 'g' cannot be an input knob"):
+        compile_all(constant_dir, tmp_path / "generated")
+
+
+def test_constant_as_solution_target_fails_build(constant_dir, tmp_path):
+    # POST-dedent indentation (6 spaces) — a pre-dedent match string silently
+    # no-ops and the negative test passes a GOOD fixture (S02/S03 note)
+    bad = CONSTANT_YAML.replace("      W: m*g\n", "      W: m*g\n      g: 9.80665\n")
+    assert "\n      g: 9.80665\n" in bad  # mutation took (the added solution line)
+    (constant_dir / "constant-fixture" / "thing.yaml").write_text(bad, encoding="utf-8")
+    with pytest.raises(BuildError, match="material/constant variable"):
+        compile_all(constant_dir, tmp_path / "generated")
+
+
+def test_citation_on_non_constant_fails_build(constant_dir, tmp_path):
+    # a citation on a free/derived variable is a mistake — the field is only for constants
+    bad = CONSTANT_YAML.replace(
+        "{symbol: m, name: Mass, unit: kg, quantity_kind: mass, default: 5, bounds: [0.1, 100], positive: true}",
+        "{symbol: m, name: Mass, unit: kg, quantity_kind: mass, default: 5, bounds: [0.1, 100], positive: true, citation: si}",
+    )
+    (constant_dir / "constant-fixture" / "thing.yaml").write_text(bad, encoding="utf-8")
+    with pytest.raises(BuildError, match="only meaningful for role 'constant'"):
+        compile_all(constant_dir, tmp_path / "generated")

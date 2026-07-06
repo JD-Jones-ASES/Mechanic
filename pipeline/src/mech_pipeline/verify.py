@@ -227,7 +227,7 @@ def verify_derivation_step(
 
 def verify_solve1d_configuration(
     inputs: list[sp.Symbol],
-    material_syms: list[sp.Symbol],
+    known_syms: list[sp.Symbol],
     constraints: dict[sp.Symbol, sp.Expr],
     ordered_steps: list[tuple],
     residuals: list[tuple[str, sp.Expr]],
@@ -241,7 +241,8 @@ def verify_solve1d_configuration(
     A solve1d target has no closed form to back-substitute symbolically, so
     the certificate is numeric and per-sample, at high precision:
 
-      1. sample the inputs + material variables (exact rationals);
+      1. sample the inputs + known variables — materials and cited constants
+         (exact rationals);
       2. evaluate the eval-chain at 60 dps;
       3. at each solve1d step: prove the authored bracket actually brackets
          (real, finite, lo < hi, residual sign change) and contains exactly
@@ -258,7 +259,7 @@ def verify_solve1d_configuration(
     accurate to ~1e-60, not exact, and exact rational rank would overcount).
     """
     rng = random.Random(context)
-    free_syms = [*inputs, *material_syms]
+    free_syms = [*inputs, *known_syms]
     parity: list[dict] = []
     points: list[dict[sp.Symbol, sp.Expr]] = []
     done = 0
@@ -430,7 +431,7 @@ def verify_table(table: TableSpec, context: str) -> None:
 
 def verify_table_configuration(
     inputs: list[sp.Symbol],
-    material_syms: list[sp.Symbol],
+    known_syms: list[sp.Symbol],
     constraints: dict[sp.Symbol, sp.Expr],
     ordered_steps: list[tuple],
     residuals: list[tuple[str, sp.Expr]],
@@ -442,7 +443,8 @@ def verify_table_configuration(
     steps (ADR-0009 verification part 3). A table output has no closed form, so
     — exactly like solve1d — the certificate is numeric and per-sample:
 
-      1. sample the inputs + material variables (exact rationals);
+      1. sample the inputs + known variables — materials and cited constants
+         (exact rationals);
       2. run the plan at 60 dps, resolving each table step by the reference
          lookup (samples are drawn inside the domain; the refusal path is proven
          separately in verify_table);
@@ -455,7 +457,7 @@ def verify_table_configuration(
     on-manifold points for the DOF Jacobian-rank check.
     """
     rng = random.Random(context)
-    free_syms = [*inputs, *material_syms]
+    free_syms = [*inputs, *known_syms]
     parity: list[dict] = []
     points: list[dict[sp.Symbol, sp.Expr]] = []
     done = 0
@@ -525,7 +527,7 @@ def verify_table_configuration(
 
 def manifold_points(
     inputs: list[sp.Symbol],
-    material_syms: list[sp.Symbol],
+    known_syms: list[sp.Symbol],
     resolved: dict[sp.Symbol, sp.Expr],
     specs: dict[sp.Symbol, VarSpec],
     seed: str,
@@ -540,7 +542,7 @@ def manifold_points(
     attempts = 0
     while len(pts) < n and attempts < 60 * n:
         attempts += 1
-        pt = {s: _sample_value(specs[s], rng) for s in [*inputs, *material_syms]}
+        pt = {s: _sample_value(specs[s], rng) for s in [*inputs, *known_syms]}
         ok = True
         for target, expr in resolved.items():
             val = expr.subs(pt)

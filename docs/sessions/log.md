@@ -555,3 +555,64 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   seconds-fast standalone `ThingCompiler(dir).compile()` after) made the first cold build pass green — S05/S06
   note-g, confirmed a third time; the standalone compile catches YAML/dim/kind/DOF errors in ~2s vs the 4-min
   full build.
+
+## S08 — shaft-critical-speed + cited-constants mechanism (g) — 2026-07-06 — PR #21 — MERGED
+
+- Shipped: the repo's first `role: constant` mechanism (a cited physical constant — value + unit + mandatory
+  source on the variable, excluded from DOF/knob arithmetic exactly like a material, rendered as a labeled
+  cited value via a new `ConstantsPanel`, never a knob) end to end: content.config.ts (both role enums +
+  `citation` field) → compile.py (`dof_vars` excludes constants, `known_syms` = materials+constants injects
+  them, citation presence+resolution enforced, citation rejected on non-constants, constant blocked as
+  input/target) → verify.py (`material_syms`→`known_syms` rename across the 3 samplers) → units.ts (`m/s^2`)
+  → ThingWidget (constantValues injection) + ConstantsPanel. First constant g=9.80665 m/s². First consumer
+  THING 25 `shaft-critical-speed` (Rayleigh ω_c=√(g/δ_st) with the g-CANCELLATION ω_c=√(48EI/mL³);
+  Dunkerley ω_cD from the bare-shaft first mode, machine-proven ω_cD≤ω_c; resonance-band warn). Catalog 24 → 25.
+- Gates: pytest 260 passed (246 baseline + 6 mechanism-fixture + 8 physics); pnpm build clean (cold — pipeline
+  source edit busts fingerprints; parity 1065 values/25 artifacts, katex 1044, mdx 50 files, units 588 refs,
+  32 pages); unit 18; e2e 71 (+2 shaft-critical-speed: goldens/g-injection-via-W=mg/Dunkerley<Rayleigh, and
+  constant-not-a-knob/resonance-warn; verification relation-block count 24→25); visual pass (built dist
+  /Mechanic/): sim renders VISIBLY (shaft stroke rgb(147,197,253) NOT none — no invisible-SVG trap; bowed
+  whirl path + disk + bearings + speed axis with shaded resonance band + operating pointer); constants panel
+  shows g=9.80665 m/s²·nist with #knob-g count 0; W=49.033 N=m·g proves g injected at its defined value; drove
+  ω_op onto ω_c → resonance warn ([shigley]) + shaft/pointer RED + whirl amplitude grew; al→steel raised ω_c
+  1518→2523 rpm (E-axis) while W held (material-blind); KaTeX 0 errors; console clean; /things/ card +
+  /verification/ (25) present. review: 5 independent fresh-context passes (physics + invariants + code/tests
+  subagents + /code-review high correctness & cleanup finders) — 0 blockers/majors/correctness-bugs. 4 cleanup
+  findings FIXED (CompiledThing.sources required not optional + drop ??[]; collapse material_syms/constant_syms
+  → one known_syms; hoist loop-invariant known_syms out of _samples; drop dead ConstantsPanel title fallback);
+  all behavior-preserving, re-verified pytest/build/unit/e2e green after. Rebutted: display-only bounds,
+  juvinall unreferenced cross-check (established pattern), defensive sim guards, ConstantsPanel one-line lookup.
+- Golden: steel shaft d=20mm, L=0.6m, m=5kg, E=200GPa, ρ=7850: I=7.853982e-9 m⁴, k=48EI/L³=349066 N/m,
+  ω_c=√(k/m)=264.222 rad/s=2523 rpm, f_c=42.052 Hz, δ_st=1.40470e-4 m, ω_s=691.91 rad/s, ω_cD=246.84 rad/s
+  (<ω_c). Source Shigley §7-6; g from NIST SP 330/SI Brochure. test_shaft_critical_speed_physics.py re-derives
+  every result from first principles (area integration, double integration, sin-mode Rayleigh quotient,
+  symbolic g-cancellation, Dunkerley≤Rayleigh symbolic+200-sample) — nothing rests on citation.
+- Citations pinned: shigley (§7-6 critical speeds + Table A-9), gere (section props), juvinall (cross-check),
+  nist (g). g=9.80665 is EXACT BY DEFINITION (3rd CGPM 1901), web-pinned to NIST SP 330. Textbook PDFs not
+  web-accessible → topic-level + first-principles re-derivation (the stronger check), stated in verification:.
+- Deviations from brief: (1) critical-speed readouts default to rpm (display [rpm,rad/s]) not the brief's
+  (rad/s,rpm) — a critical SPEED reads in rpm and must be directly comparable to ω_op for the margin story;
+  both units available. ω_s (modal) keeps rad/s-first. (2) Warn-only THING (brief authorizes the refusal pin
+  → warn-band pin; ω_c is finite for all positive inputs, no honest hard-refusal; SimRefusal is the defensive
+  contract). (3) k_beam (48EI/L³) is a derivation LOCAL to show ω_c=√(k/m) — the torsional-oscillator k_t idiom
+  (no unauthorized new kind).
+- New capabilities future briefs may rely on: the `role: constant` mechanism — a cited physical constant is a
+  variable with `role: constant` + a `citation` resolving in sources[]; it is a known injected value excluded
+  from DOF/knob arithmetic (in `known_syms`, not `dof_vars`), sampled into parity.inputs like a material, and
+  rendered by ConstantsPanel. FULLY role-driven, NO hardcoded g — a SECOND constant (S09 impact-loading) just
+  needs the variable + citation, zero code change. `m/s^2` display unit now in units.ts.
+- Notes-for-next (S09 = impact-loading, energy method, 2nd constants consumer): (a) the constants mechanism is
+  LANDED and generalizes — declare g (or any constant) as `role: constant` + `citation:`; it works with no
+  pipeline change (S09's entry criteria that "this mechanism exists" are satisfied). (b) Give a constant a
+  small non-degenerate sampling `bounds` (I used g [9.78,9.83], the real geographic range) with the DEFINED
+  value as `default` — the default is what the site injects; the bounds only widen build-time sampling. (c) A
+  constant lands in the parity sample.inputs (sampled like a material); the oracle feeds it straight to the
+  engine, so no site-side special-casing is needed and none exists (KnobPanel/Readouts never branch on role).
+  (d) e2e pins for a constant: assert the `constants-panel` testid shows value+source, `#knob-<sym>` count 0,
+  and a readout that equals constant·knob (I used W=m·g=49.03 to prove injection). (e) THE ENVIRONMENT TRAP that
+  cost me two no-op builds: the shell cwd (BOTH Bash and PowerShell) persisted as `...\pipeline` after a `cd`,
+  so `pnpm -C site build` resolved to `pipeline\site` → ENOENT with exit 0 (pnpm help) OR exit 1. ALWAYS use an
+  ABSOLUTE `-C` path: `pnpm -C C:\GitHub_Files\Mechanic\site build`. (f) Pre-verify ALL physics + residuals +
+  DOF + the g-cancellation + Dunkerley≤Rayleigh + the ω_s Rayleigh-quotient in a throwaway SymPy script BEFORE
+  authoring, then a standalone `ThingCompiler(dir).compile()` — first cold build passed green (S05-S07 note,
+  confirmed a fourth time).

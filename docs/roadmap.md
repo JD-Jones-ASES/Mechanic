@@ -122,6 +122,18 @@ factory capability, the way the flywheel exercised `poisson_ratio` and new quant
   Two warns (shaft-inertia J_shaft/J_d>0.1, shear-yield τ≥σ_y/2). The overview names the Phase 4 curated
   chain (motor → shaft → flywheel). ω_n re-derived two independent ways (Rayleigh energy + the equation of
   motion) in the physics test. Catalog 23 → 24.
+- **The first cited physical constant + a second dynamics page:** shaft-critical-speed (Rayleigh +
+  Dunkerley) ✅ shipped 2026-07-06 (S08) — the whirling speed of a disk on a shaft between two bearings.
+  Ships the repo's first `role: constant` mechanism: g = 9.80665 m/s² (standard gravity, exact by
+  definition, CGPM 1901) lands as a labeled, cited value — never a knob — excluded from the DOF/knob
+  arithmetic exactly like a material, with a mandatory citation (invariant 5), plus the `m/s^2` display
+  unit. The headline is the g-CANCELLATION: Rayleigh's ω_c = √(g/δ_st) collapses to √(48EI/mL³), so the
+  critical speed is pure stiffness-over-inertia and gravity drops out entirely — proven symbolically.
+  Dunkerley's estimate folds in the shaft's own distributed mass (ω_s from the exact sin-mode Rayleigh
+  quotient) and is machine-proven never higher than Rayleigh's (ω_cD ≤ ω_c), bracketing the true first
+  critical. Two material axes pull opposite ways (E raises ω_c, ρ lowers ω_cD); the disk mass is a free
+  payload knob, not material-bound. A resonance-band warn (within 20% of ω_c) is the only envelope. The
+  δ_st is the simply-supported-beam headline result reused verbatim (chain-port pair). Catalog 24 → 25.
 
 Per-THING gate (standard practice, from the flywheel/cylinder sessions): machine verification +
 independent first-principles cross-check in `pipeline/tests/` + hand-checkable numeric golden +

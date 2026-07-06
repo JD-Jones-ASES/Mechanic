@@ -97,6 +97,7 @@ class ThingCompiler:
 
         out: dict[str, dict] = {}
         material_binds = (self.raw.get("materials") or {}).get("binds", {})
+        sources = {s["id"] for s in self.raw.get("sources", [])}
         for v in _require(self.raw, "variables", self.ctx):
             sym_name = _require(v, "symbol", f"{self.ctx} variable")
             c = f"{self.ctx}, variable '{sym_name}'"
@@ -108,10 +109,32 @@ class ThingCompiler:
             if kind not in QUANTITY_KINDS:
                 raise BuildError(f"{c}: unknown quantity_kind '{kind}' — extend kinds.py if legitimate")
             role = v.get("role", "free")
-            if role not in ("free", "material", "derived"):
-                raise BuildError(f"{c}: role must be free|material|derived")
+            if role not in ("free", "material", "derived", "constant"):
+                raise BuildError(f"{c}: role must be free|material|derived|constant")
             if role == "material" and sym_name not in material_binds:
                 raise BuildError(f"{c}: role 'material' but no materials.binds entry")
+            # role: constant — a cited physical constant (g is the first). It is a
+            # known injected value excluded from DOF exactly like a material, but
+            # its provenance is a source citation ON the variable (not a material
+            # property), and that citation is MANDATORY: invariant 5 forbids a
+            # number with no provenance. The citation field is meaningless on any
+            # other role, so reject it there to keep the mechanism crisp.
+            citation = v.get("citation")
+            if role == "constant":
+                if not citation:
+                    raise BuildError(
+                        f"{c}: role 'constant' requires a 'citation' — a cited physical "
+                        f"constant carries value + unit + source id (invariant 5)"
+                    )
+                if citation not in sources:
+                    raise BuildError(f"{c}: citation '{citation}' not found in sources")
+                if sym_name in material_binds:
+                    raise BuildError(f"{c}: a constant cannot also be materials-bound")
+            elif citation is not None:
+                raise BuildError(
+                    f"{c}: 'citation' is only meaningful for role 'constant' "
+                    f"(materials carry their own provenance; free/derived need none)"
+                )
             assumptions = {"real": True}
             if v.get("positive"):
                 assumptions["positive"] = True
@@ -133,13 +156,16 @@ class ThingCompiler:
             self.table[sym_name] = sym
             self.specs[sym] = spec
             self.unit_map[sym] = unit
-            out[sym_name] = {
+            entry = {
                 "name": spec.name, "latex": spec.latex, "dim": spec.dim,
                 "quantity_kind": kind, "si_unit": str(_require(v, "unit", c)),
                 "display_units": spec.display_units, "default": spec.default,
                 "bounds": list(spec.bounds) if spec.bounds else None,
                 "integer": spec.integer, "role": role,
             }
+            if role == "constant":  # its cited source id rides the artifact for the UI
+                entry["citation"] = citation
+            out[sym_name] = entry
         for var_sym, prop in material_binds.items():
             if var_sym not in self.table:
                 raise BuildError(f"{self.ctx}: materials.binds references unknown variable '{var_sym}'")
@@ -276,7 +302,11 @@ class ThingCompiler:
 
     # ---------- configurations ----------
     def load_configurations(self) -> None:
-        non_material = [s for s in self.specs if self.specs[s].role != "material"]
+        # DOF-participating unknowns: free knobs + derived outputs. Materials AND
+        # constants are known injected values excluded from DOF/knob arithmetic —
+        # a constant mirrors a material exactly, differing only in that its fixed
+        # value and provenance ride the variable instead of coming from the DB.
+        dof_vars = [s for s in self.specs if self.specs[s].role in ("free", "derived")]
         cfgs = []
         self.resolved_by_cfg: dict[str, dict[sp.Symbol, sp.Expr]] = {}
         # symbols with no closed form in a configuration (solve1d outputs and
@@ -296,8 +326,10 @@ class ThingCompiler:
                 unknown = set(cfg["inputs"]) - set(self.table)
                 raise BuildError(f"{c}: unknown input(s) {sorted(unknown)}")
             for i_sym in inputs:
-                if self.specs[i_sym].role == "material":
-                    raise BuildError(f"{c}: material-bound '{i_sym}' cannot be an input knob")
+                if self.specs[i_sym].role in ("material", "constant"):
+                    raise BuildError(
+                        f"{c}: {self.specs[i_sym].role} variable '{i_sym}' cannot be an input knob"
+                    )
                 if i_sym in constraints:
                     raise BuildError(f"{c}: '{i_sym}' is both input and constrained")
 
@@ -315,7 +347,7 @@ class ThingCompiler:
                 )
 
             solutions_raw = _require(cfg, "solutions", c)
-            targets_needed = {s for s in non_material if s not in inputs and s not in constraints}
+            targets_needed = {s for s in dof_vars if s not in inputs and s not in constraints}
             plan = []
             # one solution chain per branch label; unbranched targets are shared
             ordered_by_label: dict[str | None, list[tuple[sp.Symbol, sp.Expr]]] = {
@@ -332,7 +364,9 @@ class ThingCompiler:
             # targets that read the SAME table at the SAME arg share ONE plan
             # step, each filling its own column (real-arg multi-column lookup).
             table_groups: dict[tuple, dict] = {}
-            material_syms = [s for s in self.specs if self.specs[s].role == "material"]
+            # materials + constants: injected known values, sampled alongside the
+            # inputs for verification/DOF/parity and never counted toward the DOF
+            known_syms = [s for s in self.specs if self.specs[s].role in ("material", "constant")]
             any_branched = False
             fn_prefix_base = f"cfg_{cid.replace('-', '_')}"
             for target_name, sol in solutions_raw.items():
@@ -340,8 +374,8 @@ class ThingCompiler:
                 if target_name not in self.table:
                     raise BuildError(f"{tc}: unknown target")
                 target = self.table[target_name]
-                if target in inputs or target in constraints or self.specs[target].role == "material":
-                    raise BuildError(f"{tc}: target is an input/constraint/material variable")
+                if target in inputs or target in constraints or self.specs[target].role in ("material", "constant"):
+                    raise BuildError(f"{tc}: target is an input/constraint/material/constant variable")
                 if isinstance(sol, dict) and "solve1d" in sol:
                     # bracketed numeric target (ADR-0002): solve a DECLARED
                     # relation for this target inside an authored bracket —
@@ -356,7 +390,7 @@ class ThingCompiler:
                     residual = self.residual_by_id[rel_id]
                     if target not in residual.free_symbols:
                         raise BuildError(f"{tc}: relation '{rel_id}' does not involve '{target_name}'")
-                    knowns = {*inputs, *constraints, *material_syms, *seen_targets}
+                    knowns = {*inputs, *constraints, *known_syms, *seen_targets}
                     not_ready = residual.free_symbols - knowns - {target}
                     if not_ready:
                         raise BuildError(
@@ -456,7 +490,7 @@ class ThingCompiler:
                         targets_needed.discard(target)
                         continue
                     # first column of a new group: validate the arg once
-                    knowns = {*inputs, *constraints, *material_syms, *seen_targets}
+                    knowns = {*inputs, *constraints, *known_syms, *seen_targets}
                     not_ready = at_expr.free_symbols - knowns
                     if not_ready:
                         raise BuildError(
@@ -632,10 +666,10 @@ class ThingCompiler:
                 if branches_meta:
                     raise BuildError(f"{c}: solve1d cannot be combined with multi-branch solutions (v1)")
                 samples, pts = verify_solve1d_configuration(
-                    inputs, material_syms, constraints, ordered_steps,
+                    inputs, known_syms, constraints, ordered_steps,
                     self.residuals, self.specs, c,
                 )
-                dof_check(non_material, residual_exprs, inputs, pts, c)
+                dof_check(dof_vars, residual_exprs, inputs, pts, c)
                 # symbolic prefix for derivation checks: targets that never
                 # read a solve1d output keep their verified closed forms;
                 # everything downstream is 'tainted' (no closed form exists)
@@ -659,10 +693,10 @@ class ThingCompiler:
                 if branches_meta:
                     raise BuildError(f"{c}: tables cannot be combined with multi-branch solutions (v1)")
                 samples, pts = verify_table_configuration(
-                    inputs, material_syms, constraints, ordered_steps,
+                    inputs, known_syms, constraints, ordered_steps,
                     self.residuals, self.tables, self.specs, c,
                 )
-                dof_check(non_material, residual_exprs + list(table_targets), inputs, pts, c)
+                dof_check(dof_vars, residual_exprs + list(table_targets), inputs, pts, c)
                 # derivation prefix: table outputs (and everything downstream of
                 # them) have no closed form — taint exactly like solve1d outputs
                 resolved: dict[sp.Symbol, sp.Expr] = dict(constraints)
@@ -682,8 +716,8 @@ class ThingCompiler:
                 for lab in labels:
                     lc = c if lab is None else f"{c}, branch '{lab}'"
                     resolved = resolve_solutions(ordered_by_label[lab], constraints, lc)
-                    pts = manifold_points(inputs, material_syms, resolved, self.specs, seed=lc)
-                    dof_check(non_material, residual_exprs, inputs, pts, lc)
+                    pts = manifold_points(inputs, known_syms, resolved, self.specs, seed=lc)
+                    dof_check(dof_vars, residual_exprs, inputs, pts, lc)
                     verify_solutions_against_relations(self.residuals, resolved, self.specs, lc)
                     if first_resolved is None:
                         first_resolved = resolved
@@ -730,10 +764,14 @@ class ThingCompiler:
         rng = random.Random(seed)
         out = []
         attempts = 0
+        # materials + constants are the injected knowns carried in each parity
+        # sample's inputs; the oracle (check-parity.mjs) feeds them straight to the
+        # engine, so a constant is sampled exactly like a material value (hoisted:
+        # self.specs does not change across sampling attempts)
+        known_syms = [s for s in self.specs if self.specs[s].role in ("material", "constant")]
         while len(out) < n and attempts < 40 * n:
             attempts += 1
-            material_syms = [s for s in self.specs if self.specs[s].role == "material"]
-            subs = {s: _sample_value(self.specs[s], rng) for s in [*inputs, *material_syms]}
+            subs = {s: _sample_value(self.specs[s], rng) for s in [*inputs, *known_syms]}
             sample_in = {str(k): float(v) for k, v in subs.items()}
             sample_out = {}
             ok = True

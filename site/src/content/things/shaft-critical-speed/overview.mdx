@@ -1,0 +1,64 @@
+Spin any shaft with a wheel on it fast enough and it stops running true and starts to **whirl** —
+the shaft bows out and the bow chases the rotation, throwing the whole rotor into a widening orbit.
+The speed where this erupts is the **critical speed** ω_c, and it is nothing more exotic than
+resonance: the spinning rotor forcing itself at exactly the natural bending frequency of the
+shaft-and-disk it is made of. Turbine and pump rotors, motor armatures, machine-tool spindles, and
+long driveshafts are all designed by putting ω_c comfortably away from the running speed. This page
+is the simplest honest model of it — one disk at the middle of a shaft on two bearings.
+
+## The static sag already knows the answer
+
+Rayleigh's insight is that the whirl at ω_c has the same shape as the shaft's own droop under
+gravity, so the critical speed follows from that one static number. Hang the disk's weight
+$W = mg$ at midspan of a simply-supported shaft and it sags by
+
+$$ \delta_{st} = \frac{W L^3}{48\,E I} $$
+
+— which is *literally* the headline result of the [simply-supported beam](../simply-supported-beam/)
+page, the central-load deflection, reused here without change. Rayleigh's method then gives the
+critical speed straight from that sag:
+
+$$ \omega_c = \sqrt{\frac{g}{\delta_{st}}} = \sqrt{\frac{48\,E I}{m L^3}} $$
+
+The second form is the point. Substitute $\delta_{st}$ and $W = mg$ and **the gravity cancels**: what
+is left is $\omega_c = \sqrt{k/m}$ with the beam stiffness $k = 48EI/L^3$ — an ordinary
+mass-on-a-spring. Gravity sets the sag, but the same gravity sets the restoring force, so it drops
+out of the frequency entirely; a rotor would have the identical critical speed in orbit where there
+is no $g$ at all. Critical speed is pure stiffness over inertia.
+
+## g is a defined constant, not a knob
+
+The $g$ that enters here is the **standard acceleration of gravity**, 9.80665 m/s². It is not a
+measurement to be dialled in — it is a *conventional value fixed by definition* (3rd CGPM, 1901),
+the same everywhere by agreement even though the real field runs from about 9.78 m/s² at the equator
+to 9.83 m/s² at the poles. So it appears on this page the way a material property does: a labeled,
+**cited** value with a source, never a slider. It is the site's first such physical constant.
+
+## Two material axes pulling opposite ways
+
+Rayleigh's single mass ignores the shaft's own weight. **Dunkerley's method** puts it back by
+combining the disk's critical speed with the bare shaft's first bending mode
+$\omega_s = (\pi^2/L^2)\sqrt{EI/\rho A}$ through their reciprocal squares, and the result is provably
+never higher than Rayleigh's — the true first critical speed is bracketed between them. Watching the
+two numbers move exposes the material story, and it is two stories, not one:
+
+- **Stiffness $E$ raises the critical speed.** A stiffer shaft is a stiffer spring; swap mild steel
+  for a titanium alloy (lower $E$) and ω_c *drops* — the same counter-intuitive result the
+  [Euler column](../euler-column/) page keeps hammering: strength is not stiffness.
+- **Density $\rho$ lowers the Dunkerley estimate.** A heavier shaft carries more of its own
+  distributed inertia, which drags $\omega_s$ — and with it $\omega_{cD}$ — down. Density and
+  stiffness are independent axes, and here you can see them pull the two estimates in opposite
+  directions on one screen.
+
+The disk mass $m$, by contrast, is a plain **knob**, not a material: it is a payload bolted to the
+shaft (an impeller, a flywheel, a grinding wheel), so you set it directly.
+
+## Reading the margin
+
+The widget reports ω_c and the Dunkerley estimate as speeds (rpm by default), the frequency $f_c$ in
+Hz, and the ratio of running speed to critical speed. Drive the operating speed into the shaded band
+within 20% of ω_c and it warns: that is where an undamped rotor's whirl amplitude runs away. As on
+the [eccentric column](../eccentric-column/), the danger is not where a first glance puts it — it is
+not about how *strong* the shaft is at all, but about a speed, and the margin has to be taken on that
+speed. Cross the band deliberately (many machines run *supercritical*, above ω_c) and you must pass
+through resonance on the way up.

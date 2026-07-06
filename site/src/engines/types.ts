@@ -16,7 +16,9 @@ export interface VariableMeta {
   default: number;
   bounds: [number, number] | null;
   integer: boolean;
-  role: "free" | "material" | "derived";
+  role: "free" | "material" | "derived" | "constant";
+  /** source id of a role: constant's cited value (absent on other roles) */
+  citation?: string | null;
 }
 
 export interface Guard {
@@ -97,6 +99,13 @@ export interface Configuration {
   samples: { inputs: VarRecord; outputs: VarRecord; branch?: string }[];
 }
 
+export interface SourceRecord {
+  id: string;
+  citation: string;
+  url?: string;
+  verification?: string;
+}
+
 export interface CompiledThing {
   schema_version: 1;
   thing: string;
@@ -105,6 +114,8 @@ export interface CompiledThing {
   relations: RelationMeta[];
   configurations: Configuration[];
   material_binding: Record<string, string> | null;
+  /** cited sources (always emitted); role: constant variables reference these by id for display */
+  sources: SourceRecord[];
 }
 
 export interface ValidityMessage {
