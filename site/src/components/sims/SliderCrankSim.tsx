@@ -83,21 +83,23 @@ export function SliderCrankSim({
   // and the swept presentation angle when playing)
   const pinX = r * Math.cos(thetaDraw);
   const pinY = r * Math.sin(thetaDraw);
-  const qDraw = Math.sqrt(Math.max(l * l - r * r * Math.sin(thetaDraw) ** 2, 0));
-  const pistX = playing ? pinX + qDraw : x; // paused: the engine value exactly
+  // paused: the engine's x exactly; playing: reconstruct the piston reach at the
+  // swept angle (identical to the engine's x = r·cosθ + √(l²−r²sin²θ) form)
+  const pistX = playing ? pinX + Math.sqrt(Math.max(l * l - r * r * Math.sin(thetaDraw) ** 2, 0)) : x;
 
-  const ocx = X(0);
-  const ocy = Y(0);
+  // the crank centre and the piston pin both ride the cylinder axis (world y = 0 → cyAxis)
+  const ocx = ox; // = X(0)
+  const ocy = cyAxis; // = Y(0)
   const px = X(pinX);
   const py = Y(pinY);
   const qx = X(pistX);
-  const qy = Y(0);
+  const qy = cyAxis;
 
   const rCircle = r * s;
   const pistHalfH = clamp(rCircle * 0.42, 10, 20);
   const pistHalfW = clamp(rCircle * 0.3, 8, 16);
 
-  const extremeObliquity = Number.isFinite(l) && Number.isFinite(r) && 2 * r > l; // r/l > 0.5 warn
+  const extremeObliquity = 2 * r > l; // r/l > 0.5 warn (l, r finite & positive past the refusal gate)
   const showForces = !playing; // forces/velocity only match the pose at the knob theta
 
   // arrowhead triangle at (tx,ty) pointing along the unit screen vector (ux,uy)

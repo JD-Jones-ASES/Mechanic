@@ -679,3 +679,89 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   values.load_case) — no schema change. (f) the standalone `ThingCompiler(dir).compile()` (~2s) after a throwaway
   physics-preverify script caught the whole design before the first build — confirmed a fifth time; do this before
   any `pnpm build`.
+
+## S10 — slider-crank — 2026-07-06 — PR #24 — MERGED
+
+- Shipped: THING 27 `slider-crank` (exact reciprocating kinematics + quasi-static gas torque) — piston
+  x(θ)=r·cosθ+√(l²−r²sin²θ) from the crank axis; v=ω·dx/dθ and a=ω²·d²x/dθ² authored FACTORED (shared
+  subterm q=√(l²−r²sin²θ)) and machine-checked to be the true 1st/2nd derivatives of x by INDEPENDENT
+  SymPy differentiation (the derivative check IS the first-principles cross-check here); force path
+  sinφ=(r/l)sinθ, F_rod=F/cosφ, T=F·r·sin(θ+φ)/cosφ. TWO CROSS-CONSTRAINED configs over one shared relation
+  set — kinematics knobs [r,l,θ,ω] (F held at its reference) and force knobs [r,l,θ,F] (ω held) — single
+  branch (l>r assembles uniquely). Norton's two-term r/l approximation as a comparison readout, error bounded
+  vs r/l. Geometry-only, NO material axis. Catalog 26 → 27.
+- Gates: pytest 275 passed (268 baseline + 7 test_slider_crank_physics.py); pnpm build clean (WARM — no
+  pipeline-source edit, so 26 THINGs cache-reused; BUT slider-crank itself compiled+verified FRESH from no
+  cache, so its symbolic tier ran cold-equivalent and terminated in seconds — the factored-forms discipline
+  holds, no explosion; parity 27 artifacts, katex 1155 strings, mdx 54 prose files, units OK, 34 pages,
+  pagefind; total ~15s first build / ~5s rebuild); unit 18; e2e 75 (+2 slider-crank: θ=90° goldens v=−5/T=200
+  + material-picker-absent, force-config torque∝F + obliquity warn + l≤r refusal with blanked readouts;
+  verification relation-block count 26→27); visual pass (built dist /Mechanic/): sim renders (crank circle +
+  amber arm, blue connecting rod, piston in cylinder guide, force overlay F/v/T/φ — 25 SVG els paused, 11
+  playing; NOT the invisible-SVG trap), θ knob DRIVES it (x 171.0→118.6 mm as θ 57°→120°), drove l=30mm<r=50mm
+  → SimRefusal "cannot assemble" + TWO invalid banners (engine sqrt-guard + my pedagogical l≤r [norton]) +
+  ALL readouts blanked to "—", config switch kinematics↔force swaps the knob set ([r,l,θ,ω]↔[r,l,θ,F]), NO
+  material picker (geometry-only), 0 KaTeX errors, console clean; Animate/Pause toggle works (force overlay
+  shown paused, hidden while the presentation sweep runs). review: 6 independent passes — 3 fresh-context
+  subagents (physics: re-derived everything incl. torque via virtual work, "ship it", 0 bugs; invariants:
+  CLEAN incl. adversarial invariant-4 + two-config audit; code/tests: CLEAN, 0 bugs) + /code-review high (3
+  finders: correctness 0 bugs after tracing every arrowhead/arc/NaN hot spot; cleanup 4 minor items; altitude
+  /conventions 0 violations). 3 cleanup items FIXED (coordinate-alias equalities ocx=ox/ocy=qy=cyAxis made
+  explicit; dead Number.isFinite(l&&r) guard in extremeObliquity dropped — refusal gate already proves them;
+  qDraw folded into the paused/playing ternary so it isn't computed when paused), rebuilt+retested green. 0
+  actionable correctness findings across all 6 angles (believed because: physics was pre-verified in a
+  throwaway SymPy script AND re-verified by standalone compile before authoring; the ONE parity failure was
+  caught by the build and fixed with a proven-identical stable form; the sim was scoped conservatively to
+  avoid the invariant-4 sparkline; each reviewer named the checks it ran).
+- Golden: θ=90°, r=50 mm, l=150 mm (r/l=1/3), ω=100 rad/s, F=4000 N → v=−5 m/s EXACTLY (=−ωr), T=200 N·m
+  EXACTLY (=Fr, since sin(90°+φ)/cosφ=1), a=125√2=176.7767 m/s², φ=asin(1/3)=19.47°, F_rod=3000√2=4242.64 N,
+  x=√0.02=141.42 mm. test_slider_crank_physics.py::test_numeric_golden, all arithmetic in the docstring.
+- Citations pinned: norton (Norton, Design of Machinery, 5th ed — slider-crank position/velocity/acceleration
+  + the r/l two-term series; engine gas-force torque with rod obliquity) TOPIC-LEVEL — textbook PDF not
+  web-accessible this session (same access limit as S02–S09); nothing rests on the citation alone: the
+  velocity/acceleration relations are re-derived by INDEPENDENT differentiation of x(θ) and the torque by
+  VIRTUAL WORK (T·dθ=−F·dx) in the physics test (the stronger check). uicker (Uicker/Pennock/Shigley, Theory
+  of Machines and Mechanisms) topic-level cross-check. Both carry verification:.
+- Deviations from brief: (1) TWO CROSS-CONSTRAINED configs (kinematics/force), not "kinematics config + a
+  separate force config computing only force vars" — compile.py forces EVERY derived var to be a target in
+  EVERY config (compile.py:350; confirmed by the invariants reviewer via the constraint→Jacobian-row DOF
+  mechanism), so both configs solve all 10 derived vars; they differ ONLY in which driver (ω vs F) is a knob
+  vs a constrained reference. Constraint values EQUAL the drivers' own defaults (F:4000, ω:100), so both
+  configs' default states are IDENTICAL and the derived defaults are coherent for both. Honest, invariant-
+  sound, and mirrors Norton's separate kinematic/force analysis passes. (2) OMITTED the T(θ)-over-a-cycle
+  sparkline the brief sketched: sweeping it via the engine needs engine-in-sim plumbing that does NOT exist
+  (→ capability creep / §9.2), and drawing it in-component re-implements the trig = the invariant-4 violation
+  the brief ITSELF names. Torque-fluctuation pedagogy delivered instead by interactive θ-drag (the T readout
+  + the sim's torque arc both move) + the animate sweep + the failure.mdx flywheel bridge (which names the
+  honest refusal to integrate the energy variation). Altitude reviewer confirmed omission is the right call.
+  (3) SKIPPED rod angular acceleration (brief-optional) → no rad/s² unit needed (said so, as the brief asks).
+  (4) `err` and `disp_exact` authored in CANCELLATION-FREE closed forms (err=−r⁴sin⁴θ/2l(l+q)²,
+  disp_exact=r(1−cosθ)+r²sin²θ/(l+q)) — algebraically IDENTICAL to the naive subtractions (proven by SymPy,
+  both physics + altitude reviewers independently confirmed simplify()==0) but float64-stable. The naive
+  `err=disp_approx−disp_exact` FAILED check-parity by ~2e-6 relative (catastrophic cancellation of two
+  near-equal travels); the relation keeps the clean definition, verify.py proves the stable solution
+  satisfies it.
+- New capabilities future briefs may rely on: NONE (no new engine/pipeline/schema/kind/unit — the brief said
+  none required and none were). Two REUSABLE patterns: (i) TWO CROSS-CONSTRAINED configurations express "two
+  analysis passes over one mechanism/system" when compile.py forces every derived var into every config —
+  make each config a knob for one driver and constrain the other to ITS OWN default (both default states then
+  coincide). (ii) A quantity defined as a difference of near-equal terms MUST be authored as a cancellation-
+  free closed form (rationalize: l−q → r²sin²θ/(l+q)) or it fails the JS-vs-mpmath parity gate.
+- Notes-for-next (S11 = ball-bearing-life, probability kind + optional threshold table): (a) THE PARITY TRAP
+  I hit: check-parity.mjs is PURE RELATIVE, RTOL=1e-9, scale=max(|expected|,1e-30) — so ANY quantity that
+  gets small via catastrophic float64 cancellation (a difference of two near-equal terms) FAILS parity even
+  though it passes standalone compile+verify (mpmath is high-precision and doesn't cancel). The standalone
+  `ThingCompiler().compile()` does NOT catch this — only the full build's check-parity does. Fix: author the
+  cancellation-prone target as a rationalized closed-form SOLUTION; keep the clean relation definition. (b)
+  e2e fills are in the knob's DISPLAY unit, not SI: an angle knob shows DEGREES (display_units [deg,rad]),
+  a force knob [kN,N] shows kN — I filled "8000" meaning N and set 8000 kN (T came out 1000×). Check
+  display_units[0] before writing a fill. (c) ball-bearing-life's `probability` kind is a NEW kind → editing
+  kinds.py busts EVERY fingerprint = COLD ~4-min rebuild; batch it into the first build. The `threshold`
+  table mode is schema-RESERVED (compile.py REJECTS it) — if S11's brief needs it, that's a real capability
+  (un-reserving + implementing the threshold lookup + parity), so read the brief and confirm it's authorized
+  before building; if not granted, don't improvise (§9.2). (d) useSimClock AUTO-plays (unless reduced-motion);
+  if your sim overlays force/readout arrows that must match the knob state, HIDE them while playing (as
+  slider-crank does with showForces=!playing) — a swept presentation pose carrying knob-state magnitudes lies.
+  (e) a global invalid on a sqrt argument produces TWO banners (the engine's emitted sqrt-nonneg guard AND
+  your authored envelope) — this is fine and honest (S03 saw the same), but author your envelope message to
+  be the pedagogical one since both show.
