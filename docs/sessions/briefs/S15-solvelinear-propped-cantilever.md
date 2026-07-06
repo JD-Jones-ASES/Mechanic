@@ -77,7 +77,12 @@ rectangular b×h section → I = bh³/12, c = h/2 (imitate cantilever-beam).
 - Build must prove: **R_B = 3wL/8, R_A = 5wL/8, M_A = wL²/8** (hogging at wall).
 - Downstream readouts (DECIDED): |M|_max = M_A = wL²/8 (governs; sagging peak 9wL²/128 at x = 5L/8
   goes in prose only); σ_max = M_A·c/I; δ_mid = wL⁴/(192·E·I) (clean; true δ_max ≈ wL⁴/185EI at
-  irrational x = (1+√33)L/16 — prose only); SF = σ_y/σ_max.
+  irrational x = (15−√33)L/16 ≈ 0.5785L — prose only); SF = σ_y/σ_max.
+  [ERRATUM S15 2026-07-06: this line originally gave the true-max location as (1+√33)L/16 ≈ 0.42L,
+  which is on the WRONG side of midspan and deflects LESS than midspan — so it cannot be the maximum.
+  The correct interior root of dv/dx = 0 is (15−√33)L/16 ≈ 0.5785L (coefficient ≈ wL⁴/184.6EI),
+  re-derived from first principles in test_propped_physics.py per protocol rule 6. δ_mid = wL⁴/192EI
+  and every reaction were correct and unaffected; the shipped THING (PR #32) uses the corrected value.]
 - overview.mdx: the superposition/compatibility identity MACHINE-CHECKED as a derivation step —
   possible because closed forms exist (unlike solve1d's taint). The pedagogical payoff; do it.
 - Citations: Gere & Goodno, *Mechanics of Materials*, indeterminate beams (ch. 10 recent eds);
