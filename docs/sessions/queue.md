@@ -61,7 +61,7 @@ names ride in the Date cell (`<date> · <branch>`).
 | S10 | slider-crank (exact kinematics at a knob angle)                | 27      | DONE | #24 | 2026-07-06 | [S10](briefs/S10-slider-crank.md) |
 | S11 | ball-bearing-life (probability kind; optional threshold table) | 28      | DONE | #25 | 2026-07-06 | [S11](briefs/S11-ball-bearing-life.md) |
 | S12 | disk-clutch (uniform wear vs uniform pressure)                 | 29      | DONE | #26 | 2026-07-06 | [S12](briefs/S12-disk-clutch.md) |
-| S13 | two-bar-truss (determinate; names Phase 3 at the boundary)     | 30      | IN_PROGRESS | —   | 2026-07-06 · thing/two-bar-truss | [S13](briefs/S13-two-bar-truss.md) |
+| S13 | two-bar-truss (determinate; names Phase 3 at the boundary)     | 30      | DONE | #27 | 2026-07-06 · thing/two-bar-truss | [S13](briefs/S13-two-bar-truss.md) |
 | S14 | band-brake — **designated shed item** (see note)               | 31      | QUEUED | —   | —          | [S14](briefs/S14-band-brake.md) |
 
 **S14 shed note:** band-brake is the pre-authorized shed item (belt-drive already carries the

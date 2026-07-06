@@ -896,3 +896,83 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   the standalone compile. (e) friction as the PRODUCT (clutch torque) vs friction as a BUDGET (power-screw,
   belt-drive) is the three-page friction arc — cross-link it. (f) two continuation rows in one session
   (S11+S12) worked cleanly at a healthy context budget; the §2 rule (≥50% remains → may claim next) held.
+
+## S13 — two-bar-truss — 2026-07-06 — PR #27 — MERGED
+- Shipped: THING 30 `two-bar-truss` (symmetric determinate two-bar truss — the deliberate Phase-3 bridge
+  page). Member force F_m = P/(2cos α) from joint equilibrium ALONE (α from the VERTICAL); joint deflection
+  δ = P·L/(2·A·E·cos²α) by the unit-load method; two configs via a loading-sense discriminator `mode`
+  (tension: yield governs; compression: each pin-jointed member is also an Euler strut, P_cr = π²EI/L² (K=1)
+  reused verbatim from euler-column, SF_buck = P_cr/F_m). Buckling readouts SCOPE-refused in tension (a
+  tension member cannot buckle) and below λ_T (Johnson regime — cross-linked euler-column, NOT re-implemented).
+  Material binds E/σ_y/ρ: force & stress material-blind, deflection carries E (Ti-vs-steel), mass ρ. Small-
+  displacement WARN at δ>L/10; GLOBAL refusal at α≥90° (degenerate geometry). overview names the redundant
+  truss as the Phase-3 solveLinear deliverable. NO new engine/pipeline/kind/unit. Catalog 29 → 30.
+- Gates: pytest 297 (290 baseline + 7 test_truss_physics.py); pnpm build clean (WARM — no pipeline-source
+  edit, 29 THINGs cache-reused, two-bar-truss compiled fresh; 37 pages, pagefind, check katex/mdx/parity/units
+  all green); unit 19 (no new kind → no new unit test); e2e 82 (+3 truss: determinate-force/material-blind-
+  stress/buckling-governs; Ti>steel deflection cascade; tension scoped-buckling + α≥90° global refusal;
+  verification relation-block 29→30); visual pass (built dist /Mechanic/ via preview): sim renders VISIBLY
+  (compression A-frame amber members + pin supports + α arc + buckle bow; tension hanging-V blue & straight;
+  11 SVG els, member stroke rgb(245,158,11) 4.5px — not the invisible-SVG trap), drove α→91° and SAW the
+  GLOBAL refusal (SimRefusal + red α≥90° banner + all readouts "—"), toggled tension and SAW the SCOPED
+  buckling refusal (P_cr/SF_buck "—", N_m flips +46.19, page stands), switched al→Ti and SAW δ move
+  (0.75→0.49 mm) while F_m/σ held material-blind, KaTeX 0 errors, console clean, /things/ card +
+  /verification/(30) present; normal + refused screenshotted. review: 4 independent passes — 3 fresh-context
+  subagents (physics/invariants/code-tests) + a /code-review correctness sweep. The physics reviewer
+  INDEPENDENTLY confirmed cos²α (not cos³) and the α-from-vertical cos-not-sin convention without being told.
+  Single shared finding = display-only derived-default seeds drifting in the ~5th sig-fig (never rendered,
+  never build-checked); FIXED all 6 (sigma/SF_y/delta/m_truss/P_cr/SF_buck recomputed exact). 2 cosmetic nits
+  (F2 redundant <g> wrapper, F3 duplicated gov-predicate) left/rebutted as harmless. 0 correctness bugs.
+- Golden: steel truss at defaults (P=80kN, α=30°, L=2m, d=50mm, E=200GPa/σ_y=250MPa/ρ=7800): F_m=46188.02 N,
+  σ=23.5234 MPa, SF_y=10.62773, δ=0.2716 mm, m=61.261 kg, P_cr=151397.8 N, SF_buck=3.27786 (< SF_y → buckling
+  governs the compression member). Source Gere & Goodno; all arithmetic in test_truss_physics.py, re-derived
+  from first principles (vector equilibrium, unit-load AND compatibility-triangle deflection agreeing
+  symbolically, buckling ODE) — nothing on citation.
+- Citations pinned: gere (Gere & Goodno 9th — trusses/axial §2.1-2.3, unit-load deflection §9.8-9.9, small-
+  displacement), shigley (Euler/Johnson λ_T boundary, cross-link), timoshenko (compatibility-triangle cross-
+  check). HONEST: cos²α form web-corroborated 2026-07-06 (Roylance/MIT, δ_v = δ/cos θ) AND re-derived two ways
+  in the physics test; textbook PDFs not web-accessible for a page-exact worked example (same limit as
+  S02–S12), so the golden is by-hand, cited topic-level.
+- Deviations from brief: **(1) THE DEFLECTION EXPONENT. The brief specified δ = P·L/(2·A·E·cos³α); this is a
+  transcription error — the correct symmetric two-bar result is cos²α, confirmed FOUR ways: (i) my SymPy
+  pre-verify, (ii) both independent physics-test derivations (unit-load + compatibility) agreeing, (iii) the
+  brief's OWN stated method (e = F_m L/AE projected via the compatibility triangle, δ = e/cos α) yields cos²α,
+  (iv) web-corroboration. Shipped the correct cos²α. A gate could NOT pass honestly with cos³α (the
+  independent physics cross-check contradicts it). "Reality wins, record it" — followed the brief's METHOD,
+  corrected only its mis-transcribed final formula. ⚠️ OWNER ACTION: the S13 brief's Physics-scope and
+  Exit-criteria lines still quote cos³α and should be corrected to cos²α.** (2) The α→90° WARN is a δ/L<0.1
+  small-displacement bound (cited Gere, the repo's standard convention / authoring-template example), NOT an
+  invented member-inclination angle — the brief flagged "no invented 85°" as the one risk; a deflection-ratio
+  bound sidesteps it. (3) Buckling scope-refused in tension via the `mode` discriminator (a tension member
+  cannot buckle) — the honest way to present a compression-only check on a shared relation set.
+- New capabilities future briefs may rely on: NONE (no new engine/pipeline/schema/kind/unit). Patterns
+  reconfirmed: (i) a constrained discriminator (`mode`, impact-loading idiom) both SIGNS a readout (N_m) AND
+  GATES a scoped refusal (`mode > 0` on the buckling readouts) — a scoped envelope keyed on a discriminator
+  compiles fine because the "condition must be a Relational" check is at PARSE time, BEFORE config-constraint
+  substitution, so `mode > 0` (mode free integer, no sign assumption) stays a Relational; at runtime the
+  constrained value trips/passes it. This is the clean way to make a check config-specific on a shared
+  relation set. (ii) A deflection re-derived two genuinely different ways (energy/virtual-work vs geometry/
+  compatibility) agreeing symbolically is a strong physics-test pattern — reuse for any energy-vs-geometry
+  result. (iii) A scoped-refusal default state (tension's buckling withheld, or compression when stubby) is a
+  legitimate first-impression when it IS the lesson (euler-column precedent) — I defaulted to COMPRESSION so
+  the default page is refusal-free and the α→90° global refusal is the single memorable moment.
+- Deferred (§8 phase-boundary): **S14 + the Phase-2 close are DEFERRED to the next session (brief option c).**
+  This was a large session (deep physics design incl. the cos³→cos² catch, full authoring, comprehensive
+  visual pass, four review agents); I could not fund a proper phase close (reports/phase-2.md + reconciling six
+  S15–S20 DRAFT briefs) with the ~20% context margin, and a rushed phase report — which the owner reads to make
+  the Phase-3 ruling — is worse than a clean handoff. S13 is fully complete (merged, deploy-verified,
+  bookkeeping done); the row was NEVER paused.
+- Notes-for-next (S14 / Phase-2 close): (a) NOTHING is PAUSED — S13 is merged and DONE. Your session is S14.
+  Per the queue's S14 shed note + protocol §8, do exactly ONE: continue-and-build S14 band-brake (a full THING;
+  belt-drive already carries the capstan math, so it's a shed item) OR mark the S14 row SKIPPED (pre-authorized)
+  — then, EITHER WAY, YOU CLOSE PHASE 2: write docs/sessions/reports/phase-2.md (§11 template), verify/update
+  the Phase-3 DRAFT briefs S15–S20 against merged reality, set the queue header to `Active phase: 2 — AWAITING
+  OWNER`, and STOP. (b) Do NOT start any Phase-3 row (S15+): "Phase 3: NOT YET RULED" — no ruling line exists.
+  (c) The provenance trap held again (S11's lesson): I web-corroborated the cos²α FORM rather than trusting the
+  brief's transcribed formula — and the brief was wrong. ALWAYS independently re-derive/corroborate a brief's
+  emitted formula; a brief is a spec, not a source. (d) Traps: the `mode`-scoped buckling refusal needs mode to
+  be a FREE integer with NO `positive:` (else `mode > 0` simplifies to True at parse and the compiler rejects
+  it as "not a comparison"); default config is compression (configs[0]) so derived defaults are the mode=1
+  state; the α slider bounds intentionally reach 92° so the α≥90° global refusal is reachable by the knob.
+  (e) When editing thing.yaml AFTER the review subagents have started reading it, WAIT for them — I batched the
+  display-only seed fixes until all four passes finished to avoid confusing concurrent edits.
