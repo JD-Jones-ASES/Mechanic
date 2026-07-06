@@ -1,0 +1,43 @@
+The failure at a critical speed is not a static overload — the shaft can be nowhere near its yield
+stress when it lets go. It is **resonance**. Every real rotor has a little residual imbalance, an
+eccentricity between its mass centre and its spin axis, and that imbalance is a rotating force that
+sweeps through every frequency as the machine runs up. When the running speed reaches ω_c it drives
+the shaft at exactly its own natural bending frequency, and the whirl amplitude climbs — in this
+undamped model, without bound. Real damping caps it, but the peak can still be tens of times the
+static sag, enough to close running clearances: the rotor rubs its seals or housing, the bearings
+see wildly reversing loads, and the reversing bending drives fatigue cracks. Machines have thrown
+blades and snapped shafts passing through a critical speed they were never meant to sit on.
+
+## Below, above, or straight through
+
+Because the danger is a band and not a ceiling, there are two honest ways to live with it. Most
+machinery runs **subcritical**, below about 0.8 ω_c, which is why raising the critical speed (a
+fatter or shorter shaft, a stiffer material) buys margin. But many high-speed machines — turbines,
+turbochargers, some pumps — deliberately run **supercritical**, above ω_c, exploiting the fact that
+past the critical speed the rotor tends to spin about its mass centre and *self-centres*. The price
+is that they must accelerate through the resonance on the way up (and coast back through it on the
+way down) fast enough that the amplitude never has time to build. The one speed you may not choose
+is a steady one inside the band — which is exactly the state this widget shades and warns on.
+
+## Why the single number is a floor, not the truth
+
+This page models one disk on a uniform shaft in rigid bearings, and every one of those words is a
+simplification that a real rotor breaks:
+
+- **One mode, many criticals.** A rotor with several wheels, or a long flexible shaft, has a whole
+  sequence of critical speeds; this is only the *first*. The Rayleigh and Dunkerley estimates bracket
+  that first one — Dunkerley from below, Rayleigh from above — so the true value sits between the two
+  readouts, and quoting Rayleigh alone slightly overstates it.
+- **The bearings are not rigid.** Real bearing and pedestal flexibility adds series compliance, which
+  can only *lower* the critical speed — so the rigid-support number here is optimistic, an upper
+  bound on what a real machine achieves.
+- **Gyroscopics and damping.** An overhung or wide disk stiffens gyroscopically as it spins, so its
+  critical speeds actually shift with rotational speed (splitting into forward and backward whirl);
+  fluid-film bearings can even feed energy in and drive an unstable *whirl* that has nothing to do
+  with imbalance at all. None of that lives in this static-sag model.
+
+The companion vibration page, the [torsional oscillator](../torsional-oscillator/), is the twisting
+analogue of the same story: there the shaft rings in torsion rather than whirling in bending, but the
+lesson is identical — a natural frequency set by stiffness over inertia, and a resonance to be kept
+clear of. And as on the [eccentric column](../eccentric-column/), the margin that matters is not the
+one a stress calculation would hand you.

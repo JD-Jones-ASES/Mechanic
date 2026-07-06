@@ -262,7 +262,7 @@ test("verification page discloses authorship and the audit surface", async ({ pa
   await expect(page.getByText(/built end to end by an AI/i).first()).toBeVisible();
   await expect(page.getByText(/No human reviews the content/i).first()).toBeVisible();
   // every THING appears with its audit block (count is a deliberate change detector)
-  expect(await page.locator("section.relation-block").count()).toBe(24); // +torsional-oscillator (S07)
+  expect(await page.locator("section.relation-block").count()).toBe(25); // +shaft-critical-speed (S08)
   await expect(page.getByText(/Where physics enters/i).first()).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -1286,4 +1286,58 @@ test("torsional oscillator: ringing past shear yield warns, and a heavy shaft wa
   await expect(page.locator(".validity-warn").first()).toBeVisible();
   await expect(page.locator(".validity")).toContainText(/shaft.*inertia|lumped|negligible/i);
   await expect(page.locator(".validity")).not.toContainText(/shear yield/i); // clean separation
+});
+
+/**
+ * Shaft critical speed (S08) — builds the cited-constant mechanism (g = 9.80665
+ * m/s², role: constant). Defaults m=5 kg, L=0.6 m, d=20 mm, ω_op=1000 rpm.
+ * steel-a36 (E=29 Msi=199.95 GPa, ρ=7805.7): I=πd⁴/64=7.854e-9 m⁴,
+ *   ω_c = √(48EI/mL³) = 264.2 rad/s = 2523 rpm ⇒ f_c = 42.05 Hz (g CANCELS),
+ *   Dunkerley ω_cD ≈ 2357 rpm < ω_c, sr = ω_op/ω_c ≈ 0.40.
+ *   W = m·g = 49.03 N is the proof the constant is injected at its defined value.
+ */
+test("shaft critical speed: goldens, g is injected via W=mg, and Dunkerley sits below Rayleigh", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/shaft-critical-speed/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  // W = m·g = 5·9.80665: proves the cited constant g is injected at its DEFINED value
+  expect(await readOutput(page, "W")).toBeCloseTo(49.03, 1); // N
+  const wcRpm = await readOutput(page, "omega_c"); // rpm (first display unit for a critical speed)
+  const wcdRpm = await readOutput(page, "omega_cD");
+  const fc = await readOutput(page, "f_c"); // Hz — reuses S07's frequency kind
+  const sr = await readOutput(page, "sr");
+  expect(wcRpm).toBeCloseTo(2523, -1); // ω_c = √(48EI/mL³), A36; g has cancelled out
+  expect(fc).toBeCloseTo(42.05, 0); // f_c = ω_c/2π
+  expect(fc).toBeCloseTo(wcRpm / 60, 0); // rpm and Hz displays agree (ω/2π = N/60)
+  expect(sr * wcRpm).toBeCloseTo(1000, -1); // sr = ω_op/ω_c, with the 1000 rpm default ω_op
+  expect(wcdRpm).toBeLessThan(wcRpm); // DUNKERLEY ≤ RAYLEIGH — the shaft's own mass lowers it
+  expect(errors).toEqual([]);
+
+  // the material E-axis: a stiffer shaft has a HIGHER critical speed (ω_c ∝ √E)
+  await page.getByTestId("material-select").selectOption("al-6061-t6");
+  const wcAl = await readOutput(page, "omega_c");
+  expect(wcAl).toBeLessThan(wcRpm); // lower E ⇒ softer shaft ⇒ lower critical speed
+});
+
+test("shaft critical speed: g is a labeled cited constant, never a knob, and the resonance band warns", async ({ page }) => {
+  await page.goto("things/shaft-critical-speed/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  // g appears as a labeled, cited value (value + unit + source) — NOT a control
+  const constants = page.getByTestId("constants-panel");
+  await expect(constants).toBeVisible();
+  await expect(constants).toContainText("9.80665"); // its defined value
+  await expect(constants).toContainText("nist"); //     its cited source id
+  await expect(page.locator("#knob-g")).toHaveCount(0); // no knob is emitted for a constant
+
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  const wcRpm = await readOutput(page, "omega_c");
+  // default operating speed (1000 rpm) sits well below ω_c (2523 rpm): warn-clear
+  await expect(page.locator(".validity-warn")).toHaveCount(0);
+  // drive the operating speed onto the critical speed: the resonance band warns
+  await page.getByLabel("Operating speed value").fill(String(Math.round(wcRpm)));
+  await expect(page.locator(".validity-warn").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/resonance/i);
 });

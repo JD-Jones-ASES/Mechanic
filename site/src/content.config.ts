@@ -22,8 +22,14 @@ const variableSchema = z.object({
   bounds: z.tuple([z.number(), z.number()]).optional(),
   positive: z.boolean().default(false),
   integer: z.boolean().default(false),
-  role: z.enum(["free", "material", "derived"]).default("free"),
+  role: z.enum(["free", "material", "derived", "constant"]).default("free"),
   display_units: z.array(z.string()).default([]),
+  // role: constant — a cited physical constant (e.g. g). Its `default` IS the
+  // value; it is never a knob, never solved, and excluded from DOF/knob
+  // arithmetic exactly like a material. `citation` is MANDATORY for constants
+  // and must resolve in sources[] (compile.py enforces this — invariant 5: a
+  // number with no provenance is forbidden); it is meaningless on other roles.
+  citation: z.string().optional(),
 });
 
 const validitySchema = z.object({
@@ -241,7 +247,9 @@ const compiled = defineCollection({
         default: z.number(),
         bounds: z.tuple([z.number(), z.number()]).nullable(),
         integer: z.boolean(),
-        role: z.enum(["free", "material", "derived"]),
+        role: z.enum(["free", "material", "derived", "constant"]),
+        // source id of a role: constant's cited value (absent on other roles)
+        citation: z.string().nullable().optional(),
       }),
     ),
     relations: z.array(

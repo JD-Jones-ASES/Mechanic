@@ -1,0 +1,400 @@
+id: shaft-critical-speed
+title: Shaft Critical Speed (Rayleigh + Dunkerley)
+summary: >-
+  Spin a shaft fast enough and it whips: at its critical speed the rotor whirls in resonance with
+  its own static sag, ω_c = √(g/δ_st). Gravity sets the sag but cancels out of the answer — the
+  critical speed is pure stiffness over inertia. Dunkerley's estimate folds in the shaft's own mass
+  and is provably never higher than Rayleigh's.
+facets: [dynamics, stress]
+
+variables:
+  - symbol: m
+    name: Disk mass
+    latex: m
+    unit: kg
+    quantity_kind: mass
+    default: 5
+    bounds: [0.1, 500]
+    positive: true
+    display_units: [kg]
+  - symbol: L
+    name: Bearing span
+    latex: L
+    unit: m
+    quantity_kind: length
+    default: 0.6
+    bounds: [0.1, 3.0]
+    positive: true
+    display_units: [m, mm]
+  - symbol: d
+    name: Shaft diameter
+    latex: d
+    unit: m
+    quantity_kind: length
+    default: 0.02
+    bounds: [0.005, 0.15]
+    positive: true
+    display_units: [mm, m]
+  - symbol: omega_op
+    name: Operating speed
+    latex: '\omega_{op}'
+    unit: rad/s
+    quantity_kind: angular_velocity
+    default: 104.72
+    bounds: [1, 600]
+    positive: true
+    # operators set rpm; rad/s one click away and directly comparable to ω_c
+    display_units: [rpm, rad/s]
+  - symbol: E
+    name: Young's modulus
+    latex: E
+    unit: Pa
+    quantity_kind: elastic_modulus
+    default: 200.0e9
+    bounds: [1.0e9, 400.0e9]
+    positive: true
+    role: material
+    display_units: [GPa, Pa]
+  - symbol: rho
+    name: Density
+    latex: '\rho'
+    unit: kg/m**3
+    quantity_kind: density
+    default: 7850
+    bounds: [400, 12000]
+    positive: true
+    role: material
+    display_units: ["kg/m^3"]
+  - symbol: g
+    name: Standard gravity
+    latex: g
+    unit: m/s**2
+    quantity_kind: acceleration
+    default: 9.80665
+    # sampling range spans real local gravity (equator ~9.78 to poles ~9.83);
+    # the VALUE the site uses is the defined standard 9.80665 (the default)
+    bounds: [9.78, 9.83]
+    positive: true
+    role: constant
+    citation: nist
+    display_units: ["m/s^2"]
+  - symbol: I
+    name: Second moment of area (shaft)
+    latex: I
+    unit: m**4
+    quantity_kind: second_moment_of_area
+    default: 7.853982e-9
+    bounds: [1.0e-11, 1.0e-4]
+    positive: true
+    role: derived
+    display_units: ["m**4"]
+  - symbol: A
+    name: Shaft cross-section area
+    latex: A
+    unit: m**2
+    quantity_kind: area
+    default: 3.141593e-4
+    bounds: [1.0e-6, 1.0e-1]
+    positive: true
+    role: derived
+    display_units: ["m**2"]
+  - symbol: W
+    name: Disk weight
+    latex: W
+    unit: N
+    quantity_kind: force
+    default: 49.03325
+    bounds: [0, 1.0e6]
+    positive: true
+    role: derived
+    display_units: [N, kN]
+  - symbol: delta_st
+    name: Static midspan deflection
+    latex: '\delta_{st}'
+    unit: m
+    quantity_kind: length
+    default: 1.404704e-4
+    bounds: [0, 1]
+    positive: true
+    role: derived
+    display_units: [mm, m]
+  - symbol: omega_c
+    name: Critical speed (Rayleigh)
+    latex: '\omega_c'
+    unit: rad/s
+    quantity_kind: angular_velocity
+    default: 264.2216
+    bounds: [0.1, 1.0e5]
+    positive: true
+    role: derived
+    # a critical SPEED reads most naturally in rpm; directly comparable to ω_op
+    display_units: [rpm, rad/s]
+  - symbol: f_c
+    name: Critical frequency
+    latex: f_c
+    unit: Hz
+    quantity_kind: frequency
+    default: 42.05222
+    bounds: [0.01, 1.0e5]
+    positive: true
+    role: derived
+    display_units: [Hz]
+  - symbol: omega_s
+    name: Shaft first-mode frequency
+    latex: '\omega_s'
+    unit: rad/s
+    quantity_kind: angular_velocity
+    default: 691.907
+    bounds: [0.1, 1.0e6]
+    positive: true
+    role: derived
+    # a modal frequency, not an operating speed — rad/s first
+    display_units: [rad/s, rpm]
+  - symbol: omega_cD
+    name: Critical speed (Dunkerley)
+    latex: '\omega_{cD}'
+    unit: rad/s
+    quantity_kind: angular_velocity
+    default: 246.8361
+    bounds: [0.1, 1.0e5]
+    positive: true
+    role: derived
+    display_units: [rpm, rad/s]
+  - symbol: sr
+    name: Operating / critical speed ratio
+    latex: '\mathrm{sr}'
+    unit: '1'
+    quantity_kind: ratio
+    default: 0.396336
+    bounds: [0, 100]
+    positive: true
+    role: derived
+    display_units: []
+
+materials:
+  binds:
+    E: youngs_modulus
+    rho: density
+
+relations:
+  - id: area-moment
+    group: stress
+    latex: 'I = \frac{\pi d^4}{64}'
+    residual: I - pi*d**4/64
+    assumptions:
+      - solid circular shaft, lateral bending second moment of area
+    citation: gere
+  - id: shaft-area
+    group: stress
+    latex: 'A = \frac{\pi d^2}{4}'
+    residual: A - pi*d**2/4
+    assumptions:
+      - solid circular shaft cross-section
+    citation: gere
+  - id: disk-weight
+    group: dynamics
+    latex: 'W = m\,g'
+    residual: W - m*g
+    assumptions:
+      - the disk is a rigid payload at midspan; its weight is what deflects the shaft
+      - g is the cited standard gravity, not a knob
+    citation: shigley
+  - id: static-deflection
+    group: stress
+    latex: '\delta_{st} = \frac{W L^3}{48\,E I}'
+    residual: delta_st*48*E*I - W*L**3
+    assumptions:
+      - simply supported (bearings as pin/roller), the disk weight applied at midspan
+      - linear elastic, small deflections — the simply-supported center-load result reused verbatim
+        from the beam page (its headline deflection)
+    citation: shigley
+  - id: rayleigh
+    group: dynamics
+    latex: '\omega_c = \sqrt{\dfrac{g}{\delta_{st}}}'
+    residual: omega_c**2*delta_st - g
+    assumptions:
+      - single central mass on a massless shaft — Rayleigh's method; the whirl at ω_c resonates
+        with the shaft's own static-deflection shape (physics enters here by citation, no ODE solved)
+      - undamped, small whirl; gyroscopic effects neglected
+    citation: shigley
+    validity:
+      - condition: delta_st < L/100
+        severity: warn
+        message: >-
+          The static sag exceeds L/100 — a very flexible rotor. The small-deflection beam theory
+          behind δ_st is stretched, and the single-mode Rayleigh estimate loses accuracy.
+        citation: gere
+  - id: crit-frequency
+    group: dynamics
+    latex: 'f_c = \frac{\omega_c}{2\pi}'
+    residual: f_c*2*pi - omega_c
+    assumptions:
+      - the critical speed in cycles per second; ω_c is the same speed in radians per second
+    citation: shigley
+  - id: shaft-mode
+    group: dynamics
+    latex: '\omega_s = \frac{\pi^2}{L^2}\sqrt{\dfrac{E I}{\rho A}}'
+    residual: omega_s**2*rho*A*L**4 - pi**4*E*I
+    assumptions:
+      - the bare uniform shaft (no disk) as a simply-supported beam vibrating in its first bending
+        mode, sin(πx/L) — the exact Euler–Bernoulli eigenvalue for that mode
+      - uniform prismatic shaft, distributed mass ρA per length
+    citation: shigley
+  - id: dunkerley
+    group: dynamics
+    latex: '\frac{1}{\omega_{cD}^2} = \frac{1}{\omega_c^2} + \frac{1}{\omega_s^2}'
+    residual: 1/omega_cD**2 - 1/omega_c**2 - 1/omega_s**2
+    assumptions:
+      - Dunkerley's method — the reciprocal squares of the partial critical speeds add; a cited
+        approximation that folds the shaft's own distributed mass into the disk estimate
+      - always a LOWER bound on the true first critical speed (provably ω_cD ≤ ω_c here)
+    citation: shigley
+  - id: resonance-margin
+    group: dynamics
+    latex: '\mathrm{sr} = \frac{\omega_{op}}{\omega_c}'
+    residual: sr*omega_c - omega_op
+    assumptions:
+      - how close the running speed sits to the Rayleigh critical speed; sr near 1 is resonance
+    citation: shigley
+    validity:
+      - condition: Abs(omega_op - omega_c) >= omega_c/5
+        severity: warn
+        message: >-
+          The operating speed is within 20% of the critical speed — the resonance band. Near ω_c an
+          undamped rotor's whirl amplitude grows without bound, so running speeds are kept clear of
+          the band (below about 0.8 ω_c or above about 1.2 ω_c).
+        citation: shigley
+
+configurations:
+  - id: geometry-in
+    label: Disk, span, shaft, and running speed in — critical speed and the resonance margin out
+    constraints: {}
+    inputs: [m, L, d, omega_op]
+    solutions:
+      I: pi*d**4/64
+      A: pi*d**2/4
+      W: m*g
+      delta_st: W*L**3/(48*E*I)
+      omega_c: sqrt(g/delta_st)
+      f_c: omega_c/(2*pi)
+      omega_s: sqrt(pi**4*E*I/(rho*A*L**4))
+      omega_cD: omega_c*omega_s/sqrt(omega_c**2 + omega_s**2)
+      sr: omega_op/omega_c
+
+derivation:
+  verifies_configuration: geometry-in
+  locals:
+    - symbol: k_beam
+      unit: N/m
+      positive: true
+      define: 48*E*I/L**3
+      bounds: [1.0, 1.0e12]
+  steps:
+    - expr: Eq(delta_st, W*L**3/(48*E*I))
+      prose: >-
+        Start with the shaft as a spring. The disk sits at midspan of a simply-supported shaft, so
+        its weight W deflects it by δ_st = WL³/48EI — the simply-supported center-load deflection,
+        taken verbatim from the beam page (that page's headline result; the build does not
+        re-integrate the beam here, so this line is imported by citation).
+      rule: 'reuse the simply-supported center-load deflection'
+      check: definition
+    - expr: Eq(k_beam, 48*E*I/L**3)
+      prose: >-
+        Invert it: the midspan stiffness — the force it takes to push the shaft down one metre — is
+        k = W/δ_st = 48EI/L³. Fatter shaft (d⁴, through I) means a stiffer spring; longer span means
+        a much softer one.
+      rule: 'beam stiffness is the inverse of the deflection influence'
+    - expr: Eq(omega_c**2, g/delta_st)
+      prose: >-
+        The modeling step, where the physics enters by citation. At the critical speed the shaft
+        whirls in resonance with its own static-deflection shape; Rayleigh's method treats the disk
+        as a single mass on that beam-spring, so mÿ = −k y and ω_c² = k/m. With k = W/δ_st and
+        W = mg this is ω_c² = g/δ_st. We do NOT integrate the whirl equation — the resonance result
+        is cited from the rotordynamics literature and checked only for consistency.
+      rule: 'Rayleigh single-mass critical speed (cited)'
+      check: definition
+    - expr: Eq(omega_c, sqrt(k_beam/m))
+      prose: >-
+        Now substitute δ_st = WL³/48EI and W = mg. The gravity cancels: ω_c = √(g/δ_st) =
+        √((W/δ_st)/m) = √(k/m) = √(48EI/mL³). The very weight that produced the sag also produces the
+        restoring force, so g drops out entirely — the critical speed is a pure stiffness-over-inertia
+        property. It is √(k/m), the same formula as any mass on a spring; you could measure ω_c on a
+        rotor in orbit where there is no g at all.
+      rule: 'substitute the beam-spring: g cancels'
+    - expr: Eq(f_c, omega_c/(2*pi))
+      prose: >-
+        Cycles per second is radians per second over 2π. As on the oscillator page, f_c and ω_c are
+        deliberately different quantity kinds despite sharing units of 1/s — the 2π is always
+        explicit, so a 42 Hz whirl is never mistaken for a 42 rad/s spin. Critical speeds are usually
+        quoted as N_c in rpm (the readout toggles), which is ω_c·60/2π.
+      rule: 'definition of frequency'
+    - expr: Eq(omega_s**2, pi**4*E*I/(rho*A*L**4))
+      prose: >-
+        The single mass ignores the shaft's own weight. Model the bare uniform shaft as a
+        simply-supported beam vibrating in its first bending mode, sin(πx/L); its natural frequency
+        is ω_s = (π²/L²)√(EI/ρA). This is the exact first eigenvalue for that mode — the test pipeline
+        re-derives it independently from the mode-shape energy (Rayleigh) quotient, constants and all.
+      rule: 'uniform-shaft first bending mode (cited; re-derived in tests)'
+      check: definition
+    - expr: Eq(1/omega_cD**2, 1/omega_c**2 + 1/omega_s**2)
+      prose: >-
+        Dunkerley's method combines the disk's critical speed and the shaft's own by adding their
+        reciprocal squares. It brings the neglected shaft mass back in, giving a safe estimate that
+        includes the distributed inertia the single-mass Rayleigh value leaves out.
+      rule: 'Dunkerley superposition of reciprocal squares (cited)'
+      check: definition
+    - expr: Eq(1/omega_cD**2 - 1/omega_c**2, 1/omega_s**2)
+      prose: >-
+        Rearranged, the gap between the two estimates is exactly 1/ω_s², which is positive, so
+        ω_cD ≤ ω_c always — adding inertia can only lower a natural frequency. Dunkerley therefore
+        underestimates and Rayleigh overestimates; the true first critical speed is bracketed between
+        them. This inequality is machine-verified here and sampled numerically in the test pipeline.
+      rule: 'Dunkerley ≤ Rayleigh, proven'
+
+sim:
+  engine: statics-cascade
+  config:
+    draw: shaft-critical-speed
+
+sources:
+  - id: shigley
+    citation: >-
+      Budynas, R. G., & Nisbett, J. K., Shigley's Mechanical Engineering Design, 10th ed.,
+      McGraw-Hill, 2015 — §7-6 (critical speeds of rotating shafts: the Rayleigh single-mass
+      estimate ω = √(g/δ), Dunkerley's equation combining reciprocal squares, and the
+      operating-speed margin) and Table A-9 (the simply-supported center-load deflection reused
+      for δ_st).
+    verification: >-
+      §7-6 (shaft critical speeds) and Table A-9 (beam deflection cases) topics confirmed against
+      the published 10th-edition chapter/appendix listings, 2026-07-06; the textbook PDF is not
+      web-accessible for a page-exact quote. The Rayleigh formula ω_c = √(g/δ_st), the
+      g-cancellation ω_c = √(48EI/mL³), the first-mode ω_s, and the Dunkerley ≤ Rayleigh bound are
+      all re-derived from first principles (not taken on the citation) in
+      pipeline/tests/test_shaft_critical_speed_physics.py.
+  - id: gere
+    citation: >-
+      Gere, J. M., & Goodno, B. J., Mechanics of Materials, 9th ed., Cengage, 2018 — App. E
+      section properties (I = πd⁴/64, A = πd²/4 for a solid circular shaft) and the
+      simply-supported beam small-deflection theory behind δ_st.
+    verification: >-
+      Topic-level citation, not section-pinned; the section properties and small-deflection limit
+      match the sibling beam and shaft pages. I = πd⁴/64 and A = πd²/4 are re-derived by area
+      integration in the physics test.
+  - id: juvinall
+    citation: >-
+      Juvinall, R. C., & Marshek, K. M., Fundamentals of Machine Component Design, 5th ed., Wiley,
+      2011 — shaft design and critical (whirling) speed: the same Rayleigh √(g/δ) estimate and the
+      Dunkerley combination, with operating speeds kept away from the resonance band.
+    verification: >-
+      Topic-level cross-check (shaft whirling speed; the √(g/δ) form and the Dunkerley rule are
+      standard and also given in Den Hartog, Mechanical Vibrations); not page-pinned. Used to
+      corroborate the Rayleigh/Dunkerley treatment, not any single emitted number.
+  - id: nist
+    citation: >-
+      BIPM, The International System of Units (SI Brochure), 9th ed., 2019, and NIST Special
+      Publication 330 (2019): the standard acceleration of gravity gₙ = 9.80665 m/s², a conventional
+      value fixed BY DEFINITION (3rd CGPM, 1901) — not a measurement.
+    verification: >-
+      The value 9.80665 m/s² is exact by definition (3rd CGPM, 1901); web-pinned against the NIST
+      SP 330 / SI Brochure conventional value and the NIST reference on constants, 2026-07-06. It
+      is displayed as a labeled cited constant, never a knob.

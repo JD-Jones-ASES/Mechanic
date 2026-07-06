@@ -10,6 +10,7 @@ import type { JSX } from "preact";
 import { useEffect, useMemo, useState } from "preact/hooks";
 import { RelationEngine } from "../engines/relation";
 import type { CompiledThing, Fn, VarRecord } from "../engines/types";
+import { ConstantsPanel } from "./ConstantsPanel";
 import { KnobPanel } from "./KnobPanel";
 import { MaterialPicker, pickProperty, type MaterialRow } from "./MaterialPicker";
 import { Readouts } from "./Readouts";
@@ -29,6 +30,7 @@ import { GearPairSim } from "./sims/GearPairSim";
 import { PlanetarySim } from "./sims/PlanetarySim";
 import { RectTorsionSim } from "./sims/RectTorsionSim";
 import { ScrewSim } from "./sims/ScrewSim";
+import { ShaftCriticalSpeedSim } from "./sims/ShaftCriticalSpeedSim";
 import { ShaftSim } from "./sims/ShaftSim";
 import { ShearFlowSim } from "./sims/ShearFlowSim";
 import { ShrinkFitSim } from "./sims/ShrinkFitSim";
@@ -69,6 +71,7 @@ const SIMS: Record<
   "thin-tube-torsion": TubeSim,
   "stepped-shaft": SteppedShaftSim,
   "rectangular-shaft-torsion": RectTorsionSim,
+  "shaft-critical-speed": ShaftCriticalSpeedSim,
   "beam-shear-flow": ShearFlowSim,
   "curved-beam": CurvedBeamSim,
   "circular-plate": CircularPlateSim,
@@ -119,11 +122,25 @@ export default function ThingWidget({ artifact, materials, sim }: Props) {
     return out;
   }, [artifact.material_binding, materials, materialId]);
 
+  // role: constant variables — cited fixed values injected into every
+  // evaluation (never knobs, never material-bound; g is the first). Their value
+  // is the variable's declared default.
+  const constants = useMemo(
+    () => Object.entries(artifact.variables).filter(([, v]) => v.role === "constant"),
+    [artifact.variables],
+  );
+  const constantValues = useMemo(
+    (): VarRecord => Object.fromEntries(constants.map(([sym, v]) => [sym, v.default])),
+    [constants],
+  );
+
   const result = useMemo(() => {
     if (!fns) return null;
     const engine = new RelationEngine(artifact, fns);
-    return engine.evaluate(cfgId, { ...knobs, ...materialValues }, activeBranch);
-  }, [fns, artifact, cfgId, knobs, materialValues, activeBranch]);
+    // constants first: knobs/materials never shadow them (no symbol overlap by
+    // construction — a constant is neither an input nor material-bound)
+    return engine.evaluate(cfgId, { ...constantValues, ...knobs, ...materialValues }, activeBranch);
+  }, [fns, artifact, cfgId, knobs, materialValues, constantValues, activeBranch]);
 
   const targets = cfg.plan.flatMap((s) => (s.type === "table" ? s.targets : [s.target]));
   const SimComponent = sim?.config?.draw ? SIMS[String(sim.config.draw)] : undefined;
@@ -171,6 +188,10 @@ export default function ThingWidget({ artifact, materials, sim }: Props) {
           binding={artifact.material_binding}
           onSelect={setMaterialId}
         />
+      ) : null}
+
+      {constants.length ? (
+        <ConstantsPanel constants={constants} sources={artifact.sources ?? []} />
       ) : null}
 
       <div class="widget-grid">

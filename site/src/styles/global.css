@@ -63,7 +63,7 @@ a { color: var(--accent); }
 .thing-widget { border: 1px solid var(--line); border-radius: 8px; padding: 1rem; margin: 1.5rem 0; }
 .widget-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 @media (max-width: 40rem) { .widget-grid { grid-template-columns: 1fr; } }
-.knobs, .material-picker { border: 1px solid var(--line); border-radius: 6px; }
+.knobs, .material-picker, .constants-panel { border: 1px solid var(--line); border-radius: 6px; }
 .knob { display: grid; grid-template-columns: 1fr; gap: 0.15rem; margin: 0.6rem 0; }
 .knob label { font-size: 0.9rem; }
 .knob-symbol, .knob-unit, .readout-unit { color: var(--muted); font-size: 0.85rem; }
@@ -89,6 +89,13 @@ a { color: var(--accent); }
 .basis { font-size: 0.75rem; border-radius: 999px; padding: 0 0.45rem; border: 1px solid var(--line); white-space: nowrap; display: inline-block; }
 .material-source { color: var(--muted); }
 .material-picker select { max-width: 100%; }
+
+/* cited constants (role: constant) — a labeled value with its source, no knob */
+.constant-values { font-size: 0.85rem; border-collapse: collapse; margin: 0.25rem 0; }
+.constant-values td, .constant-values th { padding: 0.15rem 0.6rem 0.15rem 0; text-align: left; }
+.constant-values th { font-weight: 600; }
+.constant-value { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.constant-name, .constant-source { color: var(--muted); }
 .material-condition {
   font-size: 0.78rem; color: var(--muted); margin: 0.3rem 0 0;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
@@ -169,6 +176,21 @@ a { color: var(--accent); }
 .curvedbeam-profile { stroke: var(--accent); stroke-width: 2; }
 .curvedbeam-profile-hot { stroke: #dc2626; stroke-width: 2.5; }
 .curvedbeam-axis { stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 2 2; }
+/* shaft-critical-speed (ShaftCriticalSpeedSim): the whirling rotor (bearings, the
+   bowed shaft — red in the resonance band — and the disk at midspan) over a speed
+   axis with the ω_c / ω_cD marks, the shaded ±20% resonance band, and the
+   operating-speed pointer */
+.scs-base { stroke: var(--muted); stroke-width: 2; }
+.scs-bearing { fill: var(--muted); }
+.scs-shaft { stroke: var(--accent); stroke-width: 3.5; fill: none; stroke-linecap: round; }
+.scs-shaft-hot { stroke: #dc2626; stroke-width: 3.5; fill: none; stroke-linecap: round; }
+.scs-disk { fill: var(--accent); stroke: var(--ink); stroke-width: 1.5; }
+.scs-axis { stroke: var(--ink); stroke-width: 1.5; }
+.scs-band { fill: #dc2626; opacity: 0.15; }
+.scs-tick { stroke: var(--ink); stroke-width: 1.5; }
+.scs-tick-dunk { stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 3 2; }
+.scs-op { fill: var(--accent); }
+.scs-op-hot { fill: #dc2626; }
 .curvedbeam-fiber { fill: var(--accent); }
 .curvedbeam-fiber-hot { fill: #dc2626; }
 /* circular-plate (CircularPlateSim): the dished plate cross-section (accent, red
