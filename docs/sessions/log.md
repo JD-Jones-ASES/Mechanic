@@ -833,3 +833,66 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   cancellation: every target is a product/sum, no near-equal subtraction). (f) a warn-only + scoped-invalid
   THING has NO reachable GLOBAL invalid via the knobs — SimRefusal is the defensive contract; the reachable
   refusal is the SCOPED one (R<0.90 → adjusted-life withheld, page stands), and THAT is the e2e "refusal pin".
+
+## S12 — disk-clutch — 2026-07-06 — PR #26 — MERGED
+- Shipped: THING 29 `disk-clutch` (axial disk clutch/brake torque capacity) — BOTH classical pressure
+  models as parallel readouts (the combined-shaft two-model pattern, no silent winner): uniform pressure
+  T_up = N·(2/3)μF(r_o³−r_i³)/(r_o²−r_i²) (new/rigid) and uniform wear T_uw = N·μF(r_o+r_i)/2 (run-in),
+  with the machine-proven bracket T_up−T_uw = N·μF(r_o−r_i)²/(6(r_o+r_i)) ≥ 0 (equality iff r_i→r_o, so
+  uniform wear is always the smaller/safe design torque); peak pressure p_max = F/(2π r_i(r_o−r_i)) vs a
+  cited p_allow (warn); slip power P = T·ω_slip paired per model; the r_i* = r_o/√3 torque optimum as a
+  derived readout (dT/dr_i = 0). r_i ≥ r_o = GLOBAL refusal (annulus doesn't exist). Friction (μ, p_allow)
+  as CITED FREE KNOBS — NO material axis. NO new kinds/units/engine capability (brief forbade improvising).
+  Catalog 28 → 29. (Second continuation row this session, after S11.)
+- Gates: pytest 290 (284 baseline + 6 test_clutch_physics.py); pnpm build clean (WARM — no pipeline-source
+  edit, 28 THINGs cache-reused, disk-clutch compiled fresh; parity 1251 values/29 artifacts, katex 1221,
+  mdx 58 files, units 689, 36 pages, pagefind); unit 19 (no new kind → no new unit test); e2e 79 (+2 clutch:
+  goldens/T_up>T_uw bracket/r_o√3 optimum/no-material-picker; r_i≥r_o global refusal blanking all readouts;
+  verification relation-block 28→29); visual pass (built dist /Mechanic/): sim renders VISIBLY (friction
+  annulus + 6 slip spokes + dashed r_i* marker; the two pressure profiles — flat uniform-pressure line, 1/r
+  uniform-wear curve peaking at r_i; 24 SVG els), drove r_i→95 mm and SAW the bracket CLOSE (T_up 292.56 ≈
+  T_uw 292.5) while p_max spiked to 1.68 MPa > p_allow → warn banner + RED wear curve, drove r_i=120>r_o=100
+  → GLOBAL refusal (all 6 readouts "—", red invalid banner, SimRefusal "undefined here", page stands), NO
+  material picker, KaTeX 0 errors, console clean, /things/ card + /verification/(29) present; normal/warn/
+  refused screenshots. review: 4 independent passes — 3 fresh-context subagents (physics/invariants/
+  code-tests) all CLEAN + a combined correctness-line-by-line/cross-file/reuse finder (NONE + 1 trivial
+  cleanup FIXED: dead NaN guards in the sim's nm/mpa toDisplay wrappers, the S11 hrs fix applied here).
+- Golden: N=2 faces, r_o=100 mm, r_i=50 mm, μ=0.3, F=5 kN, ω_slip=100 rad/s → T_up=233.333 N·m (=700/3),
+  T_uw=225.0 N·m (exact), p_max=318309.886 Pa=0.318 MPa, P_up=23333.3 W, P_uw=22500 W, r_i*=57.735 mm
+  (=100/√3). Source Shigley 10e §16-5; all arithmetic in test_clutch_physics.py, both torques re-derived by
+  direct integration (∫ μ p(r) r·2πr dr, p=const and p·r=const, eliminating the pressure constant via
+  F=∫p dA) — NOT taken on citation.
+- Citations pinned: shigley (10e §16-5 axial clutches: both torque derivations + peak pressure + r_o/√3
+  optimum; Table 16-3 friction materials for the μ/p_allow knob RANGES). HONEST: the torque physics is
+  re-derived from first principles (the integrals, the T_uw≤T_up bracket, the optimum-is-a-maximum via 2nd
+  derivative) in the physics test; the μ≈0.25–0.45 / p_allow≈1–2 MPa dry-lining ranges are CITED KNOB
+  RANGES (standard Table 16-3 values), not machine-proven emitted numbers, and a friction-lining materials
+  table with full basis/errata provenance is named FUTURE data/materials/ work. juvinall (ch.18 cross-check).
+  Textbook PDF not web-accessible for a page-exact quote (same limit as S02–S11).
+- Deviations from brief: NONE of substance. Single "analyze" config (parallel readouts, the combined-shaft
+  pattern — the brief asked for exactly this). N (friction faces) is a free integer count knob (default 2 =
+  single-plate clutch); F is the total axial clamping force, same on every face, N multiplies the torque —
+  the golden anchors this convention (pinned first, as the brief warned). The friction-table fetch hit JS
+  shells (textbook access limit) so the μ/p_allow ranges use standard Table 16-3 values cited honestly, not
+  digit-exact transcription (they are knob ranges, not emitted goldens — low provenance risk, unlike S11's
+  Weibull constants).
+- New capabilities future briefs may rely on: NONE (no new engine/pipeline/schema/kind/unit — the brief
+  said none required and none were). Pattern reconfirmed: a single config with PARALLEL derived readouts
+  for two competing models (uniform pressure vs wear, like combined-shaft's Tresca vs von Mises) presents
+  both without a silent winner; a machine-proven bracket identity (T_up−T_uw = a perfect square over a
+  positive denominator) both proves the ordering AND gives the sim its "gap closes as r_i→r_o" story.
+- Notes-for-next (S13 = two-bar-truss, determinate; NAMES Phase 3 at the boundary — this is the LAST
+  Phase-2 THING before the S14 shed item; read the queue's S14 shed note + protocol §8 phase-boundary
+  rule): (a) NO new machinery is the norm now — S13 (determinate truss) should need none; if you reach for
+  a new kind/unit, STOP and re-read the brief. (b) After S13, the session either continues to S14 band-brake
+  (protocol §2 continuation) OR marks it SKIPPED (both pre-authorized by the S14 shed note) and then CLOSES
+  Phase 2 per protocol §8: write reports/phase-2.md, verify/update the Phase-3 DRAFT briefs against merged
+  reality, set the queue header to "Active phase: 2 — AWAITING OWNER", and STOP. Do NOT start any Phase-3
+  row (S15+) — Phase 3 has NO ruling line yet ("Phase 3: NOT YET RULED"). (c) a GLOBAL (unscoped) invalid
+  is the right refusal when the WHOLE page is meaningless (r_i≥r_o here — no annulus); use scoped only when
+  some readouts survive (S11's R<0.90). (d) the standalone-compile parity samples can land in the invalid
+  region (r_i>r_o here gave finite-but-negative p_max) and STILL pass check-parity — finite garbage matches
+  JS-vs-mpmath; the invalid verdict is a separate UI concern, so don't be alarmed by a weird sample value in
+  the standalone compile. (e) friction as the PRODUCT (clutch torque) vs friction as a BUDGET (power-screw,
+  belt-drive) is the three-page friction arc — cross-link it. (f) two continuation rows in one session
+  (S11+S12) worked cleanly at a healthy context budget; the §2 rule (≥50% remains → may claim next) held.
