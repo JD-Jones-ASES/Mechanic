@@ -66,7 +66,8 @@ lower a gate to make it pass** (BLOCKED protocol — record and stop); **never m
 (PAUSED protocol); **never start a phase whose owner ruling line is absent from the queue**;
 sessions merge their own PRs only after ALL gates are green (ADR-0007 — **merge is publish**);
 **never round-trip repo files through PowerShell `Get-Content`/`Set-Content`** (PS 5.1 mojibakes
-UTF-8 — use the editor tools).
+UTF-8 — use the editor tools); **a brief is a spec, not a source** — independently re-derive
+emitted formulas and web-corroborate cited constants, never transcribe (protocol rule 6).
 
 ## Data provenance rules (full text: `docs/data-provenance.md`)
 
@@ -110,8 +111,9 @@ coupler-curve inverse · custom domain · analytics (none, stated policy) · acc
 `docs/authoring-things.md` — how to write a THING. `docs/data-provenance.md` — citation tiers + legal frame.
 `docs/decisions/` — ADRs (read before re-litigating a choice; ADR-0007 = the verification model).
 `docs/roadmap.md` — the phased plan toward the final product (owner rulings 2026-07-04: ADR-0008
-ACCEPTED with split scope — solveLinear approved, solveND deferred; Phase 2 target ≈30 THINGs;
-sessions run autonomously within a phase and stop at phase boundaries for owner direction).
+ACCEPTED with split scope — solveLinear approved, solveND deferred; Phase 2 target ≈30 THINGs, met;
+sessions run autonomously within a phase and stop at phase boundaries for owner direction.
+Phase 3 approved — JD 2026-07-06: solver depth, sessions S15–S20, active phase).
 `docs/sessions/` — session protocol, queue, briefs, log, and the owner runbook; the queue is the
 single source of truth for what to work on next. Build: `pnpm build` in `site/` runs the
 Python pipeline first; `uv run pytest` in `pipeline/` for math-layer tests. A cold build takes ≈ 3–4
