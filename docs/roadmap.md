@@ -163,6 +163,20 @@ factory capability, the way the flywheel exercised `poisson_ratio` and new quant
   open/crossed pair collapses); geometry-only, NO material axis (the crank's whirl and torsional vibration
   carry the material story, forward-linked). Invalid at l ≤ r (cannot assemble), warn at r/l > 0.5 (extreme
   obliquity). No new engine/pipeline/schema/kind/unit. Catalog 26 → 27.
+- **Rolling-contact bearing life + the first reliability page:** ball-bearing-life ✅ shipped
+  2026-07-06 (S11) — the catalog rating C₁₀ is the load at which 90% of a population survives 10⁶
+  revolutions, not a strength. The load–life power law L₁₀ = 10⁶(C₁₀/P)^a runs ball (a = 3, point
+  contact) and roller (a = 10/3, line contact) as two configurations over one relation set — the cited
+  exponent constrained per configuration — with the life read in hours and millions of revolutions.
+  Beyond the 90% rating, the three-parameter Weibull reliability adjustment
+  x(R) = x₀ + (θ − x₀)(ln 1/R)^(1/b) trims the usable life (asking for 99% survival cuts it to about a
+  fifth), and below the cited R = 0.90 domain the reliability-adjusted readouts scoped-refuse while the
+  rated L₁₀ stands. Ships the new `probability` quantity kind (a survival probability must never chain
+  into a ratio or an efficiency port) and the `h` / `Mrev` display units. The Weibull parameters
+  (Shigley Table 11-6, Manufacturer 2) are carried as cited role:constant values; there is deliberately
+  NO material axis — the bearing steel is baked into the catalog ratings (the planetary-gearset framing).
+  The Weibull inversion, the 10⁶-revolution rating basis, and the hours conversion are re-derived from
+  first principles in the physics test. Catalog 27 → 28.
 
 Per-THING gate (standard practice, from the flywheel/cylinder sessions): machine verification +
 independent first-principles cross-check in `pipeline/tests/` + hand-checkable numeric golden +
