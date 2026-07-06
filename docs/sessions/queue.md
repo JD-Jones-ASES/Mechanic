@@ -85,7 +85,7 @@ deferred). Briefs are DRAFT: the Phase 2 closing session verifies them against m
 | ID  | Session                                                          | THING #s | Status | PR | Date | Brief |
 |-----|------------------------------------------------------------------|----------|--------|----|------|-------|
 | S15 | solveLinear capability + ADR-0008 amendment + propped-cantilever | +1       | DONE | #32 | 2026-07-06 · phase3/solvelinear-propped-cantilever | [S15](briefs/S15-solvelinear-propped-cantilever.md) |
-| S16 | fixed-fixed-beam + fixed-fixed-torsion-shaft                     | +2       | QUEUED | —  | —    | [S16](briefs/S16-fixed-fixed-family.md) |
+| S16 | fixed-fixed-beam + fixed-fixed-torsion-shaft                     | +2       | DONE | #34 | 2026-07-06 · phase3/fixed-fixed-family | [S16](briefs/S16-fixed-fixed-family.md) |
 | S17 | multi-material binding slots + composite-bar                     | +1       | QUEUED | —  | —    | [S17](briefs/S17-multi-material-composite-bar.md) |
 | S18 | CTE material column + thermal-assembly                           | +1       | QUEUED | —  | —    | [S18](briefs/S18-thermal-assembly-cte.md) |
 | S19 | bolted-joint-gasket (separation = global refusal)                | +1       | QUEUED | —  | —    | [S19](briefs/S19-bolted-joint-gasket.md) |

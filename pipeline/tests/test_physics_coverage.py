@@ -29,6 +29,8 @@ PHYSICS_TESTS = {
     "disk-clutch": "test_clutch_physics.py",
     "eccentric-column": "test_eccentric_physics.py",
     "euler-column": "test_column_physics.py",
+    "fixed-fixed-beam": "test_fixedfixed_beam_physics.py",
+    "fixed-fixed-torsion-shaft": "test_fixedfixed_shaft_physics.py",
     "flywheel-disk": "test_flywheel_physics.py",
     "fourbar-linkage": "test_fourbar_physics.py",
     "helical-spring": "test_spring_physics.py",

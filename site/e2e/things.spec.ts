@@ -146,6 +146,105 @@ test("propped cantilever: overload past yield warns, never a silent wrong number
   await expect(page.locator(".validity")).toContainText(/yield/i);
 });
 
+/**
+ * Fixed-fixed beam (S16 — solveLinear 4×4 consumer). Defaults w = 12 kN/m,
+ * L = 3 m, b = 50 mm, h = 100 mm → I = 4.16667e-6 m⁴:
+ *   reactions (material-BLIND): R_A = R_B = wL/2 = 18 kN, M_A = M_B = wL²/12 =
+ *   9000 N·m, M_mid = wL²/24 = 4500 N·m (so M_A = 2·M_mid), σ_max = M_A(h/2)/I =
+ *   108 MPa. A36 (E≈200 GPa): δ_max = wL⁴/384EI ≈ 3.04 mm. Ti-6Al-4V (E≈110 GPa):
+ *   δ_max ≈ 1.8× larger, SF far higher.
+ *   → THE solveLinear assertion: switching material moves δ and SF but not one of
+ *     the four reactions — the redundant load path is geometry, not material.
+ */
+test("fixed-fixed beam: the four coupled reactions are material-blind; deflection and margin cascade", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/fixed-fixed-beam/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  const rA = await readOutput(page, "R_A"); // kN
+  const mA = await readOutput(page, "M_A"); // N·m
+  const mB = await readOutput(page, "M_B");
+  const mMid = await readOutput(page, "M_mid");
+  const sig = await readOutput(page, "sigma_max"); // MPa
+  const deltaSteel = await readOutput(page, "delta_max"); // mm
+  const sfSteel = await readOutput(page, "SF");
+  expect(rA).toBeCloseTo(18, 2); // wL/2 = 18 kN, exact and material-blind
+  expect(mA).toBeCloseTo(9000, 0); // wL²/12
+  expect(mA).toBeCloseTo(mB, 5); // symmetric: the two wall moments are equal
+  expect(mA).toBeCloseTo(2 * mMid, 1); // the walls carry twice the midspan moment
+  expect(sig).toBeCloseTo(108, 0); // M_A(h/2)/I = 108 MPa (also material-blind)
+
+  await page.getByTestId("material-select").selectOption("ti-6al-4v");
+  // the four reactions do NOT move — the whole point of the page
+  expect(await readOutput(page, "R_A")).toBeCloseTo(rA, 5);
+  expect(await readOutput(page, "M_A")).toBeCloseTo(mA, 5);
+  expect(await readOutput(page, "M_B")).toBeCloseTo(mB, 5);
+  const deltaTi = await readOutput(page, "delta_max");
+  const sfTi = await readOutput(page, "SF");
+  expect(deltaTi).toBeGreaterThan(deltaSteel * 1.5); // ~half the stiffness → ~1.8× the sag
+  expect(sfTi).toBeGreaterThan(sfSteel * 2); // higher yield → higher margin
+  expect(errors).toEqual([]);
+});
+
+test("fixed-fixed beam: overload past yield warns, never a silent wrong number", async ({ page }) => {
+  await page.goto("things/fixed-fixed-beam/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+  // a soft material at high load: σ_max races past nylon's yield. The w slider
+  // reads in its first display unit, kN/m (max 50 = 50000 N/m).
+  await page.getByTestId("material-select").selectOption("nylon-66");
+  await page.locator("#knob-w").fill("50");
+  await expect(page.locator(".validity-warn, .validity-invalid").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/yield/i);
+});
+
+/**
+ * Fixed-fixed torsion shaft (S16 — solveLinear 2×2 consumer). Defaults
+ * T = 500 N·m, a = 0.4 m, b = 0.6 m → L = 1 m, r = 20 mm → J = 2.513e-7 m⁴:
+ *   reactions (material-BLIND): T_A = T·b/L = 300 N·m, T_B = T·a/L = 200 N·m;
+ *   τ_1 = T_A r/J = 23.87 MPa > τ_2 = 15.92 MPa (the shorter left segment carries
+ *   more). φ = T_A a/GJ depends on G.
+ *   → THE solveLinear assertion: switching material moves φ but not a reaction or
+ *     a stress — the torque split is geometry, not material.
+ */
+test("fixed-fixed shaft: reaction torques and stresses are material-blind; twist cascades", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/fixed-fixed-torsion-shaft/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  const tA = await readOutput(page, "T_A"); // N·m
+  const tB = await readOutput(page, "T_B");
+  const tau1 = await readOutput(page, "tau_1"); // MPa
+  const tau2 = await readOutput(page, "tau_2");
+  const phiSteel = await readOutput(page, "phi"); // deg
+  expect(tA).toBeCloseTo(300, 1); // T·b/L = 500·0.6/1 = 300 N·m, material-blind
+  expect(tB).toBeCloseTo(200, 1); // T·a/L = 200 N·m
+  expect(tau1).toBeCloseTo(23.873, 2); // MPa, material-blind
+  expect(tau2).toBeCloseTo(15.915, 2);
+  expect(tau1).toBeGreaterThan(tau2); // shorter (left) segment carries the larger torque
+
+  await page.getByTestId("material-select").selectOption("al-6061-t6");
+  // the reactions and stresses do NOT move — set by geometry, not material
+  expect(await readOutput(page, "T_A")).toBeCloseTo(tA, 5);
+  expect(await readOutput(page, "T_B")).toBeCloseTo(tB, 5);
+  expect(await readOutput(page, "tau_1")).toBeCloseTo(tau1, 4);
+  const phiAl = await readOutput(page, "phi");
+  expect(phiAl).toBeGreaterThan(phiSteel * 2.5); // ~1/3 the shear stiffness → ~3× the twist
+  expect(errors).toEqual([]);
+});
+
+test("fixed-fixed shaft: overload past shear yield warns, never a silent wrong number", async ({ page }) => {
+  await page.goto("things/fixed-fixed-torsion-shaft/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+  // crank the torque to its max on aluminium: τ = T·r/J races past shear yield.
+  // the T slider reads in its first display unit, N·m.
+  await page.getByTestId("material-select").selectOption("al-6061-t6");
+  await page.locator("#knob-T").fill("20000");
+  await expect(page.locator(".validity-warn, .validity-invalid").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/shear/i);
+});
+
 test("derivations and equations render as KaTeX with MathML", async ({ page }) => {
   await page.goto("things/planetary-gearset/");
   expect(await page.locator(".katex").count()).toBeGreaterThan(5);
@@ -318,7 +417,7 @@ test("verification page discloses authorship and the audit surface", async ({ pa
   await expect(page.getByText(/built end to end by an AI/i).first()).toBeVisible();
   await expect(page.getByText(/No human reviews the content/i).first()).toBeVisible();
   // every THING appears with its audit block (count is a deliberate change detector)
-  expect(await page.locator("section.relation-block").count()).toBe(31); // +propped-cantilever (S15)
+  expect(await page.locator("section.relation-block").count()).toBe(33); // +fixed-fixed-beam, +fixed-fixed-torsion-shaft (S16)
   await expect(page.getByText(/Where physics enters/i).first()).toBeVisible();
   expect(errors).toEqual([]);
 });

@@ -1,0 +1,37 @@
+The widget's two safety factors guard one thing each — first shear yield at the surface of each
+segment, where $\tau = Tr/J$ peaks. A real doubly-restrained shaft has more exits, and the most
+interesting ones are specific to it being **statically indeterminate**:
+
+- **A support that rotates — the assumption that can quietly move every number.** The whole solution
+  rests on one premise: both walls are perfectly rigid, so the end rotations are exactly zero. Let one
+  wall give a little — a hub that slips on its key, a foundation that yields in torsion by an angle
+  $\Delta$ — and the compatibility equation changes from $T_A a/GJ = T_B b/GJ$ to one carrying
+  $\Delta$. The torque split redistributes, and the "material-blind" result stops being material-blind:
+  now $GJ$ *does* appear, multiplied by the give. In a determinate shaft a support that rotates just
+  goes along for the ride; in an indeterminate one, support movement is a load case in its own right.
+
+- **Yielding in the shorter segment first, then redistribution.** Because the shorter segment carries
+  the larger reaction torque, its surface yields first. Past that point the shaft does not fail
+  outright — the yielded segment sheds stiffness and the split shifts toward the other wall, a
+  redistribution the elastic formulas here cannot see. The $\tau > \sigma_y/2$ warning marks where they
+  stop telling the truth.
+
+- **Stress concentration at the walls and the load point.** The torsion formula assumes a smooth
+  prismatic shaft. Real fixed ends are splines, keyways, or shrink-fit hubs, and the applied torque
+  enters through a gear or coupling — every one of these is a stress raiser that local shear can exceed
+  the nominal $Tr/J$ by a large factor. Fatigue cracks in torsion shafts almost always start at such a
+  feature, not in the smooth bore.
+
+- **Buckling of a thin-walled shaft.** If the section is a thin tube rather than a solid bar, torsional
+  shear can buckle the wall into a diagonal wrinkle pattern well before the material yields — a
+  stability failure this solid-shaft page does not model.
+
+- **Fatigue.** A shaft that reverses or pulses its torque cycles the surface shear at the wall of the
+  shorter segment and at every stress raiser. Fatigue strength in shear sits far below static shear
+  yield, and nothing on this page addresses cyclic life.
+
+- **Brittle materials fail differently.** The $\sigma_y/2$ shear-yield criterion assumes a ductile
+  metal. A brittle shaft (gray cast iron, a ceramic) fails on the maximum *tensile* stress, which in
+  pure torsion acts on a 45° helix — which is why a twisted piece of chalk breaks along a slanted
+  spiral, not straight across. Rate such a material against its tensile strength, not the shear-yield
+  factor shown here.

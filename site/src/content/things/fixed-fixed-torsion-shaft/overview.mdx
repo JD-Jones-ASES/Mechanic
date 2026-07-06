@@ -1,0 +1,73 @@
+Take a solid circular shaft, build it rigidly into a wall at **both** ends, and apply a torque $T$
+somewhere along its length. A [shaft fixed at only one end](../torsion-shaft/) is *statically
+determinate*: the single wall reaction must equal the applied torque, and you are done. Anchor the
+second end and the problem changes character. Now there are **two** reaction torques — $T_A$ at the
+left wall, $T_B$ at the right — but torsional equilibrium gives only **one** equation,
+$T_A + T_B = T$. The shaft is *statically indeterminate to the first degree*, and equilibrium alone
+cannot say how the applied torque splits between the two walls.
+
+You meet this arrangement wherever a rotating member is restrained at both ends and driven in the
+middle: a splined shaft keyed to fixed hubs at each end, a torsion-bar suspension anchored to the
+frame at both ends and loaded by the arm, a fixed-fixed structural member picking up an applied
+twisting couple.
+
+## The missing equation is compatibility
+
+The second equation comes not from force balance but from **geometry**. The shaft is one continuous
+piece, so the rotation at the load point must be a single number. Reckoned from the left, that point
+has twisted by $T_A a / GJ$ — the left segment of length $a$ carries the reaction $T_A$. Reckoned
+from the right, it has twisted by $T_B b / GJ$, with $b$ the right-segment length. They describe the
+same rotation, so they must be equal:
+
+$$ \frac{T_A\,a}{GJ} = \frac{T_B\,b}{GJ} \quad\Longrightarrow\quad T_A\,a = T_B\,b $$
+
+Combine that with equilibrium (and $L = a + b$) and the split is fixed:
+
+$$ T_A = T\,\frac{b}{L}, \qquad T_B = T\,\frac{a}{L} $$
+
+The build does not hand you these formulas to trust. It certifies that the two relations (one
+equilibrium, one compatibility) form a system that is **linear in the two unknowns**, solves that
+$2\times2$ system **exactly** at build time, and checks the solution back through both relations — the
+same total verification an ordinary closed form gets. This is the `solveLinear` capability; the
+[propped cantilever](../propped-cantilever/) is its reference beam case, and this shaft is its
+smallest — a genuinely coupled two-unknown solve. What the machine proves and what still rests on a
+book is spelled out on the [verification page](../../verification/).
+
+## The larger reaction lands on the shorter segment
+
+Read the result again: $T_A = T\,b/L$. The **left** wall's share is set by the length of the
+**right** segment. Slide the load toward the left wall — small $a$, large $b$ — and $T_A$ grows toward
+the full torque $T$ while $T_B$ fades. The near wall does the heavy lifting; the short, stiff segment
+between the load and the near wall is harder to twist, so it carries more torque. Because each segment
+carries its own reaction, each has its own surface shear stress $\tau = Tr/J$, and the shorter segment
+is where the higher stress — and first yield — appears. That is why the widget reports $\tau_1$ and
+$\tau_2$ separately, with a safety factor for each.
+
+## The reaction torques do not care what the shaft is made of
+
+Look at the compatibility step in the derivation below. Both twists carry the same torsional rigidity
+$GJ$, and because the shaft is *prismatic* — uniform shear modulus and uniform radius — $GJ$ divides
+out completely. The line $T_A a = T_B b$ has no $G$ and no $r$ in it. That cancellation is
+**machine-checked**, and it is the lesson: **the reaction torques are material-blind, and radius-blind
+too.** Switch the material in the widget from A36 steel to 6061 aluminium and watch $T_A$, $T_B$,
+$\tau_1$, and $\tau_2$ **not move at all**, even as:
+
+- **Shear modulus $G$** changes the twist $\varphi = T_A a / GJ$ — aluminium is about a third as stiff
+  in shear ($G \approx 26$ vs $79$ GPa), so the same load twists it nearly three times as far.
+- **Yield strength $\sigma_y$** changes the safety factors $\mathrm{SF} = (\sigma_y/2)/\tau$.
+- **Density $\rho$** changes the mass.
+
+A redundant restraint redistributes torque by **geometry**, not by material — the "sharing" between
+the two walls is set purely by the segment lengths. (Make the shaft *non*-prismatic — a stepped shaft,
+two different diameters spliced at the load point — and $GJ$ no longer cancels; the split would then
+follow the stiffness distribution. That is a later story.)
+
+## What governs, and the sign convention
+
+Throughout: $x$ runs from the left wall $A$ to the right wall $B$, the applied torque $T$ acts at
+$x = a$, the segment lengths are $a$ and $b = L - a$, and $T_A$, $T_B$ are the reaction-torque
+**magnitudes** at the two walls (their senses oppose the applied torque). The shear stresses
+$\tau_1 = T_A r/J$ and $\tau_2 = T_B r/J$ grow linearly from zero at the axis to their peak at the
+surface, exactly as in the [simple torsion shaft](../torsion-shaft/); the shorter segment carries the
+larger of the two. Shear yield is taken at $\sigma_y/2$ by the maximum-shear-stress criterion, the
+same convention the torsion-shaft page uses.
