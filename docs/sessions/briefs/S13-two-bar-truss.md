@@ -43,8 +43,15 @@ knob d (do not re-litigate into a free-A/free-I pair; that breaks the buckling c
   construction. Authored solution back-substituted; NO solver (fourbar pattern at its simplest).
 - Section: `A = pi*d**2/4`, `I = pi*d**4/64`.
 - Member stress: `sigma = F_m / A`; yield SF readout `SF_y = sigma_y / sigma` per sibling pattern.
-- Joint deflection (unit-load method): `delta = P*L / (2*A*E*cos(alpha)**3)` — the small-displacement
-  assumption is DECLARED in the assumptions list (the cos³α is a linearized-geometry result).
+- Joint deflection (unit-load method): `delta = P*L / (2*A*E*cos(alpha)**2)` — the small-displacement
+  assumption is DECLARED in the assumptions list (the cos²α is a linearized-geometry result: one cos α
+  from the member force `F_m = P/(2 cos α)`, a second from projecting the joint drop onto the member
+  axis, `δ = e/cos α`).
+  **[CORRECTED 2026-07-06 during S13 — this line originally read `cos(alpha)**3`. That was a
+  transcription error: the correct symmetric two-bar deflection is `cos²α`, confirmed by (i) the
+  physics test's two independent derivations (unit-load AND compatibility-triangle) agreeing, (ii) the
+  brief's own stated compatibility-triangle method below, and (iii) web-corroboration. The site ships
+  `cos²α`. See the S13 log entry.]**
 - Compression configuration (P reversed): per-member Euler check reusing the euler-column result
   verbatim — `P_cr = pi**2*E*I / L**2` (pinned-pinned, K = 1, cited: truss members are pin-jointed by
   model), `SF_buck = P_cr / F_m`.
@@ -101,9 +108,10 @@ it fits; `SimRefusal` for invalid states. Component `site/src/components/sims/Tr
 
 - `/things/` shows 30; CLAUDE.md catalog line + README count updated to 30
 - `uv run pytest -q` green, ≥ 5 new tests in `test_truss_physics.py` over baseline
-- Machine-proven fact: `delta = P*L/(2*A*E*cos(alpha)**3)` verified against the relations by SymPy
+- Machine-proven fact: `delta = P*L/(2*A*E*cos(alpha)**2)` verified against the relations by SymPy
   AND independently re-derived by the compatibility-triangle route in tests, the two agreeing
-  symbolically
+  symbolically (originally written `cos(alpha)**3` — corrected to `cos²α` during S13; see the
+  Physics-scope note above and the S13 log entry)
 - α-envelope thresholds carry pinned citations (visible in `sources[].verification`)
 - overview.mdx contains the Phase 3 solveLinear bridge statement
 - Visual pass per §5: normal + refused screenshots, what-was-checked described

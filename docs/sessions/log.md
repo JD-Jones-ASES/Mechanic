@@ -956,23 +956,26 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   result. (iii) A scoped-refusal default state (tension's buckling withheld, or compression when stubby) is a
   legitimate first-impression when it IS the lesson (euler-column precedent) — I defaulted to COMPRESSION so
   the default page is refusal-free and the α→90° global refusal is the single memorable moment.
-- Deferred (§8 phase-boundary): **S14 + the Phase-2 close are DEFERRED to the next session (brief option c).**
-  This was a large session (deep physics design incl. the cos³→cos² catch, full authoring, comprehensive
-  visual pass, four review agents); I could not fund a proper phase close (reports/phase-2.md + reconciling six
-  S15–S20 DRAFT briefs) with the ~20% context margin, and a rushed phase report — which the owner reads to make
-  the Phase-3 ruling — is worse than a clean handoff. S13 is fully complete (merged, deploy-verified,
-  bookkeeping done); the row was NEVER paused.
-- Notes-for-next (S14 / Phase-2 close): (a) NOTHING is PAUSED — S13 is merged and DONE. Your session is S14.
-  Per the queue's S14 shed note + protocol §8, do exactly ONE: continue-and-build S14 band-brake (a full THING;
-  belt-drive already carries the capstan math, so it's a shed item) OR mark the S14 row SKIPPED (pre-authorized)
-  — then, EITHER WAY, YOU CLOSE PHASE 2: write docs/sessions/reports/phase-2.md (§11 template), verify/update
-  the Phase-3 DRAFT briefs S15–S20 against merged reality, set the queue header to `Active phase: 2 — AWAITING
-  OWNER`, and STOP. (b) Do NOT start any Phase-3 row (S15+): "Phase 3: NOT YET RULED" — no ruling line exists.
-  (c) The provenance trap held again (S11's lesson): I web-corroborated the cos²α FORM rather than trusting the
-  brief's transcribed formula — and the brief was wrong. ALWAYS independently re-derive/corroborate a brief's
-  emitted formula; a brief is a spec, not a source. (d) Traps: the `mode`-scoped buckling refusal needs mode to
-  be a FREE integer with NO `positive:` (else `mode > 0` simplifies to True at parse and the compiler rejects
-  it as "not a comparison"); default config is compression (configs[0]) so derived defaults are the mode=1
-  state; the α slider bounds intentionally reach 92° so the α≥90° global refusal is reachable by the knob.
-  (e) When editing thing.yaml AFTER the review subagents have started reading it, WAIT for them — I batched the
-  display-only seed fixes until all four passes finished to avoid confusing concurrent edits.
+- PHASE 2 CLOSED (§8) — same session, after the owner confirmed context was fine (45%) and authorized the
+  spec fix. Ran the phase-boundary duty as a follow-up docs PR on branch `docs/phase-2-close`: marked S14
+  band-brake SKIPPED (pre-authorized shed item; the ≈30 target R2 is met at 30 — did NOT start a full THING
+  below the §2 50% continuation threshold); wrote `docs/sessions/reports/phase-2.md` (evidence-based per §11);
+  verified all six Phase-3 DRAFT briefs (S15–S20) against merged reality — entry-criteria references all still
+  hold (solve1d machinery, binds schema, MaterialPicker, torque/stiffness/pressure_stress kinds, 13 materials,
+  CTE-not-shipped, 30 catalog dirs), so NO technical updates were needed; pinned S18's catalog number per its
+  request; CORRECTED the S13 brief's cos³α → cos²α (Physics-scope + Exit-criteria, dated notes) now that the
+  owner authorized it; set the queue header to `Active phase: 2 — AWAITING OWNER`. S13 itself (THING 30) shipped
+  in PR #27 (merged, deploy-verified); the phase-close docs ride a separate PR. Row was NEVER paused.
+- Notes-for-next (Phase 3, AFTER the owner rules): (a) Phase 2 is CLOSED and AWAITING OWNER — do NOT start any
+  Phase-3 row until `queue.md` carries the literal `Phase 3 approved — JD <date>` ruling line AND the header
+  reads `Active phase: 3` (only the OWNER flips both, in one edit — §8). A ruling line with an unflipped header
+  = stop and report, don't "help". (b) Once ruled, the topmost QUEUED Phase-3 row is S15 (solveLinear +
+  propped-cantilever) — a solo L-size engine session, never claimed via continuation; its design is DECIDED
+  (R5/ADR-0008), implement don't redesign. (c) NOTHING is paused; S14 is SKIPPED (not blocked). (d) The
+  provenance lesson, now doubly proven (S11 recalled Weibull θ, S13 brief formula): a brief is a spec NOT a
+  source — always independently re-derive emitted formulas and web-corroborate constants. (e) Reusable trap: a
+  `mode`-style discriminator gating a scoped refusal (`mode > 0`) must be a FREE integer with NO `positive:` —
+  else the condition simplifies to True at parse and the compiler rejects it ("condition must be a comparison");
+  the Relational check is at parse time, before config-constraint substitution, so `mode > 0` on a free integer
+  stays a Relational and works. Default config is compression (configs[0]); the α slider bounds reach 92° so
+  the α≥90° global refusal is knob-reachable.

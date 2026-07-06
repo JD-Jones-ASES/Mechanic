@@ -23,12 +23,14 @@ authoritative `invalid` verdict (shared `SimRefusal`; finite-invalid cases e2e-p
 sim machinery (`useSimClock`, `StressBands`); incremental compile cache (fingerprinted artifact
 reuse, `actions/cache` in CI — warm builds reuse unchanged THINGs in seconds).
 
-## Phase 2 — Catalog breadth (in progress)
+## Phase 2 — Catalog breadth ✅ complete (2026-07-06, 17 → 30 THINGs; report `docs/sessions/reports/phase-2.md`)
 
-**Target (owner ruling 2026-07-04): grow the catalog from 17 to ≈30 THINGs.** The
-session-by-session plan is `docs/sessions/queue.md` (S01–S14; band-brake is the designated shed
-item, so Phase 2 lands at 30 or 31); the spur-gear tabulated-data capability goes first, designed
-deliberately, then consumed by later batches.
+**Target (owner ruling 2026-07-04): grow the catalog from 17 to ≈30 THINGs — MET at 30.** The
+session-by-session plan was `docs/sessions/queue.md` (S01–S13 shipped THINGs 18–30; S14 band-brake
+SKIPPED as the pre-authorized shed item, so Phase 2 landed at exactly 30); the spur-gear
+tabulated-data capability went first, designed deliberately, then consumed by later batches. The
+closing session (S13) wrote the phase report and set the queue header to AWAITING OWNER for the
+Phase 3 ruling.
 
 March through the curriculum spine in batches; each batch should deliberately exercise a new
 factory capability, the way the flywheel exercised `poisson_ratio` and new quantity kinds.

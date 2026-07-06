@@ -121,7 +121,11 @@ key `thermal-assembly`; imitate composite-bar (nearest sibling); new SVG classes
 ## Exit criteria
 
 - Catalog count = start + 1 on `/things/` and in CLAUDE.md/README (absolute number depends on
-  the S14 shed decision — compute from the queue; the Phase 2 closing session pins it here)
+  the S14 shed decision — compute from the queue; the Phase 2 closing session pins it here).
+  **[Phase 2 close pin, 2026-07-06: S14 band-brake was SKIPPED, so Phase 2 closed at 30 THINGs and
+  Phase-3 THING numbering begins at 31 (S15 propped-cantilever = 31; on the planned S15→S18 sequence
+  thermal-assembly lands at THING 35). Recompute from the queue at execution — S15's S15b fallback or
+  S16's 4×4 fallback could shift the number.]**
 - `uv run pytest -q` green with the itemized new tests present: ≥3 CTE conversion goldens, ≥1
   negative Θ dimension-gate test, cross-check + golden in `test_thermal_physics.py`
 - Machine-proven facts: the Θ slot participates (the negative test fails the build when
