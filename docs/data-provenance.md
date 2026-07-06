@@ -51,6 +51,23 @@ basis label next to every value. Never mix bases silently.
 - Files are **append-only**: corrections add a dated entry to `errata:` and a new value row; never silently
   edit a published number. The site renders the errata log.
 
+## THING-level source pinning (`sources[].verification`)
+
+Materials provenance (above) is one surface; the other is the THING's own `sources[]` block in
+`thing.yaml`. Every relation and validity envelope must cite a source id that resolves there;
+each source entry MAY additionally carry a `verification:` string recording **how the citation
+was pinned** ("§9.x checked against the publisher TOC, 2026-07-04", "re-derived from the exact
+Fourier series + cross-checked against Roark's closed form"). It renders on `/verification/`;
+omitting it displays as **"not section-pinned"** — an honest state (ADR-0007). The rules:
+
+- Never invent precision you didn't verify: a fabricated §-number is worse than no pin.
+- When the primary PDF is inaccessible (the recurring case since S02), pin by first-principles
+  re-derivation plus web-corroboration and SAY SO in the string — the physics test, not
+  transcription, carries the weight.
+- Coverage is deliberately incremental: older THINGs predate the field and show unpinned
+  sources honestly. Backfilling is real verification labor (each pin must actually be performed),
+  never a bulk text edit.
+
 ## What Materials Project is and isn't (future sidebar, not v1)
 
 MP (CC BY 4.0) provides DFT-computed elastic properties of idealized crystalline phases. Those are not

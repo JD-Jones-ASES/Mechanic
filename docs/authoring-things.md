@@ -23,7 +23,7 @@ variables:
     bounds: [0, 5000]
     positive: true                 # becomes a SymPy assumption; needed for sqrt/abs verification
     integer: false
-    role: free                     # free | material | derived
+    role: free                     # free | material | derived | constant (constants: see below)
   - symbol: E
     role: material                 # material-bound: never an input knob, never a derived output
 
@@ -202,6 +202,75 @@ What the build does with this:
 - `expected_branches` must equal `len(branches.labels)`, at least one solution must actually be
   branched, and single-branch configurations must not carry a `branches` block.
 
+## Configuration discriminators (the `mode` idiom)
+
+When configurations share one relation set but differ in a *case* — impact-loading's axial rod vs
+cantilever strike, two-bar-truss's tension vs compression — encode the case as a small integer
+variable constrained per configuration, rather than duplicating relations:
+
+```yaml
+variables:
+  - symbol: mode
+    name: Loading sense (0 tension · 1 compression)
+    unit: '1'
+    quantity_kind: count
+    default: 1
+    bounds: [0, 1]
+    integer: true                  # a FREE integer with NO positive: — see the trap below
+
+configurations:
+  - id: compression
+    constraints: { mode: 1 }       # constrained in every configuration, so it is never a knob
+  - id: tension
+    constraints: { mode: 0 }
+```
+
+What it buys (both uses shipped in Phase 2):
+
+- Relations may read the discriminator to select or sign a readout, or to blend two
+  dimensionally-homogeneous cases into one shared relation (impact-loading's single δ_st
+  relation serving both its configurations).
+- A **scoped-invalid envelope keyed on the discriminator** (`condition: mode > 0`) makes a
+  refusal configuration-specific on a shared relation set — two-bar-truss scope-refuses its
+  buckling readouts in the tension configuration this way (a tension member cannot buckle).
+
+The trap (hit in S13, worth its own line): **the discriminator must stay a free integer with no
+`positive:` assumption.** The compiler's "validity condition must be a Relational" check runs at
+PARSE time, before configuration constraints are substituted — under a positivity assumption,
+`mode > 0` simplifies to `True` at parse and the build rejects the envelope. Left assumption-free,
+the condition stays a Relational and the constrained value trips or passes it at runtime.
+(verified against compile.py + two-bar-truss 2026-07-06)
+
+## Cited constants (`role: constant`)
+
+A physical constant that enters the math — standard gravity, the bearing Weibull parameters — is
+authored as a variable with `role: constant`. For the arithmetic it behaves like a material: never
+an input knob, excluded from the DOF/knob count. Unlike a material it never varies at runtime, so
+its value lives in `default:` and its provenance is mandatory (invariant 5: a constant is cited
+data, not derived physics):
+
+```yaml
+  - symbol: g
+    name: Standard gravity
+    latex: g
+    unit: m/s**2
+    quantity_kind: acceleration
+    default: 9.80665               # the value the site uses — exact by definition
+    bounds: [9.78, 9.83]           # SAMPLING range only: verification samples the constant like a
+                                   # material across this range; the emitted value is the default
+    positive: true
+    role: constant
+    citation: nist                 # REQUIRED — must resolve in sources[]; build fails without it,
+                                   # and `citation` is rejected on any other role
+    display_units: ["m/s^2"]
+```
+
+The source id rides the compiled artifact and renders in the ConstantsPanel. Dimensionless
+constants work identically (ball-bearing-life's Weibull x₀, θ, b) — carry the honest
+`quantity_kind` so they can never chain into a wrong port. Never re-key a constant from memory
+or a brief: web-corroborate the published value when authoring (the S11 lesson — a recalled
+Weibull θ was wrong and only independent re-verification caught it).
+
 ## Tabulated relation data (the `table` plan step, ADR-0009)
 
 When a governing quantity is *published as a table*, not a formula — the Lewis gear-tooth form
@@ -260,8 +329,11 @@ What the build does with this (and fails loudly on):
   published source in `sources[].verification` and the physics test.
 
 `threshold` mode and `rows_from` (external data files) are schema-reserved; the compiler rejects
-them until their consumers arrive. Multi-column consumption (one lookup filling several targets) is
-not built in v1 — one target per table entry.
+them until their consumers arrive. **Multi-column consumption** (one lookup filling several
+targets) IS built — S02's stepped-shaft-fillet fills A and b from one D/d lookup. Author one
+solutions entry per column with the SAME table id and the SAME `at` expression, consecutively
+(no intervening plan step): the compiler merges consecutive same-`(table, at)` entries into a
+single lookup step. (verified against compile.py table grouping 2026-07-06)
 
 ## Scoped refusal — what the engine actually does
 

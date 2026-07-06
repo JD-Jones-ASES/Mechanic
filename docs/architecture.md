@@ -133,7 +133,13 @@ changes (verified against compile.py 2026-07-04). Never hand-edit or commit anyt
       "quantity_kind": "angular_velocity", // chaining legality = dim AND kind match
       "si_unit": "rad/s", "display_units": ["rad/s","rpm"],
       "default": 10, "bounds": [-100, 100], "integer": false,
-      "role": "free"                       // free | material | derived (default role; configs refine)
+      "role": "free"                       // free | material | derived | constant (default role; configs refine)
+                                           // role "constant" (cited physical constant: g, Weibull params)
+                                           // additionally carries "citation": "<source-id>" — required by
+                                           // compile.py, rendered in the ConstantsPanel. Constants are
+                                           // excluded from DOF/knob arithmetic like materials; their
+                                           // bounds are a verification SAMPLING range, the emitted value
+                                           // is the default. (verified against compile.py 2026-07-06)
     }
   },
   "relations": [{
@@ -160,7 +166,19 @@ changes (verified against compile.py 2026-07-04). Never hand-edit or commit anyt
       { "type": "eval", "target": "omega_c", "fn": "cfg_rf_omega_c", "latex": "…" },
       { "type": "solve1d", "target": "P_y",  // bracketed Brent on a DECLARED relation's residual;
         "residual_fn": "rel_secant_yield",   // bracket endpoints are FUNCTIONS of the evaluated env
-        "bracket_fns": ["cfg_a_P_y__blo", "cfg_a_P_y__bhi"], "latex": "…" }
+        "bracket_fns": ["cfg_a_P_y__blo", "cfg_a_P_y__bhi"], "latex": "…" },
+      { "type": "table",                     // cited tabulated lookup (ADR-0009); node-exact at
+        "targets": [null, "Y_p"],            //   published rows, linear between, in the parity oracle.
+                                             // one slot per table COLUMN; filled slots are this step's
+                                             //   targets — several filled slots = multi-column fill
+                                             //   from ONE lookup (stepped-shaft-fillet's A and b)
+        "table_id": "lewis-form-factor-20fd",
+        "arg_fn": "cfg_d_Y_p__arg",          // the `at` expression, emitted like any fn
+        "mode": "interpolate-linear", "rows": [[12, 0.245]], "domain": [12, 400],
+        "guard": { "severity": "invalid", "message": "…", "citation": "shigley",
+                   "scope": ["Y_p", "sigma_b"] },  // out-of-domain = SCOPED refusal of the columns +
+                                             //   downstream dependents; no clamp, no extrapolation
+        "latex": "…" }
       // { "type": "solveND", … }          // RESERVED — nonlinear/feedback solving; deferred by
                                             // ADR-0008 (accepted, split scope) pending its own future ADR
     ],

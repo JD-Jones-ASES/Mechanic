@@ -18,6 +18,11 @@ Rules that hold even if you read nothing else:
 4. **Merge is publish.** Every push to main deploys the public site with no review step
    (ADR-0007). Act like it.
 5. **Never round-trip repo files through PowerShell `Get-Content`/`Set-Content`** — see §10.1.
+6. **A brief is a spec, not a source.** Independently re-derive every emitted formula and
+   web-corroborate every cited constant before it ships; never transcribe from a brief, a
+   roadmap bullet, or recall. Twice-proven in Phase 2: S11's recalled Weibull θ (4.439 vs the
+   correct 4.459) and S13's brief formula (cos³α vs the correct cos²α) were both wrong in the
+   *input documents* and caught only by independent re-derivation.
 
 ## §1 Startup sequence (exact order, do not skip)
 
@@ -83,7 +88,8 @@ All of these, in order, all green, before the PR is opened. Working directories 
    pinned in a comment (the Timoshenko-worked-example pattern from compound-cylinder).
 4. **Citations**: every `sources[]` entry carries `verification:` with the actual pinning method
    and date. Web-pin where possible. Never invent precision you didn't verify — "not
-   section-pinned" is an honest state; a fabricated §-number is not.
+   section-pinned" is an honest state; a fabricated §-number is not. And per rule 6: the brief's
+   quoted formulas and constants are INPUTS to verify, not sources to transcribe.
 5. **Engine unit tests**: `pnpm run test:unit` in `site/`.
 6. **E2E + axe**: `pnpm exec playwright test` in `site/` — add pins per the brief; a new THING
    gets at minimum a presence pin and a refusal pin.
