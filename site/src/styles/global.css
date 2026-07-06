@@ -121,6 +121,13 @@ a { color: var(--accent); }
 .beam-line { stroke: var(--accent); stroke-width: 5; stroke-linecap: round; }
 .beam-yielding { stroke: #dc2626; }
 .beam-ghost { stroke: var(--line); stroke-dasharray: 4 4; }
+/* propped-cantilever (ProppedCantileverSim): the wall hatch, and the support
+   REACTIONS (arrows + the wall-moment arc) in a distinct teal so they never
+   read as applied loads — the wall/prop supports reuse .beam-wall, the load
+   arrows reuse .load-arrow-light, the elastic curve reuses .beam-line/-yielding. */
+.propped-hatch { stroke: var(--muted); stroke-width: 1; }
+.propped-reaction { stroke: #0d9488; stroke-width: 2.5; }
+.propped-moment { stroke: #0d9488; stroke-width: 2; }
 .load-arrow { stroke: var(--ink); stroke-width: 2; }
 .load-arrow-light { stroke: var(--ink); stroke-width: 1.2; fill: none; }
 .load-arrow-head { fill: var(--ink); }

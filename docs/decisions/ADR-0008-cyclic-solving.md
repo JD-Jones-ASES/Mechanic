@@ -5,8 +5,10 @@ below as written: **(a) `solveLinear` is approved to build** (statically indeter
 structures — exact solve, full certificate; direction: prove linearity, solve exactly at build
 time, desugar to ordinary verified closed forms — zero new runtime engine); **(b) full nonlinear
 `solveND` remains deferred** and requires its own ADR with the basin-certification question
-answered before any build. Drafted 2026-06-10 alongside the solve1d work. As of sign-off, nothing
-in this ADR is implemented; execution is session S15 in `docs/sessions/queue.md`.
+answered before any build. Drafted 2026-06-10 alongside the solve1d work.
+
+**Part (a) `solveLinear` shipped 2026-07-06 (session S15, propped-cantilever as the reference
+consumer).** Part (b) `solveND` remains PROPOSED and unbuilt. See "Implementation (part a)" below.
 
 ## What it would unlock
 
@@ -56,6 +58,34 @@ total certificate, unlocks the propped cantilever / composite bar family with no
 compromise; **(b) full nonlinear `solveND`** — defer until a THING actually demands it, and
 require its own ADR with the basin-certification question answered. This mirrors ADR-0002's
 shape: ship the principled subset, leave the dangerous generality unbuilt.
+
+## Implementation (part a — `solveLinear`, shipped session S15)
+
+As built, matching the "prove linearity, solve exactly, desugar" direction with **zero new runtime
+engine**:
+
+- **Authoring.** A configuration carries an optional `solve_linear: [{targets: [...], relations:
+  [...]}]` — a SET of coupled derived targets and the DECLARED relations that pin them. Groups
+  evaluate after `constraints`, before `solutions`; a group coefficient may read only inputs,
+  constraints, materials/constants, and earlier groups' targets (a forward DAG — reading a
+  downstream `solutions` target fails the build). (`docs/authoring-things.md`.)
+- **Certificate (`verify.certify_linear_group`).** (a) affine proof — ∂²r/∂tᵢ∂tⱼ ≡ 0 for every
+  target pair and target-free coefficients; (b) square + covering; (c) exact solve — A = Jacobian
+  wrt targets, b = −(residual|targets→0), `sp.linsolve` requiring a unique FiniteSet with
+  target-free entries; (d) det(A) checked non-zero at every verification sample (50 dps); (e) caps —
+  ≤ 4 targets/group, `SIMPLIFY_OPS_CAP` (200) on coefficients and solved forms, a trip naming a
+  future LU-runtime ADR. `sp.solve` is nowhere; `linsolve` runs ONLY after the affine certificate.
+- **Desugar (`compile.load_configurations`).** The solved closed forms become ordinary `type: eval`
+  plan steps (carrying an additive `via.solve_linear` provenance annotation) and flow through the
+  EXISTING path — `resolve_solutions` → total back-substitution into every relation (≥30 samples,
+  50 dps) → manifold DOF check → `_samples` parity oracle. Nothing new runs after the desugar.
+- **Runtime.** det(A) emits as an ordinary `nonzero` guard (existing kind — no engine change): a
+  singular system refuses the whole evaluation. `schema_version` stays 1; `solveND` stays reserved
+  and unbuilt.
+
+The determinant frequently **cancels** in the solved forms (the propped cantilever's L³/3 divides
+out, which is exactly why its reactions are material-blind), so the explicit determinant guard —
+not an auto denominator guard — is what certifies non-singularity.
 
 ## Out of scope regardless
 

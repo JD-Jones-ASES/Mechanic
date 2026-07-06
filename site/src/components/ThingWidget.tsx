@@ -31,6 +31,7 @@ import { FourbarSim } from "./sims/FourbarSim";
 import { GearPairSim } from "./sims/GearPairSim";
 import { ImpactLoadingSim } from "./sims/ImpactLoadingSim";
 import { PlanetarySim } from "./sims/PlanetarySim";
+import { ProppedCantileverSim } from "./sims/ProppedCantileverSim";
 import { RectTorsionSim } from "./sims/RectTorsionSim";
 import { ScrewSim } from "./sims/ScrewSim";
 import { ShaftCriticalSpeedSim } from "./sims/ShaftCriticalSpeedSim";
@@ -86,6 +87,7 @@ const SIMS: Record<
   "ball-bearing-life": BearingSim,
   "disk-clutch": ClutchSim,
   "two-bar-truss": TrussSim,
+  "propped-cantilever": ProppedCantileverSim,
 };
 
 interface Props {

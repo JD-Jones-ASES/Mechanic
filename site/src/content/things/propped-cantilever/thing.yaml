@@ -1,0 +1,361 @@
+id: propped-cantilever
+title: Propped Cantilever (UDL)
+summary: >-
+  A cantilever with a prop under its free end: one redundant support turns a determinate beam into a
+  statically indeterminate one. Equilibrium alone cannot find the three reactions — compatibility
+  (the prop deflects to zero) supplies the missing equation, and the build solves the coupled
+  3×3 system exactly.
+facets: [stress, mass-cost]
+
+# Sign convention (fixed for this whole THING): x runs from the wall A (x=0) to the prop B (x=L);
+# downward load and downward deflection are positive; R_A and R_B are the UPWARD support reactions;
+# M_A is the MAGNITUDE of the hogging fixing moment at the wall. |M|_max = M_A = wL²/8 governs the
+# stress (the sagging peak is only 9wL²/128 at x=5L/8 — see the overview).
+
+variables:
+  - symbol: w
+    name: Distributed load
+    latex: w
+    unit: N/m
+    quantity_kind: line_load
+    default: 12000
+    bounds: [0, 50000]
+    positive: true
+    display_units: ["kN/m", "N/m"]
+  - symbol: L
+    name: Span
+    latex: L
+    unit: m
+    quantity_kind: length
+    default: 2.0
+    bounds: [0.5, 6.0]
+    positive: true
+    display_units: [m, mm]
+  - symbol: b
+    name: Section width
+    latex: b
+    unit: m
+    quantity_kind: length
+    default: 0.05
+    bounds: [0.005, 0.3]
+    positive: true
+    display_units: [mm, m]
+  - symbol: h
+    name: Section height
+    latex: h
+    unit: m
+    quantity_kind: length
+    default: 0.1
+    bounds: [0.005, 0.4]
+    positive: true
+    display_units: [mm, m]
+  - symbol: E
+    name: Young's modulus
+    latex: E
+    unit: Pa
+    quantity_kind: elastic_modulus
+    default: 200.0e9
+    bounds: [1.0e9, 400.0e9]
+    positive: true
+    role: material
+    display_units: [GPa, Pa]
+  - symbol: sigma_y
+    name: Yield strength
+    latex: '\sigma_y'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 250.0e6
+    bounds: [10.0e6, 2.0e9]
+    positive: true
+    role: material
+    display_units: [MPa, Pa]
+  - symbol: rho
+    name: Density
+    latex: '\rho'
+    unit: kg/m**3
+    quantity_kind: density
+    default: 7850
+    bounds: [400, 9000]
+    positive: true
+    role: material
+    display_units: ["kg/m^3"]
+  - symbol: I
+    name: Second moment of area
+    latex: I
+    unit: m**4
+    quantity_kind: second_moment_of_area
+    default: 4.1666667e-6
+    bounds: [1.0e-10, 1.0e-2]
+    positive: true
+    role: derived
+  # --- the three coupled reactions, solved as ONE linear group (ADR-0008) ---
+  - symbol: R_A
+    name: Wall reaction
+    latex: R_A
+    unit: N
+    quantity_kind: force
+    default: 15000
+    bounds: [0, 1.0e7]
+    positive: true
+    role: derived
+    display_units: [kN, N]
+  - symbol: R_B
+    name: Prop reaction
+    latex: R_B
+    unit: N
+    quantity_kind: force
+    default: 9000
+    bounds: [0, 1.0e7]
+    positive: true
+    role: derived
+    display_units: [kN, N]
+  - symbol: M_A
+    name: Wall moment (hogging)
+    latex: M_A
+    unit: N*m
+    quantity_kind: bending_moment
+    default: 6000
+    bounds: [0, 1.0e7]
+    positive: true
+    role: derived
+    display_units: ["N*m"]
+  # --- downstream readouts (ordinary closed forms that read the reactions) ---
+  - symbol: sigma_max
+    name: Max bending stress
+    latex: '\sigma_{max}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 7.2e7
+    bounds: [0, 5.0e9]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: delta_mid
+    name: Midspan deflection
+    latex: '\delta_{mid}'
+    unit: m
+    quantity_kind: length
+    default: 1.2e-3
+    bounds: [0, 2]
+    positive: true
+    role: derived
+    display_units: [mm, m]
+  - symbol: SF
+    name: Safety factor (yield)
+    latex: '\mathrm{SF}'
+    unit: '1'
+    quantity_kind: safety_factor
+    default: 3.4722222
+    bounds: [0, 100]
+    positive: true
+    role: derived
+  - symbol: m_beam
+    name: Beam mass
+    latex: m
+    unit: kg
+    quantity_kind: mass
+    default: 78.5
+    bounds: [0, 5000]
+    positive: true
+    role: derived
+    display_units: [kg]
+
+materials:
+  binds:
+    E: youngs_modulus
+    sigma_y: yield_strength
+    rho: density
+
+relations:
+  - id: rect-section
+    group: stress
+    latex: 'I = \frac{b h^3}{12}'
+    residual: I - b*h**3/12
+    assumptions:
+      - solid rectangular cross-section, bending about the strong axis
+    citation: gere
+  # --- the coupled system: two equilibrium equations + one compatibility equation ---
+  - id: sum-forces
+    group: stress
+    latex: 'R_A + R_B = w L'
+    residual: R_A + R_B - w*L
+    assumptions:
+      - vertical force equilibrium of the whole beam; the total downward load is wL
+    citation: hibbeler
+  - id: sum-moments
+    group: stress
+    latex: 'M_A + R_B\,L = \tfrac{1}{2} w L^2'
+    residual: M_A + R_B*L - w*L**2/2
+    assumptions:
+      - moment equilibrium about the wall A; the UDL resultant wL acts at the span midpoint L/2
+      - M_A is the hogging fixing moment at the wall (its magnitude)
+    citation: hibbeler
+  - id: compatibility
+    group: stress
+    latex: '\frac{w L^4}{8} = \frac{R_B\,L^3}{3}'
+    residual: w*L**4/8 - R_B*L**3/3
+    assumptions:
+      - >-
+        force method: remove the prop to get a cantilever (the primary structure), then require the
+        net deflection at B to be zero. The UDL alone deflects B down by wL⁴/8EI; the redundant R_B
+        alone lifts B by R_B·L³/3EI. Setting them equal is the compatibility condition.
+      - >-
+        the common flexural rigidity EI has been divided out of both deflection terms — legal because
+        the beam is prismatic (uniform EI), and it is exactly why the reactions are material-blind
+      - linear elastic, small deflections, Euler–Bernoulli kinematics
+    citation: gere
+  # --- downstream stress / deflection / margin / mass ---
+  - id: flexure
+    group: stress
+    latex: '\sigma_{max} = \frac{M_A\,(h/2)}{I}'
+    residual: sigma_max*I - M_A*(h/2)
+    assumptions:
+      - >-
+        the largest bending moment is the hogging moment M_A = wL²/8 at the wall (it beats the sagging
+        peak 9wL²/128 at x = 5L/8), so the peak stress is at the wall's outer fiber, c = h/2
+    citation: gere
+    validity:
+      - condition: sigma_max < sigma_y
+        severity: warn
+        message: >-
+          Bending stress at the wall exceeds the yield strength — the outer fiber has yielded and
+          every linear-elastic number here (the reactions included, since they assume linear
+          superposition) stops being the truth.
+        citation: gere
+  - id: deflection
+    group: stress
+    latex: '\delta_{mid} = \frac{w L^4}{192\,E I}'
+    residual: delta_mid*192*E*I - w*L**4
+    assumptions:
+      - >-
+        deflection at midspan (x = L/2) of the propped cantilever under UDL; the true maximum is
+        slightly larger, ≈ wL⁴/185EI at x ≈ 0.5785L, but midspan is the clean, quotable value
+      - linear elastic, small deflections, Euler–Bernoulli kinematics
+    citation: gere
+    validity:
+      - condition: delta_mid < L/10
+        severity: warn
+        message: >-
+          Midspan deflection exceeds L/10 — the small-deflection assumption is breaking down, and with
+          it the linear superposition the reaction solve depends on.
+        citation: gere
+      - condition: L > 10*h
+        severity: warn
+        message: >-
+          This is a short, deep beam (L < 10h): shear deflection, neglected by Euler–Bernoulli theory,
+          is no longer negligible.
+        citation: gere
+  - id: safety-factor
+    group: stress
+    latex: '\mathrm{SF} = \frac{\sigma_y}{\sigma_{max}}'
+    residual: SF*sigma_max - sigma_y
+    assumptions:
+      - margin against first yield at the wall's outer fiber, not against plastic collapse
+    citation: gere
+  - id: mass
+    group: mass-cost
+    latex: 'm = \rho\, b\, h\, L'
+    residual: m_beam - rho*b*h*L
+    assumptions:
+      - prismatic beam, uniform density
+    citation: gere
+
+configurations:
+  - id: analyze
+    label: Load and geometry in — the three reactions, stress, deflection, margin out
+    constraints: {}
+    inputs: [w, L, b, h]
+    # the redundant reactions {R_A, R_B, M_A} are a coupled 3×3 linear system with no
+    # evaluation order — solved EXACTLY at build time (ADR-0008, certify_linear_group),
+    # then desugared into ordinary verified closed forms. Everything below reads them.
+    solve_linear:
+      - targets: [R_A, R_B, M_A]
+        relations: [sum-forces, sum-moments, compatibility]
+    solutions:
+      I: b*h**3/12
+      sigma_max: M_A*(h/2)/I
+      delta_mid: w*L**4/(192*E*I)
+      SF: sigma_y/sigma_max
+      m_beam: rho*b*h*L
+
+derivation:
+  verifies_configuration: analyze
+  steps:
+    - expr: Eq(R_A + R_B, w*L)
+      prose: >-
+        Vertical equilibrium of the whole beam: the two upward reactions carry the total downward
+        load, wL. One equation, but three unknowns (R_A, R_B, M_A) — the beam is statically
+        indeterminate to the first degree, so equilibrium alone cannot finish the job.
+      rule: 'statics: ΣF_y = 0'
+      check: definition
+    - expr: Eq(M_A + R_B*L, w*L**2/2)
+      prose: >-
+        Moment equilibrium about the wall A: the fixing moment M_A plus the prop's moment R_B·L
+        balance the UDL, whose resultant wL acts at the midpoint L/2. A second equation — still one
+        short of the three we need.
+      rule: 'statics: ΣM_A = 0'
+      check: definition
+    - expr: Eq(w*L**4/(8*E*I), R_B*L**3/(3*E*I))
+      prose: >-
+        The missing equation comes from compatibility. Remove the prop to get a plain cantilever
+        (the primary structure): the UDL deflects the free end B downward by wL⁴/8EI. Now apply the
+        redundant reaction R_B alone: it lifts B by R_B·L³/3EI. The real prop holds B exactly on the
+        line of the wall, so these must cancel — the deflection at B is zero.
+      rule: 'force method: zero net deflection at the prop'
+      check: definition
+    - expr: Eq(w*L**4/8, R_B*L**3/3)
+      prose: >-
+        Multiply through by the flexural rigidity EI. Because the beam is prismatic, EI is common to
+        both deflection terms and cancels completely — which is the whole reason the reactions do not
+        depend on the material. This machine-checked line is where "stiffer material, same reactions"
+        becomes a proof, not a claim.
+      rule: EI is common and cancels (prismatic beam)
+    - expr: Eq(R_B, 3*w*L/8)
+      prose: >-
+        Solve for the prop reaction: R_B = 3wL/8. With R_B known, equilibrium gives the other two by
+        back-substitution. The build does not solve these one at a time — it certifies the 3×3 system
+        is linear in {R_A, R_B, M_A} and solves it exactly, all three at once.
+      rule: exact linear solve of the coupled system
+    - expr: Eq(M_A, w*L**2/8)
+      prose: >-
+        Back-substitute R_B into moment equilibrium: M_A = wL²/8 (hogging, at the wall). This is the
+        largest bending moment anywhere on the beam — it beats the sagging peak 9wL²/128 at x = 5L/8 —
+        so it is what sets the peak stress. (R_A = 5wL/8 follows the same way from ΣF.)
+      rule: back-substitution into equilibrium
+    - expr: Eq(delta_mid, w*L**4/(192*E*I))
+      prose: >-
+        Only now does E appear — in the deflection, never in the reactions. Swap steel for titanium
+        (a third the stiffness) and δ triples while R_A, R_B, M_A do not budge. Stiffness and strength
+        and the load path are independent axes; the redundant support redistributes force by geometry,
+        not by material.
+      rule: integrate the moment–curvature relation at midspan
+sim:
+  engine: statics-cascade
+  config:
+    draw: propped-cantilever
+
+sources:
+  - id: gere
+    citation: >-
+      Gere, J. M., & Goodno, B. J., Mechanics of Materials, 9th ed., Cengage, 2018 — ch. 10
+      (Statically Indeterminate Beams): the force (flexibility) method, propped-cantilever reactions
+      by superposition; §5.5 flexure formula; App. E section properties.
+    verification: >-
+      Topic-level citation, not section-pinned (the textbook PDF is not web-accessible for a
+      page-exact quote, the same limit as the sibling beam THINGs). The governing results — prop
+      reaction R_B = 3wL/8, wall reaction R_A = 5wL/8, fixing moment M_A = wL²/8, midspan deflection
+      wL⁴/192EI — were web-corroborated 2026-07-06 against multiple independent statements
+      (testbook.com and prepp.in solved problems give the prop reaction as 3wL/8 = 0.375wL and the
+      fixed-end moment as wL²/8; ScienceDirect Topics "Propped Cantilever") AND re-derived from first
+      principles two independent ways in pipeline/tests/test_propped_physics.py (the force method, and
+      solving the Euler–Bernoulli BVP EI·v'''' = w with dsolve).
+  - id: hibbeler
+    citation: >-
+      Hibbeler, R. C., Mechanics of Materials, 10th ed., Pearson, 2017 — ch. 12 (Deflection of
+      Beams and Shafts): statically indeterminate beams by the method of superposition; equilibrium
+      of the propped cantilever.
+    verification: >-
+      Topic-level cross-check citation for the equilibrium equations (ΣF, ΣM). Not section-pinned;
+      the two equilibrium relations are elementary statics and are re-derived from the free body in
+      the physics test. Hibbeler ch. 12 is the standard cross-reference for the superposition method
+      used here, consistent with Gere ch. 10.

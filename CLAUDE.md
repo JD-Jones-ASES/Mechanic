@@ -46,9 +46,13 @@ The Zod schema in `site/src/content.config.ts` IS the THING template. Authoring 
 `site/src/content/things/<slug>/thing.yaml` + `overview.mdx` + `failure.mdx` per `docs/authoring-things.md`.
 The Python pipeline **verifies, never derives blind**: authors supply solved forms per knob configuration;
 SymPy checks them against the relations (symbolic + numeric sampling). There is NO blind `solve()` anywhere
-in the pipeline — it verifiably hangs on raw loop-closure trig systems; authored closed forms and bracketed
+in the pipeline — it verifiably hangs on raw loop-closure trig systems; authored closed forms, bracketed
 `solve1d` (sign-change-certified per sample, rooted by 60-dps bisection, roots parity-checked against the
-browser's Brent) are the only paths. Multi-branch solutions (four-bar open/crossed) are each verified
+browser's Brent), and certified `solve_linear` groups are the only paths. Certified `solve_linear` groups
+are not blind solving: SymPy `linsolve` runs only on a square system PROVEN affine in its targets
+(∂²r/∂tᵢ∂tⱼ ≡ 0 for every target pair; target-free, op-capped coefficients) — bounded deterministic
+Gaussian elimination — and the emitted closed forms pass the same total back-substitution verification as
+authored solutions. Multi-branch solutions (four-bar open/crossed) are each verified
 independently against every relation. Invalid-severity envelopes may carry a `scope` naming the derived
 variables they poison (scoped refusal — how Euler and Johnson share one page); unscoped invalids refuse
 the whole evaluation as before. The build fails loudly, naming the THING/step/relation/branch, on:
@@ -99,8 +103,8 @@ Generated artifacts (`site/src/generated/`, `data/build/`) are **never committed
 
 ## Out of scope (v1)
 
-Nonlinear/feedback cyclic solving (`solveND` — deferred by ADR-0008, accepted 2026-07-04 with split
-scope; certified linear `solve_linear` groups ARE approved and land in Phase 3) · full chaining UI
+Nonlinear/cyclic solving (`solveND`, ADR-0008 part (b) — PROPOSED, unbuilt; certified linear
+`solve_linear` groups are the shipped subset) · full chaining UI
 (`/chain-demo/` is the one shipped demo until Phase 4) · Materials Project integration · fluids & time-integration dynamics engines ·
 Pyodide sandbox · integer tooth-count synthesis · eccentric-column solve-for-P (transcendental) ·
 coupler-curve inverse · custom domain · analytics (none, stated policy) · accounts/comments (static site).
@@ -120,5 +124,5 @@ Python pipeline first; `uv run pytest` in `pipeline/` for math-layer tests. A co
 minutes — four-bar branch verification dominates; it is slow, not hung — but unchanged THINGs are
 cache-reused, so warm rebuilds take seconds plus the astro step. The repo is public and the site deploys
 from CI on every push to main — there is no review step between merge and the public site:
-https://jd-jones-ases.github.io/Mechanic/ (catalog state: 30 THINGs; the live `/verification/` page is
+https://jd-jones-ases.github.io/Mechanic/ (catalog state: 31 THINGs; the live `/verification/` page is
 the public statement of what is and isn't machine-proven).
