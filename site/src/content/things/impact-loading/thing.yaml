@@ -1,0 +1,453 @@
+id: impact-loading
+title: Impact Loading (Falling Mass, Energy Method)
+summary: >-
+  Drop a mass onto an elastic member and the peak stress is not W/A — it is n times the static
+  stress, where the impact factor n = 1 + √(1 + 2h/δ_st). A suddenly-applied load (h = 0) already
+  doubles the stress; a real drop multiplies it many times over. Stiffer members take HIGHER impact
+  stress, because a smaller static deflection means a larger n.
+facets: [dynamics, stress]
+
+variables:
+  # --- knobs (free inputs) ---
+  - symbol: h
+    name: Drop height
+    latex: h
+    unit: m
+    quantity_kind: length
+    default: 0.02
+    bounds: [0, 2.0]
+    positive: true
+    display_units: [mm, m]
+  - symbol: m
+    name: Falling mass
+    latex: m
+    unit: kg
+    quantity_kind: mass
+    default: 100
+    bounds: [1, 2000]
+    positive: true
+    display_units: [kg]
+  - symbol: L
+    name: Member length
+    latex: L
+    unit: m
+    quantity_kind: length
+    default: 0.5
+    bounds: [0.1, 3.0]
+    positive: true
+    display_units: [m, mm]
+  - symbol: b
+    name: Section width
+    latex: b
+    unit: m
+    quantity_kind: length
+    default: 0.04
+    bounds: [0.005, 0.2]
+    positive: true
+    display_units: [mm, m]
+  - symbol: d
+    name: Section depth
+    latex: d
+    unit: m
+    quantity_kind: length
+    default: 0.06
+    bounds: [0.005, 0.2]
+    positive: true
+    display_units: [mm, m]
+  # --- per-configuration loading selector (constrained, never a knob) ---
+  # s = 0 axial rod, s = 1 cantilever tip strike. Constrained in every
+  # configuration, so it is neither a knob nor a readout — the same
+  # constrained discriminator idiom stepped-shaft uses for its load case, and
+  # what lets the two loadings share one δ_st relation (the sim also reads it
+  # to draw the matching member).
+  - symbol: mode
+    name: Loading selector (0 axial · 1 cantilever)
+    latex: s
+    unit: '1'
+    quantity_kind: count
+    default: 0
+    bounds: [0, 1]
+    integer: true
+  # --- cited physical constant (never a knob) ---
+  - symbol: g
+    name: Standard gravity
+    latex: g
+    unit: m/s**2
+    quantity_kind: acceleration
+    default: 9.80665
+    # sampling range spans real local gravity (equator ~9.78 to poles ~9.83);
+    # the VALUE the site uses is the defined standard 9.80665 (the default)
+    bounds: [9.78, 9.83]
+    positive: true
+    role: constant
+    citation: nist
+    display_units: ["m/s^2"]
+  # --- material ---
+  - symbol: E
+    name: Young's modulus
+    latex: E
+    unit: Pa
+    quantity_kind: elastic_modulus
+    default: 72.4e9
+    bounds: [1.0e9, 400.0e9]
+    positive: true
+    role: material
+    display_units: [GPa, Pa]
+  - symbol: sigma_y
+    name: Yield strength
+    latex: '\sigma_y'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 324.0e6
+    bounds: [10.0e6, 2.0e9]
+    positive: true
+    role: material
+    display_units: [MPa, Pa]
+  - symbol: rho
+    name: Density
+    latex: '\rho'
+    unit: kg/m**3
+    quantity_kind: density
+    default: 2768
+    bounds: [400, 12000]
+    positive: true
+    role: material
+    display_units: ["kg/m^3"]
+  # --- derived: geometry ---
+  - symbol: A
+    name: Section area
+    latex: A
+    unit: m**2
+    quantity_kind: area
+    default: 0.0024
+    bounds: [1.0e-6, 0.1]
+    positive: true
+    role: derived
+    display_units: ["cm^2", "m**2"]
+  - symbol: I
+    name: Second moment of area
+    latex: I
+    unit: m**4
+    quantity_kind: second_moment_of_area
+    default: 7.2e-7
+    bounds: [1.0e-11, 1.0e-2]
+    positive: true
+    role: derived
+    display_units: ["m**4"]
+  # --- derived: weight, member mass ---
+  - symbol: W
+    name: Falling weight
+    latex: W
+    unit: N
+    quantity_kind: force
+    default: 980.665
+    bounds: [0, 1.0e7]
+    positive: true
+    role: derived
+    display_units: [N, kN]
+  - symbol: m_mem
+    name: Member mass
+    latex: m_{mem}
+    unit: kg
+    quantity_kind: mass
+    default: 3.3216
+    bounds: [0, 1.0e5]
+    positive: true
+    role: derived
+    display_units: [kg, g]
+  # --- derived: static response ---
+  - symbol: delta_st
+    name: Static deflection
+    latex: '\delta_{st}'
+    unit: m
+    quantity_kind: length
+    default: 2.8219e-6
+    bounds: [0, 100]
+    positive: true
+    role: derived
+    display_units: [mm, um, m]
+  - symbol: sigma_st
+    name: Static stress
+    latex: '\sigma_{st}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 408610
+    bounds: [0, 1.0e12]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  # --- derived: impact response ---
+  - symbol: n
+    name: Impact factor
+    latex: n
+    unit: '1'
+    quantity_kind: ratio
+    default: 120.062
+    bounds: [1, 1.0e5]
+    positive: true
+    role: derived
+    display_units: []
+  - symbol: delta_i
+    name: Impact deflection
+    latex: '\delta_{i}'
+    unit: m
+    quantity_kind: length
+    default: 3.38804e-4
+    bounds: [0, 100]
+    positive: true
+    role: derived
+    display_units: [mm, m]
+  - symbol: sigma_i
+    name: Impact stress
+    latex: '\sigma_{i}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 4.90588e7
+    bounds: [0, 1.0e12]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: SF
+    name: Safety factor (yield)
+    latex: '\mathrm{SF}'
+    unit: '1'
+    quantity_kind: safety_factor
+    default: 6.60432
+    bounds: [0, 1.0e6]
+    positive: true
+    role: derived
+    display_units: []
+
+materials:
+  binds:
+    E: youngs_modulus
+    sigma_y: yield_strength
+    rho: density
+
+relations:
+  - id: weight
+    group: dynamics
+    latex: 'W = m\,g'
+    residual: W - m*g
+    assumptions:
+      - the falling weight that does the work; g is the cited standard gravity, not a knob
+    citation: gere
+  - id: section-area
+    group: stress
+    latex: 'A = b\,d'
+    residual: A - b*d
+    assumptions:
+      - solid rectangular cross-section, breadth b and depth d
+    citation: gere
+  - id: section-inertia
+    group: stress
+    latex: 'I = \frac{b\,d^3}{12}'
+    residual: I - b*d**3/12
+    assumptions:
+      - rectangular section, bending about the axis through the centroid perpendicular to d
+    citation: gere
+  - id: member-mass
+    group: dynamics
+    latex: 'm_{mem} = \rho\,A\,L'
+    residual: m_mem - rho*A*L
+    assumptions:
+      - the struck member's own mass (density times the volume V = A·L); the energy balance assumes it
+        is negligible beside the falling mass m
+    citation: gere
+  - id: static-deflection
+    group: stress
+    latex: '\delta_{st} = (1-s)\dfrac{W L}{E A} + s\,\dfrac{W L^{3}}{3 E I}'
+    residual: delta_st - ((1-mode)*W*L/(E*A) + mode*W*L**3/(3*E*I))
+    assumptions:
+      - >-
+        the loading selector s picks the member; s=0 axial rod deflects δ = WL/EA, s=1 cantilever tip
+        deflects δ = WL³/3EI (Gere & Goodno, the standard axial and end-loaded-cantilever cases)
+      - linear elastic, small static deflection under the dead weight W
+    citation: gere
+  - id: static-stress
+    group: stress
+    latex: '\sigma_{st} = (1-s)\dfrac{W}{A} + s\,\dfrac{W L\,(d/2)}{I}'
+    residual: sigma_st - ((1-mode)*W/A + mode*W*L*(d/2)/I)
+    assumptions:
+      - >-
+        static stress under the dead weight: s=0 axial σ = W/A (uniform), s=1 cantilever σ = Mc/I with
+        M = WL at the wall and c = d/2 at the outer fibre
+    citation: gere
+  - id: impact-factor
+    group: dynamics
+    latex: 'n^{2} - 2n - \dfrac{2h}{\delta_{st}} = 0'
+    residual: n**2 - 2*n - 2*h/delta_st
+    assumptions:
+      - >-
+        energy balance: the falling weight loses potential energy W(h + δ_impact) as the member
+        stores strain energy ½ k δ_impact², with the member stiffness k = W/δ_st (physics enters here
+        by citation — the energy method, no equation of motion is integrated)
+      - >-
+        rigid falling mass, no rebound and no losses; the struck member is massless and stays within
+        its proportional limit; the mass stays in contact after first touch
+    citation: gere
+    validity:
+      - condition: 10*m_mem < m
+        severity: warn
+        message: >-
+          The struck member's own mass exceeds 10% of the falling mass — the energy balance treats
+          the member as massless, but its inertia would absorb part of the impact, so the true impact
+          factor is lower than shown.
+        citation: juvinall
+  - id: impact-deflection
+    group: dynamics
+    latex: '\delta_{i} = n\,\delta_{st}'
+    residual: delta_i - n*delta_st
+    assumptions:
+      - the peak dynamic deflection is the impact factor times the static deflection
+    citation: gere
+  - id: impact-stress
+    group: dynamics
+    latex: '\sigma_{i} = n\,\sigma_{st}'
+    residual: sigma_i - n*sigma_st
+    assumptions:
+      - >-
+        peak dynamic stress scales with the same impact factor, because within the elastic range
+        stress is proportional to deflection everywhere in the member
+    citation: gere
+    validity:
+      - condition: sigma_i < sigma_y
+        severity: warn
+        message: >-
+          Impact stress reaches the yield strength — beyond yield the linear-elastic energy balance is
+          void (plastic work then absorbs energy the elastic model cannot account for), and the member
+          is damaged. The true peak is lower, but this is a failure, not a safe number.
+        citation: gere
+  - id: safety
+    group: stress
+    latex: '\mathrm{SF} = \dfrac{\sigma_y}{\sigma_{i}}'
+    residual: SF*sigma_i - sigma_y
+    assumptions:
+      - static factor of safety against first yield, measured against the peak impact stress
+    citation: gere
+
+configurations:
+  - id: axial
+    label: Axial rod — mass dropped onto the end of a hanging bar (σ_st = W/A)
+    constraints: { mode: 0 }
+    inputs: [h, m, L, b, d]
+    solutions:
+      A: b*d
+      I: b*d**3/12
+      W: m*g
+      m_mem: rho*A*L
+      delta_st: W*L/(E*A)
+      sigma_st: W/A
+      n: 1 + sqrt(1 + 2*h/delta_st)
+      delta_i: n*delta_st
+      sigma_i: n*sigma_st
+      SF: sigma_y/sigma_i
+  - id: cantilever
+    label: Cantilever tip strike — mass dropped onto the free end of a fixed beam (σ_st = Mc/I)
+    constraints: { mode: 1 }
+    inputs: [h, m, L, b, d]
+    solutions:
+      A: b*d
+      I: b*d**3/12
+      W: m*g
+      m_mem: rho*A*L
+      delta_st: W*L**3/(3*E*I)
+      sigma_st: W*L*(d/2)/I
+      n: 1 + sqrt(1 + 2*h/delta_st)
+      delta_i: n*delta_st
+      sigma_i: n*sigma_st
+      SF: sigma_y/sigma_i
+
+derivation:
+  verifies_configuration: axial
+  steps:
+    - expr: Eq(W, m*g)
+      prose: >-
+        The falling body's weight is W = mg. The mass m is the knob; g is the cited standard gravity,
+        carried as a fixed labeled constant (never a knob) exactly as on the critical-speed page.
+      rule: 'weight of the falling mass'
+      check: definition
+    - expr: Eq(delta_st, W*L/(E*A))
+      prose: >-
+        First find how far the member would deflect if the weight were laid on gently — the static
+        deflection δ_st. For the axial rod shown here that is δ_st = WL/EA; toggle to the cantilever
+        and the same weight produces the much larger bending deflection δ_st = WL³/3EI. Everything
+        that follows depends only on δ_st, so the loading enters exactly once, right here.
+      rule: 'static deflection of the struck member'
+    - expr: Eq(m*g*(h + delta_i), m*g*delta_i**2/(2*delta_st))
+      prose: >-
+        Now the energy method — this is the modeling step where the physics enters by citation. The
+        weight falls the drop height h and then a further δ_impact as the member gives way, losing
+        potential energy W(h + δ_impact). All of it is stored as strain energy in the member, which
+        behaves as a linear spring of stiffness k = W/δ_st, so the strain energy is ½ k δ_impact² =
+        W δ_impact²/(2 δ_st). No equation of motion is integrated: we assume a rigid mass, no rebound,
+        no losses, and a massless member, and equate the two energies.
+      rule: 'energy balance (cited): potential energy lost = strain energy stored'
+      check: definition
+    - expr: Eq(n**2 - 2*n, 2*h/delta_st)
+      prose: >-
+        Write the peak deflection as a multiple of the static one, δ_impact = n δ_st, and divide the
+        energy balance through by ½ W δ_st. The member geometry disappears and a single quadratic in
+        the dimensionless impact factor n remains: n² − 2n = 2h/δ_st. Only the ratio of drop height to
+        static deflection survives.
+      rule: 'substitute δ_impact = n·δ_st; reduce to the impact-factor quadratic'
+    - expr: Eq(n, 1 + sqrt(1 + 2*h/delta_st))
+      prose: >-
+        Take the physical (positive) root: n = 1 + √(1 + 2h/δ_st). Two limits are worth memorizing. A
+        load applied suddenly but from zero height (h = 0) gives n = 2 — a suddenly-applied load
+        already doubles the stress. And for a real drop, h ≫ δ_st, n grows like √(2h/δ_st): a stiffer
+        member has a smaller δ_st and therefore a LARGER impact factor. Stiffness that helps you
+        statically hurts you under impact.
+      rule: 'positive root of the quadratic'
+    - expr: Eq(sigma_i, n*sigma_st)
+      prose: >-
+        Within the elastic range stress is proportional to deflection at every point, so the peak
+        stress is the same multiple of the static stress: σ_impact = n σ_st. For the axial rod σ_st =
+        W/A; multiplying a small static stress by a large n is how a gentle weight becomes a dangerous
+        one. The static stress is material-blind, but n is not — through δ_st it carries E.
+      rule: 'peak stress scales with the impact factor'
+    - expr: Eq(SF, sigma_y/sigma_i)
+      prose: >-
+        The margin is the yield strength over the peak impact stress. Because n rises with stiffness
+        while σ_st here does not, a stiffer material can lower this safety factor even though nothing
+        about the static load changed — the counter-intuitive heart of impact.
+      rule: 'safety factor against first yield'
+
+sim:
+  engine: statics-cascade
+  config:
+    draw: impact-loading
+
+sources:
+  - id: gere
+    citation: >-
+      Gere, J. M., & Goodno, B. J., Mechanics of Materials, 9th ed., Cengage, 2018 — §2.8 (impact
+      loading: the falling-collar energy balance, the impact factor, and the suddenly-applied-load
+      n = 2 result) and Ch. 2 / §9.7-9.8 strain energy and the end-loaded cantilever deflection.
+    verification: >-
+      §2.8 (impact loading) and the strain-energy sections confirmed against the published 9th-edition
+      chapter listing, 2026-07-06; the textbook PDF is not web-accessible for a page-exact quote. The
+      impact factor n = 1 + √(1 + 2h/δ_st), the n = 2 suddenly-applied limit, and the σ → √(2mghE/V)
+      strain-energy-density asymptote are all re-derived from the energy balance (not taken on the
+      citation) in pipeline/tests/test_impact_loading_physics.py.
+  - id: juvinall
+    citation: >-
+      Juvinall, R. C., & Marshek, K. M., Fundamentals of Machine Component Design, 5th ed., Wiley,
+      2011 — impact and energy loads (ch. 7): the same impact-factor result, the strain-energy-density
+      design view (energy absorbed per unit volume, σ²/2E), and the caution that the energy method is
+      unconservative against stress-wave and contact effects.
+    verification: >-
+      Topic-level cross-check (impact / energy loading; the impact factor and the energy-per-volume
+      design argument are standard and also given in Shigley §4-18 and Boresi). Not page-pinned; used
+      to corroborate the treatment and the failure notes, not any single emitted number. The member-
+      inertia warn (member not massless) follows Juvinall's stated limitation of the method.
+  - id: nist
+    citation: >-
+      BIPM, The International System of Units (SI Brochure), 9th ed., 2019, and NIST Special
+      Publication 330 (2019): the standard acceleration of gravity gₙ = 9.80665 m/s², a conventional
+      value fixed BY DEFINITION (3rd CGPM, 1901) — not a measurement.
+    verification: >-
+      The value 9.80665 m/s² is exact by definition (3rd CGPM, 1901); web-pinned against the NIST
+      SP 330 / SI Brochure conventional value, 2026-07-06. It is displayed as a labeled cited
+      constant, never a knob — the second THING to consume the constants mechanism after
+      shaft-critical-speed.

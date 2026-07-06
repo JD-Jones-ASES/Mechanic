@@ -30,6 +30,7 @@ PHYSICS_TESTS = {
     "flywheel-disk": "test_flywheel_physics.py",
     "fourbar-linkage": "test_fourbar_physics.py",
     "helical-spring": "test_spring_physics.py",
+    "impact-loading": "test_impact_loading_physics.py",
     "planetary-gearset": "test_planetary_physics.py",
     "power-screw": "test_powerscrew_physics.py",
     "pressure-vessel": "test_vessel_physics.py",
