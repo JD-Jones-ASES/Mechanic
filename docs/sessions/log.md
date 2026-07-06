@@ -616,3 +616,66 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   DOF + the g-cancellation + Dunkerley≤Rayleigh + the ω_s Rayleigh-quotient in a throwaway SymPy script BEFORE
   authoring, then a standalone `ThingCompiler(dir).compile()` — first cold build passed green (S05-S07 note,
   confirmed a fourth time).
+
+## S09 — impact-loading — 2026-07-06 — PR #22 — MERGED
+
+- Shipped: THING 26 `impact-loading` (falling-mass impact by the energy method; NO time integration) — impact
+  factor n = 1 + √(1 + 2h/δ_st), σ_impact = n·σ_st, in TWO configurations (axial rod, cantilever tip strike)
+  selected by a constrained `mode` discriminator that blends ONE δ_st relation. The SECOND consumer of the
+  `role: constant` mechanism (cited g via W = m·g) — proves it generalizes with ZERO pipeline change. Catalog
+  25 → 26.
+- Gates: pytest 268 passed (260 baseline + 8 test_impact_loading_physics.py); pnpm build clean (WARM — no
+  pipeline-source edit; parity 1131 values/26 artifacts, katex 1101, mdx 52 files, units 622, 33 pages); unit 18;
+  e2e 73 (+2 impact-loading: n=2-at-h=0/constant/stiffer-cascade, config-toggle/yield-warn; verification
+  relation-block 25→26); visual pass (built dist /Mechanic/): axial rod draws a visible blue vertical rod + mass
+  on a drop trail + σ_st/σ_i bars vs a dashed σ_y line (readouts n=120.06, σ_i=49.06 MPa, SF=6.61 match computed
+  defaults), animation MOVING (mass y 47.65→67.91 / 450ms, not the invisible-SVG trap), constants panel shows
+  g=9.80665 m/s²·nist with #knob-g count 0; toggled cantilever → redraws wall+beam+tip mass, readouts switch to
+  n=8.21/σ_i=167.8/SF=1.93; al→steel-a36 (cantilever) → σ_i 167.8→263.83 MPa (cascade) with σ_st fixed 20.431
+  (material-blind), YIELD WARN banner + σ_i bar RED above yield line; drove h→0 → n=2, σ_i=2·σ_st live; KaTeX +
+  console clean, both themes, /things/ card + /verification/ block present. review: 6 independent fresh-context
+  passes (physics + invariants + code/tests subagents + /code-review high with 3 finders) — 0 blockers/majors/
+  correctness bugs; physics reviewer re-derived every claim from scratch, invariants reviewer recomputed all 10
+  axial derived defaults (all match). 2 minors FIXED (σ_st added to the sim's refused gate + dead Number.isFinite
+  guards dropped; golden-comment/assertion intermediates set exact 24.7791/6.07731); 1 rebutted (clamp one-liner
+  dup'd in 2 sims → follow-up hoist task, not a THING-PR scope change).
+- Golden: cantilever E=200 GPa, L=1 m, 30×30 mm, m=20 kg, h=60 mm, g=9.80665 → I=6.75e-8, W=196.133 N,
+  δ_st=4.84279 mm, σ_st=43.585 MPa, n=6.07731, δ_i=29.431 mm, σ_i=264.88 MPa, SF=0.944<1 (yields). Source Gere &
+  Goodno §2.8; all arithmetic in test_impact_loading_physics.py::test_numeric_golden. Also exact: δ_st=5mm+h=60mm
+  ⇒ n=6, and h=0 ⇒ n=2.
+- Citations pinned: gere (§2.8 impact loading + strain energy; topic-level, PDF not web-accessible → the impact
+  factor, n=2, and √(2mghE/V) asymptote are re-derived from the energy balance in the physics test, the stronger
+  check), juvinall (ch.7 impact / strain-energy-density + the unconservatism caveat, topic-level), nist (g =
+  9.80665 exact by definition, web-pinned, reused from shaft-critical-speed). All carry verification:.
+- Deviations from brief: (1) TWO genuine configs via a constrained discriminator + dimensionally-homogeneous
+  LINEAR-BLEND δ_st/σ_st relations, NOT two relation sets — compile.py relations are GLOBAL (every relation holds
+  in every config; verify.py:198 back-substitutes ALL residuals, compile.py:350 makes every derived var a target
+  in every config), so a config-specific deflection relation is impossible. `mode` (0 axial/1 cantilever,
+  constrained per config = the stepped-shaft load_case idiom) blends (1-s)·WL/EA + s·WL³/3EI; both configs verify
+  independently and the sim reads values.mode to draw the matching member. (2) Volume V INLINED (m_mem=ρ·A·L),
+  not a variable — `volume` is not a registered quantity_kind and adding it to kinds.py (pipeline source) forces a
+  COLD rebuild for a unique-dims quantity with no chaining hazard; V=A·L stays in prose. This kept the whole
+  session on WARM builds. (3) Warn-only (no invalid envelope): σ_i finite for all positive inputs → no honest
+  hard-refusal (S04-S08 precedent); the brief's refusal pin became the yield warn-banner pin. (4) Section depth
+  symbol `d` (cantilever-beam's `h` = drop height here).
+- New capabilities future briefs may rely on: NONE (consumed S08's constants mechanism unchanged, as designed —
+  a second constant needs only the variable + citation). Pattern reconfirmed & reusable: a constrained `mode`
+  discriminator + a dimensionally-homogeneous LINEAR BLEND of two formulas gives TWO genuine configurations
+  sharing ONE relation set WITHOUT doubling variables — the way to author configs whose physics genuinely differs
+  (rod vs beam) when relations must be global. Per-config input defaults do NOT exist (defaults are variable-level;
+  content.config.ts configurationSchema has no default override), so one geometry must be warn-clean for BOTH
+  configs at the live-default material.
+- Notes-for-next (S10 = slider-crank, exact kinematics at a knob angle): (a) the transient pnpm deps-check failure
+  ("pnpm install failed" / getSyncResult at command start, clean lockfile) hit ONCE this session on a `pnpm exec
+  playwright test` — just re-run; not a real failure (S01/S04/S07 saw variants). (b) configs whose physics differs
+  are the constrained-discriminator + linear-blend pattern above — do NOT try config-specific relations (they're
+  global; you'll fail the DOF/verify against the OTHER config). Only relations true in EVERY config may be global;
+  a genuinely per-config formula must be a mode-blend or a table. (c) defaults are VARIABLE-level only, shared
+  across configs — pick a geometry warn-clean for every config at the alphabetically-first qualifying material
+  (al-2024-t3 for an E+σ_y+ρ binding), NOT nominal steel. (d) mint a new quantity_kind ONLY when dims collide with
+  an existing kind AND chaining must be blocked; a unique-dims quantity (volume) does NOT need one and forcing it
+  into kinds.py costs a 4-min COLD rebuild — inline it as S04 did with Q instead. (e) sim gets per-config awareness
+  for free by reading the constrained discriminator from values (values.mode, like SteppedShaftSim's
+  values.load_case) — no schema change. (f) the standalone `ThingCompiler(dir).compile()` (~2s) after a throwaway
+  physics-preverify script caught the whole design before the first build — confirmed a fifth time; do this before
+  any `pnpm build`.

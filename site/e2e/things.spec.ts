@@ -262,7 +262,7 @@ test("verification page discloses authorship and the audit surface", async ({ pa
   await expect(page.getByText(/built end to end by an AI/i).first()).toBeVisible();
   await expect(page.getByText(/No human reviews the content/i).first()).toBeVisible();
   // every THING appears with its audit block (count is a deliberate change detector)
-  expect(await page.locator("section.relation-block").count()).toBe(25); // +shaft-critical-speed (S08)
+  expect(await page.locator("section.relation-block").count()).toBe(26); // +impact-loading (S09)
   await expect(page.getByText(/Where physics enters/i).first()).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -1340,4 +1340,58 @@ test("shaft critical speed: g is a labeled cited constant, never a knob, and the
   await page.getByLabel("Operating speed value").fill(String(Math.round(wcRpm)));
   await expect(page.locator(".validity-warn").first()).toBeVisible();
   await expect(page.locator(".validity")).toContainText(/resonance/i);
+});
+
+test("impact loading: n=2 at zero drop, the stiffer-is-worse cascade, and g is a cited constant", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/impact-loading/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  // g is a labeled, cited constant — never a knob (the mechanism's SECOND consumer,
+  // after shaft-critical-speed: this is what proves the constants mechanism generalizes)
+  const constants = page.getByTestId("constants-panel");
+  await expect(constants).toBeVisible();
+  await expect(constants).toContainText("9.80665"); // its defined value
+  await expect(constants).toContainText("nist"); //     its cited source
+  await expect(page.locator("#knob-g")).toHaveCount(0); // a constant is never a control
+
+  // default configuration is the axial rod: a tiny static deflection ⇒ enormous n
+  expect(await readOutput(page, "n")).toBeGreaterThan(50);
+
+  // THE machine-proven golden: drop height → 0 gives n = 2 EXACTLY (a suddenly
+  // applied load already doubles the stress), material-independent, and σ_i = 2·σ_st
+  await page.getByLabel("Drop height value").fill("0");
+  expect(await readOutput(page, "n")).toBeCloseTo(2, 3);
+  const sSt0 = await readOutput(page, "sigma_st");
+  expect(await readOutput(page, "sigma_i")).toBeCloseTo(2 * sSt0, 1);
+
+  // material cascade: a STIFFER material takes HIGHER impact stress even though the
+  // static stress is unchanged (σ_st = W/A is material-blind; n rises as δ_st falls)
+  await page.getByLabel("Drop height value").fill("20"); // mm — a real drop again
+  const sImpAl = await readOutput(page, "sigma_i"); // default material al-2024-t3
+  const sStAl = await readOutput(page, "sigma_st");
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  expect(await readOutput(page, "sigma_i")).toBeGreaterThan(sImpAl); // stiffer ⇒ worse
+  expect(await readOutput(page, "sigma_st")).toBeCloseTo(sStAl, 1); // static stress blind
+  expect(errors).toEqual([]);
+});
+
+test("impact loading: the config toggle switches the loading, and a big drop warns at yield", async ({ page }) => {
+  await page.goto("things/impact-loading/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  // two configurations, selectable; the cantilever's impact factor differs from the rod's
+  const nAxial = await readOutput(page, "n");
+  await page.getByTestId("config-select").selectOption("cantilever");
+  const nCant = await readOutput(page, "n");
+  expect(nCant).toBeGreaterThan(1);
+  expect(Math.abs(nCant - nAxial)).toBeGreaterThan(1); // a different loading ⇒ a different n
+
+  // warn-only THING (no invalid envelope by design): the default is warn-clear...
+  await expect(page.locator(".validity-warn")).toHaveCount(0);
+  // ...drive the drop height far up and the impact stress reaches yield — a WARN,
+  // not a refusal (σ_i = n·σ_st is finite for every positive input)
+  await page.getByLabel("Drop height value").fill("300"); // mm — a 0.3 m drop
+  await expect(page.locator(".validity-warn").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/yield/i);
 });

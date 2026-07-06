@@ -1,0 +1,53 @@
+Impact failures are the ones that surprise people, because the load that causes them looks harmless.
+A part sized comfortably for a weight sitting on it can shatter when the *same* weight is dropped a few
+centimetres onto it — the impact factor turned a safe static stress into one well past ultimate. The
+effect is worst for **brittle** materials (cast iron, hardened steel, ceramics, cold glass), which
+have almost no capacity to absorb energy plastically: they take the full elastic spike and crack. It
+is also why the same drop that dents a ductile bracket fractures a hard one, and why toughness — energy
+absorbed before fracture — is a different property from strength.
+
+## The honest caveat: the energy method can *under*-predict
+
+It is tempting to read $\sigma_{impact} = n\,\sigma_{st}$ as a safe worst case. It is not always. The
+energy balance is a **lumped, quasi-static** model: it assumes the member deflects in its ordinary
+static shape, the whole thing responding at once, and it distributes the strain energy over the entire
+volume. Two real effects it cannot see can push the *local* peak stress **above** what it predicts:
+
+- **Stress waves.** A sharp impact does not load the member all at once. A compression wave travels
+  from the point of contact at the speed of sound in the material, and until it reflects and settles,
+  the material near the strike sees a stress governed by the wave — for a bar struck axially, on the
+  order of $\sigma \sim \rho\,c\,v$ (density × wave speed × impact velocity), independent of the length
+  the lumped model leans on. For very stiff, short, or hard-struck members the wave peak can exceed the
+  energy-balance value before the member ever reaches its static-shape deflection.
+- **Contact stresses.** Right at the point of contact the two bodies press through a tiny area, and the
+  local Hertzian contact pressure can be enormous and completely local — the source of impact
+  brinelling, spalling, and surface cracking that a whole-member stress number knows nothing about.
+
+Juvinall and Marshek carry this caution explicitly: the energy method is a good design estimate for
+members that are long and compliant compared with the contact, and it grows optimistic as the member
+gets stiffer and the contact harder. This widget models **only** the lumped energy balance; stress-wave
+propagation, Hertzian contact, and strain-rate effects on the material properties are named here and
+never computed — treat the number as an estimate, not a proof of safety.
+
+## What else the balance leaves out
+
+The same assumptions that make the algebra clean are each a real member's escape or trap:
+
+- **A massless member.** All the drop energy is assumed to go into strain, none into accelerating the
+  member itself. When the struck member's own mass is not negligible beside the falling mass, some of
+  the energy goes into moving it, and the true impact factor is *lower* than shown — the widget warns
+  when this crosses 10%.
+- **No losses and no rebound.** Real impacts lose energy to sound, heat, local plasticity, and a
+  bounce. Every one of those *reduces* the energy the member has to store, so on this axis the model is
+  conservative — it hands the member the entire drop energy.
+- **A single event.** Repeated impacts are a fatigue problem, not a static-yield one; a member that
+  survives one blow at $\sigma_{impact}$ can still fail after thousands. This page models one clean
+  strike against first yield only.
+
+So the number here is neither a guaranteed ceiling nor a guaranteed floor: it over-counts by ignoring
+losses and under-counts by ignoring waves and contact. It is a teaching estimate of the right order,
+and the real lesson is qualitative and robust — **suddenly-applied is already 2×, a drop is many times
+more, and the way to survive it is volume of material to strain, not raw strength.** That is exactly
+why a [helical spring](../helical-spring/) under a falling load is the classic energy-absorber (a long
+soft stroke stores the same energy at a fraction of the stress), and why the compliant mounting the
+static intuition of the [Euler column](../euler-column/) would never suggest is often the safe one.

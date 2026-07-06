@@ -212,6 +212,14 @@ a { color: var(--accent); }
 .osc-tip { fill: var(--accent); }
 .osc-tip-hot { fill: #dc2626; }
 .osc-envelope { stroke: var(--muted); stroke-width: 1.25; stroke-dasharray: 4 3; }
+/* impact-loading (ImpactLoadingSim): the falling mass block, the amber burst at
+   the moment of contact, and the dashed drop trail. The struck member reuses
+   .beam-line/.beam-yielding, the base/flange reuse .beam-wall/.scs-base, the
+   undeflected datum reuses .beam-ghost, and the stress bars reuse
+   .stress-fill/.stress-fill-over against a .beam-ghost yield line. */
+.impact-mass { fill: var(--ink); }
+.impact-flash { fill: #f59e0b; opacity: 0.8; }
+.impact-drop { stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 3 3; }
 /* shared sim vocabulary: stress bands (StressBands.tsx) shade where a field
    concentrates and turn red past first yield; .sim-outline is a figure's
    structural outline */

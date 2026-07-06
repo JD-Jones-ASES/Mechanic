@@ -1,0 +1,85 @@
+Catch a dropped weight on the end of a bar and the bar feels far more than the weight itself. The
+falling mass has to be brought to rest, and all of its kinetic energy has to go somewhere — into the
+member, as strain energy. The faster it is moving when it lands, the more energy the member must
+swallow, and the higher the stress climbs above the quiet static value $W/A$. This page is the
+classic **energy method** for that: no stopwatch, no equation of motion, just a before-and-after
+energy balance that turns a drop height into a stress.
+
+## One number does all the work: the impact factor
+
+Lay the weight $W = mg$ on gently and the member deflects by its **static deflection** $\delta_{st}$.
+Now instead drop it from height $h$. It falls that $h$ plus the extra $\delta_{impact}$ the member
+gives way, so it loses potential energy $W(h + \delta_{impact})$; the member, behaving as a linear
+spring of stiffness $k = W/\delta_{st}$, stores $\tfrac{1}{2} k\,\delta_{impact}^2$. Setting the two
+equal and writing $\delta_{impact} = n\,\delta_{st}$ collapses everything to a single quadratic in
+the dimensionless **impact factor** $n$:
+
+$$ n^2 - 2n - \frac{2h}{\delta_{st}} = 0 \quad\Longrightarrow\quad n = 1 + \sqrt{1 + \frac{2h}{\delta_{st}}} $$
+
+Then the peak deflection and the peak stress are both just $n$ times their static values:
+$\delta_{impact} = n\,\delta_{st}$ and $\sigma_{impact} = n\,\sigma_{st}$. Two limits are worth
+committing to memory:
+
+- **A suddenly applied load already doubles the stress.** Set $h = 0$ — the load is not dropped, just
+  released onto the member with no gap — and the formula gives $n = 2$ *exactly*. Placing a load
+  suddenly is twice as severe as easing it on. Drag the drop height to zero in the widget and watch
+  $n$ settle on 2.
+- **A real drop multiplies it many times over.** For $h \gg \delta_{st}$, $n \approx \sqrt{2h/\delta_{st}}$,
+  which for a stiff member with a tiny static deflection can be in the hundreds.
+
+## Stiffer takes it harder — the counter-intuitive part
+
+Look where the material enters. The static stress $\sigma_{st} = W/A$ for the rod is **material-blind**
+— it does not know $E$. But the impact factor does: $\delta_{st} = WL/EA$ shrinks as $E$ grows, so a
+stiffer member has a *smaller* $\delta_{st}$ and therefore a *larger* $n$. Multiply a fixed static
+stress by a bigger factor and the impact stress goes **up**. Swap the default aluminium for steel and
+watch $\sigma_{impact}$ climb even though $\sigma_{st}$ never moves. This is the exact opposite of the
+static intuition, and it is why a rigid mounting can be worse than a compliant one — the same reason a
+[helical spring](../helical-spring/) is put under a falling load to *absorb* the energy over a long,
+soft stroke. The lesson the [Euler column](../euler-column/) keeps making — stiffness is not strength —
+returns here with the sign flipped: under impact, stiffness actively hurts.
+
+## Rod versus cantilever: the same drop, wildly different answers
+
+The configuration selector switches the struck member, and only the static response changes — the
+impact factor formula is identical for both:
+
+- **Axial rod** ($\sigma_{st} = W/A$, $\delta_{st} = WL/EA$). An axial member barely deflects, so
+  $\delta_{st}$ is minute and $n$ is enormous — often 100 or more. Yet the rod usually survives,
+  because its static stress is so low that even a hundredfold amplification stays modest. Impact
+  factor alone is a *trap*: what fails a member is $\sigma_{impact} = n\,\sigma_{st}$, not $n$.
+- **Cantilever tip strike** ($\sigma_{st} = Mc/I$ with $M = WL$, $\delta_{st} = WL^3/3EI$, reusing the
+  [cantilever beam](../cantilever-beam/) verbatim). Bending is far more compliant, so $\delta_{st}$ is
+  large and $n$ is modest — but the static bending stress is already high, so the product is what
+  bites. Switch to steel here and the cantilever crosses yield while the rod is still comfortable.
+
+## Volume, not section modulus, is the impact capacity
+
+Push the drop height up and the axial impact stress approaches a clean limit:
+
+$$ \sigma_{impact} \;\to\; \sqrt{\frac{2\,m g h\,E}{V}} $$
+
+with $V = A L$ the member's volume. The whole volume shares the strain energy — every cubic
+millimetre stores $\sigma^2/2E$ — so what governs how much drop energy a member can take is its
+**volume**, not its section modulus. A short stubby bar and a long slender one of the same volume
+absorb the same energy at the same peak stress. To make something impact-tough you give it *material to
+strain*, which is why energy-absorbing parts are bulky, not just strong. This is the inverse of the
+[flywheel](../flywheel-disk/) problem, where the trick is to *store* kinetic energy rather than survive
+a delivery of it.
+
+## g is a defined constant, not a knob
+
+The weight $W = mg$ pulls in the **standard acceleration of gravity**, 9.80665 m/s² — a value fixed by
+definition (3rd CGPM, 1901), not something to dial in. As on the
+[critical-speed](../shaft-critical-speed/) page, it appears here as a labeled, cited constant with a
+source, never a slider; the knob is the mass $m$, and the weight is computed from it. This is the
+second page to draw on that constants mechanism.
+
+## Reading the widget
+
+The readouts give the static and impact deflections and stresses, the impact factor $n$, and the
+safety factor against yield. Two warnings guard the model's assumptions. Increase the section or pick a
+dense material and the **member-mass** warning fires once the struck member's own inertia stops being
+negligible beside the falling mass — the energy balance quietly assumes a massless member. Push the
+drop height or the stiffness far enough and $\sigma_{impact}$ reaches yield: past that point the
+linear-elastic energy balance is void, and the number is a failure, not a margin.

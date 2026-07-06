@@ -134,6 +134,19 @@ factory capability, the way the flywheel exercised `poisson_ratio` and new quant
   critical. Two material axes pull opposite ways (E raises ω_c, ρ lowers ω_cD); the disk mass is a free
   payload knob, not material-bound. A resonance-band warn (within 20% of ω_c) is the only envelope. The
   δ_st is the simply-supported-beam headline result reused verbatim (chain-port pair). Catalog 24 → 25.
+- **The constants mechanism generalizes + the energy method:** impact-loading (falling-mass impact) ✅
+  shipped 2026-07-06 (S09) — a mass dropped from height h onto an elastic member, by energy balance
+  (no time integration). The impact factor n = 1 + √(1 + 2h/δ_st) multiplies both the static deflection
+  and the static stress; σ_impact = n·σ_st. Two configurations — an axial rod (σ_st = W/A, δ_st = WL/EA)
+  and a cantilever tip strike (σ_st = Mc/I, δ_st = WL³/3EI) — are selected by a constrained loading
+  discriminator that lets both share one δ_st relation (a dimensionally-homogeneous linear blend), the
+  same idiom stepped-shaft uses for its load case. It is the SECOND consumer of the `role: constant`
+  mechanism (cited g, via W = mg): proof the mechanism generalizes with zero pipeline change. Two
+  machine-proven headlines: h → 0 ⇒ n = 2 exactly (a suddenly-applied load already doubles the stress),
+  and the large-drop asymptote σ_impact → √(2mghE/V) — the strain-energy-density result that VOLUME, not
+  section modulus, governs impact capacity. The counter-intuitive material cascade: a stiffer material
+  takes HIGHER impact stress (smaller δ_st ⇒ larger n; σ_st is material-blind). Two warns (member not
+  massless, impact stress past yield); no invalid envelope by design. Catalog 25 → 26.
 
 Per-THING gate (standard practice, from the flywheel/cylinder sessions): machine verification +
 independent first-principles cross-check in `pipeline/tests/` + hand-checkable numeric golden +

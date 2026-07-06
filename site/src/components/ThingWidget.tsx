@@ -27,6 +27,7 @@ import { EccentricColumnSim } from "./sims/EccentricColumnSim";
 import { FlywheelSim } from "./sims/FlywheelSim";
 import { FourbarSim } from "./sims/FourbarSim";
 import { GearPairSim } from "./sims/GearPairSim";
+import { ImpactLoadingSim } from "./sims/ImpactLoadingSim";
 import { PlanetarySim } from "./sims/PlanetarySim";
 import { RectTorsionSim } from "./sims/RectTorsionSim";
 import { ScrewSim } from "./sims/ScrewSim";
@@ -76,6 +77,7 @@ const SIMS: Record<
   "curved-beam": CurvedBeamSim,
   "circular-plate": CircularPlateSim,
   "torsional-oscillator": TorsionalOscillatorSim,
+  "impact-loading": ImpactLoadingSim,
 };
 
 interface Props {
