@@ -14,9 +14,8 @@
 import type { VarRecord } from "../../engines/types";
 import { toDisplay } from "../../engines/units";
 import { SimRefusal } from "./SimRefusal";
+import { clamp } from "./simMath";
 import { useSimClock } from "./useSimClock";
-
-const clamp = (x: number, lo: number, hi: number) => Math.min(Math.max(x, lo), hi);
 
 export function ShaftCriticalSpeedSim({
   values,
