@@ -35,6 +35,7 @@ import { ShrinkFitSim } from "./sims/ShrinkFitSim";
 import { SpringSim } from "./sims/SpringSim";
 import { SSBeamSim } from "./sims/SSBeamSim";
 import { SteppedShaftSim } from "./sims/SteppedShaftSim";
+import { TorsionalOscillatorSim } from "./sims/TorsionalOscillatorSim";
 import { TubeSim } from "./sims/TubeSim";
 import { VesselSim } from "./sims/VesselSim";
 
@@ -71,6 +72,7 @@ const SIMS: Record<
   "beam-shear-flow": ShearFlowSim,
   "curved-beam": CurvedBeamSim,
   "circular-plate": CircularPlateSim,
+  "torsional-oscillator": TorsionalOscillatorSim,
 };
 
 interface Props {

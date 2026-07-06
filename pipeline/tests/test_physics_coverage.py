@@ -41,6 +41,7 @@ PHYSICS_TESTS = {
     "thick-walled-cylinder": "test_cylinder_physics.py",
     "thin-tube-torsion": "test_tube_physics.py",
     "torsion-shaft": "test_shaft_physics.py",
+    "torsional-oscillator": "test_torsional_oscillator_physics.py",
 }
 
 

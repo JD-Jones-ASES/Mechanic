@@ -28,6 +28,12 @@ QUANTITY_KINDS: frozenset[str] = frozenset({
     "acceleration",
     "angular_velocity",
     "angular_acceleration",
+    "frequency",  # Hz = 1/s — cycles per second; dims [0,0,-1,…], the SAME vector as
+                  # angular_velocity (rad/s, rad being dimensionless). Deliberately a
+                  # DISTINCT kind so an f-port can never chain silently into an ω-port:
+                  # the conversion ω = 2πf is a factor of 2π, never implicit. This is
+                  # exactly the torque/bending_moment move — equal dimensions, different
+                  # meaning — for the rotational-dynamics pair (invariant 2).
     "twist_rate",  # rad/m — angle of twist per unit length (dθ/dz); dims [-1,0,…]
                    # must NOT chain into curvature or wavenumber (both also 1/m): a
                    # torsional twist rate is not a beam curvature nor a spatial frequency

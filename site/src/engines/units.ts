@@ -16,6 +16,9 @@
 export const DISPLAY_FACTORS: Record<string, { factor: number; label: string }> = {
   "rad/s": { factor: 1, label: "rad/s" },
   rpm: { factor: (2 * Math.PI) / 60, label: "rpm" },
+  Hz: { factor: 1, label: "Hz" }, // frequency (cycles/s); f = ω/2π — a distinct kind from rad/s
+  s: { factor: 1, label: "s" }, // the `time` kind's SI unit (period readouts); had no display entry before
+  ms: { factor: 1e-3, label: "ms" }, // 1 ms = 1e-3 s — sub-second oscillation periods
   m: { factor: 1, label: "m" },
   mm: { factor: 1e-3, label: "mm" },
   cm: { factor: 1e-2, label: "cm" },

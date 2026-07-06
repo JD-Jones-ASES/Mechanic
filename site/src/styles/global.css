@@ -180,6 +180,16 @@ a { color: var(--accent); }
 .circplate-hotspot { fill: var(--accent); stroke: var(--accent); }
 .circplate-hotspot-hot { fill: #dc2626; stroke: #dc2626; }
 .circplate-disc { fill: none; stroke: var(--ink); stroke-width: 1.5; }
+/* torsional-oscillator (TorsionalOscillatorSim): the disk face, its swinging
+   radius marker (accent, red past shear yield) and tip ball, and the faint
+   amplitude envelope (the two swing extremes + the Θ arc). Wall/shaft reuse
+   .beam-wall/.shaft-body; the rest position reuses .beam-ghost; hub reuses .fw-hub. */
+.osc-disk { fill: var(--line); opacity: 0.35; }
+.osc-marker { stroke: var(--accent); stroke-width: 3.5; stroke-linecap: round; }
+.osc-marker-hot { stroke: #dc2626; stroke-width: 3.5; stroke-linecap: round; }
+.osc-tip { fill: var(--accent); }
+.osc-tip-hot { fill: #dc2626; }
+.osc-envelope { stroke: var(--muted); stroke-width: 1.25; stroke-dasharray: 4 3; }
 /* shared sim vocabulary: stress bands (StressBands.tsx) shade where a field
    concentrates and turn red past first yield; .sim-outline is a figure's
    structural outline */

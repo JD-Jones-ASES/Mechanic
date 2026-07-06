@@ -55,7 +55,7 @@ names ride in the Date cell (`<date> · <branch>`).
 | S04 | beam-shear-flow (shear_flow kind)                              | 21      | DONE | #17 | 2026-07-04 | [S04](briefs/S04-beam-shear-flow.md) |
 | S05 | curved-beam (Winkler; zero new machinery)                      | 22      | DONE | #18 | 2026-07-04 | [S05](briefs/S05-curved-beam.md) |
 | S06 | circular-plate (ν in stress; flexural_rigidity kind)           | 23      | DONE | #19 | 2026-07-05 | [S06](briefs/S06-circular-plate.md) |
-| S07 | torsional-oscillator (frequency kind; Hz/s/ms units)           | 24      | QUEUED | —   | —          | [S07](briefs/S07-torsional-oscillator.md) |
+| S07 | torsional-oscillator (frequency kind; Hz/s/ms units)           | 24      | IN_PROGRESS | —   | 2026-07-06 · thing/torsional-oscillator | [S07](briefs/S07-torsional-oscillator.md) |
 | S08 | shaft-critical-speed (cited-constants mechanism: g)            | 25      | QUEUED | —   | —          | [S08](briefs/S08-shaft-critical-speed.md) |
 | S09 | impact-loading (energy method; 2nd constants consumer)         | 26      | QUEUED | —   | —          | [S09](briefs/S09-impact-loading.md) |
 | S10 | slider-crank (exact kinematics at a knob angle)                | 27      | QUEUED | —   | —          | [S10](briefs/S10-slider-crank.md) |
