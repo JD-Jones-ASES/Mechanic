@@ -85,8 +85,8 @@ export function ClutchSim({
   const yAllow = py(Number.isFinite(p_allow) ? p_allow : NaN);
   const optInRange = Number.isFinite(r_i_opt) && r_i_opt > r_i && r_i_opt < r_o;
 
-  const nm = (v: number) => (Number.isFinite(v) ? toDisplay(v, "N*m") : NaN);
-  const mpa = (v: number) => (Number.isFinite(v) ? toDisplay(v, "MPa") : NaN);
+  const nm = (v: number) => toDisplay(v, "N*m"); // toDisplay(NaN) -> NaN; call sites re-guard
+  const mpa = (v: number) => toDisplay(v, "MPa");
 
   return (
     <figure class="sim">
