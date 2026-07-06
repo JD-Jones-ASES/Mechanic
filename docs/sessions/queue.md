@@ -2,7 +2,7 @@
 
 Read `docs/sessions/protocol.md` first; it defines every status and transition used here.
 
-**Active phase: 2 — AWAITING OWNER**
+**Active phase: 3**
 
 ## Phase gate rulings
 
@@ -10,7 +10,7 @@ A session may only start work in a phase listed here as approved (protocol §8).
 owner writes the ruling line AND flips the **Active phase** header above in the same edit.
 
 - Phase 2 approved — JD 2026-07-04 (this launch)
-- Phase 3: NOT YET RULED (the Phase 2 closing session writes `reports/phase-2.md`; owner rules here)
+- Phase 3 approved — JD 2026-07-06 (ruled in-session; recorded on owner instruction, `reports/phase-2.md` reviewed)
 - Phase 4: NOT YET RULED
 
 ## Owner rulings on record (2026-07-04)
