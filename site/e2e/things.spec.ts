@@ -262,7 +262,7 @@ test("verification page discloses authorship and the audit surface", async ({ pa
   await expect(page.getByText(/built end to end by an AI/i).first()).toBeVisible();
   await expect(page.getByText(/No human reviews the content/i).first()).toBeVisible();
   // every THING appears with its audit block (count is a deliberate change detector)
-  expect(await page.locator("section.relation-block").count()).toBe(27); // +slider-crank (S10)
+  expect(await page.locator("section.relation-block").count()).toBe(28); // +ball-bearing-life (S11)
   await expect(page.getByText(/Where physics enters/i).first()).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -1445,4 +1445,62 @@ test("slider-crank: the force config scales torque with F; obliquity warns; l≤
   await expect(page.locator(".validity-invalid").first()).toBeVisible();
   await expect(page.locator('[data-output="x"] output')).toHaveText("—");
   await expect(page.locator('[data-output="v"] output')).toHaveText("—");
+});
+
+test("ball-bearing-life: load–life goldens, the 8× halving law, cited Weibull constants, no material axis", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/ball-bearing-life/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  // geometry/catalog THING: the bearing steel is inside the catalog rating, so
+  // there is deliberately NO material dropdown (the planetary-gearset framing)
+  await expect(page.getByTestId("material-select")).toHaveCount(0);
+
+  // the Weibull parameters are cited role:constant values, never knobs
+  const constants = page.getByTestId("constants-panel");
+  await expect(constants).toBeVisible();
+  await expect(constants).toContainText("4.459"); // theta, Shigley Table 11-6 Mfr 2
+  await expect(constants).toContainText(/shigley/i); // its cited source
+  await expect(page.locator("#knob-theta")).toHaveCount(0); // a constant is not a control
+  await expect(page.locator("#knob-b")).toHaveCount(0);
+
+  // defaults: C10=30 kN, P=3 kN (C10/P=10), ball a=3, n=1200 rpm →
+  //   L10 = 1e6·10^3 = 1e9 rev = 1000 Mrev;  L10h = 2π·1e9/(40π) / 3600 = 13,889 h
+  expect(await readOutput(page, "L10")).toBeCloseTo(1000, -1); // Mrev, within 5
+  expect(await readOutput(page, "t_10")).toBeCloseTo(13889, -2); // h, within 50
+
+  // the a=3 load–life law: halve P (3 → 1.5 kN, so C10/P: 10 → 20) ⇒ life ×2³ = 8
+  await page.getByLabel("Equivalent dynamic radial load value").fill("1.5"); // kN
+  expect(await readOutput(page, "L10")).toBeCloseTo(8000, -1); // 8 × 1000 Mrev
+  expect(errors).toEqual([]);
+});
+
+test("ball-bearing-life: roller outlasts ball by 10^(1/3); reliability trims life; R<0.90 scoped-refuses", async ({ page }) => {
+  await page.goto("things/ball-bearing-life/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  // ball (default) rated life, then switch to roller (a = 10/3): at C10/P = 10 the
+  // roller life is 10^(10/3)/10^3 = 10^(1/3) ≈ 2.154× the ball life — the ONLY
+  // difference between the configurations is the cited exponent
+  const ballL10 = await readOutput(page, "L10");
+  expect(ballL10).toBeCloseTo(1000, -1);
+  await page.getByTestId("config-select").selectOption("roller");
+  const rollerL10 = await readOutput(page, "L10");
+  expect(rollerL10 / ballL10).toBeCloseTo(Math.cbrt(10), 1); // 2.1544, within 0.05
+
+  // back to ball: the reliability adjustment is live at the R=0.99 default —
+  // L_R = x(0.99)·L10 ≈ 0.2196·1000 = 219.6 Mrev, well below the rated life
+  await page.getByTestId("config-select").selectOption("ball");
+  expect(await readOutput(page, "x_R")).toBeCloseTo(0.2196, 2);
+  expect(await readOutput(page, "L_R")).toBeCloseTo(219.6, -1);
+
+  // drive R below the cited 0.90 Weibull domain ⇒ SCOPED refusal: the
+  // reliability-adjusted readouts are withheld (—) while the rated L10 stands
+  await page.getByLabel("Reliability goal value").fill("0.7");
+  await expect(page.locator(".validity-invalid").first()).toBeVisible();
+  await expect(page.locator('[data-output="x_R"] output')).toHaveText("—");
+  await expect(page.locator('[data-output="L_R"] output')).toHaveText("—");
+  await expect(page.locator('[data-output="t_R"] output')).toHaveText("—");
+  // the rated-reliability life is NOT poisoned by the scoped refusal
+  expect(await readOutput(page, "L10")).toBeCloseTo(1000, -1);
 });

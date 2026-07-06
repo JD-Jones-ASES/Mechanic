@@ -1,0 +1,355 @@
+id: ball-bearing-life
+title: Rolling-Contact Bearing Life (Load–Life + Weibull Reliability)
+summary: >-
+  A bearing's catalog rating C₁₀ is not a strength — it is the load at which 90% of a population
+  survives one million revolutions. Halve the load and the fatigue life jumps eightfold (ball) or
+  more (roller); ask for higher reliability than 90% and the life you can count on drops sharply.
+  This page turns the two catalog numbers into a life in hours, and the reliability you demand into
+  the life you actually get.
+facets: [dynamics, reliability]
+
+variables:
+  # --- knobs (free inputs) ---
+  - symbol: C10
+    name: Basic dynamic load rating (catalog C₁₀)
+    latex: 'C_{10}'
+    unit: N
+    quantity_kind: force
+    default: 30000
+    bounds: [1000, 500000]
+    positive: true
+    display_units: [kN, N]
+  - symbol: C0
+    name: Static load rating (catalog C₀)
+    latex: 'C_0'
+    unit: N
+    quantity_kind: force
+    default: 20000
+    bounds: [1000, 500000]
+    positive: true
+    display_units: [kN, N]
+  - symbol: P
+    name: Equivalent dynamic radial load
+    latex: P
+    unit: N
+    quantity_kind: force
+    default: 3000
+    bounds: [50, 200000]
+    positive: true
+    display_units: [kN, N]
+  - symbol: omega
+    name: Operating speed
+    latex: '\omega'
+    unit: rad/s
+    quantity_kind: angular_velocity
+    default: 125.6637061
+    bounds: [1, 2000]
+    positive: true
+    # bearings are rated and run in rpm; rad/s is one click away
+    display_units: [rpm, rad/s]
+  - symbol: R
+    name: Reliability goal
+    latex: R
+    unit: '1'
+    quantity_kind: probability
+    default: 0.99
+    bounds: [0.5, 0.999]
+    positive: true
+    display_units: []
+  # --- cited Weibull parameters (never knobs; Shigley Table 11-6, Manufacturer 2) ---
+  - symbol: x0
+    name: Weibull guaranteed-life x₀
+    latex: 'x_0'
+    unit: '1'
+    quantity_kind: ratio
+    default: 0.02
+    # the point value is 0.02; a small sampling band widens the build-time parity check
+    bounds: [0.01, 0.03]
+    positive: true
+    role: constant
+    citation: shigley
+    display_units: []
+  - symbol: theta
+    name: Weibull characteristic life θ
+    latex: '\theta'
+    unit: '1'
+    quantity_kind: ratio
+    default: 4.459
+    bounds: [4.0, 5.0]
+    positive: true
+    role: constant
+    citation: shigley
+    display_units: []
+  - symbol: b
+    name: Weibull shape parameter b
+    latex: b
+    unit: '1'
+    quantity_kind: ratio
+    default: 1.483
+    bounds: [1.3, 1.7]
+    positive: true
+    role: constant
+    citation: shigley
+    display_units: []
+  # --- per-configuration load–life exponent (constrained, never a knob) ---
+  # a = 3 for ball bearings (point contact), 10/3 for roller bearings (line
+  # contact). Constrained in every configuration, so it is neither a knob nor a
+  # readout — the constrained-discriminator idiom impact-loading/stepped-shaft use.
+  - symbol: a
+    name: Load–life exponent (3 ball · 10/3 roller)
+    latex: a
+    unit: '1'
+    quantity_kind: ratio
+    default: 3
+    bounds: [2.5, 3.5]
+    positive: true
+    integer: false
+  # --- derived: rated-reliability life ---
+  - symbol: L10
+    name: Rated life (L₁₀, at R = 0.90)
+    latex: 'L_{10}'
+    unit: '1'
+    quantity_kind: count
+    default: 1000000000
+    bounds: [1000, 1.0e15]
+    positive: true
+    role: derived
+    display_units: [Mrev]
+  - symbol: t_10
+    name: Rated life in hours
+    latex: 'L_{10h}'
+    unit: s
+    quantity_kind: time
+    default: 50000000
+    bounds: [1, 1.0e15]
+    positive: true
+    role: derived
+    display_units: [h]
+  # --- derived: reliability-adjusted life ---
+  - symbol: x_R
+    name: Reliability life factor x(R)
+    latex: 'x_R'
+    unit: '1'
+    quantity_kind: ratio
+    default: 0.2195896
+    bounds: [0.001, 5]
+    positive: true
+    role: derived
+    display_units: []
+  - symbol: L_R
+    name: Life at reliability R
+    latex: 'L_R'
+    unit: '1'
+    quantity_kind: count
+    default: 219589578
+    bounds: [100, 1.0e15]
+    positive: true
+    role: derived
+    display_units: [Mrev]
+  - symbol: t_R
+    name: Life at reliability R, in hours
+    latex: 'L_{Rh}'
+    unit: s
+    quantity_kind: time
+    default: 10979478.88
+    bounds: [1, 1.0e15]
+    positive: true
+    role: derived
+    display_units: [h]
+
+relations:
+  - id: load-life
+    group: dynamics
+    latex: 'L_{10} = 10^{6}\left(\dfrac{C_{10}}{P}\right)^{a}'
+    residual: L10 - 1000000*(C10/P)**a
+    assumptions:
+      - >-
+        the basic dynamic load rating C₁₀ is defined as the load that gives a rated life of one
+        million revolutions at 90% reliability (ABMA/ISO 281 rating basis; physics enters here by
+        citation)
+      - >-
+        fatigue-limited rolling contact; a = 3 for ball bearings (point contact), a = 10/3 for
+        roller bearings (line contact), a cited per-configuration constant, not a knob
+    citation: shigley
+    validity:
+      - condition: P <= C0
+        severity: warn
+        message: >-
+          The applied load exceeds the static load rating C₀. Above C₀ the rolling elements brinell
+          (permanently dent the races) and the rotating-contact fatigue model no longer describes
+          the failure — the life shown assumes no static overload.
+        citation: shigley
+  - id: life-hours
+    group: dynamics
+    latex: 'L_{10h}\,\omega = 2\pi\,L_{10}'
+    residual: t_10*omega - 2*pi*L10
+    assumptions:
+      - >-
+        each revolution is 2π radians, so a life of L₁₀ revolutions at speed ω takes L₁₀·2π/ω
+        seconds — the SI form of Shigley's L_h = 10⁶·L₁₀/(60 n); the 60 is a display artifact, not
+        a residual
+    citation: shigley
+  - id: reliability-life-factor
+    group: reliability
+    latex: 'x_R = x_0 + (\theta - x_0)\left(\ln\tfrac{1}{R}\right)^{1/b}'
+    residual: x_R - (x0 + (theta - x0)*log(1/R)**(1/b))
+    assumptions:
+      - >-
+        the dimensionless life x = L/L₁₀ follows a three-parameter Weibull distribution,
+        R = exp[−((x − x₀)/(θ − x₀))^b]; inverting it gives the life factor x(R) for a chosen
+        reliability (Shigley §11-4; parameters from Table 11-6, Manufacturer 2)
+      - >-
+        x(0.90) ≈ 1 by construction — the rating life L₁₀ is itself the 90%-reliability life, so at
+        R = 0.90 the factor returns essentially the rated life
+    citation: shigley
+    validity:
+      - condition: R >= 0.9
+        severity: invalid
+        scope: [x_R, L_R, t_R]
+        message: >-
+          The Weibull reliability fit is cited only for R ≥ 0.90 (the catalog rating basis). Below
+          it the reliability-adjusted life would be an extrapolation, so it is refused — but the
+          rated-reliability life L₁₀ still stands.
+        citation: shigley
+      - condition: R < 1
+        severity: invalid
+        scope: [x_R, L_R, t_R]
+        message: >-
+          Reliability must be below 1. As R → 1 the model demands the survival of the very weakest
+          bearing and the adjusted life collapses toward the guaranteed-life floor x₀·L₁₀; R = 1 is
+          not a designable target, so the adjusted-life readouts are refused.
+        citation: shigley
+  - id: adjusted-life
+    group: reliability
+    latex: 'L_R = x_R\,L_{10}'
+    residual: L_R - L10*x_R
+    assumptions:
+      - the life a fraction R of the population survives is the reliability factor times the rated life
+    citation: shigley
+  - id: adjusted-life-hours
+    group: reliability
+    latex: 'L_{Rh}\,\omega = 2\pi\,L_R'
+    residual: t_R*omega - 2*pi*L_R
+    assumptions:
+      - the reliability-adjusted life expressed in hours, the same rev-to-time conversion as L₁₀
+    citation: shigley
+
+configurations:
+  - id: ball
+    label: Ball bearing (point contact, a = 3)
+    constraints: { a: 3 }
+    inputs: [C10, C0, P, omega, R]
+    solutions:
+      L10: 1000000*(C10/P)**3
+      t_10: 2*pi*L10/omega
+      x_R: x0 + (theta - x0)*log(1/R)**(1/b)
+      L_R: L10*x_R
+      t_R: 2*pi*L_R/omega
+  - id: roller
+    label: Roller bearing (line contact, a = 10/3)
+    constraints: { a: 10/3 }
+    inputs: [C10, C0, P, omega, R]
+    solutions:
+      L10: 1000000*(C10/P)**(10/3)
+      t_10: 2*pi*L10/omega
+      x_R: x0 + (theta - x0)*log(1/R)**(1/b)
+      L_R: L10*x_R
+      t_R: 2*pi*L_R/omega
+
+derivation:
+  verifies_configuration: ball
+  steps:
+    - expr: Eq(L10, 1000000*(C10/P)**a)
+      prose: >-
+        Start from the catalog. The basic dynamic load rating C₁₀ is defined so that a group of
+        bearings run at exactly that load reaches a rated life of one million revolutions with 90%
+        of them surviving. Rolling-contact fatigue then follows a load–life power law: life scales
+        as (C₁₀/P) raised to a. For ball bearings a = 3 (point contact), for roller bearings a = 10/3
+        (line contact). Halving the load multiplies a ball bearing's life by 2³ = 8. This is the one
+        modeling step — the rating and the exponent are cited from ISO 281 / Shigley §11-3.
+      rule: 'load–life rating law (cited): L₁₀ = 10⁶(C₁₀/P)^a'
+      check: definition
+    - expr: Eq(t_10*omega, 2*pi*L10)
+      prose: >-
+        Convert revolutions to time. One revolution is 2π radians, so a life of L₁₀ revolutions at
+        angular speed ω lasts L₁₀·2π/ω seconds. Bearing tables usually print this as
+        L_h = 10⁶·L₁₀/(60 n) with n in rev/min — the same fact, with the 60 and the 10⁶ folded in as
+        display conversions. Here the engine works in SI and those constants live in the readout, not
+        the relation.
+      rule: 'revolutions to time: each rev is 2π rad'
+    - expr: Eq(R, exp(-((x_R - x0)/(theta - x0))**b))
+      prose: >-
+        Real bearings scatter around L₁₀. Model the dimensionless life x = L/L₁₀ as a
+        three-parameter Weibull variable: the surviving fraction is R = exp[−((x − x₀)/(θ − x₀))^b],
+        with a guaranteed life x₀ (below which essentially none fail), a characteristic life θ, and a
+        shape b. The values x₀ = 0.02, θ = 4.459, b = 1.483 are the 02-series manufacturer set from
+        Shigley Table 11-6 — cited data, carried as labeled constants.
+      rule: 'three-parameter Weibull life distribution (cited)'
+      check: definition
+    - expr: Eq((x_R - x0)/(theta - x0), log(1/R)**(1/b))
+      prose: >-
+        Invert the distribution for the life at a chosen reliability. Take logs twice:
+        ln(1/R) = ((x − x₀)/(θ − x₀))^b, so (x − x₀)/(θ − x₀) = (ln 1/R)^{1/b}. At R = 0.90 the
+        right side is ≈ 0.219 and x ≈ 0.994 — the factor returns essentially the rated life, which is
+        the consistency check that L₁₀ really is the 90% life. (The pipeline re-derives this inversion
+        symbolically from the Weibull CDF.)
+      rule: 'solve the Weibull CDF for the life factor'
+    - expr: Eq(x_R, x0 + (theta - x0)*log(1/R)**(1/b))
+      prose: >-
+        Rearranged, the reliability life factor is x(R) = x₀ + (θ − x₀)(ln 1/R)^{1/b}. It falls as R
+        rises: demanding that 99% survive instead of 90% cuts the usable life to about a fifth of the
+        rated value. Reliability is bought with life.
+      rule: 'the reliability life factor x(R)'
+    - expr: Eq(L_R, L10*x_R)
+      prose: >-
+        The life a fraction R of the population reaches is that factor times the rated life,
+        L_R = x(R)·L₁₀, and in hours L_R·2π/ω. These are the two numbers a bearing selection actually
+        turns on: the catalog gives L₁₀, the application sets the reliability, and the product is what
+        you can count on.
+      rule: 'reliability-adjusted life, in revolutions and hours'
+
+sim:
+  engine: statics-cascade
+  config:
+    draw: ball-bearing-life
+
+sources:
+  - id: shigley
+    citation: >-
+      Budynas, R. G., & Nisbett, J. K., Shigley's Mechanical Engineering Design, 10th ed.,
+      McGraw-Hill, 2015 — Ch. 11 (Rolling-Contact Bearings): §11-3 (the load–life relation
+      L₁₀ = (C/P)^a, with a = 3 for ball and 10/3 for roller bearings, C₁₀ rated at 10⁶ revolutions),
+      §11-4 (reliability and life via the three-parameter Weibull distribution), and Table 11-6
+      (Weibull parameters for two manufacturers' rating lives).
+    verification: >-
+      Ch. 11 topics confirmed against the published 10th-edition chapter listing, 2026-07-06. The
+      Weibull parameters x₀ = 0.02, θ = 4.459, b = 1.483 are the Manufacturer-2 row of Table 11-6
+      (02-series, 10⁶-revolution rating basis — the basis this page uses), transcribed and
+      web-corroborated against two independent reproductions of that table (Bartleby and Chegg
+      solution sets for Shigley 10e Ch. 11); the load–life exponents a = 3 (ball) / 10/3 (roller) are
+      the ISO 281 values also stated in §11-3 and confirmed across multiple bearing-engineering
+      references. These are cited DATA, not machine-proven physics. What IS machine-proven: the
+      Weibull inversion x(R) = x₀ + (θ − x₀)(ln 1/R)^{1/b} is re-derived by solving the Weibull CDF
+      symbolically, and the 10⁶-rev rating basis and the hours conversion are re-derived, in
+      pipeline/tests/test_bearing_physics.py. The textbook PDF is not web-accessible for a
+      page-exact quote.
+  - id: juvinall
+    citation: >-
+      Juvinall, R. C., & Marshek, K. M., Fundamentals of Machine Component Design, 5th ed., Wiley,
+      2011 — ch. 14 (rolling-element bearings): the same catalog load–life relation and the
+      reliability adjustment for lives other than the 90% rating.
+    verification: >-
+      Topic-level cross-check (rolling-contact bearing life; the (C/P)^a load–life law and the
+      reliability adjustment are standard and also given in Norton, Shigley, and the SKF/Timken
+      catalog literature). Not page-pinned; used to corroborate the treatment and the failure notes,
+      not any single emitted number.
+  - id: iso
+    citation: >-
+      ISO 281:2007, Rolling bearings — Dynamic load ratings and rating life; and ABMA Standards 9 and
+      11 — the standards that define the basic dynamic load rating C and the L₁₀ = (C/P)^p rating-life
+      framework used throughout the bearing industry.
+    verification: >-
+      NAMED as the origin of the rating framework only — never ingested, reproduced, or quoted. The
+      numeric values used on this page are taken as printed in Shigley (accessible-textbook tier per
+      docs/data-provenance.md); ISO 281 and ABMA are cited to attribute the framework, consistent
+      with the project's fact-extraction legal frame.

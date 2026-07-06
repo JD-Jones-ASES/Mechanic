@@ -17,6 +17,11 @@ QUANTITY_KINDS: frozenset[str] = frozenset({
     "poisson_ratio",
     "strain",
     "safety_factor",
+    "probability",  # a survival probability / reliability R in (0,1]; dimensionless.
+                    # Deliberately DISTINCT from ratio and efficiency: a reliability is
+                    # NOT a geometric ratio and NOT a power-out/power-in efficiency, so it
+                    # must never chain silently into either port (invariant 2). The bearing
+                    # page's reliability knob R is the first consumer.
     "friction_coefficient",  # μ/f: not a geometric ratio — keep capstan exponents honest
     "efficiency",  # power-out/power-in ∈ (0,1]; a gear ratio must not chain into it
     # kinematics

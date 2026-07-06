@@ -16,6 +16,7 @@ import { MaterialPicker, pickProperty, type MaterialRow } from "./MaterialPicker
 import { Readouts } from "./Readouts";
 import { ValidityBanner } from "./ValidityBanner";
 import { BeamSim } from "./sims/BeamSim";
+import { BearingSim } from "./sims/BearingSim";
 import { BeltSim } from "./sims/BeltSim";
 import { CircularPlateSim } from "./sims/CircularPlateSim";
 import { ColumnSim } from "./sims/ColumnSim";
@@ -80,6 +81,7 @@ const SIMS: Record<
   "torsional-oscillator": TorsionalOscillatorSim,
   "impact-loading": ImpactLoadingSim,
   "slider-crank": SliderCrankSim,
+  "ball-bearing-life": BearingSim,
 };
 
 interface Props {

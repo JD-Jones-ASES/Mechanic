@@ -242,6 +242,21 @@ a { color: var(--accent); }
 .sc-torque-head-hot { fill: #dc2626; }
 .sc-phi { stroke: var(--muted); stroke-width: 1.25; }
 .sc-phi-hot { stroke: #dc2626; stroke-width: 1.25; }
+/* ball-bearing-life (BearingSim): a face-on bearing (races, shaft, cage,
+   rolling elements) beside two log-scaled life bars. The shaft mark and the
+   lead element make the spin read; elements turn red past the static rating
+   (brinelling). The rated bar is accent, the reliability bar green; the track
+   reuses the fw-bar idiom. */
+.bear-race { fill: none; stroke: var(--muted); stroke-width: 2; }
+.bear-shaft { fill: var(--line); stroke: var(--ink); stroke-width: 1.5; }
+.bear-key { fill: var(--ink); }
+.bear-cage { fill: none; stroke: var(--muted); stroke-width: 1; stroke-dasharray: 4 4; }
+.bear-ball { fill: var(--accent); stroke: var(--ink); stroke-width: 1.2; }
+.bear-ball-lead { fill: var(--ink); stroke: var(--ink); stroke-width: 1.2; }
+.bear-ball-hot { fill: #dc2626; stroke: var(--ink); stroke-width: 1.2; }
+.bear-life-track { fill: var(--line); }
+.bear-life-rated { fill: var(--accent); }
+.bear-life-rel { fill: #10b981; }
 /* shared sim vocabulary: stress bands (StressBands.tsx) shade where a field
    concentrates and turn red past first yield; .sim-outline is a figure's
    structural outline */

@@ -765,3 +765,71 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   (e) a global invalid on a sqrt argument produces TWO banners (the engine's emitted sqrt-nonneg guard AND
   your authored envelope) — this is fine and honest (S03 saw the same), but author your envelope message to
   be the pedagogical one since both show.
+
+## S11 — ball-bearing-life — 2026-07-06 — PR #25 — MERGED
+- Shipped: THING 28 `ball-bearing-life` (rolling-contact load–life + Weibull reliability) — L10 = 1e6(C10/P)^a
+  with ball a=3 / roller a=10/3 as TWO configs over ONE relation set (constrained exponent, the
+  impact-loading/stepped-shaft discriminator idiom), life read in hours + Mrev, Weibull adjustment
+  x(R)=x0+(θ−x0)(ln 1/R)^(1/b) with L_R=x(R)·L10, SCOPED refusal below R=0.90 (adjusted-life withheld, rated
+  L10 stands), brinelling WARN past C0, NO material axis (geometry/catalog THING — the steel is inside the
+  ratings C10/C0, planetary-gearset framing). New `probability` quantity kind + `h`/`Mrev` display units.
+  Catalog 27 → 28.
+- Gates: pytest 284 (275 baseline + 9 test_bearing_physics.py); pnpm build clean (COLD first — kinds.py edit
+  busts every fingerprint; then warm; parity 1233 values/28 artifacts, katex 1190, mdx 56 files, units 667,
+  35 pages, pagefind); unit 19 (+1 chain.test.mjs: probability↔ratio/efficiency rejected both ways,
+  probability→probability legal); e2e 77 (+2 bearing: goldens/8×-halving/cited-constants/no-material-picker;
+  ball-vs-roller 10^(1/3)/reliability-trim/scoped R<0.90 refusal with all three adjusted readouts withheld
+  while L10 stands; verification relation-block 27→28); visual pass (built dist /Mechanic/): sim renders
+  VISIBLY (outer/inner races, shaft+keyway, 9 balls, dashed cage + two log-scaled life bars; 27 SVG els — not
+  the invisible-SVG trap), config ball→roller moved L10 1000→2154 Mrev (=10^(1/3)×) and relabeled the sim,
+  drove R=0.7 and SAW the SCOPED refusal (x_R/L_R/t_R greyed to "—" + red banner while the rated L10 and the
+  whole page stand), constants panel shows x0/θ/b cited to shigley, NO material picker, KaTeX 0 errors,
+  console clean, /things/ card + /verification/(28) present; normal + refused states screenshotted.
+  review: 6 independent passes — 3 fresh-context subagents (physics/invariants/code-tests) + /code-review
+  high (correctness line-by-line / cross-file-registry / cleanup). 2 findings FIXED, 2 rebutted (see below).
+- Golden: ball, C10=30 kN, P=3 kN (C10/P=10), n=1200 rpm, R=0.99 → L10=1000 Mrev (=1e6·10^3, exact),
+  t_10=13,889 h (=2π·1e9/(40π)/3600), x(0.99)=0.219589578, L_R=219.59 Mrev, t_R=3049.9 h. Sanity
+  x(0.90)=0.99335≈1 (L10 IS the 90% life). Source Shigley 10e Ch. 11; all arithmetic in
+  test_bearing_physics.py::test_numeric_golden, re-derived (Weibull inversion via sp.solve of the CDF, the
+  load–life rating basis, the SI hours-form ≡ Shigley 1e6·L10/(60n)) — nothing rests on the citation.
+- Citations pinned: shigley (10e Ch. 11 §11-3 load–life + §11-4 reliability + **Table 11-6 Manufacturer 2**:
+  x0=0.02, θ=4.459, b=1.483, the 02-series / 1e6-rev rating basis) — web-corroborated 2026-07-06 vs TWO
+  independent reproductions of Table 11-6 (Bartleby + Chegg Shigley-10e-Ch11 solution sets); exponents
+  a=3/(10/3) triple-corroborated (ISO 281 / itu.edu.tr Ch. 11 slides / pibsales). HONEST: (x0,θ,b,a) are
+  cited DATA, not machine-proven physics; the inversion, rating basis, and hours form ARE machine-proven.
+  juvinall (topic cross-check), iso (ISO 281/ABMA framework, NAMED not ingested). Textbook PDF not
+  web-accessible for a page-exact quote.
+- Deviations from brief: (1) Weibull params carried as `role: constant` (cited, rendered in ConstantsPanel)
+  rather than inlined literals — more provenance-forward (credibility spine), reuses S08's constants
+  mechanism with ZERO pipeline change; three dimensionless constants prove the mechanism generalizes past g.
+  (2) L10/L_R use the EXISTING `count` kind (revolutions) with unit "1" + Mrev display — the brief authorized
+  only `probability` as a new kind, and a revolution count IS count-like; no unauthorized kind minted.
+  (3) `a` (load–life exponent) is a constrained `free` variable ({a:3} / {a:10/3}), NOT role:constant — the
+  exponent differs per config so a single-value constant can't express it; the constrained-discriminator
+  idiom (impact-loading `mode`, stepped-shaft `load_case`). (4) Threshold-table STRETCH appendix NOT
+  attempted — the base THING passed every §3 gate, but I chose a clean stop over starting a schema-capability
+  build (un-reserving `threshold` mode) late in the budget; named as future work below. The row was never
+  PAUSED for it (brief forbids).
+- New capabilities future briefs may rely on: `probability` quantity kind (dimensionless; must NOT chain into
+  ratio/efficiency — a survival probability is neither a geometric ratio nor an efficiency) and `h` (3600 s)
+  / `Mrev` (1e6) display units, all in the registries. Patterns reconfirmed: (i) cited FIXED model parameters
+  are cleanly `role: constant` + citation — S08's g-mechanism generalizes to a set of dimensionless constants
+  with no pipeline change; (ii) a dimensionless COUNT (revolutions) needs no new kind — reuse `count` + unit
+  "1" + a scaled display unit; (iii) TWO configs whose physics differs only by a per-config CONSTANT are best
+  expressed by constraining that constant directly ({a:3}/{a:10/3}) rather than a linear blend (cleaner than
+  impact-loading's blend when the difference is a single parameter, not two whole formulas).
+- Notes-for-next (S12 = disk-clutch, uniform wear vs uniform pressure): (a) `probability` + h/Mrev are LANDED.
+  (b) THE PROVENANCE TRAP the brief flagged is REAL: my recalled Weibull θ was 4.439; the correct Table-11-6
+  value is **4.459**. ALWAYS web-corroborate cited table constants before pinning — the search caught a 0.02
+  error that would otherwise have shipped a wrong emitted number. (c) STRETCH DEFERRED: the threshold/step
+  `table` mode is STILL schema-RESERVED (compile.py rejects it); S11 did NOT build it. A future threshold
+  lookup (the bearing X,Y equivalent-load per Shigley Table 11-1 was the reserved stretch) is a REAL
+  capability — un-reserve + implement the lookup + parity + the full S01 certificate story — and must be
+  owner-authorized (§9.2); don't improvise it. (d) role:constant with unit "1" + empty display_units works
+  (si_unit "1" is check-units-covered); ConstantsPanel renders dimensionless constants cleanly with their
+  citation. (e) a constrained non-integer {a: 10/3} parses EXACT (compile.py parse_expr(str(val)) →
+  Rational(10,3)); the artifact serializes it as float (compile.py:746) but the parity oracle uses the exact
+  Rational, so the ~1e-15 gap is far under RTOL=1e-9 — no S10-style parity trap (and no catastrophic
+  cancellation: every target is a product/sum, no near-equal subtraction). (f) a warn-only + scoped-invalid
+  THING has NO reachable GLOBAL invalid via the knobs — SimRefusal is the defensive contract; the reachable
+  refusal is the SCOPED one (R<0.90 → adjusted-life withheld, page stands), and THAT is the e2e "refusal pin".

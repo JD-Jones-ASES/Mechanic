@@ -19,6 +19,7 @@ export const DISPLAY_FACTORS: Record<string, { factor: number; label: string }> 
   Hz: { factor: 1, label: "Hz" }, // frequency (cycles/s); f = ω/2π — a distinct kind from rad/s
   s: { factor: 1, label: "s" }, // the `time` kind's SI unit (period readouts); had no display entry before
   ms: { factor: 1e-3, label: "ms" }, // 1 ms = 1e-3 s — sub-second oscillation periods
+  h: { factor: 3600, label: "h" }, // 1 h = 3600 s — bearing life is quoted in hours
   m: { factor: 1, label: "m" },
   mm: { factor: 1e-3, label: "mm" },
   cm: { factor: 1e-2, label: "cm" },
@@ -54,6 +55,7 @@ export const DISPLAY_FACTORS: Record<string, { factor: number; label: string }> 
   "kg*m^2": { factor: 1, label: "kg·m²" },
   "kg*m**2": { factor: 1, label: "kg·m²" },
   "1": { factor: 1, label: "" },
+  Mrev: { factor: 1e6, label: "Mrev" }, // 1 Mrev = 1e6 revolutions — bearing life (a count, not a time)
   rad: { factor: 1, label: "rad" },
   deg: { factor: Math.PI / 180, label: "°" },
   "rad/m": { factor: 1, label: "rad/m" }, // twist rate (angle of twist per length); SI base
