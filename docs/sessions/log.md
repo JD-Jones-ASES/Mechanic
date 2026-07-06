@@ -1169,3 +1169,66 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   makes solve_linear STRONGER than solve1d for the audit surface: because closed forms exist, derivation
   `identity` steps CAN reference the solved targets (solve_tainted stays empty), so the compatibility/solve is a
   machine-verified derivation line — do this for S16-S19 too.
+
+## S16 — fixed-fixed beam + fixed-fixed torsion shaft — 2026-07-06 — PR #34 — MERGED
+- Shipped: two statically-indeterminate THINGs, both PURE `solve_linear` consumers (zero schema/engine/pipeline
+  change), exercising S15's capability at both ends of its range. `fixed-fixed-beam` (UDL) = the 4-unknown group
+  `{R_A, M_A, R_B, M_B}` from 2 equilibrium + 2 compatibility (zero deflection AND zero slope at a released end):
+  R_A=R_B=wL/2, |M_end|=wL²/12 (hogging, both walls), M_mid=wL²/24 (M_end=2·M_mid), δ_max=wL⁴/384EI at midspan.
+  `fixed-fixed-torsion-shaft` (interior torque) = the 2-unknown group `{T_A, T_B}` from equilibrium + twist
+  compatibility: T_A=T·b/L, T_B=T·a/L (larger reaction on the SHORTER segment). Both reaction sets material-BLIND
+  (EI/GJ cancels in the authored-cancelled compatibility relation — a machine-checked identity step); E/G still move
+  δ/φ/SF/mass. Catalog 31 → 33.
+- Gates: pytest 322 (311 baseline + 11 new: 6 test_fixedfixed_beam_physics + 5 test_fixedfixed_shaft_physics);
+  pnpm build clean (COLD ~3-4 min all 33 re-verified; then WARM after the sim/CSS fix, seconds; 40 pages, parity
+  1419 values across 33 artifacts, katex/mdx/units green); unit 19 (no new kind); e2e 94 (88 baseline + 4 things
+  pins [beam & shaft material-blind cascade + yield/shear-yield warn] + 2 axe); relation-block detector 31→33.
+  visual pass (built dist /Mechanic/ via preview + screenshots): BEAM sim renders visibly (symmetric blue curve
+  flat at both walls dipping to midspan = zero-slope built-in condition, 2 reaction arrows + 2 moment arcs + 13 UDL
+  arrows, 56 SVG els, beam-line stroke rgb(147,197,253) NOT the invisible-SVG trap), drove w→50 kN/m on nylon and
+  SAW it turn RED (rgb(220,38,38)) with 2 warn banners (yield + δ>L/10), switched al→steel and SAW δ 8.39→3.04 mm
+  while R_A/M_A/σ HELD material-blind. SHAFT sim renders visibly (2 segments, teal reaction arcs + ink applied arc
+  at x=a, scribed twist, 33 SVG els), drove T→20000 on al-6061 and SAW both segments turn RED with 2 warn banners,
+  and T_A/T_B/τ HELD while φ moved with material. KaTeX 0 errors, console clean on both. review: 3 independent
+  fresh-context subagents (§4). (a) Physics ZERO defects — re-derived both THINGs two ways each (beam: EB BVP +
+  force method; shaft: compatibility + Castigliano), confirmed every number/sign/limit/unit/det/envelope-boundary,
+  incl. the flagged 4×4 sign trap (opposite-sign wall couples physically honest, not symmetric accident). (b)
+  Invariants CLEAN 8/8 — verified against pipeline SOURCE (DOF numeric-rank, coefficient-taint enforcement,
+  solve_tainted empty for solve_linear, no new kinds, no weakened/deleted tests, no committed artifacts). (c)
+  Code/tests CLEAN — test independence, golden arithmetic, no invisible-SVG (every class enumerated vs global.css),
+  meaningful e2e (material-qualification trap avoided), triply-confirmed numbers vs a randomized pipeline sample.
+  Zero actionable findings from all three; believed because the diff mostly imitates the proven S15 propped pattern,
+  the one novel risk (4×4 signs) got focused attention + 5 independent confirmations, and the process already caught
+  its one real bug (below) in the visual pass.
+- Golden: BEAM steel-a36 at declared defaults (w=12 kN/m, L=3 m, b=50 mm, h=100 mm, E=200/σ_y=250/ρ=7850): R_A=R_B=18
+  kN, M_A=M_B=9000 N·m, M_mid=4500 N·m, σ_max=108 MPa, δ_max=3.0375 mm, SF=2.3148, m=117.75 kg. SHAFT (T=500
+  N·m, a=0.4, b=0.6 → L=1 m, r=20 mm, G=79 GPa): T_A=300, T_B=200 N·m, τ_1=23.873 MPa, τ_2=15.915 MPa, φ=6.0439e-3
+  rad, SF_1=5.2360, SF_2=7.8540, m=9.8018 kg. All hand-derived in the physics tests; reactions re-derived TWO
+  independent ways agreeing symbolically.
+- Citations pinned: gere (Gere & Goodno 9th — beam ch.10 indeterminate beams / force method + §5.5 flexure; shaft
+  §3.8 indeterminate torsion + §3.3-3.4 torsion formula) + hibbeler (ch.12 superposition cross-check) + shigley
+  (§5-4 max-shear-stress σ_y/2, shaft). Topic-level (textbook PDFs not web-accessible, same limit as S02-S15);
+  wL²/12 and T·b/L web-corroborated 2026-07-06 AND re-derived from first principles in the physics tests.
+- Deviations from brief: (1) NO fallback fired — the general 4×4 op count is 19 (≪ SIMPLIFY_OPS_CAP 200), so the
+  full asymmetric-sign group ships as the brief's primary intent; the pre-authorized symmetry reduction was not
+  needed. (2) Shaft inputs are [T, a, b, r] (two segment lengths as independent knobs, L=a+b derived) rather than
+  [T, a, L, r] — makes a<L structural, no cross-variable bound needed; b=L−a preserved (here L=a+b). (3) Shaft uses
+  radius r (J=πr⁴/2) per the brief, where the sibling torsion-shaft uses diameter — same physics, brief's explicit
+  choice honored.
+- New capabilities future briefs may rely on: none (no engine/pipeline/schema/kind/unit change). Confirmed for
+  S17-S19: a solve_linear group whose SOLVED FORMS keep a variable denominator (shaft T_A=Tb/(a+b)) gets BOTH the
+  explicit compile.py det guard AND an auto denominator guard — harmless (both invalid, trip together); the
+  det-cancels-to-monomial case (beam, like propped) gets only the explicit guard. So S17 composite-bar's non-
+  cancelling det behaves as S15 predicted.
+- Notes-for-next (S17 = multi-material composite-bar): (a) the EI/GJ-cancel compatibility pattern is now proven
+  twice (propped, this pair) — for S17 the stiffness does NOT cancel (two materials), so the compatibility relation
+  WILL carry the modulus ratio and det carries the stiffness distribution; author it reading inputs/materials only
+  (materials ARE allowed in group coefficients, unlike the derived I). (b) e2e material-qualification trap: the
+  shaft binds shear_modulus, and nylon-66/wood/concrete LACK it — page default is the alphabetically-first
+  QUALIFYING material (al-2024-t3 for shear_modulus binders), so selectOption explicitly and never use a
+  non-qualifying material for a shear-bound THING. (c) FOUND a latent CSS bug (out of scope, flagged as a task):
+  `.shaft-body` (global.css) is declared AFTER `.beam-yielding` at equal specificity, so shaft sims setting
+  "shaft-body beam-yielding" DON'T turn red — torsion-shaft's caption promises red but stays blue. Fixed MY sim with
+  a compound `.shaft-body.ff-yielding` selector (higher specificity, order-independent); torsion-shaft still needs
+  the one-line `.shaft-body.beam-yielding { stroke:#dc2626 }` fix. (d) Nothing is paused; S17 is the topmost QUEUED
+  row of active Phase 3.
