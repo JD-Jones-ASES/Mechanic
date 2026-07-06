@@ -257,6 +257,19 @@ a { color: var(--accent); }
 .bear-life-track { fill: var(--line); }
 .bear-life-rated { fill: var(--accent); }
 .bear-life-rel { fill: #10b981; }
+/* disk-clutch (ClutchSim): the friction annulus (translucent accent ring, bore
+   punched with paper), radial spokes for slip, the dashed torque-optimal bore,
+   and the two pressure profiles — uniform pressure flat (accent), uniform wear
+   1/r (green, red past the allowable) against a dashed allowable line. Chart
+   axes reuse .chart-axis. */
+.clutch-face-o { fill: var(--accent); opacity: 0.3; stroke: var(--ink); stroke-width: 1.5; }
+.clutch-face-i { fill: var(--paper); stroke: var(--ink); stroke-width: 1.5; }
+.clutch-spoke { stroke: var(--muted); stroke-width: 1.5; }
+.clutch-opt { fill: none; stroke: var(--ink); stroke-width: 1.2; stroke-dasharray: 4 3; }
+.clutch-allow { stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 5 3; }
+.clutch-p-up { stroke: var(--accent); stroke-width: 2.5; }
+.clutch-p-uw { fill: none; stroke: #10b981; stroke-width: 2.5; }
+.clutch-p-uw-hot { fill: none; stroke: #dc2626; stroke-width: 2.5; }
 /* shared sim vocabulary: stress bands (StressBands.tsx) shade where a field
    concentrates and turn red past first yield; .sim-outline is a figure's
    structural outline */

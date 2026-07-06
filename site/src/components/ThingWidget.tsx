@@ -19,6 +19,7 @@ import { BeamSim } from "./sims/BeamSim";
 import { BearingSim } from "./sims/BearingSim";
 import { BeltSim } from "./sims/BeltSim";
 import { CircularPlateSim } from "./sims/CircularPlateSim";
+import { ClutchSim } from "./sims/ClutchSim";
 import { ColumnSim } from "./sims/ColumnSim";
 import { CombinedShaftSim } from "./sims/CombinedShaftSim";
 import { CurvedBeamSim } from "./sims/CurvedBeamSim";
@@ -82,6 +83,7 @@ const SIMS: Record<
   "impact-loading": ImpactLoadingSim,
   "slider-crank": SliderCrankSim,
   "ball-bearing-life": BearingSim,
+  "disk-clutch": ClutchSim,
 };
 
 interface Props {

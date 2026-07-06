@@ -177,6 +177,21 @@ factory capability, the way the flywheel exercised `poisson_ratio` and new quant
   NO material axis — the bearing steel is baked into the catalog ratings (the planetary-gearset framing).
   The Weibull inversion, the 10⁶-revolution rating basis, and the hours conversion are re-derived from
   first principles in the physics test. Catalog 27 → 28.
+- **Two friction models on one clutch face:** disk-clutch ✅ shipped 2026-07-06 (S12) — an axial plate
+  clutch or brake, with the two classical contact-pressure models shown as parallel readouts (the
+  combined-shaft two-model pattern, no silent winner). A new rigid clutch presses uniformly,
+  T_up = N·(2/3)μF(r_o³−r_i³)/(r_o²−r_i²); a run-in lining wears until p·r is constant,
+  T_uw = N·μF(r_o+r_i)/2. Their difference collapses to a perfect square over a positive denominator,
+  T_up − T_uw = N·μF(r_o−r_i)²/(6(r_o+r_i)) ≥ 0, so uniform wear is always the smaller — and therefore the
+  conservative design — torque, with equality only in the thin-annulus limit; the bracket is machine-proven
+  and gives the sim its "gap closes as r_i → r_o" story. Peak lining pressure p_max = F/(2π r_i(r_o−r_i))
+  is checked against a cited allowable (a warn), the slip power P = T·ω_slip is reported for each model, and
+  the torque-optimal bore r_i* = r_o/√3 (from dT/dr_i = 0 at fixed p_max) is a derived readout marked on the
+  friction face. r_i ≥ r_o refuses globally (no annulus). Friction (μ and the allowable pressure) enters as
+  cited free knobs from Shigley Table 16-3 — deliberately NO material axis (a friction-lining materials
+  table is named future data/materials/ work, as on the bearing page). Both torque integrals are re-derived
+  from first principles by direct integration in the physics test. No new engine/pipeline/kind/unit. Catalog
+  28 → 29.
 
 Per-THING gate (standard practice, from the flywheel/cylinder sessions): machine verification +
 independent first-principles cross-check in `pipeline/tests/` + hand-checkable numeric golden +

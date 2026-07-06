@@ -262,7 +262,7 @@ test("verification page discloses authorship and the audit surface", async ({ pa
   await expect(page.getByText(/built end to end by an AI/i).first()).toBeVisible();
   await expect(page.getByText(/No human reviews the content/i).first()).toBeVisible();
   // every THING appears with its audit block (count is a deliberate change detector)
-  expect(await page.locator("section.relation-block").count()).toBe(28); // +ball-bearing-life (S11)
+  expect(await page.locator("section.relation-block").count()).toBe(29); // +disk-clutch (S12)
   await expect(page.getByText(/Where physics enters/i).first()).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -1503,4 +1503,43 @@ test("ball-bearing-life: roller outlasts ball by 10^(1/3); reliability trims lif
   await expect(page.locator('[data-output="t_R"] output')).toHaveText("—");
   // the rated-reliability life is NOT poisoned by the scoped refusal
   expect(await readOutput(page, "L10")).toBeCloseTo(1000, -1);
+});
+
+test("disk-clutch: both torque models, the uniform-wear ≤ uniform-pressure bracket, the r_o/√3 optimum, no material axis", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/disk-clutch/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  // friction μ and allowable pressure are cited free knobs, not a material binding
+  await expect(page.getByTestId("material-select")).toHaveCount(0);
+
+  // defaults: F=5 kN, μ=0.3, r_i=50 mm, r_o=100 mm, N=2 faces, slip 100 rad/s →
+  //   T_up = 2·(2/3)·0.3·5000·(0.1³−0.05³)/(0.1²−0.05²) = 233.33 N·m
+  //   T_uw = 2·0.3·5000·(0.15)/2 = 225 N·m ;  r_i* = 100/√3 = 57.735 mm
+  const tUp = await readOutput(page, "T_up");
+  const tUw = await readOutput(page, "T_uw");
+  expect(tUp).toBeCloseTo(233.3, -1); // N·m
+  expect(tUw).toBeCloseTo(225, -1); // N·m
+  // THE bracket: uniform pressure ≥ uniform wear, always
+  expect(tUp).toBeGreaterThan(tUw);
+  expect(await readOutput(page, "r_i_opt")).toBeCloseTo(57.7, -1); // mm = r_o/√3
+  // peak pressure at r_i under uniform wear = 5000/(2π·0.05·0.05) = 0.318 MPa
+  expect(await readOutput(page, "p_max")).toBeCloseTo(0.318, 2); // MPa
+  expect(errors).toEqual([]);
+});
+
+test("disk-clutch: r_i ≥ r_o refuses the whole page (the annulus does not exist)", async ({ page }) => {
+  await page.goto("things/disk-clutch/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  // default is warn-clear (p_max 0.318 MPa < p_allow 1 MPa)
+  await expect(page.locator(".validity-invalid")).toHaveCount(0);
+
+  // drive the bore past the rim: r_i = 120 mm > r_o = 100 mm — the friction annulus
+  // does not exist, so the WHOLE page refuses (a global, unscoped invalid)
+  await page.getByLabel("Inner (bore) radius value").fill("120"); // mm
+  await expect(page.locator(".validity-invalid").first()).toBeVisible();
+  await expect(page.locator('[data-output="T_up"] output')).toHaveText("—");
+  await expect(page.locator('[data-output="T_uw"] output')).toHaveText("—");
+  await expect(page.locator('[data-output="p_max"] output')).toHaveText("—");
 });
