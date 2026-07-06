@@ -314,6 +314,23 @@ test("torsion shaft: stress ignores the material; twist and margin do not", asyn
   expect(errors).toEqual([]);
 });
 
+test("torsion shaft: past shear yield the shaft is drawn RED, matching its caption (regression: .shaft-body vs .beam-yielding CSS order)", async ({ page }) => {
+  await page.goto("things/torsion-shaft/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  // τ = 16T/(πd³) at T = 20000 N·m ≫ steel shear yield → warn fires
+  await page.locator("#knob-T").fill("20000");
+  await expect(page.locator(".validity-warn, .validity-invalid").first()).toBeVisible();
+  // ...and the figure must ACTUALLY turn red. A bare .beam-yielding lost the stroke
+  // to the later, equal-specificity .shaft-body rule, so the shaft stayed blue while
+  // its caption promised red; the compound .shaft-body.beam-yielding rule fixes it.
+  const stroke = await page
+    .locator(".shaft-body")
+    .first()
+    .evaluate((el) => getComputedStyle(el).stroke);
+  expect(stroke).toBe("rgb(220, 38, 38)");
+});
+
 test("torsion shaft: power-in config finds the torque; materials without G are not offered", async ({ page }) => {
   await page.goto("things/torsion-shaft/");
   await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");

@@ -115,8 +115,8 @@ export function FixedFixedShaftSim({ values, invalid = false }: { values: VarRec
         ))}
 
         {/* the two shaft segments, each coloured by its own safety factor */}
-        <rect x={x0} y={cy - radius} width={loadX - x0} height={radius * 2} rx={3} class={danger1 ? "shaft-body ff-yielding" : "shaft-body"} fill="none" />
-        <rect x={loadX} y={cy - radius} width={x1 - loadX} height={radius * 2} rx={3} class={danger2 ? "shaft-body ff-yielding" : "shaft-body"} fill="none" />
+        <rect x={x0} y={cy - radius} width={loadX - x0} height={radius * 2} rx={3} class={danger1 ? "shaft-body beam-yielding" : "shaft-body"} fill="none" />
+        <rect x={loadX} y={cy - radius} width={x1 - loadX} height={radius * 2} rx={3} class={danger2 ? "shaft-body beam-yielding" : "shaft-body"} fill="none" />
 
         {/* scribed surface line, twisted */}
         <polyline points={scribe} class="beam-ghost" fill="none" />
