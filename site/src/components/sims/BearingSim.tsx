@@ -92,10 +92,10 @@ export function BearingSim({
   const DECADE = 26; // px per decade
   const barLen = (mrev: number) =>
     clamp(Number.isFinite(mrev) && mrev > 0 ? 10 + DECADE * Math.log10(mrev) : 0, 0, barW);
-  const yRated = 92;
-  const yRel = 150;
-  const barH = 26;
-  const hrs = (s: number) => (Number.isFinite(s) ? toDisplay(s, "h") : NaN);
+  const yRated = 76;
+  const yRel = 156;
+  const barH = 22;
+  const hrs = (s: number) => toDisplay(s, "h"); // toDisplay(NaN) -> NaN; call sites re-guard
 
   return (
     <figure class="sim">
@@ -145,7 +145,7 @@ export function BearingSim({
         </text>
         <rect x={barX} y={yRated} width={barW} height={barH} class="bear-life-track" />
         <rect x={barX} y={yRated} width={barLen(l10M)} height={barH} class="bear-life-rated" />
-        <text x={barX + 4} y={yRated + barH + 13} class="sim-label-small">
+        <text x={barX + 4} y={yRated + barH + 14} class="sim-label-small">
           {Number.isFinite(l10M) ? `${l10M.toPrecision(3)} Mrev` : "—"}
           {Number.isFinite(hrs(t_10)) ? ` · ${Math.round(hrs(t_10)).toLocaleString()} h` : ""}
         </text>
@@ -155,20 +155,20 @@ export function BearingSim({
         </text>
         <rect x={barX} y={yRel} width={barW} height={barH} class="bear-life-track" />
         {relRefused ? (
-          <text x={barX + 8} y={yRel + 17} class="sim-label-small">
+          <text x={barX + 8} y={yRel + 15} class="sim-label-small">
             refused — R below 0.90 (see banner)
           </text>
         ) : (
           <>
             <rect x={barX} y={yRel} width={barLen(lRM)} height={barH} class="bear-life-rel" />
-            <text x={barX + 4} y={yRel + barH + 13} class="sim-label-small">
+            <text x={barX + 4} y={yRel + barH + 14} class="sim-label-small">
               {Number.isFinite(lRM) ? `${lRM.toPrecision(3)} Mrev` : "—"}
               {Number.isFinite(hrs(t_R)) ? ` · ${Math.round(hrs(t_R)).toLocaleString()} h` : ""}
             </text>
           </>
         )}
         {/* decade gridline hint */}
-        <text x={barX} y={H - 6} class="sim-label-small">
+        <text x={barX} y={222} class="sim-label-small">
           bars are log scale — one decade ≈ {DECADE}px; halving P grows the ball bar 8×
         </text>
       </svg>
