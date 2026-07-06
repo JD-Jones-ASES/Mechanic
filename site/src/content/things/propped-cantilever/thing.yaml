@@ -325,9 +325,9 @@ derivation:
     - expr: Eq(delta_mid, w*L**4/(192*E*I))
       prose: >-
         Only now does E appear — in the deflection, never in the reactions. Swap steel for titanium
-        (a third the stiffness) and δ triples while R_A, R_B, M_A do not budge. Stiffness and strength
-        and the load path are independent axes; the redundant support redistributes force by geometry,
-        not by material.
+        (about half the stiffness) and δ nearly doubles while R_A, R_B, M_A do not budge. Stiffness
+        and strength and the load path are independent axes; the redundant support redistributes force
+        by geometry, not by material.
       rule: integrate the moment–curvature relation at midspan
 sim:
   engine: statics-cascade

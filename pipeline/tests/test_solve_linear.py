@@ -210,14 +210,17 @@ DET_SAMPLE_YAML = textwrap.dedent("""
 
 
 def test_singular_at_sample_fails_build(things_dir, tmp_path):
+    # det = n-2 is symbolically nonzero (linsolve succeeds), so this must fail on
+    # the PER-SAMPLE determinant check when the seeded sampler draws n = 2 — not
+    # the symbolic simplify(det)==0 path. Match the per-sample message specifically.
     _write(things_dir, DET_SAMPLE_YAML)
-    with pytest.raises(BuildError, match="singular|~ 0 at sample"):
+    with pytest.raises(BuildError, match="~ 0 at sample"):
         compile_all(things_dir, tmp_path / "generated")
 
 
 # a coefficient with > SIMPLIFY_OPS_CAP (200) operations — a symbolic exact
 # solve this large is the wrong tool and must name the future LU-runtime ADR.
-_BIG = "+".join(f"x**{k}" for k in range(1, 160))  # ~316 ops
+_BIG = "+".join(f"x**{k}" for k in range(1, 160))  # well over SIMPLIFY_OPS_CAP (200)
 OP_CAP_YAML = textwrap.dedent(f"""
     id: prop-fixture
     title: Op cap fixture

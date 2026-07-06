@@ -18,8 +18,9 @@ interesting ones are specific to it being **statically indeterminate**:
 
 - **Loss of the prop.** If the prop is a slender strut it can buckle, and if it is a tension tie it
   can yield or pull out of its anchor. Lose the prop entirely and the structure reverts to a plain
-  cantilever with **eight times** the tip deflection and a wall moment of $wL^2/2$ — four times
-  larger. The redundancy that makes the beam stiff is exactly what a single failed support removes.
+  cantilever: the free end that was held on the wall's line now sags to the full cantilever value
+  $wL^4/8EI$ (from zero), and the wall moment jumps from $wL^2/8$ to $wL^2/2$ — **four times larger**.
+  The redundancy that makes the beam stiff is exactly what a single failed support removes.
 
 - **Fatigue at the fixed end.** A propped cantilever that vibrates cycles its largest stress at the
   wall, at a re-entrant corner. Fatigue strength sits far below static yield, and nothing on this
