@@ -1,0 +1,413 @@
+id: slider-crank
+title: Slider-Crank (Exact Kinematics and Gas Torque)
+summary: >-
+  Crank, connecting rod, piston — the four-bar linkage with one pivot pushed to infinity, and the
+  heart of every reciprocating engine and pump. Spin the crank at a fixed speed and the piston's
+  position, velocity, and acceleration follow by pure geometry and two derivatives; push on the
+  piston with a gas force and the connecting-rod obliquity turns it into a crank torque that swings
+  from zero to a peak and back every revolution. The classic two-term r/l approximation rides
+  alongside the exact form so you can watch it drift.
+facets: [kinematics, torque-power]
+
+variables:
+  # --- free knobs ---
+  - symbol: r
+    name: Crank radius
+    latex: r
+    unit: m
+    quantity_kind: length
+    default: 0.05
+    bounds: [0.01, 0.30]
+    positive: true
+    display_units: [mm, m]
+  - symbol: l
+    name: Connecting-rod length
+    latex: l
+    unit: m
+    quantity_kind: length
+    default: 0.15
+    bounds: [0.02, 0.60]
+    positive: true
+    display_units: [mm, m]
+  - symbol: theta
+    name: Crank angle (from TDC)
+    latex: '\theta'
+    unit: rad
+    quantity_kind: angle
+    default: 1.0
+    bounds: [0, 6.2832]
+    display_units: [deg, rad]
+  - symbol: omega
+    name: Crank speed
+    latex: '\omega'
+    unit: rad/s
+    quantity_kind: angular_velocity
+    default: 100
+    bounds: [1, 1000]
+    positive: true
+    display_units: [rad/s, rpm]
+  - symbol: F
+    name: Gas force on piston
+    latex: F
+    unit: N
+    quantity_kind: force
+    default: 4000
+    bounds: [1, 50000]
+    positive: true
+    display_units: [kN, N]
+  # --- derived: kinematics ---
+  - symbol: q
+    name: Rod axial reach
+    latex: q
+    unit: m
+    quantity_kind: length
+    default: 0.14397853
+    bounds: [0, 0.60]
+    positive: true
+    role: derived
+    display_units: [mm, m]
+  - symbol: x
+    name: Piston position (from crank axis)
+    latex: x
+    unit: m
+    quantity_kind: length
+    default: 0.17099364
+    bounds: [0, 0.90]
+    positive: true
+    role: derived
+    display_units: [mm, m]
+  - symbol: v
+    name: Piston velocity
+    latex: v
+    unit: m/s
+    quantity_kind: velocity
+    default: -4.9967933
+    bounds: [-500, 500]
+    role: derived
+    display_units: [m/s]
+  - symbol: a
+    name: Piston acceleration
+    latex: a
+    unit: m/s**2
+    quantity_kind: acceleration
+    default: -202.22118
+    bounds: [-1.0e7, 1.0e7]
+    role: derived
+    display_units: ["m/s^2"]
+  - symbol: disp_exact
+    name: Piston travel from TDC (exact)
+    latex: s
+    unit: m
+    quantity_kind: length
+    default: 0.029006357
+    bounds: [0, 0.60]
+    role: derived
+    display_units: [mm, m]
+  - symbol: disp_approx
+    name: Piston travel from TDC (two-term)
+    latex: s_{\text{approx}}
+    unit: m
+    quantity_kind: length
+    default: 0.028885497
+    bounds: [0, 0.60]
+    role: derived
+    display_units: [mm, m]
+  - symbol: err
+    name: Approximation error
+    latex: '\varepsilon'
+    unit: m
+    quantity_kind: length
+    default: -0.00012086043
+    bounds: [-0.05, 0.05]
+    role: derived
+    display_units: [mm, um]
+  # --- derived: force path ---
+  - symbol: phi
+    name: Connecting-rod angle (obliquity)
+    latex: '\phi'
+    unit: rad
+    quantity_kind: angle
+    default: 0.28430491
+    bounds: [-1.5708, 1.5708]
+    role: derived
+    display_units: [deg, rad]
+  - symbol: F_rod
+    name: Connecting-rod force
+    latex: F_{\text{rod}}
+    unit: N
+    quantity_kind: force
+    default: 4167.2881
+    bounds: [0, 1.0e7]
+    positive: true
+    role: derived
+    display_units: [kN, N]
+  - symbol: T
+    name: Crank torque
+    latex: T
+    unit: N*m
+    quantity_kind: torque
+    default: 199.87173
+    bounds: [-1.0e6, 1.0e6]
+    role: derived
+    display_units: ["N*m"]
+
+relations:
+  - id: rod-projection
+    group: kinematics
+    latex: 'l^2 = q^2 + r^2\sin^2\theta'
+    residual: q**2 + r**2*sin(theta)**2 - l**2
+    assumptions:
+      - rigid crank and connecting rod, ideal pin joints, no clearances
+      - >-
+        in-line (non-offset) slider-crank; the piston pin slides on the cylinder axis through the
+        crank centre. The rod length l, the crank pin's transverse offset r·sinθ, and the rod's
+        axial projection q form a right triangle, so q = sqrt(l^2 - r^2 sin^2 theta)
+    citation: norton
+    validity:
+      - condition: l > r
+        severity: invalid
+        message: >-
+          The connecting rod is no longer than the crank (l ≤ r), so the mechanism cannot assemble
+          through a full rotation — near mid-stroke the position radical sqrt(l² − r²sin²θ) goes to
+          zero and then imaginary. A real slider-crank always has l > r (typically l ≈ 3–4 r).
+        citation: norton
+  - id: piston-position
+    group: kinematics
+    latex: 'x = r\cos\theta + q'
+    residual: x - (r*cos(theta) + q)
+    assumptions:
+      - >-
+        piston position measured from the crank axis along the cylinder line: the crank pin's axial
+        coordinate r·cosθ plus the rod's axial projection q. x = r + l at top dead centre (θ = 0)
+        and x = l − r at bottom dead centre (θ = π); the stroke is 2r
+    citation: norton
+  - id: piston-velocity
+    group: kinematics
+    latex: 'v = -\omega r\sin\theta\left(1 + \dfrac{r\cos\theta}{q}\right)'
+    residual: v + omega*r*sin(theta)*(1 + r*cos(theta)/q)
+    assumptions:
+      - >-
+        constant crank speed ω, so v = dx/dt = ω·dx/dθ and nothing is integrated in time; the
+        derivative is taken exactly and keeps q = sqrt(l² − r²sin²θ) as a shared subterm. That this
+        expression is exactly ω·dx/dθ is re-derived by independent differentiation in the physics test
+    citation: norton
+  - id: piston-acceleration
+    group: kinematics
+    latex: 'a = -\omega^2\left(r\cos\theta + \dfrac{r^2\cos 2\theta}{q} + \dfrac{r^4\sin^2\theta\cos^2\theta}{q^3}\right)'
+    residual: a - omega**2*(-r*cos(theta) - r**2*cos(2*theta)/q - r**4*sin(theta)**2*cos(theta)**2/q**3)
+    assumptions:
+      - >-
+        constant crank speed ω, so a = d²x/dt² = ω²·d²x/dθ² (no dω/dt term); the second derivative
+        is exact. For a long rod it reduces to the familiar a ≈ −rω²(cosθ + (r/l)cos2θ). Machine-
+        checked against the second derivative of x in the physics test
+    citation: norton
+  - id: tdc-displacement
+    group: kinematics
+    latex: 's = (r + l) - x'
+    residual: disp_exact - ((r + l) - x)
+    assumptions:
+      - >-
+        piston travel measured DOWN from top dead centre (where x = r + l), the natural frame for
+        the engine designer's two-term series; s runs from 0 at TDC to 2r at BDC
+    citation: norton
+  - id: two-term-approx
+    group: kinematics
+    latex: 's_{\text{approx}} = r(1 - \cos\theta) + \dfrac{r^2}{4l}(1 - \cos 2\theta)'
+    residual: disp_approx - (r*(1 - cos(theta)) + (r**2/(4*l))*(1 - cos(2*theta)))
+    assumptions:
+      - >-
+        the classic Fourier/binomial two-term approximation of the piston travel, exact frame
+        s = r(1−cosθ) + (l − q) with (l − q) binomially expanded to (r²/2l)sin²θ = (r²/4l)(1−cos2θ).
+        This is a cited modeling approximation, NOT an identity — its error is bounded and grows with
+        r/l (proven across samples in the physics test), which is the whole point of showing it
+    citation: norton
+  - id: approx-error
+    group: kinematics
+    latex: '\varepsilon = s_{\text{approx}} - s'
+    residual: err - (disp_approx - disp_exact)
+    assumptions:
+      - >-
+        the signed gap between the two-term approximation and the exact travel — small at engine
+        proportions (r/l ≈ 1/4–1/3) and growing steeply as the rod shortens
+    citation: norton
+  - id: rod-obliquity
+    group: torque-power
+    latex: 'l\sin\phi = r\sin\theta'
+    residual: l*sin(phi) - r*sin(theta)
+    assumptions:
+      - >-
+        the connecting rod tilts from the cylinder axis by the obliquity angle φ; the rod foot and
+        crank pin share the same transverse offset, so l·sinφ = r·sinθ, i.e. sinφ = (r/l)sinθ.
+        Because l > r this has |sinφ| < 1 and cosφ > 0 for every crank angle — the slider-crank
+        assembles on a single branch, no open/crossed pair
+    citation: norton
+    validity:
+      - condition: 2*r <= l
+        severity: warn
+        message: >-
+          Rod obliquity is extreme (r/l > 0.5). The connecting-rod force F/cosφ climbs steeply, the
+          side thrust on the cylinder wall grows, and the two-term approximation degrades fast. Real
+          engines keep l/r ≈ 3–4 (r/l ≈ 0.25–0.33) for exactly these reasons.
+        citation: norton
+  - id: rod-force
+    group: torque-power
+    latex: 'F_{\text{rod}} = \dfrac{F}{\cos\phi}'
+    residual: F_rod*cos(phi) - F
+    assumptions:
+      - >-
+        quasi-static: the piston is in force balance under the gas force F (along the cylinder axis)
+        and the connecting-rod force F_rod (along the rod, tilted by φ). The axial component
+        F_rod·cosφ balances F, so F_rod = F/cosφ. Piston mass and friction are neglected (no inertia
+        term — this is the force PATH, not a dynamic balance)
+    citation: norton
+  - id: crank-torque
+    group: torque-power
+    latex: 'T = F r\,\dfrac{\sin(\theta + \phi)}{\cos\phi}'
+    residual: T*cos(phi) - F*r*sin(theta + phi)
+    assumptions:
+      - >-
+        moment of the connecting-rod force about the crankshaft axis: T = F·r·sin(θ+φ)/cosφ. At
+        φ → 0 (very long rod) this becomes the elementary T = F·r·sinθ. The torque is zero at both
+        dead centres and peaks near mid-stroke — the fluctuation a flywheel exists to smooth
+    citation: norton
+
+configurations:
+  - id: kinematics
+    label: 'Kinematics — spin the crank at speed ω (gas force held at the reference F): read piston position, velocity, acceleration'
+    constraints: { F: 4000 }
+    inputs: [r, l, theta, omega]
+    solutions:
+      q: sqrt(l**2 - r**2*sin(theta)**2)
+      x: r*cos(theta) + q
+      v: -omega*r*sin(theta)*(1 + r*cos(theta)/q)
+      a: omega**2*(-r*cos(theta) - r**2*cos(2*theta)/q - r**4*sin(theta)**2*cos(theta)**2/q**3)
+      disp_exact: r*(1 - cos(theta)) + r**2*sin(theta)**2/(l + q)
+      disp_approx: r*(1 - cos(theta)) + (r**2/(4*l))*(1 - cos(2*theta))
+      err: -r**4*sin(theta)**4/(2*l*(l + q)**2)
+      phi: asin(r*sin(theta)/l)
+      F_rod: F/cos(phi)
+      T: F*r*sin(theta + phi)/cos(phi)
+  - id: force
+    label: 'Force path — push with gas force F (crank speed held at the reference ω): read rod obliquity, rod force, crank torque'
+    constraints: { omega: 100 }
+    inputs: [r, l, theta, F]
+    solutions:
+      q: sqrt(l**2 - r**2*sin(theta)**2)
+      x: r*cos(theta) + q
+      v: -omega*r*sin(theta)*(1 + r*cos(theta)/q)
+      a: omega**2*(-r*cos(theta) - r**2*cos(2*theta)/q - r**4*sin(theta)**2*cos(theta)**2/q**3)
+      disp_exact: r*(1 - cos(theta)) + r**2*sin(theta)**2/(l + q)
+      disp_approx: r*(1 - cos(theta)) + (r**2/(4*l))*(1 - cos(2*theta))
+      err: -r**4*sin(theta)**4/(2*l*(l + q)**2)
+      phi: asin(r*sin(theta)/l)
+      F_rod: F/cos(phi)
+      T: F*r*sin(theta + phi)/cos(phi)
+
+derivation:
+  verifies_configuration: kinematics
+  steps:
+    - expr: Eq(l**2, q**2 + r**2*sin(theta)**2)
+      prose: >-
+        Draw the mechanism as a right triangle. The connecting rod is the hypotenuse of length l;
+        the crank pin sits a transverse distance r·sinθ off the cylinder axis, and the rod reaches a
+        distance q along the axis to the piston pin. Rigid links and pin joints are the entire
+        physics of the device — everything below is geometry and calculus. So l² = q² + r²sin²θ, and
+        q = sqrt(l² − r²sin²θ). This radical is real for all θ only when l > r.
+      rule: 'geometry: the rod-crank-axis right triangle'
+      check: definition
+    - expr: Eq(x, r*cos(theta) + q)
+      prose: >-
+        The piston pin's distance from the crank axis is the crank pin's axial coordinate r·cosθ
+        plus the rod's axial reach q. At θ = 0 the piston is at x = r + l (top dead centre); half a
+        turn later, at θ = π, it is at x = l − r (bottom dead centre). The difference — the stroke —
+        is 2r, independent of the rod length.
+      rule: 'add the two axial projections'
+    - expr: Eq(v, -omega*r*sin(theta)*(1 + r*cos(theta)/q))
+      prose: >-
+        The crank turns at a constant speed ω, so the piston velocity is v = dx/dt = ω·dx/dθ — a
+        space derivative scaled by ω, never a time integral. Differentiating x and keeping q as a
+        shared subterm gives v = −ω r sinθ (1 + r cosθ/q). It is zero at both dead centres and its
+        peak leans toward TDC — the asymmetry a long rod suppresses and a short rod exaggerates.
+        (The claim that this is exactly ω·dx/dθ is machine-checked by independent differentiation in
+        the physics test — the audit surface for this page.)
+      rule: 'differentiate once; ω constant'
+    - expr: Eq(a, omega**2*(-r*cos(theta) - r**2*cos(2*theta)/q - r**4*sin(theta)**2*cos(theta)**2/q**3))
+      prose: >-
+        Differentiate again: a = d²x/dt² = ω²·d²x/dθ² (no dω/dt term, since ω is fixed). The exact
+        acceleration carries three terms over powers of q. For a long rod (q → l) it collapses to the
+        textbook a ≈ −rω²(cosθ + (r/l)cos2θ): a dominant once-per-rev term plus a twice-per-rev
+        correction — the "secondary" imbalance that engine designers cannot balance with a simple
+        counterweight.
+      rule: 'differentiate twice; ω constant'
+    - expr: Eq(disp_approx, r*(1 - cos(theta)) + (r**2/(4*l))*(1 - cos(2*theta)))
+      prose: >-
+        Measure piston travel down from top dead centre: s = (r + l) − x = r(1 − cosθ) + (l − q). The
+        second piece is small — rationalise it exactly, l − q = r²sin²θ/(l + q), and binomially
+        expand, (l − q) = l − l√(1 − (r/l)²sin²θ) ≈ (r²/2l)sin²θ = (r²/4l)(1 − cos2θ), to get the
+        two-term form every engine text carries. This is a cited APPROXIMATION, not an identity: it is
+        exact only as r/l → 0. (The rationalised s is the solved form — subtracting x from r + l
+        directly would lose precision near dead centre.)
+      rule: 'binomial two-term approximation (r/l small)'
+      check: definition
+    - expr: Eq(err, disp_approx - disp_exact)
+      prose: >-
+        Put the approximation's cost on screen: ε = s_approx − s. Rationalised, the two near-equal
+        travels collapse to ε = −r⁴sin⁴θ / 2l(l + q)² — third order in r/l, so at engine proportions
+        (r/l ≈ 1/4 to 1/3) it stays well under a percent of the stroke, and it grows as the cube when
+        the rod shortens. The physics test bounds it across a sweep of r/l — the comparison IS the
+        pedagogy, which is why the approximation is a readout and never a relation the solver leans on.
+      rule: 'define the signed approximation error'
+    - expr: Eq(l*sin(phi), r*sin(theta))
+      prose: >-
+        Now the force path. The connecting rod is not along the cylinder axis; it tilts by the
+        obliquity angle φ. The rod foot and the crank pin share the same transverse offset, so
+        l·sinφ = r·sinθ. Because l > r this always has |sinφ| < 1 and cosφ > 0 — the slider-crank
+        assembles on a single circuit, with none of the open/crossed ambiguity of the general
+        four-bar.
+      rule: 'obliquity from the shared transverse offset'
+      check: definition
+    - expr: Eq(F_rod*cos(phi), F)
+      prose: >-
+        Treat the loaded piston quasi-statically (mass and friction neglected). It balances the gas
+        force F along the axis against the connecting-rod force F_rod along the rod. The rod's axial
+        component F_rod·cosφ carries the gas force, so F_rod = F/cosφ — always larger than F, and the
+        cross-axis remainder F·tanφ is the side thrust the cylinder wall must take.
+      rule: 'piston free body (quasi-static)'
+    - expr: Eq(T*cos(phi), F*r*sin(theta + phi))
+      prose: >-
+        Take moments of the rod force about the crankshaft axis. The crank torque works out to
+        T = F·r·sin(θ + φ)/cosφ. For a very long rod (φ → 0) it is the elementary T = F·r·sinθ — the
+        piston force times the crank's transverse offset. T is zero at both dead centres and swings
+        to a peak near mid-stroke: the torque ripple every reciprocating engine smooths with a
+        flywheel.
+      rule: 'moment about the crankshaft axis'
+
+sim:
+  engine: kinematic-position
+  config:
+    draw: slider-crank
+
+sources:
+  - id: norton
+    citation: >-
+      Norton, R. L., Design of Machinery: An Introduction to the Synthesis and Analysis of
+      Mechanisms and Machines, 5th ed., McGraw-Hill, 2012 — slider-crank position, velocity, and
+      acceleration analysis (the exact closed forms and the r/l two-term series for piston motion)
+      and engine dynamics (the gas-force torque with connecting-rod obliquity, T = F·r·sin(θ+φ)/cosφ).
+    verification: >-
+      Topic-level citation, confirmed against the standard treatment of the slider-crank; the
+      textbook PDF is not web-accessible for a page-exact quote this session (same access limit as
+      the S02–S09 mechanics pages). Nothing on this page rests on the citation alone: the velocity
+      and acceleration relations are re-derived by INDEPENDENT differentiation of x(θ) in
+      pipeline/tests/test_slider_crank_physics.py, the two-term approximation's error is bounded
+      across a sweep of r/l there, and the long-rod torque limit T → F·r·sinθ is checked symbolically.
+  - id: uicker
+    citation: >-
+      Uicker, J. J., Pennock, G. R., & Shigley, J. E., Theory of Machines and Mechanisms, 5th ed.,
+      Oxford University Press, 2017 — slider-crank position/velocity/acceleration and static force
+      analysis; used as an independent cross-check on the kinematic closed forms and the gas-torque
+      expression.
+    verification: >-
+      Topic-level cross-check (the slider-crank kinematic and quasi-static force results are standard
+      and identical across Norton, Uicker/Pennock/Shigley, and Wilson & Sadler). Not page-pinned;
+      used to corroborate the treatment, not any single emitted number.

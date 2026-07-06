@@ -220,6 +220,28 @@ a { color: var(--accent); }
 .impact-mass { fill: var(--ink); }
 .impact-flash { fill: #f59e0b; opacity: 0.8; }
 .impact-drop { stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 3 3; }
+/* slider-crank (SliderCrankSim): the crank arm reuses .link-crank (amber) and
+   the pins reuse .link-pin; the crank-pin path and cylinder axis reuse
+   .beam-ghost; the crank hub reuses .fw-hub. New here: the cylinder guide walls,
+   the connecting rod (accent, red at extreme obliquity r/l>0.5), the piston
+   block, the gas-force arrow (red — the driving input), the piston-velocity
+   arrow (accent), the crank-torque arc (green — the output), and the obliquity
+   arc. Every arrow's LENGTH is scaled from a solved value; its geometry is drawn,
+   its physics is not (invariant 4). */
+.sc-cylinder { stroke: var(--muted); stroke-width: 2; }
+.sc-rod { stroke: var(--accent); stroke-width: 4; stroke-linecap: round; }
+.sc-rod-hot { stroke: #dc2626; stroke-width: 4; stroke-linecap: round; }
+.sc-piston { fill: var(--line); stroke: var(--ink); stroke-width: 2; }
+.sc-force { stroke: #dc2626; stroke-width: 3; }
+.sc-force-head { fill: #dc2626; }
+.sc-vel { stroke: var(--accent); stroke-width: 1.6; }
+.sc-vel-head { fill: var(--accent); }
+.sc-torque { stroke: #10b981; stroke-width: 2.5; }
+.sc-torque-hot { stroke: #dc2626; stroke-width: 2.5; }
+.sc-torque-head { fill: #10b981; }
+.sc-torque-head-hot { fill: #dc2626; }
+.sc-phi { stroke: var(--muted); stroke-width: 1.25; }
+.sc-phi-hot { stroke: #dc2626; stroke-width: 1.25; }
 /* shared sim vocabulary: stress bands (StressBands.tsx) shade where a field
    concentrates and turn red past first yield; .sim-outline is a figure's
    structural outline */

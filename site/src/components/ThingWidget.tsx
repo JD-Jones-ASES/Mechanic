@@ -35,6 +35,7 @@ import { ShaftCriticalSpeedSim } from "./sims/ShaftCriticalSpeedSim";
 import { ShaftSim } from "./sims/ShaftSim";
 import { ShearFlowSim } from "./sims/ShearFlowSim";
 import { ShrinkFitSim } from "./sims/ShrinkFitSim";
+import { SliderCrankSim } from "./sims/SliderCrankSim";
 import { SpringSim } from "./sims/SpringSim";
 import { SSBeamSim } from "./sims/SSBeamSim";
 import { SteppedShaftSim } from "./sims/SteppedShaftSim";
@@ -78,6 +79,7 @@ const SIMS: Record<
   "circular-plate": CircularPlateSim,
   "torsional-oscillator": TorsionalOscillatorSim,
   "impact-loading": ImpactLoadingSim,
+  "slider-crank": SliderCrankSim,
 };
 
 interface Props {

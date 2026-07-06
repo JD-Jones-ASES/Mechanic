@@ -147,6 +147,22 @@ factory capability, the way the flywheel exercised `poisson_ratio` and new quant
   section modulus, governs impact capacity. The counter-intuitive material cascade: a stiffer material
   takes HIGHER impact stress (smaller δ_st ⇒ larger n; σ_st is material-blind). Two warns (member not
   massless, impact stress past yield); no invalid envelope by design. Catalog 25 → 26.
+- **Exact reciprocating kinematics + gas torque (the four-bar limit):** slider-crank ✅ shipped
+  2026-07-06 (S10) — crank r, connecting rod l, piston. Position x(θ) = r·cosθ + √(l²−r²sin²θ) from
+  the crank axis; velocity and acceleration are ω·dx/dθ and ω²·d²x/dθ² (ω constant, nothing integrated),
+  authored FACTORED with the shared subterm q = √(l²−r²sin²θ) and machine-checked to be the true first
+  and second derivatives of x by INDEPENDENT SymPy differentiation (the derivative check IS the
+  first-principles cross-check). Two CROSS-CONSTRAINED configurations over one shared relation set —
+  kinematics (spin the crank at ω, gas force held at its reference) and a quasi-static force path (push
+  with gas force F, crank speed held at its reference); each makes one driver a knob and constrains the
+  other to its own default, so both default states coincide. Force path: obliquity sinφ = (r/l)sinθ, rod
+  force F/cosφ, crank torque T = F·r·sin(θ+φ)/cosφ (cross-checked by virtual work T·dθ = −F·dx, and
+  → F·r·sinθ for a long rod). Norton's two-term r/l approximation rides alongside the exact travel as a
+  comparison readout, its error rationalised to −r⁴sin⁴θ/2l(l+q)² (cancellation-free for the JS-vs-mpmath
+  parity gate) and bounded across a sweep of r/l. Single branch (l > r assembles uniquely — the four-bar's
+  open/crossed pair collapses); geometry-only, NO material axis (the crank's whirl and torsional vibration
+  carry the material story, forward-linked). Invalid at l ≤ r (cannot assemble), warn at r/l > 0.5 (extreme
+  obliquity). No new engine/pipeline/schema/kind/unit. Catalog 26 → 27.
 
 Per-THING gate (standard practice, from the flywheel/cylinder sessions): machine verification +
 independent first-principles cross-check in `pipeline/tests/` + hand-checkable numeric golden +
