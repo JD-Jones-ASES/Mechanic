@@ -1,0 +1,539 @@
+id: two-bar-truss
+title: Symmetric Two-Bar Truss
+summary: >-
+  Two identical pin-jointed bars share a load at a common joint — the member force is P/(2cos α),
+  which blows up as the truss flattens toward horizontal. Statically determinate by construction:
+  equilibrium alone fixes the forces, no compatibility needed. Flatten it and watch the forces (and
+  the joint deflection) diverge; in compression each bar must also clear Euler buckling.
+facets: [statics, stress, stability, mass-cost]
+
+variables:
+  # --- free knobs (inputs) ---
+  - symbol: P
+    name: Applied joint load
+    latex: P
+    unit: N
+    quantity_kind: force
+    default: 80000
+    bounds: [1000, 5.0e5]
+    positive: true
+    display_units: [kN, N]
+  - symbol: alpha
+    name: Member angle from vertical
+    latex: '\alpha'
+    unit: rad
+    quantity_kind: angle
+    default: 0.5235987756   # 30 degrees
+    bounds: [0.0872664626, 1.605702912]   # 5 deg .. 92 deg (reaches past the 90 deg singularity)
+    positive: true
+    display_units: [deg, rad]
+  - symbol: L
+    name: Member length
+    latex: L
+    unit: m
+    quantity_kind: length
+    default: 2.0
+    bounds: [0.3, 6.0]
+    positive: true
+    display_units: [m, mm]
+  - symbol: d
+    name: Member diameter (solid round bar)
+    latex: d
+    unit: m
+    quantity_kind: length
+    default: 0.05
+    bounds: [0.01, 0.2]
+    positive: true
+    display_units: [mm, m]
+  # --- loading-sense selector (constrained per configuration, never a knob) ---
+  # s = 0 tension (load hangs from the joint), s = 1 compression (load presses on
+  # the apex). Constrained in every configuration, so it is neither a knob nor a
+  # readout target beyond N_m — the same constrained-discriminator idiom
+  # impact-loading uses for its loading selector. It signs the member force
+  # (N_m = (1-2s)F_m) and gates the buckling readouts (buckling is a
+  # compression-only failure mode) and the sim reads it to draw the matching frame.
+  - symbol: mode
+    name: Loading sense (0 tension · 1 compression)
+    latex: s
+    unit: '1'
+    quantity_kind: count
+    default: 1
+    bounds: [0, 1]
+    integer: true
+  # --- material ---
+  - symbol: E
+    name: Young's modulus
+    latex: E
+    unit: Pa
+    quantity_kind: elastic_modulus
+    default: 200.0e9
+    bounds: [1.0e9, 450.0e9]
+    positive: true
+    role: material
+    display_units: [GPa, Pa]
+  - symbol: sigma_y
+    name: Yield strength
+    latex: '\sigma_y'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 250.0e6
+    bounds: [10.0e6, 2.0e9]
+    positive: true
+    role: material
+    display_units: [MPa, Pa]
+  - symbol: rho
+    name: Density
+    latex: '\rho'
+    unit: kg/m**3
+    quantity_kind: density
+    default: 7800
+    bounds: [400, 9000]
+    positive: true
+    role: material
+    display_units: ["kg/m^3"]
+  # --- derived: section ---
+  - symbol: A
+    name: Member cross-section area
+    latex: A
+    unit: m**2
+    quantity_kind: area
+    default: 1.963495408e-3
+    bounds: [1.0e-6, 0.1]
+    positive: true
+    role: derived
+    display_units: ["cm^2", "m**2"]
+  - symbol: I
+    name: Second moment of area
+    latex: I
+    unit: m**4
+    quantity_kind: second_moment_of_area
+    default: 3.067961576e-7
+    bounds: [1.0e-11, 1.0e-2]
+    positive: true
+    role: derived
+    display_units: ["m**4"]
+  - symbol: r_g
+    name: Radius of gyration
+    latex: r
+    unit: m
+    quantity_kind: length
+    default: 0.0125
+    bounds: [1.0e-3, 0.1]
+    positive: true
+    role: derived
+    display_units: [mm, m]
+  - symbol: lam
+    name: Slenderness ratio
+    latex: '\lambda'
+    unit: '1'
+    quantity_kind: ratio
+    default: 160
+    bounds: [1, 10000]
+    positive: true
+    role: derived
+  - symbol: lam_T
+    name: Transition slenderness
+    latex: '\lambda_T'
+    unit: '1'
+    quantity_kind: ratio
+    default: 125.6637061
+    bounds: [1, 2000]
+    positive: true
+    role: derived
+  # --- derived: forces & stress ---
+  - symbol: F_m
+    name: Member force magnitude
+    latex: 'F_m'
+    unit: N
+    quantity_kind: force
+    default: 46188.02154
+    bounds: [0, 1.0e10]
+    positive: true
+    role: derived
+    display_units: [kN, N]
+  - symbol: N_m
+    name: Member axial force (+ tension · − compression)
+    latex: 'N_m'
+    unit: N
+    quantity_kind: force
+    default: -46188.02154
+    bounds: [-1.0e10, 1.0e10]
+    role: derived
+    display_units: [kN, N]
+  - symbol: sigma
+    name: Member axial stress (magnitude)
+    latex: '\sigma'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 2.35233662e7
+    bounds: [0, 1.0e13]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: SF_y
+    name: Safety factor (yield)
+    latex: '\mathrm{SF}_y'
+    unit: '1'
+    quantity_kind: safety_factor
+    default: 10.6277307
+    bounds: [0, 1.0e10]
+    positive: true
+    role: derived
+  # --- derived: deflection & mass ---
+  - symbol: delta
+    name: Joint deflection
+    latex: '\delta'
+    unit: m
+    quantity_kind: length
+    default: 2.71624436e-4
+    bounds: [0, 100]
+    positive: true
+    role: derived
+    display_units: [mm, m]
+  - symbol: m_truss
+    name: Truss mass (both members)
+    latex: m
+    unit: kg
+    quantity_kind: mass
+    default: 61.2610568
+    bounds: [0, 1.0e5]
+    positive: true
+    role: derived
+    display_units: [kg]
+  # --- derived: buckling (compression) ---
+  - symbol: P_cr
+    name: Euler buckling load (per member)
+    latex: 'P_{cr}'
+    unit: N
+    quantity_kind: force
+    default: 151397.835
+    bounds: [0, 1.0e12]
+    positive: true
+    role: derived
+    display_units: [kN, N]
+  - symbol: SF_buck
+    name: Safety factor (buckling)
+    latex: '\mathrm{SF}_{buck}'
+    unit: '1'
+    quantity_kind: safety_factor
+    default: 3.27785929
+    bounds: [0, 1.0e10]
+    positive: true
+    role: derived
+
+materials:
+  binds:
+    E: youngs_modulus
+    sigma_y: yield_strength
+    rho: density
+
+relations:
+  - id: section-area
+    group: stress
+    latex: 'A = \frac{\pi d^2}{4}'
+    residual: A - pi*d**2/4
+    assumptions:
+      - solid round bar; the same diameter d sets both the area and (below) the second moment
+    citation: gere
+  - id: section-inertia
+    group: stability
+    latex: 'I = \frac{\pi d^4}{64}'
+    residual: I - pi*d**4/64
+    assumptions:
+      - solid round bar — one diameter fixes both A and I, so the buckling check cannot be gamed
+        by an independent area
+    citation: gere
+  - id: radius-of-gyration
+    group: stability
+    latex: 'r = \sqrt{I/A}'
+    residual: r_g**2*A - I
+    assumptions:
+      - definition — the section's bending stiffness written as a length (r = d/4 for a round bar)
+    citation: gere
+  - id: slenderness
+    group: stability
+    latex: '\lambda = \frac{L}{r}'
+    residual: lam*r_g - L
+    assumptions:
+      - truss members are pin-jointed at both ends, so the effective-length factor is K = 1
+        (pinned–pinned), and the slenderness is just L/r
+    citation: gere
+  - id: transition-slenderness
+    group: stability
+    latex: '\lambda_T = \sqrt{\frac{2\pi^2 E}{\sigma_y}}'
+    residual: lam_T**2*sigma_y - 2*pi**2*E
+    assumptions:
+      - conventional Euler/Johnson cutoff where the Euler critical stress falls to σ_y/2; below it
+        Euler overpredicts and the inelastic (Johnson) regime governs
+    citation: shigley
+  - id: joint-equilibrium
+    group: statics
+    latex: 'F_m = \frac{P}{2\cos\alpha}'
+    residual: 2*F_m*cos(alpha) - P
+    assumptions:
+      - symmetric two-bar truss, each member at angle α from the vertical, load P applied at the
+        joint along the axis of symmetry
+      - vertical equilibrium of the joint — the two members' vertical components carry P, the
+        horizontals cancel; statically determinate, so equilibrium alone fixes the force
+    citation: gere
+    validity:
+      - condition: alpha < pi/2
+        severity: invalid
+        message: >-
+          α ≥ 90°: the members have flattened to (or past) the horizontal, where they have no
+          vertical component to carry the joint load — the truss degenerates and equilibrium has no
+          solution. There is nothing to compute; pull α back below 90°.
+        citation: gere
+  - id: signed-member-force
+    group: statics
+    latex: 'N_m = (1 - 2s)\,F_m'
+    residual: N_m - (1 - 2*mode)*F_m
+    assumptions:
+      - sign convention — a load that hangs from the joint (s = 0) puts the members in tension
+        (N_m > 0); a load that presses on the apex (s = 1) puts them in compression (N_m < 0). The
+        magnitude is the same either way; only the failure mode differs.
+    citation: gere
+  - id: member-stress
+    group: stress
+    latex: '\sigma = \frac{F_m}{A}'
+    residual: sigma*A - F_m
+    assumptions:
+      - uniform axial stress over the section — a two-force member carries only axial load
+    citation: gere
+  - id: yield-safety-factor
+    group: stress
+    latex: '\mathrm{SF}_y = \frac{\sigma_y}{\sigma}'
+    residual: SF_y*sigma - sigma_y
+    assumptions:
+      - margin against first yield; the axial stress is material-blind (σ = F_m/A carries no E),
+        while σ_y sets the margin — swap materials and only this factor moves
+    citation: gere
+  - id: joint-deflection
+    group: stress
+    latex: '\delta = \frac{P L}{2 A E \cos^2\alpha}'
+    residual: delta*2*A*E*cos(alpha)**2 - P*L
+    assumptions:
+      - unit-load / compatibility result for the symmetric two-bar truss; the joint drops δ, each
+        member elongates by e = δ cos α, and Hooke's law e = F_m L/(A E) closes it — giving cos²α
+        (one cos α from the elongation, one from the projection)
+      - small displacements — the member angles are taken unchanged under load (linearized
+        geometry); this is what fails as α → 90°
+    citation: gere
+    validity:
+      - condition: delta/L < 0.1
+        severity: warn
+        message: >-
+          Joint deflection exceeds L/10 — the small-displacement (linearized-geometry) assumption
+          is breaking down. As the truss flattens toward α = 90°, δ ∝ 1/cos²α diverges and the
+          member angles change appreciably under load, so the linear result understates the true
+          deflection.
+        citation: gere
+  - id: truss-mass
+    group: mass-cost
+    latex: 'm = 2\rho A L'
+    residual: m_truss - 2*rho*A*L
+    assumptions:
+      - both members, prismatic and of uniform density
+    citation: gere
+  - id: euler-buckling-load
+    group: stability
+    latex: 'P_{cr} = \frac{\pi^2 E I}{L^2}'
+    residual: P_cr*L**2 - pi**2*E*I
+    assumptions:
+      - each compression member is an ideal pinned–pinned Euler strut (K = 1); reused verbatim from
+        the Euler Column page
+      - perfectly straight bar, load along the axis, linear-elastic up to buckling
+    citation: gere
+    validity:
+      - condition: mode > 0
+        severity: invalid
+        scope: [P_cr, SF_buck]
+        message: >-
+          Members in tension do not buckle — the Euler buckling check (P_cr, SF_buck) applies only
+          in the compression configuration. Switch the configuration to compression to see it; the
+          tension configuration is governed by yield alone.
+        citation: gere
+      - condition: lam >= lam_T
+        severity: invalid
+        scope: [P_cr, SF_buck]
+        message: >-
+          λ < λ_T: this member is a short/intermediate column, where Euler's elastic formula
+          overpredicts the strength on the dangerous side. The Euler readouts are refused; the
+          inelastic (Johnson) regime governs — see the Euler Column page for the Johnson parabola
+          and the σ_y/2 hand-off.
+        citation: shigley
+  - id: buckling-safety-factor
+    group: stability
+    latex: '\mathrm{SF}_{buck} = \frac{P_{cr}}{F_m}'
+    residual: SF_buck*F_m - P_cr
+    assumptions:
+      - margin against elastic buckling of a compression member; yield (SF_y) is the separate,
+        always-present check
+    citation: gere
+
+configurations:
+  - id: compression
+    label: Compression — load presses on the apex (buckling governs)
+    constraints: { mode: 1 }
+    inputs: [P, alpha, L, d]
+    solutions:
+      A: pi*d**2/4
+      I: pi*d**4/64
+      r_g: d/4
+      lam: L/r_g
+      lam_T: sqrt(2*pi**2*E/sigma_y)
+      F_m: P/(2*cos(alpha))
+      N_m: (1 - 2*mode)*F_m
+      sigma: F_m/A
+      SF_y: sigma_y/sigma
+      delta: P*L/(2*A*E*cos(alpha)**2)
+      m_truss: 2*rho*A*L
+      P_cr: pi**2*E*I/L**2
+      SF_buck: P_cr/F_m
+  - id: tension
+    label: Tension — load hangs from the joint (no buckling)
+    constraints: { mode: 0 }
+    inputs: [P, alpha, L, d]
+    solutions:
+      A: pi*d**2/4
+      I: pi*d**4/64
+      r_g: d/4
+      lam: L/r_g
+      lam_T: sqrt(2*pi**2*E/sigma_y)
+      F_m: P/(2*cos(alpha))
+      N_m: (1 - 2*mode)*F_m
+      sigma: F_m/A
+      SF_y: sigma_y/sigma
+      delta: P*L/(2*A*E*cos(alpha)**2)
+      m_truss: 2*rho*A*L
+      P_cr: pi**2*E*I/L**2
+      SF_buck: P_cr/F_m
+
+derivation:
+  verifies_configuration: compression
+  locals:
+    - symbol: e_el
+      unit: m
+      positive: true
+      define: F_m*L/(A*E)
+  steps:
+    - expr: Eq(2*F_m*cos(alpha), P)
+      prose: >-
+        Cut the joint free. Two identical members, each at angle α from the vertical, meet there and
+        carry the load P applied along the axis of symmetry. By symmetry the horizontal components
+        cancel and each member carries the same force F_m; vertical equilibrium is 2 F_m cos α = P.
+        Two unknowns, two equilibrium equations — the truss is statically determinate, so this alone
+        fixes the force (no compatibility needed; that is the redundant truss, Phase 3 material).
+      rule: 'statics: vertical equilibrium of the joint'
+    - expr: Eq(F_m, P/(2*cos(alpha)))
+      prose: >-
+        Solve for the member force: F_m = P/(2 cos α). The 1/cos α is the whole story — as the truss
+        flattens toward α = 90° the members lose vertical bite and the force diverges. A shallow
+        truss pays for its low profile in enormous member forces.
+      rule: solve equilibrium for the member force
+    - expr: Eq(A, pi*d**2/4)
+      prose: >-
+        Each member is a solid round bar of diameter d, so A = πd²/4 and (for the buckling check
+        below) I = πd⁴/64. Tying both to one diameter is deliberate: you cannot fatten the area to
+        beat buckling without also stiffening the section.
+      rule: 'geometry: round-bar section properties'
+      check: definition
+    - expr: Eq(sigma, F_m/A)
+      prose: >-
+        The member is a two-force member, so the stress is uniform axial: σ = F_m/A. Note it carries
+        no E — the stress is material-blind.
+      rule: 'axial stress in a two-force member'
+    - expr: Eq(SF_y, sigma_y/sigma)
+      prose: >-
+        The yield margin is SF_y = σ_y/σ. Because σ is material-blind, swapping steel for titanium
+        moves only σ_y here — the strength axis and the stiffness axis are independent.
+      rule: 'safety factor against first yield'
+    - expr: Eq(e_el, F_m*L/(A*E))
+      prose: >-
+        Now the joint deflection, by the compatibility triangle. Each member stretches by its
+        Hooke's-law elongation e = F_m L/(A E) — this is where E finally enters, so the deflection
+        is where the material's stiffness shows up (the Ti-vs-steel moment).
+      rule: "Hooke's law: member elongation"
+      check: definition
+    - expr: Eq(delta*cos(alpha), e_el)
+      prose: >-
+        Geometry closes it. When the joint drops vertically by δ, each inclined member elongates by
+        the projection of that drop onto its own axis: e = δ cos α (the member sits at α from the
+        vertical, along which δ points). This is the small-displacement step — the angle α is taken
+        unchanged under load.
+      rule: 'compatibility: project the joint drop onto the member axis'
+    - expr: Eq(delta, P*L/(2*A*E*cos(alpha)**2))
+      prose: >-
+        Substitute e = F_m L/(A E) and F_m = P/(2 cos α), then divide by cos α: δ = P L/(2 A E cos²α).
+        The exponent is TWO, not three — one cos α rides in on F_m (the force grows as the truss
+        flattens) and a second comes from the projection δ = e/cos α. Both push the deflection up
+        without bound as α → 90°, which is exactly where the small-displacement assumption fails.
+      rule: 'solve for the joint deflection'
+    - expr: Eq(P_cr, pi**2*E*I/L**2)
+      prose: >-
+        A member in compression has a second way to fail: it can buckle. Each bar is pin-jointed at
+        both ends, so it is an ideal Euler strut with K = 1 and critical load P_cr = π²E I/L² —
+        taken verbatim from the Euler Column page (nothing new is derived here). A tension member
+        cannot buckle, which is why this readout is refused in the tension configuration.
+      rule: 'Euler buckling of the pinned–pinned member (K = 1)'
+    - expr: Eq(SF_buck, P_cr/F_m)
+      prose: >-
+        The buckling margin is SF_buck = P_cr/F_m. At the default geometry it is smaller than the
+        yield margin, so buckling — not yield — governs a slender compression member: the reason
+        real trusses put their fat members in compression and their thin ones in tension. Below the
+        transition slenderness λ_T the elastic formula overpredicts and the readout hands off to the
+        Johnson regime (see the Euler Column page).
+      rule: 'safety factor against elastic buckling'
+    - expr: Eq(m_truss, 2*rho*A*L)
+      prose: >-
+        Finally the mass of both members, m = 2ρAL — the density axis, independent of both stiffness
+        and strength. The overview sketches the σ_y/ρ merit index that ties this back to material
+        selection.
+      rule: 'mass of the two members'
+      check: definition
+
+sim:
+  engine: statics-cascade
+  config:
+    draw: two-bar-truss
+
+sources:
+  - id: gere
+    citation: >-
+      Gere, J. M., & Goodno, B. J., Mechanics of Materials, 9th ed., Cengage, 2018 — axially loaded
+      members and trusses (§2.1–2.3: two-force members, statically determinate joints), displacements
+      by the unit-load/energy method (§9.8–9.9), and the small-displacement assumption underlying
+      linear truss analysis. Euler buckling of pinned columns is §11.3, reused from the Euler Column
+      page.
+    verification: >-
+      Topic-level citation against the published 9th-edition chapter listing, 2026-07-06; the
+      textbook PDF is not web-accessible for a page-exact worked example. The governing results are
+      NOT taken on the citation: the member force F_m = P/(2cos α) is re-derived from joint
+      equilibrium, and the joint deflection δ = P L/(2 A E cos²α) is re-derived two independent ways
+      (unit-load virtual work AND the compatibility-triangle projection) in
+      pipeline/tests/test_truss_physics.py, the two agreeing symbolically. The symmetric two-bar
+      deflection δ_v = e/cos α with e = F_m L/(A E), giving the cos²α form, was web-corroborated
+      2026-07-06 (Roylance, Mechanics of Materials, MIT — the δ_v = δ/cos θ projection). The
+      δ/L < 0.1 small-displacement warn is the same cited convention used on the beam pages.
+  - id: shigley
+    citation: >-
+      Budynas, R. G., & Nisbett, J. K., Shigley's Mechanical Engineering Design, 10th ed.,
+      McGraw-Hill, 2015 — §4-11–§4-12 (Euler long columns and the Johnson parabola for intermediate
+      columns, tangent to the Euler curve at the limiting slenderness √(2π²CE/S_y)). Cited here for
+      the transition slenderness λ_T and the compression-member hand-off to the Johnson regime, which
+      this page cross-links to Euler Column rather than re-implementing.
+    verification: >-
+      Same pinning as the Euler Column page (Dr. Ala Hijazi's 10th-edition class notes,
+      eis.hu.edu.jo/ACUploads/10526/CH 4.pdf, 2026-06-10): the limiting slenderness √(2π²CE/S_y) with
+      C = 1 for pinned–pinned members. The λ_T relation is cross-checked against the Euler Column
+      THING (identical form) in the physics test.
+  - id: timoshenko
+    citation: >-
+      Timoshenko, S. P., Strength of Materials, Part I: Elementary Theory and Problems, 3rd ed.,
+      Van Nostrand, 1955 — statically determinate trusses and joint displacements by the elongation
+      geometry (the compatibility triangle), the classical treatment cross-checked here.
+    verification: >-
+      Topic-level cross-check for the compatibility-triangle derivation of the joint deflection
+      (elongation e projected to the joint displacement); not page-pinned (PDF not web-accessible,
+      as on the sibling pages). Used to corroborate the derivation route, which the physics test
+      re-derives from first principles.

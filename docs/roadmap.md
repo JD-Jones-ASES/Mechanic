@@ -192,6 +192,22 @@ factory capability, the way the flywheel exercised `poisson_ratio` and new quant
   table is named future data/materials/ work, as on the bearing page). Both torque integrals are re-derived
   from first principles by direct integration in the physics test. No new engine/pipeline/kind/unit. Catalog
   28 → 29.
+- **Determinate statics + the Phase-3 bridge:** two-bar-truss ✅ shipped 2026-07-06 (S13) — the
+  symmetric two-bar truss, the smallest statically determinate structure. Member force
+  F_m = P/(2 cos α) from joint equilibrium alone (α measured from the vertical), diverging as the
+  truss flattens toward α = 90°; joint deflection δ = P L/(2 A E cos²α) by the unit-load method,
+  re-derived two independent ways (virtual work AND the compatibility-triangle projection) that must
+  agree symbolically. Two configurations via a loading-sense discriminator — tension (yield governs)
+  and compression, where each pin-jointed member is also an Euler strut (P_cr = π²E I/L², K = 1,
+  reused verbatim from the Euler Column page); the buckling readouts are scope-refused in tension (a
+  tension member cannot buckle) and below the transition slenderness λ_T (the Johnson regime, cross-
+  linked not re-implemented). Material binds E/σ_y/ρ: the member force and stress are material-blind
+  while the deflection carries E (the Ti-vs-steel moment) and the mass carries ρ. A small-displacement
+  warn at δ > L/10 and a global refusal at α ≥ 90° (degenerate geometry). The overview names the
+  redundant/indeterminate truss as the Phase-3 `solveLinear` deliverable — this page is the
+  determinate rung right below it. NOTE: the brief specified δ with cos³α; independent derivation gives
+  cos²α (the brief's own compatibility-triangle method yields cos²α — only its transcribed formula was
+  wrong), and the site ships the corrected cos²α. No new engine/pipeline/kind/unit. Catalog 29 → 30.
 
 Per-THING gate (standard practice, from the flywheel/cylinder sessions): machine verification +
 independent first-principles cross-check in `pipeline/tests/` + hand-checkable numeric golden +

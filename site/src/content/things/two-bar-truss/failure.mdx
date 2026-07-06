@@ -1,0 +1,37 @@
+The clean split of load between two members is an *idealization* — pin-jointed, weightless,
+straight, two-force bars loaded exactly through the joint. Real trusses depart from every one of those
+assumptions, and the departures are where they actually fail:
+
+- **Compression members buckle, and buckling is sudden.** A tension member yields gracefully, gives
+  warning, and holds a predictable load; a compression member can find a cheaper bent shape and go all
+  at once, with no nearby equilibrium to catch it. That asymmetry is why design codes put heavier
+  safety factors on compression members and why this page refuses the Euler readouts below the
+  transition slenderness — where the elastic formula overpredicts a short column on the dangerous side.
+  The full short-vs-slender hand-off (Johnson's parabola, tangency at $\sigma_y/2$) lives on the
+  [Euler Column](../euler-column/) page.
+- **The joint is the usual culprit.** Members are strong; the *connection* that gathers them — the pin,
+  the gusset plate, the weld — concentrates load into a small volume and is where cracks start and bolts
+  shear. This page models the members and treats the joint as an ideal frictionless pin (its detailed
+  design is out of scope), but in practice a truss is only as good as its joints, and fatigue at a
+  connection under repeated loading kills more members than static overload ever does.
+- **A load that misses the joint centroid bends the members.** The two-force-member picture holds only
+  if the resultant passes cleanly through the pin. Offset it — an eccentric bracket, a cable pulling
+  off-axis — and each member carries bending on top of its axial force, deflections grow from the first
+  newton with no clean bifurcation, and the [eccentric column](../eccentric-column/) secant story takes
+  over. A member's own weight does the same thing in miniature, sagging it into a shallow beam.
+- **Shallow trusses are a trap.** The $1/\cos\alpha$ in the member force is not a curiosity: a truss
+  built close to horizontal to save headroom carries member forces many times the applied load, and its
+  joint deflection diverges even faster ($1/\cos^2\alpha$). Push $\alpha$ far enough and the geometry
+  itself changes appreciably under load — the small-displacement assumption fails, the linear result
+  understates the deflection, and a very shallow two-bar frame can **snap through** to an inverted
+  shape. That large-displacement instability is beyond the linear model here; the page warns as
+  $\delta$ passes $L/10$ and refuses outright at $\alpha = 90^\circ$.
+- **Rigid frames are not trusses.** If the joints resist rotation (welded, bolted moment connections)
+  the members carry bending as well as axial load and the determinate force split no longer holds — the
+  structure is a *frame*, closer in spirit to a [cantilever beam](../cantilever-beam/) at each joint
+  than to a pin-jointed truss. Assuming pins when the joints are actually stiff underpredicts the
+  bending stresses that then govern.
+- **Buckling picks the weakest axis.** The round bars here dodge the issue by symmetry — every bending
+  axis is alike — but a rectangular or angle section buckles about its thin direction at a load the
+  in-plane picture never shows. Bracing that kills the weak-axis shape can multiply a compression
+  member's capacity.
