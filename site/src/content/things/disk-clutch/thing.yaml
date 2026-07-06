@@ -1,0 +1,318 @@
+id: disk-clutch
+title: Axial Disk Clutch / Brake (Uniform Wear vs Uniform Pressure)
+summary: >-
+  The torque an axial plate clutch can pass depends on an assumption you cannot see: how the contact
+  pressure is distributed across the friction annulus. A new, rigid clutch presses uniformly; a
+  worn-in one wears until pressure ∝ 1/r, concentrating load at the inner edge. This page shows both
+  torque predictions side by side — never picking a winner — with the worn-in model always giving the
+  smaller (safe) number, and the r_i = r_o/√3 that squeezes the most torque from a given lining.
+facets: [torque-power]
+
+variables:
+  # --- knobs (free inputs) ---
+  - symbol: F
+    name: Axial clamping force
+    latex: F
+    unit: N
+    quantity_kind: force
+    default: 5000
+    bounds: [100, 100000]
+    positive: true
+    display_units: [kN, N]
+  - symbol: mu
+    name: Coefficient of friction (dry lining)
+    latex: '\mu'
+    unit: '1'
+    quantity_kind: friction_coefficient
+    default: 0.3
+    # dry organic/molded lining range, Shigley Table 16-3; a cited free knob, not a material binding
+    bounds: [0.2, 0.5]
+    positive: true
+    display_units: []
+  - symbol: r_i
+    name: Inner (bore) radius
+    latex: 'r_i'
+    unit: m
+    quantity_kind: length
+    default: 0.05
+    bounds: [0.005, 0.3]
+    positive: true
+    display_units: [mm, m]
+  - symbol: r_o
+    name: Outer radius
+    latex: 'r_o'
+    unit: m
+    quantity_kind: length
+    default: 0.1
+    bounds: [0.01, 0.5]
+    positive: true
+    display_units: [mm, m]
+  - symbol: omega_slip
+    name: Slip speed (relative)
+    latex: '\omega_{slip}'
+    unit: rad/s
+    quantity_kind: angular_velocity
+    default: 100
+    bounds: [1, 600]
+    positive: true
+    display_units: [rpm, rad/s]
+  - symbol: p_allow
+    name: Allowable lining pressure
+    latex: 'p_{allow}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 1000000
+    # max contact pressure for dry linings, Shigley Table 16-3 (~1–2 MPa molded); a cited free knob
+    bounds: [300000, 2100000]
+    positive: true
+    display_units: [MPa, kPa]
+  - symbol: N
+    name: Number of friction faces
+    latex: N
+    unit: '1'
+    quantity_kind: count
+    default: 2
+    # a single-plate clutch has 2 friction faces; a multi-disk stack has more
+    bounds: [1, 12]
+    positive: true
+    integer: true
+    display_units: []
+  # --- derived: torque (both pressure models, N faces) ---
+  - symbol: T_up
+    name: Torque — uniform pressure (new/rigid)
+    latex: 'T_{up}'
+    unit: N*m
+    quantity_kind: torque
+    default: 233.3333
+    bounds: [0, 1.0e9]
+    positive: true
+    role: derived
+    display_units: ["N*m"]
+  - symbol: T_uw
+    name: Torque — uniform wear (worn-in)
+    latex: 'T_{uw}'
+    unit: N*m
+    quantity_kind: torque
+    default: 225.0
+    bounds: [0, 1.0e9]
+    positive: true
+    role: derived
+    display_units: ["N*m"]
+  # --- derived: max lining pressure (uniform wear, at r_i) ---
+  - symbol: p_max
+    name: Max lining pressure (at r_i)
+    latex: 'p_{max}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 318309.886
+    bounds: [0, 1.0e12]
+    positive: true
+    role: derived
+    display_units: [MPa, kPa]
+  # --- derived: slip power (paired to the torques) ---
+  - symbol: P_up
+    name: Slip power — uniform pressure
+    latex: 'P_{up}'
+    unit: W
+    quantity_kind: power
+    default: 23333.33
+    bounds: [0, 1.0e12]
+    positive: true
+    role: derived
+    display_units: [kW, W]
+  - symbol: P_uw
+    name: Slip power — uniform wear
+    latex: 'P_{uw}'
+    unit: W
+    quantity_kind: power
+    default: 22500.0
+    bounds: [0, 1.0e12]
+    positive: true
+    role: derived
+    display_units: [kW, W]
+  # --- derived: torque-optimal inner radius ---
+  - symbol: r_i_opt
+    name: Torque-optimal inner radius
+    latex: 'r_i^{*}'
+    unit: m
+    quantity_kind: length
+    default: 0.05773503
+    bounds: [0, 1]
+    positive: true
+    role: derived
+    display_units: [mm, m]
+
+relations:
+  - id: torque-uniform-pressure
+    group: torque-power
+    latex: 'T_{up} = N\,\dfrac{2}{3}\,\mu F\,\dfrac{r_o^{3} - r_i^{3}}{r_o^{2} - r_i^{2}}'
+    residual: T_up - N*(2/3)*mu*F*(r_o**3 - r_i**3)/(r_o**2 - r_i**2)
+    assumptions:
+      - >-
+        UNIFORM PRESSURE model: a new, rigid clutch presses with constant contact pressure p over the
+        annulus. Integrating the friction torque dT = μ p r · 2πr dr from r_i to r_o and eliminating p
+        via F = ∫ p dA gives this per-face torque; N multiplies it for N friction faces (physics enters
+        here by citation — re-derived by direct integration in the pipeline test)
+    citation: shigley
+    validity:
+      - condition: r_i < r_o
+        severity: invalid
+        message: >-
+          The inner radius has reached or exceeded the outer radius — the friction annulus does not
+          exist, and nothing on the page is meaningful. Set r_i < r_o.
+        citation: shigley
+  - id: torque-uniform-wear
+    group: torque-power
+    latex: 'T_{uw} = N\,\mu F\,\dfrac{r_o + r_i}{2}'
+    residual: T_uw - N*mu*F*(r_o + r_i)/2
+    assumptions:
+      - >-
+        UNIFORM WEAR model: after run-in, a rigid lining wears until the product p·r is constant (wear
+        rate ∝ p·v ∝ p·r), so pressure peaks at the inner edge. Integrating with p·r = const and
+        eliminating the constant via F gives the mean-radius result; N multiplies it for N faces. This
+        is the model designers use for a worn clutch (Shigley §16-5)
+    citation: shigley
+  - id: max-pressure
+    group: torque-power
+    latex: 'p_{max} = \dfrac{F}{2\pi\,r_i\,(r_o - r_i)}'
+    residual: p_max*2*pi*r_i*(r_o - r_i) - F
+    assumptions:
+      - >-
+        under the uniform-wear distribution p = p_max·r_i/r, the pressure is largest at the inner
+        radius r_i; setting F = ∫ p dA gives this peak value — the number that must stay under the
+        lining's allowable pressure
+    citation: shigley
+    validity:
+      - condition: p_max <= p_allow
+        severity: warn
+        message: >-
+          The peak lining pressure exceeds the allowable value for the friction material — the lining
+          will overheat and wear rapidly (or char). Increase the area (larger r_o, or r_i toward the
+          optimum), add friction faces, or reduce the clamping force.
+        citation: shigley
+  - id: slip-power-up
+    group: torque-power
+    latex: 'P_{up} = T_{up}\,\omega_{slip}'
+    residual: P_up - T_up*omega_slip
+    assumptions:
+      - >-
+        while the clutch slips at relative speed ω_slip, the friction torque dissipates power T·ω_slip
+        as heat at the interface — the uniform-pressure companion to the torque above
+    citation: shigley
+  - id: slip-power-uw
+    group: torque-power
+    latex: 'P_{uw} = T_{uw}\,\omega_{slip}'
+    residual: P_uw - T_uw*omega_slip
+    assumptions:
+      - the uniform-wear slip power, paired to its own torque so neither model is silently preferred
+    citation: shigley
+  - id: optimum-radius
+    group: torque-power
+    latex: 'r_i^{*} = \dfrac{r_o}{\sqrt{3}}'
+    residual: r_i_opt*sqrt(3) - r_o
+    assumptions:
+      - >-
+        for a FIXED max lining pressure, the uniform-wear torque T = πμ p_max r_i(r_o² − r_i²) is
+        maximized where dT/dr_i = πμ p_max(r_o² − 3r_i²) = 0, i.e. r_i = r_o/√3 ≈ 0.577 r_o — too small
+        a bore wastes lining area, too large a bore wastes moment arm
+    citation: shigley
+
+configurations:
+  - id: analyze
+    label: Force, geometry, friction and faces in — both torque models, peak pressure, and slip power out
+    constraints: {}
+    inputs: [F, mu, r_i, r_o, omega_slip, p_allow, N]
+    solutions:
+      T_up: N*(2/3)*mu*F*(r_o**3 - r_i**3)/(r_o**2 - r_i**2)
+      T_uw: N*mu*F*(r_o + r_i)/2
+      p_max: F/(2*pi*r_i*(r_o - r_i))
+      P_up: N*(2/3)*mu*F*(r_o**3 - r_i**3)/(r_o**2 - r_i**2)*omega_slip
+      P_uw: N*mu*F*(r_o + r_i)/2*omega_slip
+      r_i_opt: r_o/sqrt(3)
+
+derivation:
+  verifies_configuration: analyze
+  steps:
+    - expr: Eq(T_up, N*(2/3)*mu*F*(r_o**3 - r_i**3)/(r_o**2 - r_i**2))
+      prose: >-
+        Take the friction interface as an annulus from r_i to r_o. A ring of radius r and width dr
+        carries area dA = 2πr dr; if the local pressure is p(r) and the coefficient of friction is μ,
+        that ring contributes torque dT = μ p(r) r · dA = 2πμ p(r) r² dr. The UNIFORM-PRESSURE model
+        takes p constant (a new, rigid clutch). Then F = ∫ p dA = pπ(r_o² − r_i²) fixes p, and
+        integrating the torque gives T = (2/3)μF(r_o³ − r_i³)/(r_o² − r_i²). Multiply by N for N
+        friction faces. The pipeline test performs both integrations from scratch.
+      rule: 'uniform-pressure torque by integration (cited; re-derived in tests)'
+      check: definition
+    - expr: Eq(T_uw, N*mu*F*(r_o + r_i)/2)
+      prose: >-
+        A real lining does not stay uniform. Wear rate goes as pressure times sliding speed, p·v = p·ωr,
+        so the lining wears until p·r is constant — the UNIFORM-WEAR model. Now pressure peaks at the
+        inner edge and falls as 1/r. With p·r = const, F = ∫ p dA = 2π(const)(r_o − r_i), and the torque
+        integral collapses to the strikingly simple mean-radius form T = μF(r_o + r_i)/2 per face. This
+        is the model used for a run-in clutch.
+      rule: 'uniform-wear torque by integration (cited; re-derived in tests)'
+      check: definition
+    - expr: Eq(T_up - T_uw, N*mu*F*(r_o - r_i)**2/(6*(r_o + r_i)))
+      prose: >-
+        Subtract the two. The difference collapses to a perfect square over a positive denominator:
+        T_up − T_uw = NμF(r_o − r_i)²/(6(r_o + r_i)) ≥ 0. So the uniform-pressure model ALWAYS predicts
+        at least as much torque as the uniform-wear model, with equality only in the thin-annulus limit
+        r_i → r_o (where the two pressure profiles coincide). Designing to the uniform-wear number is
+        therefore the conservative choice — it is the smaller torque and the higher peak pressure. This
+        bracket is machine-verified here and sampled numerically in the test pipeline.
+      rule: 'uniform wear ≤ uniform pressure, proven'
+    - expr: Eq(p_max*2*pi*r_i*(r_o - r_i), F)
+      prose: >-
+        Under uniform wear p = p_max·r_i/r, largest at r_i. Setting F = ∫ p dA = p_max·r_i·2π(r_o − r_i)
+        and solving gives the peak pressure p_max = F/(2π r_i(r_o − r_i)). This is the number that
+        governs lining life: it must stay below the material's allowable pressure, or the lining
+        overheats and wears out fast.
+      rule: 'peak lining pressure at the inner radius'
+    - expr: Eq(r_o**2 - 3*r_i_opt**2, 0)
+      prose: >-
+        Hold the peak pressure fixed instead of the force. Then F = 2π p_max r_i(r_o − r_i) and the
+        uniform-wear torque becomes T = πμ p_max r_i(r_o² − r_i²). Differentiating,
+        dT/dr_i = πμ p_max(r_o² − 3r_i²), which vanishes at r_o² − 3r_i² = 0 — the torque-optimal bore
+        r_i* = r_o/√3 ≈ 0.577 r_o. A bore smaller than this wastes lining area; a larger one wastes
+        moment arm. The default geometry sits just inside the optimum.
+      rule: 'torque-optimal inner radius, dT/dr_i = 0'
+    - expr: Eq(P_uw, T_uw*omega_slip)
+      prose: >-
+        While the clutch slips — the driving and driven plates turning at a relative speed ω_slip — the
+        friction torque does not deliver useful work; it dissipates power T·ω_slip as heat right at the
+        rubbing face. That heat, not the torque, is what usually kills a clutch or brake. Each model
+        carries its own slip power (P_up and P_uw), shown side by side so neither is silently preferred.
+      rule: 'slip power dissipated as heat'
+
+sim:
+  engine: statics-cascade
+  config:
+    draw: disk-clutch
+
+sources:
+  - id: shigley
+    citation: >-
+      Budynas, R. G., & Nisbett, J. K., Shigley's Mechanical Engineering Design, 10th ed.,
+      McGraw-Hill, 2015 — §16-5 (frictional-contact axial clutches and brakes): the uniform-pressure
+      and uniform-wear torque derivations, the peak-pressure relation, and the torque-optimal inner
+      radius r_i = r_o/√3; and Table 16-3 (friction materials — coefficient of friction and maximum
+      contact pressure for dry linings).
+    verification: >-
+      §16-5 (axial clutches) and Table 16-3 (friction materials) topics confirmed against the published
+      10th-edition chapter listing, 2026-07-06; the textbook PDF is not web-accessible for a page-exact
+      quote. Both torque formulas, the T_uw ≤ T_up bracket, the peak pressure, and the r_o/√3 optimum
+      are NOT taken on the citation — they are re-derived from first principles by direct integration
+      (∫ μ p(r) r · 2πr dr with p = const and with p·r = const) in
+      pipeline/tests/test_clutch_physics.py. The μ and allowable-pressure knob RANGES are the standard
+      dry-lining values of Table 16-3 (μ ≈ 0.25–0.45, p_max ≈ 1–2 MPa for molded/organic linings); they
+      are cited free knobs, not machine-proven numbers. A friction-lining materials table with full
+      basis/errata provenance is future work belonging to the data/materials/ regime, NOT this page.
+  - id: juvinall
+    citation: >-
+      Juvinall, R. C., & Marshek, K. M., Fundamentals of Machine Component Design, 5th ed., Wiley,
+      2011 — ch. 18 (clutches and brakes): the same uniform-pressure and uniform-wear axial-clutch
+      analyses and the run-in argument for preferring the uniform-wear result in design.
+    verification: >-
+      Topic-level cross-check (axial disk clutch torque; the two pressure models and the mean-radius
+      uniform-wear result are standard and also given in Norton and Mott). Not page-pinned; used to
+      corroborate the treatment and the failure notes, not any single emitted number.

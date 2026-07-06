@@ -1,0 +1,50 @@
+A clutch or brake almost never fails by running out of torque. It fails by getting *hot*, by *wearing
+out*, or by the friction coefficient quietly changing on you — none of which the clean torque formulas
+on this page can see. The number this page computes is the capacity of a cool, intact lining; the
+failure modes are what happens when that assumption lapses.
+
+## Overpressure: the failure the page does warn about
+
+The one failure mode inside the model is lining **overpressure**. Under uniform wear the contact
+pressure peaks at the inner edge, $p_{max} = F/(2\pi r_i(r_o - r_i))$, and every friction material has a
+maximum pressure it can carry before it crushes, extrudes, or bakes. The widget warns when
+$p_{max} > p_{allow}$. Notice how easy that is to trigger: shrink the annulus toward a thin ring
+($r_i \to r_o$) and $p_{max}$ runs away even though the torque barely moves — all the force is crammed
+onto a sliver of lining. This is exactly why the torque-optimal bore $r_i^{*} = r_o/\sqrt{3}$ matters:
+it is also close to where the lining is used efficiently rather than punished at the bore.
+
+## The heat the model cannot see
+
+The deeper failure is thermal, and it lives entirely outside these equations. Every engagement dumps
+the slip energy $\int T\,\omega_{slip}\,dt$ into the friction face as heat. This page reports the
+instantaneous slip *power* $P = T\,\omega_{slip}$, but it deliberately does **not** integrate the
+engagement transient or the temperature rise — that is time-domain, thermal-mass territory, out of
+scope for a static page. Yet the consequences dominate real design:
+
+- **Fade.** For most linings $\mu$ *falls* as temperature climbs. A brake that grips cold can go slick
+  when hot — so the torque this page computes with a fixed $\mu$ is optimistic exactly when you need the
+  brake most. Repeated hard stops are the classic fade scenario.
+- **Burnup and glazing.** Enough heat chars organic linings, glazes the surface, boils the oil out of a
+  wet clutch, or heat-checks and warps the mating steel. A clutch "slipped" too long is destroyed by the
+  power it dissipated, not the torque it transmitted.
+- **Thermal capacity, not torque, sets the duty rating.** How often a clutch can be cycled is a
+  heat-rejection limit. The torque tells you whether it *engages*; the slip energy tells you whether it
+  *survives* engaging.
+
+## The model changes under you
+
+There is a subtler trap here than a missing term: the two models are not alternatives you pick once —
+they are the *same clutch at two ages*. A new, rigid lining really does start near uniform pressure, and
+then it wears, fastest where $p\,r$ is largest, until it reaches the uniform-wear $1/r$ profile and
+stays there. So the honest design number is the uniform-wear torque (the smaller one, by the machine-
+proven bracket), because that is what the clutch becomes after its first hours of service. Designing to
+the uniform-pressure torque is designing for a condition the hardware leaves behind almost immediately.
+
+## Out of scope here
+
+This page is the isolated, cool-lining torque capacity. Named but not modeled: the engagement transient
+and temperature rise (time integration), fade curves and wear-life prediction, cone and centrifugal
+clutches, and multi-disk stack subtleties beyond the $N$-face multiplier. The inertia a clutch spins up
+lives on the [flywheel-disk](../flywheel-disk/) page — the energy stored there is the heat released
+here — and the same friction that is the *product* on this page is the *cost* on the
+[power-screw](../power-screw/) and [belt-drive](../belt-drive/) pages.

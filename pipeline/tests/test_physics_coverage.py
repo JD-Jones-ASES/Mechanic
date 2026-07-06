@@ -26,6 +26,7 @@ PHYSICS_TESTS = {
     "combined-shaft": "test_combined_physics.py",
     "compound-cylinder": "test_shrinkfit_physics.py",
     "curved-beam": "test_curved_beam_physics.py",
+    "disk-clutch": "test_clutch_physics.py",
     "eccentric-column": "test_eccentric_physics.py",
     "euler-column": "test_column_physics.py",
     "flywheel-disk": "test_flywheel_physics.py",

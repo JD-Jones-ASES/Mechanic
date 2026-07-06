@@ -1,0 +1,85 @@
+An axial disk clutch or brake is a ring of friction lining squeezed between two plates: press with an
+axial force $F$, and friction across the annulus from $r_i$ to $r_o$ passes a torque. The formula for
+that torque looks like it should be settled — but it depends on something you cannot measure directly
+and that *changes over the clutch's life*: how the contact pressure is distributed across the face.
+Two classical models bracket reality, and this page shows both, side by side, without picking a
+winner — the same honesty the [combined bending-and-torsion shaft](../combined-shaft/) uses for its
+two yield criteria.
+
+## Two models over one piece of hardware
+
+Slice the annulus into rings. A ring at radius $r$, width $dr$, has area $dA = 2\pi r\,dr$; under local
+pressure $p(r)$ and friction coefficient $\mu$ it passes torque $dT = \mu\,p(r)\,r\,dA$. Everything
+turns on what $p(r)$ is:
+
+- **Uniform pressure** — a *new, rigid* clutch presses evenly, $p$ constant. Fixing $p$ from
+  $F = \int p\,dA$ and integrating gives
+
+$$ T_{up} = N\,\frac{2}{3}\,\mu F\,\frac{r_o^{3} - r_i^{3}}{r_o^{2} - r_i^{2}} $$
+
+- **Uniform wear** — a real lining wears fastest where it works hardest. Wear rate goes as pressure
+  times sliding speed, $p\,v = p\,\omega r$, so a rigid plate wears until $p\,r$ is *constant*: pressure
+  peaks at the inner edge and falls as $1/r$. That single change collapses the torque integral to a
+  strikingly simple mean-radius form,
+
+$$ T_{uw} = N\,\mu F\,\frac{r_o + r_i}{2} $$
+
+Both are multiplied by $N$, the number of friction faces — a single-plate clutch has **two** (one each
+side of the disk); a multi-disk stack has more. Getting $N$ right, and remembering these are per-face
+formulas, is the classic transcription trap.
+
+## Uniform wear is always the safe number
+
+Subtract the two and something clean falls out — the difference is a perfect square over a positive
+quantity:
+
+$$ T_{up} - T_{uw} = N\,\mu F\,\frac{(r_o - r_i)^{2}}{6\,(r_o + r_i)} \ge 0 $$
+
+So the uniform-pressure model **always** predicts at least as much torque as uniform wear, with
+equality only in the thin-annulus limit $r_i \to r_o$ (where the two pressure profiles coincide). This
+bracket is machine-proven in the test pipeline. Its design lesson is why the uniform-wear result is the
+one engineers actually use: after a brief run-in the pressure redistributes to the $1/r$ shape, so the
+worn clutch delivers the *smaller* torque — and quoting the smaller number is the conservative choice.
+Uniform wear also predicts a higher peak pressure, so it governs lining life too. The widget shows both
+torques so you can watch the gap: it is widest for a wide annulus and closes as $r_i$ approaches $r_o$.
+
+## The best bore is $r_o/\sqrt{3}$
+
+Given a lining that can survive a maximum pressure, where should the bore go? Hold $p_{max}$ fixed
+instead of $F$. Then the uniform-wear torque is $T = \pi\mu\,p_{max}\,r_i(r_o^{2} - r_i^{2})$, and
+setting $dT/dr_i = \pi\mu\,p_{max}(r_o^{2} - 3r_i^{2}) = 0$ gives
+
+$$ r_i^{*} = \frac{r_o}{\sqrt{3}} \approx 0.577\,r_o $$
+
+A bore smaller than this buries lining area near the axis, where the moment arm is tiny; a larger bore
+throws away area. The optimum is marked on the friction face in the widget — slide $r_i$ toward it and
+watch the torque peak. The peak lining pressure itself is
+
+$$ p_{max} = \frac{F}{2\pi\,r_i(r_o - r_i)} $$
+
+checked against a cited allowable value; exceed it and the page warns (the run-in and burnup story is in
+the failure note).
+
+## Slip power is what actually destroys clutches
+
+While a clutch engages, the driving and driven sides turn at a relative **slip speed** $\omega_{slip}$,
+and the friction torque does no useful work — it dissipates power $P = T\,\omega_{slip}$ as heat right
+at the rubbing face. That heat, not the torque, sets how hard and how often a clutch can be cycled; it
+is why a slipping clutch smells and a hard-braked rotor glows. The page reports the slip power for
+*each* torque model, paired, so neither is silently preferred. The clutch's job is usually to spin up
+an inertia — the [flywheel disk](../flywheel-disk/) is exactly what it accelerates, and the engagement
+that stores energy there is the heat dumped here.
+
+## Friction is a cited knob, not a material axis
+
+Every other stress page here binds a material from the database. This one deliberately does **not** —
+and, as on the [bearing-life](../ball-bearing-life/) page, the reason is worth stating. The two design
+inputs a friction lining contributes, the coefficient $\mu$ and the allowable pressure $p_{allow}$, are
+**cited free knobs** here, with their default ranges taken from the standard dry-lining values of
+Shigley's friction-materials table (Table 16-3): $\mu \approx 0.25$–$0.45$ and $p_{allow} \approx 1$–$2$
+MPa for molded/organic linings. A proper friction-lining *materials* table — with per-value basis and
+errata discipline like the rest of the material database — is real future work belonging to the
+[materials](../../materials/) provenance regime; it is genuine material data, not the relation-table
+capability the gear and shoulder-fillet pages use. Until then, dialing $\mu$ and $p_{allow}$ as knobs is
+the honest interface. Friction here is the *product* (the torque you want), the mirror of the
+[power screw](../power-screw/) and [belt drive](../belt-drive/), where friction is a budget to be spent.
