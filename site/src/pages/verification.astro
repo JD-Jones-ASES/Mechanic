@@ -94,6 +94,19 @@ const totals = {
         column and its dependents, carrying the table's citation. No clamp, no extrapolation.
       </li>
       <li>
+        <strong>Coupled linear systems (solveLinear)</strong> — a statically indeterminate
+        structure (the propped cantilever's redundant wall and prop reactions) has unknowns that sit
+        in coupled equilibrium and compatibility relations with no evaluation order — the
+        forward-DAG planner cannot express them. The build proves the named system is
+        <em>affine</em> in its unknowns (every second derivative with respect to a pair of unknowns
+        vanishes, and the coefficients are unknown-free), solves it <em>exactly</em> by Gaussian
+        elimination at build time, and checks the system determinant is non-zero at every
+        verification sample. The solved forms then desugar into ordinary closed forms that pass the
+        same total back-substitution as any authored solution, and the determinant ships as a
+        runtime guard: where it would vanish the whole evaluation refuses, never returning a
+        fabricated reaction.
+      </li>
+      <li>
         <strong>Derivation identities</strong> — every derivation line not badged as a modeling
         step is proven to follow from the verified solutions by computer algebra.
       </li>

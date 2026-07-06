@@ -167,6 +167,57 @@ What the build does with this (and fails loudly on):
   browser's Brent is checked against them at every build.
 - One solve1d target may not be combined with multi-branch solutions in the same configuration.
 
+## Certified linear-group solves (`solve_linear`, ADR-0008)
+
+A **statically indeterminate** structure — a propped cantilever, a two-material composite bar, a
+bolted joint with a gasket — has unknowns (redundant reactions, load shares) that appear in
+*coupled* relations with no evaluation order. The forward-DAG planner cannot express them as a chain
+of closed forms. Author them as a configuration-level `solve_linear` group: a SET of derived targets
+and the DECLARED relations that pin them.
+
+```yaml
+configurations:
+  - id: analyze
+    inputs: [w, L, b, h]
+    solve_linear:                          # a list of groups, evaluated in order
+      - targets: [R_A, R_B, M_A]           # role: derived; not inputs/constraints/materials
+        relations: [sum-forces, sum-moments, compatibility]   # DECLARED relation ids
+    solutions:                             # ordinary closed forms — may READ the group's targets
+      I: b*h**3/12
+      sigma_max: M_A*(h/2)/I
+```
+
+What the build does with this (ADR-0008 part a; and fails loudly on):
+
+- **Ordering (forward DAG, v1).** Groups evaluate after `constraints`, before `solutions`. A group
+  coefficient may read only inputs, constraints, materials/constants, and EARLIER groups' targets —
+  reading a downstream `solutions` target (e.g. the section's `I`) is a forward-DAG violation, named
+  loudly. *This is why the propped cantilever's compatibility relation is authored EI-cancelled*
+  (`w·L⁴/8 − R_B·L³/3`) rather than with `E` and `I` in it: the group cannot read the derived `I`.
+  The material-blindness of the reactions is not lost — it becomes a machine-checked identity step
+  in the derivation (the `EI` cancels), and `E` still cascades through the downstream deflection.
+- **Affine proof.** Every named relation must be affine (degree ≤ 1) in the targets: `∂²r/∂tᵢ∂tⱼ ≡ 0`
+  for every target pair, and each coefficient `∂r/∂tⱼ` is target-free. This is what earns the exact
+  solve — `sp.linsolve` runs ONLY on a proven-linear system (bounded Gaussian elimination), never
+  blind `solve()`.
+- **Square + covering.** One relation per target; every target appears in some relation; every
+  relation reads at least one target.
+- **Exact solve + determinant.** `A = Jacobian`, `b = −(residual|targets→0)`; `linsolve` must return
+  a unique target-free solution. `det(A)` is checked non-zero at every verification sample (50 dps)
+  and emitted as a runtime `nonzero` guard — a singular system refuses the whole evaluation rather
+  than returning a fabricated reaction. (Note: `det` frequently CANCELS in the solved forms — the
+  propped cantilever's `L³/3` divides out, which is *why* its reactions are material-blind — so the
+  explicit determinant guard, not an auto denominator guard, is what certifies non-singularity.)
+- **Caps (v1).** ≤ 4 targets per group; the op cap (`SIMPLIFY_OPS_CAP = 200`) applies to coefficients
+  AND solved forms. A trip is a BuildError naming a future LU-runtime ADR — never an ad-hoc raise.
+- **Desugar.** The solved closed forms become ordinary `eval` plan steps (each carrying a
+  `via.solve_linear` provenance annotation) and flow through the EXISTING verification path: total
+  back-substitution into every relation, the manifold DOF check (the group counts as one relation
+  per target), and the parity oracle. Nothing new runs after the desugar, so derivation identity
+  steps MAY reference the group's targets (unlike solve1d/table outputs — closed forms exist here).
+- A `solve_linear` group may not be combined with solve1d, table, or multi-branch solutions in one
+  configuration (v1). `solveND` (nonlinear/cyclic groups, ADR-0008 part b) stays reserved and unbuilt.
+
 ## Multi-branch configurations (the four-bar pattern)
 
 When a target has several honest solutions (quadratic targets: two assembly circuits), author ALL

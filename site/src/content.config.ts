@@ -87,10 +87,25 @@ const tableSolutionSchema = z.object({
   at: z.string(),
 });
 
+// a certified linear-group solve (ADR-0008, solveLinear): a SET of coupled
+// derived targets solved as a square linear system of DECLARED relations, at
+// build time, exactly. The statically indeterminate structures the forward-DAG
+// planner cannot express (a propped cantilever's redundant reaction). Groups
+// evaluate after constraints and before `solutions`; the pipeline proves the
+// system affine in its targets, solves it, and desugars into ordinary verified
+// closed forms (compile.py certify_linear_group). `solveND` stays reserved.
+const solveLinearGroupSchema = z.object({
+  targets: z.array(identifier).min(1),
+  relations: z.array(z.string()).min(1),
+});
+
 const configurationSchema = z.object({
   id: z.string(),
   label: z.string().optional(),
   constraints: z.record(identifier, z.union([z.number(), z.string()])).default({}),
+  // certified linear-group solves, evaluated (in order) after constraints and
+  // before `solutions`; each desugars into ordinary eval steps (see above)
+  solve_linear: z.array(solveLinearGroupSchema).default([]),
   inputs: z.array(identifier),
   solutions: z.record(
     identifier,
@@ -179,6 +194,14 @@ const planStep = z.discriminatedUnion("type", [
     fn: z.string().optional(),
     branch_fns: z.record(z.string(), z.string()).optional(),
     latex: z.union([z.string(), z.record(z.string(), z.string())]),
+    // provenance of an eval step desugared from a certified linear-group solve
+    // (ADR-0008, solveLinear): the coupled relations it was solved from and the
+    // system-determinant guard fn. Additive/optional — a plain eval step omits it.
+    via: z
+      .object({
+        solve_linear: z.object({ relations: z.array(z.string()), det_fn: z.string() }),
+      })
+      .optional(),
   }),
   z.object({
     type: z.literal("solve1d"),

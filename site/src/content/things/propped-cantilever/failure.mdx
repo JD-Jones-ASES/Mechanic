@@ -1,0 +1,36 @@
+The widget's safety factor guards one thing — first yield at the wall's outer fiber, where the
+hogging moment $M_A = wL^2/8$ peaks. A real propped cantilever has more exits, and the most
+interesting ones are specific to it being **statically indeterminate**:
+
+- **Prop settlement — the assumption that can quietly move every number.** The whole solution rests
+  on one geometric premise: the prop holds $B$ *exactly* on the wall's line, zero deflection. Let the
+  prop settle by even a small amount $\Delta$ and the compatibility equation changes to
+  $wL^4/8EI - R_B L^3/3EI = \Delta$ — the reactions redistribute, $M_A$ can swing sharply, and the
+  "material-blind" result stops being material-blind (now $EI$ *does* appear, multiplied by the
+  settlement). In a determinate beam a support that settles just goes along for the ride; in an
+  indeterminate one, support movement is a load case in its own right. This is why indeterminate
+  structures are simultaneously stiffer *and* more temperamental.
+
+- **Yielding at the wall, then moment redistribution.** Because the peak moment is at the built-in
+  end, that's where a plastic hinge forms first. Past that point the beam does not collapse — the
+  wall hinge caps its moment and the span carries more, a redistribution the elastic formulas on this
+  page cannot see. The `σ_max > σ_y` warning marks where they stop telling the truth.
+
+- **Loss of the prop.** If the prop is a slender strut it can buckle, and if it is a tension tie it
+  can yield or pull out of its anchor. Lose the prop entirely and the structure reverts to a plain
+  cantilever: the free end that was held on the wall's line now sags to the full cantilever value
+  $wL^4/8EI$ (from zero), and the wall moment jumps from $wL^2/8$ to $wL^2/2$ — **four times larger**.
+  The redundancy that makes the beam stiff is exactly what a single failed support removes.
+
+- **Fatigue at the fixed end.** A propped cantilever that vibrates cycles its largest stress at the
+  wall, at a re-entrant corner. Fatigue strength sits far below static yield, and nothing on this
+  page addresses cyclic life.
+
+- **Excessive deflection or lateral-torsional buckling.** A tall, narrow section ($h \gg b$) can
+  twist and flop sideways before it yields — a stiffness failure, not a strength one — and a
+  serviceability deflection limit often governs long before first yield does.
+
+- **Short, deep beams and brittle materials.** For $L < 10h$ (the validity warning) shear deflection,
+  neglected by Euler–Bernoulli theory, is no longer small. And a brittle material such as gray cast
+  iron has no yield plateau at all — rate it against ultimate strength with a generous factor
+  instead of the yield-based safety factor shown here.

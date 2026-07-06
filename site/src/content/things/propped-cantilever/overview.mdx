@@ -1,0 +1,63 @@
+Take a cantilever — fixed into a wall at one end, free at the other — and put a simple prop (a
+roller) under the free end so it can no longer sag. That single extra support changes the problem's
+*character*, not just its numbers. A plain cantilever is **statically determinate**: two equilibrium
+equations, two unknown reactions, done. Add the prop and there are now **three** reactions to find —
+the wall's vertical force $R_A$, the wall's fixing moment $M_A$, and the prop's force $R_B$ — but
+statics still gives only **two** equations. The beam is *statically indeterminate to the first
+degree*, and equilibrium alone cannot finish it.
+
+This is the gap that half of a structures course exists to close, and it's the first THING in this
+catalog that lives on the far side of it. You see propped cantilevers everywhere a stiff member is
+given one helper support: a shelf bracket with a diagonal tie to the wall, a balcony beam propped at
+its tip, a pipe run clamped at a wall and resting on a hanger, a machine bed bolted down at one end
+and shimmed at the other.
+
+## The missing equation is compatibility
+
+The third equation does not come from force balance — it comes from **geometry**. Remove the prop
+and let the cantilever sag freely: the uniform load $w$ pushes the free end $B$ down by
+$w L^4/8EI$. Now push $B$ back up with the prop's force $R_B$ alone: it lifts $B$ by $R_B L^3/3EI$.
+The *real* prop holds $B$ exactly on the wall's line — its deflection is zero — so those two must
+cancel. That **compatibility condition** is the third equation, and with it the three reactions are
+determined:
+
+$$ R_A = \tfrac{5}{8} w L, \qquad R_B = \tfrac{3}{8} w L, \qquad M_A = \tfrac{1}{8} w L^2 $$
+
+The build does not hand you these formulas to trust. It certifies that the three relations
+(two equilibrium, one compatibility) form a system that is **linear in the three unknowns**, solves
+that $3\times3$ system **exactly** at build time, and then checks the solution back through every
+relation — the same total verification an ordinary closed form gets. This is the `solveLinear`
+capability, and the propped cantilever is its reference case, exactly as the eccentric column is for
+bracketed root-finding. What the machine proves and what still rests on a book is spelled out on the
+[verification page](../../verification/).
+
+## The reactions do not care what the beam is made of
+
+Look closely at the compatibility step in the derivation below. Both deflections carry the same
+flexural rigidity $EI$, and because the beam is *prismatic* (uniform section and material), $EI$
+divides out completely — the line $\tfrac{1}{8}wL^4 = \tfrac{1}{3}R_B L^3$ has no $E$ and no $I$ in
+it. That cancellation is **machine-checked**, and it is the whole lesson: **the reactions are
+material-blind**. Switch the material in the widget from A36 steel to Ti-6Al-4V titanium and watch
+$R_A$, $R_B$, and $M_A$ **not move at all**, even as:
+
+- **Young's modulus $E$** changes the midspan deflection $\delta_{mid} = w L^4/192EI$ — titanium is
+  about half as stiff ($E \approx 110$ vs $200$ GPa), so it deflects nearly twice as far.
+- **Yield strength $\sigma_y$** changes the safety factor $\mathrm{SF} = \sigma_y/\sigma_{max}$ —
+  titanium's higher yield lifts the margin.
+- **Density $\rho$** changes the mass — titanium nearly halves it.
+
+A redundant support redistributes load by **geometry**, not by material. That is a genuinely
+non-obvious result the first time you meet it: in a determinate structure the load path is fixed by
+statics; here the "sharing" between wall and prop is set purely by the shape of the deflection
+curves, which for a uniform beam are material-independent. (Make the beam *non*-prismatic — a
+tapered section, or two materials spliced together — and $EI$ no longer cancels; the reactions would
+then depend on the stiffness distribution. That is the composite-bar story, a later THING.)
+
+## What governs, and the sign convention
+
+Throughout: $x$ runs from the wall $A$ to the prop $B$, downward load and deflection are positive,
+$R_A$ and $R_B$ are the **upward** reactions, and $M_A$ is the **magnitude** of the hogging fixing
+moment at the wall. The bending moment is largest *at the wall*: $|M|_{max} = M_A = wL^2/8$ (hogging)
+comfortably beats the sagging peak of $9wL^2/128$ at $x = 5L/8$, so the wall's outer fiber is where
+first yield happens and what the safety factor guards. The clean midspan deflection $wL^4/192EI$ is
+quoted here; the true maximum is only a hair larger, $\approx wL^4/185EI$ near $x = 0.578L$.

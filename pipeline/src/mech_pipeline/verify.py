@@ -37,6 +37,17 @@ SIMPLIFY_OPS_CAP = 200
 # entries are evaluated at 50 dps, so a truly dependent row collapses to
 # ~1e-49 — far below the chop — while generic entries are O(1).
 RANK_CHOP = sp.Float("1e-30")
+# solve_linear (ADR-0008, certified linear-group solving): the exact-solve path
+# for statically indeterminate elastic structures. v1 caps the group at four
+# targets — above that, symbolic Cramer/linsolve is the wrong tool and the
+# recorded revisit is a future LU-runtime ADR, not an ad-hoc raise.
+LINEAR_MAX_TARGETS = 4
+# a coefficient determinant is "nonzero" for the exact solve to be valid; at
+# 50 dps a genuinely singular sample collapses far below this while an honest
+# system's determinant is O(1) in its own units. This certifies the linear
+# solve is valid across the sampled domain — the runtime nonzero guard
+# (relation.ts EPS_NONZERO) is the coarser operational floor beneath it.
+LINEAR_DET_TOLERANCE = sp.Float("1e-30")
 
 
 @dataclass
@@ -357,6 +368,194 @@ def verify_solve1d_configuration(
             f"attempts — cannot certify the configuration (check variable bounds)"
         )
     return parity, points
+
+
+def certify_linear_group(
+    targets: list[sp.Symbol],
+    relations: list[tuple[str, sp.Expr]],
+    specs: dict[sp.Symbol, VarSpec],
+    context: str,
+) -> tuple[dict[sp.Symbol, sp.Expr], sp.Expr]:
+    """Certify and exactly solve a proven-linear square system (ADR-0008,
+    `solveLinear`). The unknowns of a statically indeterminate structure — a
+    propped cantilever's {R_A, R_B, M_A} — sit in coupled equilibrium +
+    compatibility relations with no evaluation order, which the forward-DAG
+    planner cannot express. This certifies the coupled system is safe to solve
+    exactly at build time and returns closed forms the ordinary verification
+    path then treats like any authored solution (the desugar; nothing new
+    downstream).
+
+    The certificate, failing loudly by group/relation/target on any breach:
+
+      (a) AFFINE PROOF — every named relation is affine (degree ≤ 1) in the
+          targets: ∂²r/∂tᵢ∂tⱼ ≡ 0 for every target pair (this catches a t²
+          or a target-in-denominator), and each Jacobian coefficient ∂r/∂tⱼ is
+          itself target-free. This is what earns the exact solve: `linsolve`
+          runs only on a PROVEN-linear system — bounded Gaussian elimination,
+          not blind solve() (still banned, ADR-0002).
+      (b) SQUARE + COVERING — one relation per target; every target appears in
+          some relation; every relation reads at least one target.
+      (c) EXACT SOLVE — A = Jacobian wrt targets, b = −(residual|targets→0);
+          `sp.linsolve` must return a unique FiniteSet whose entries are
+          target-free (a parametrized/empty set = singular or inconsistent).
+      (d) DETERMINANT — det(A) is returned for the caller to emit as a runtime
+          `nonzero` guard, and is checked nonzero at every verification sample
+          at 50 dps: the exact solve is valid only where det ≠ 0.
+      (e) CAPS — ≤ LINEAR_MAX_TARGETS targets; SIMPLIFY_OPS_CAP on every
+          coefficient AND every solved form. A trip is a BuildError naming a
+          future LU-runtime ADR (the recorded revisit trigger), never a raise.
+
+    Returns (solved, det): the closed form per target (in terms of the non-target
+    'coefficient' symbols only) and the determinant expression.
+    """
+    tset = set(targets)
+    n = len(targets)
+    if n == 0:
+        raise BuildError(f"{context}: a solve_linear group needs at least one target")
+    if n > LINEAR_MAX_TARGETS:
+        raise BuildError(
+            f"{context}: {n} targets exceeds the v1 cap of {LINEAR_MAX_TARGETS} — symbolic "
+            f"exact solve is the wrong tool above this; a runtime LU step is a future ADR"
+        )
+    # (b) squareness
+    if len(relations) != n:
+        raise BuildError(
+            f"{context}: not square — {n} target(s) {sorted(map(str, targets))} but "
+            f"{len(relations)} relation(s) {[rid for rid, _ in relations]}"
+        )
+    # (a) affine proof: second derivative wrt every target pair vanishes, and
+    # every first-derivative coefficient is target-free. Together these prove
+    # the residual is jointly degree ≤ 1 in the targets.
+    A = sp.zeros(n, n)
+    b = sp.zeros(n, 1)
+    zero_targets = {t: sp.Integer(0) for t in targets}
+    rel_reads_target = {rid: False for rid, _ in relations}
+    target_appears = {t: False for t in targets}
+    for k, (rid, residual) in enumerate(relations):
+        for ti in targets:
+            for tj in targets:
+                second = sp.diff(residual, ti, tj)
+                if second != 0 and sp.simplify(second) != 0:
+                    raise BuildError(
+                        f"{context}: relation '{rid}' is not linear in the targets — "
+                        f"∂²r/∂{ti}∂{tj} = {sp.simplify(second)} ≠ 0 (a solve_linear group "
+                        f"must be affine in its unknowns)"
+                    )
+        for j, tj in enumerate(targets):
+            coeff = sp.diff(residual, tj)
+            stray = coeff.free_symbols & tset
+            if stray:
+                raise BuildError(
+                    f"{context}: relation '{rid}' coefficient of {tj} still depends on "
+                    f"target(s) {sorted(map(str, stray))} — not affine in the targets"
+                )
+            if coeff != 0:
+                rel_reads_target[rid] = True
+                target_appears[tj] = True
+            A[k, j] = coeff
+        const = residual.subs(zero_targets)
+        if const.free_symbols & tset:
+            raise BuildError(
+                f"{context}: relation '{rid}' constant term still reads targets — not affine"
+            )
+        b[k] = -const
+    # (b) coverage
+    missing_t = [str(t) for t in targets if not target_appears[t]]
+    if missing_t:
+        raise BuildError(
+            f"{context}: target(s) {missing_t} appear in none of the group's relations"
+        )
+    idle_r = [rid for rid, _ in relations if not rel_reads_target[rid]]
+    if idle_r:
+        raise BuildError(
+            f"{context}: relation(s) {idle_r} read none of the group's targets — "
+            f"they do not belong in this coupled system"
+        )
+    # (e) op cap on coefficients (before the solve — a huge A means the wrong tool)
+    for k in range(n):
+        for j in range(n):
+            if sp.count_ops(A[k, j]) > SIMPLIFY_OPS_CAP:
+                raise BuildError(
+                    f"{context}: coefficient A[{k}][{j}] exceeds the op cap "
+                    f"({SIMPLIFY_OPS_CAP}) — a symbolic exact solve this large wants the "
+                    f"future LU-runtime ADR, not a cap raise"
+                )
+        if sp.count_ops(b[k]) > SIMPLIFY_OPS_CAP:
+            raise BuildError(
+                f"{context}: constant b[{k}] exceeds the op cap ({SIMPLIFY_OPS_CAP}) — "
+                f"see the future LU-runtime ADR"
+            )
+    # (c) exact solve — linsolve on the PROVEN-affine system; require uniqueness
+    sol = sp.linsolve((A, b), *targets)
+    if not isinstance(sol, sp.FiniteSet) or len(sol) != 1:
+        raise BuildError(
+            f"{context}: the system is not uniquely solvable (singular or inconsistent) — "
+            f"linsolve returned {sol}. A statically indeterminate structure must yield exactly "
+            f"one solution; check the relations are independent."
+        )
+    (tuple_sol,) = sol
+    solved: dict[sp.Symbol, sp.Expr] = {}
+    for t, expr in zip(targets, tuple_sol):
+        expr = sp.together(expr)
+        leftover = expr.free_symbols & tset
+        if leftover:
+            raise BuildError(
+                f"{context}: solution for {t} still contains target(s) "
+                f"{sorted(map(str, leftover))} — the system is under-determined"
+            )
+        if sp.count_ops(expr) > SIMPLIFY_OPS_CAP:
+            raise BuildError(
+                f"{context}: solved form for {t} exceeds the op cap ({SIMPLIFY_OPS_CAP}) — "
+                f"see the future LU-runtime ADR"
+            )
+        solved[t] = expr
+    # (d) determinant — for the runtime nonzero guard and the per-sample check
+    det = sp.together(A.det())
+    if sp.simplify(det) == 0:
+        raise BuildError(
+            f"{context}: coefficient determinant is identically zero — the system is singular"
+        )
+    if sp.count_ops(det) > SIMPLIFY_OPS_CAP:
+        raise BuildError(
+            f"{context}: determinant exceeds the op cap ({SIMPLIFY_OPS_CAP}) — "
+            f"see the future LU-runtime ADR"
+        )
+    # det ≠ 0 across the sampled domain (50 dps): the exact solve is valid only
+    # where the determinant does not vanish, so a system that goes singular for
+    # some in-bounds knob combination fails the build here, by sample.
+    free = sorted(det.free_symbols, key=str)
+    undeclared = [s for s in free if s not in specs]
+    if undeclared:
+        raise BuildError(
+            f"{context}: determinant reads undeclared symbol(s) {list(map(str, undeclared))}"
+        )
+    rng = random.Random(context)
+    if not free:
+        val = det.evalf(PRECISION_DPS)
+        if not val.is_number or abs(val) <= LINEAR_DET_TOLERANCE:
+            raise BuildError(f"{context}: determinant {sp.N(det, 6)} is ~zero — singular system")
+    else:
+        checked = 0
+        attempts = 0
+        while checked < NUM_SAMPLES and attempts < 20 * NUM_SAMPLES:
+            attempts += 1
+            subs = {s: _sample_value(specs[s], rng) for s in free}
+            val = det.evalf(PRECISION_DPS, subs=subs, chop=True)
+            if not val.is_number or val.has(sp.zoo, sp.oo, sp.nan) or val.is_real is not True:
+                continue
+            checked += 1
+            if abs(val) <= LINEAR_DET_TOLERANCE:
+                raise BuildError(
+                    f"{context}: determinant {sp.N(val, 6)} ~ 0 at sample {attempts} "
+                    f"{ {str(k): str(sp.N(v, 6)) for k, v in subs.items()} } — the system "
+                    f"becomes singular in the declared domain; reformulate or bound it away"
+                )
+        if checked < max(10, NUM_SAMPLES // 3):
+            raise BuildError(
+                f"{context}: only {checked} real determinant samples after {attempts} "
+                f"attempts — cannot certify non-singularity (check variable bounds)"
+            )
+    return solved, det
 
 
 def verify_table(table: TableSpec, context: str) -> None:

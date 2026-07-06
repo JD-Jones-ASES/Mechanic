@@ -52,6 +52,20 @@ step before `astro build`).
      the browser's own Brent against them — the root-finder itself is inside the oracle. Identity
      derivation steps may not reference solve1d-dependent symbols (no closed form exists to verify
      against); `definition` steps may. solve1d + multi-branch in one configuration is rejected (v1).
+   - *solve_linear configurations* (ADR-0008 part a; first consumer: the propped cantilever's
+     `{R_A, R_B, M_A}`): a statically indeterminate structure's coupled unknowns are declared as a
+     `solve_linear: [{targets: [...], relations: [...]}]` group, evaluated after `constraints` and
+     before `solutions`. `certify_linear_group` (verify.py) proves the named system is AFFINE in its
+     targets (∂²r/∂tᵢ∂tⱼ ≡ 0 for every target pair, target-free coefficients), square + covering,
+     then solves it EXACTLY with `sp.linsolve` (requiring a unique target-free FiniteSet — never
+     blind `solve()`); det(A) is checked non-zero at every sample (50 dps) and emitted as a runtime
+     `nonzero` guard (a singular system refuses the whole evaluation). Caps: ≤ 4 targets/group,
+     `SIMPLIFY_OPS_CAP` on coefficients + solved forms (a trip names a future LU-runtime ADR). The
+     solved closed forms DESUGAR into ordinary `type: eval` steps carrying a `via.solve_linear`
+     provenance annotation, then flow through the EXISTING closed-form path (total back-substitution
+     into every relation, manifold DOF check, parity oracle) — nothing new runs after the desugar. A
+     group's coefficients may read only inputs/constraints/materials/earlier groups (forward DAG);
+     combining a group with solve1d, table, or multi-branch solutions is rejected (v1).
    - *Derivation steps*: each step is an equation in the THING's variables; after substituting the verified
      solutions of the step's declared configuration it must reduce to an identity (same tiered checker).
      This proves each displayed line is *true*, not that the chain is pedagogically minimal — prose carries
@@ -164,6 +178,10 @@ changes (verified against compile.py 2026-07-04). Never hand-edit or commit anyt
     "plan": [                              // discriminated union — executed in order
       { "type": "eval", "target": "N_r", "fn": "cfg_rf_N_r", "latex": "N_r = N_s + 2 N_p" },
       { "type": "eval", "target": "omega_c", "fn": "cfg_rf_omega_c", "latex": "…" },
+      { "type": "eval", "target": "R_B", "fn": "cfg_a_R_B", "latex": "R_B = 3wL/8",
+        "via": { "solve_linear": {           // OPTIONAL provenance: this eval step was DESUGARED from a
+          "relations": ["sum-forces","sum-moments","compatibility"],  // certified linear group
+          "det_fn": "cfg_a_solvelin0__det" } } },  // (ADR-0008 part a). The det guard rides guards[]
       { "type": "solve1d", "target": "P_y",  // bracketed Brent on a DECLARED relation's residual;
         "residual_fn": "rel_secant_yield",   // bracket endpoints are FUNCTIONS of the evaluated env
         "bracket_fns": ["cfg_a_P_y__blo", "cfg_a_P_y__bhi"], "latex": "…" },

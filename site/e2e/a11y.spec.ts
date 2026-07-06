@@ -10,6 +10,7 @@ for (const path of [
   "things/fourbar-linkage/",
   "things/flywheel-disk/",
   "things/thick-walled-cylinder/",
+  "things/propped-cantilever/", // S15: a new sim component (ProppedCantileverSim)
   "materials/",
   "verification/",
   "",

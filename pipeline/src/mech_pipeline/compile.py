@@ -23,6 +23,7 @@ from .kinds import QUANTITY_KINDS
 from .verify import (
     TableSpec,
     VarSpec,
+    certify_linear_group,
     dof_check,
     manifold_points,
     resolve_solutions,
@@ -369,6 +370,99 @@ class ThingCompiler:
             known_syms = [s for s in self.specs if self.specs[s].role in ("material", "constant")]
             any_branched = False
             fn_prefix_base = f"cfg_{cid.replace('-', '_')}"
+
+            # ---- certified linear-group solves (ADR-0008, solveLinear) ----
+            # Evaluated after constraints, BEFORE `solutions`. Each group is a
+            # square coupled system (a statically indeterminate structure's
+            # redundant reactions) that the forward-DAG planner cannot express;
+            # certify_linear_group proves it affine in its targets and solves it
+            # EXACTLY at build time. The solved closed forms DESUGAR into ordinary
+            # eval steps here, so everything downstream (resolve_solutions →
+            # back-substitution → manifold DOF check → parity oracle) treats them
+            # like any authored solution — nothing new after the desugar.
+            linear_groups = cfg.get("solve_linear") or []
+            linear_det_guards: list[tuple[dict, str]] = []  # (guard, det srepr) for dedup
+            for gi, group in enumerate(linear_groups):
+                gc = f"{c}, solve_linear[{gi}]"
+                raw_targets = _require(group, "targets", gc)
+                raw_rels = _require(group, "relations", gc)
+                if not isinstance(raw_targets, list) or not raw_targets:
+                    raise BuildError(f"{gc}: targets must be a non-empty list")
+                if not isinstance(raw_rels, list) or not raw_rels:
+                    raise BuildError(f"{gc}: relations must be a non-empty list")
+                g_targets: list[sp.Symbol] = []
+                for tname in raw_targets:
+                    if tname not in self.table:
+                        raise BuildError(f"{gc}: unknown target '{tname}'")
+                    tsym = self.table[tname]
+                    if tsym in inputs or tsym in constraints or self.specs[tsym].role in ("material", "constant"):
+                        raise BuildError(f"{gc}: target '{tname}' is an input/constraint/material/constant variable")
+                    if self.specs[tsym].role != "derived":
+                        raise BuildError(f"{gc}: target '{tname}' must have role: derived")
+                    if tsym in seen_targets or tsym in g_targets:
+                        raise BuildError(f"{gc}: target '{tname}' is already solved earlier in this configuration")
+                    g_targets.append(tsym)
+                g_relations: list[tuple[str, sp.Expr]] = []
+                for rid in raw_rels:
+                    if rid not in self.residual_by_id:
+                        raise BuildError(f"{gc}: unknown relation '{rid}'")
+                    g_relations.append((rid, self.residual_by_id[rid]))
+                # ORDERING RULE (v1): coefficients read only already-evaluated
+                # symbols — inputs, constraints, materials/constants, and EARLIER
+                # groups' targets. A relation reading a not-yet-evaluated symbol
+                # (a downstream `solutions` target, e.g. the section's I) is a
+                # forward-DAG violation, named loudly.
+                knowns = {*inputs, *constraints, *known_syms, *seen_targets}
+                coeff_syms = set().union(*[r.free_symbols for _, r in g_relations]) - set(g_targets)
+                not_ready = coeff_syms - knowns
+                if not_ready:
+                    raise BuildError(
+                        f"{gc}: coefficients read {sorted(map(str, not_ready))}, not yet evaluated "
+                        f"at this plan step — a solve_linear group runs after constraints and before "
+                        f"`solutions`, reading only inputs/constraints/materials/earlier groups (v1)"
+                    )
+                solved, det = certify_linear_group(g_targets, g_relations, self.specs, gc)
+                rel_ids = [rid for rid, _ in g_relations]
+                # det guard: a singular system has no unique solution → refuse the
+                # WHOLE evaluation (existing 'nonzero' kind; zero runtime change).
+                # Checked pre-plan in relation.ts, so det reads only knowns (above).
+                det_fn_id = f"{fn_prefix_base}_solvelin{gi}__det"
+                self.fns.append(emit_function(det_fn_id, det, gc))
+                names = [self.specs[t].name for t in g_targets]
+                subject = (
+                    names[0] if len(names) == 1
+                    else " and ".join(names) if len(names) == 2
+                    else ", ".join(names[:-1]) + ", and " + names[-1]
+                )
+                linear_det_guards.append((
+                    {
+                        "guard_fn": det_fn_id, "kind": "nonzero", "severity": "invalid",
+                        "message": (
+                            f"This configuration is statically indeterminate and its coefficient "
+                            f"determinant is zero at these inputs — {subject} are not uniquely "
+                            f"determined, so every value is refused rather than guessed."
+                        ),
+                        "auto": False,
+                    },
+                    sp.srepr(det),
+                ))
+                # DESUGAR: each solved form is an ordinary eval step + closed form
+                for tname, tsym in zip(raw_targets, g_targets):
+                    expr = solved[tsym]
+                    fn_id = f"{fn_prefix_base}_{tname}"
+                    self.fns.append(emit_function(fn_id, expr, gc))
+                    for lab in labels:
+                        ordered_by_label[lab].append((tsym, expr))
+                    all_pairs.append((tsym, expr))
+                    ordered_steps.append(("eval", tsym, expr))
+                    plan.append({
+                        "type": "eval", "target": tname, "fn": fn_id,
+                        "latex": sp.latex(sp.Eq(tsym, expr), **LATEX_OPTS),
+                        "via": {"solve_linear": {"relations": rel_ids, "det_fn": det_fn_id}},
+                    })
+                    seen_targets.append(tsym)
+                    targets_needed.discard(tsym)
+
             for target_name, sol in solutions_raw.items():
                 tc = f"{c}, solution for '{target_name}'"
                 if target_name not in self.table:
@@ -659,6 +753,16 @@ class ThingCompiler:
             # loudly, exactly as the multi-branch combinations already do (v1).
             if solve_targets and table_targets:
                 raise BuildError(f"{c}: solve1d and table steps cannot be combined in one configuration (v1)")
+            # a solve_linear group desugars to CLOSED FORMS, so it composes with
+            # ordinary `solutions` through the else-branch below; combining it
+            # with a solve1d/table campaign or multi-branch circuits is out of
+            # scope for v1 (each would need its own certificate arm) — refuse it
+            # loudly rather than silently drop the group's back-substitution.
+            if linear_groups and (solve_targets or table_targets or branches_meta):
+                raise BuildError(
+                    f"{c}: a solve_linear group cannot be combined with solve1d, table, or "
+                    f"multi-branch solutions in one configuration (v1)"
+                )
             if solve_targets:
                 # the numeric campaign: bracket sign-change + single-root scan
                 # + 60-dps bisection + total back-substitution, per sample —
@@ -729,6 +833,17 @@ class ThingCompiler:
 
             guards = []
             seen_guards: set[tuple[str, str]] = set()
+            # solveLinear determinant guards FIRST: a singular coupled system
+            # refuses the whole evaluation before any plan step runs (guards are
+            # checked pre-plan in relation.ts). Seed the dedup with each det's
+            # srepr so an auto denominator guard that happens to equal the
+            # determinant (a non-cancelling solve, e.g. a composite bar) is not
+            # emitted twice — for a solve where the determinant cancels (propped
+            # cantilever's L³/3), the solved forms carry no det denominator and
+            # this explicit guard is the ONLY place the determinant is checked.
+            for dg, dsr in linear_det_guards:
+                guards.append(dg)
+                seen_guards.add(("nonzero", dsr))
             for gi, (target, expr) in enumerate(all_pairs):
                 for g_name, g_expr, kind, msg in auto_guards(
                     expr, f"{fn_prefix_base}_g{gi}", str(target)

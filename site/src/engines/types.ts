@@ -51,7 +51,21 @@ export interface RelationMeta {
 }
 
 export type PlanStep =
-  | { type: "eval"; target: string; fn?: string; branch_fns?: Record<string, string>; latex: unknown }
+  | {
+      type: "eval";
+      target: string;
+      fn?: string;
+      branch_fns?: Record<string, string>;
+      latex: unknown;
+      /**
+       * Provenance of an eval step desugared from a certified linear-group
+       * solve (ADR-0008, solveLinear): the coupled relations it was solved
+       * from and the system-determinant guard. Inert at runtime — the engine
+       * runs the step by `fn` like any eval; this rides the artifact for the
+       * /verification/ audit surface. Absent on ordinary eval steps.
+       */
+      via?: { solve_linear: { relations: string[]; det_fn: string } };
+    }
   | {
       type: "solve1d";
       target: string;

@@ -90,6 +90,62 @@ test("validity envelope fires as a visible warning, not a silent wrong number", 
   await expect(page.locator(".validity")).toContainText(/yield/i);
 });
 
+/**
+ * Propped cantilever (S15 — the solveLinear reference consumer). Defaults
+ * w = 12 kN/m, L = 2 m, b = 50 mm, h = 100 mm → I = 4.16667e-6 m⁴:
+ *   reactions (material-BLIND): R_A = 5wL/8 = 15 kN, R_B = 3wL/8 = 9 kN,
+ *   M_A = wL²/8 = 6000 N·m, σ_max = M_A(h/2)/I = 72 MPa.
+ *   A36 (E=199.95 GPa, σ_y=248.2 MPa): δ_mid = wL⁴/192EI ≈ 1.200 mm, SF ≈ 3.447.
+ *   Ti-6Al-4V (E=110.3 GPa, σ_y=868.7 MPa): δ_mid ≈ 2.176 mm, SF ≈ 12.07.
+ *   → THE solveLinear assertion: switching material moves δ and SF but NOT a
+ *     single reaction — the redundant load path is set by geometry, not material.
+ */
+test("propped cantilever: the coupled reactions are material-blind; deflection and margin cascade", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/propped-cantilever/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  await page.getByTestId("material-select").selectOption("steel-a36");
+  const rA = await readOutput(page, "R_A"); // kN
+  const rB = await readOutput(page, "R_B");
+  const mA = await readOutput(page, "M_A"); // N·m
+  const sig = await readOutput(page, "sigma_max"); // MPa
+  const deltaSteel = await readOutput(page, "delta_mid"); // mm
+  const sfSteel = await readOutput(page, "SF");
+  expect(rA).toBeCloseTo(15, 2); // 5wL/8 = 15 kN, exact and material-blind
+  expect(rB).toBeCloseTo(9, 2); //  3wL/8 = 9 kN
+  expect(mA).toBeCloseTo(6000, 0); // wL²/8
+  expect(sig).toBeCloseTo(72, 1); // M_A(h/2)/I = 72 MPa (also material-blind)
+  expect(deltaSteel).toBeCloseTo(1.2, 1);
+
+  await page.getByTestId("material-select").selectOption("ti-6al-4v");
+  const rATi = await readOutput(page, "R_A");
+  const rBTi = await readOutput(page, "R_B");
+  const mATi = await readOutput(page, "M_A");
+  const deltaTi = await readOutput(page, "delta_mid");
+  const sfTi = await readOutput(page, "SF");
+  // the reactions do NOT move — the whole point of the page
+  expect(rATi).toBeCloseTo(rA, 5);
+  expect(rBTi).toBeCloseTo(rB, 5);
+  expect(mATi).toBeCloseTo(mA, 5);
+  // ...while titanium (a third the stiffness) deflects far more, and its higher
+  // yield lifts the safety factor — stiffness and strength are independent axes
+  expect(deltaTi).toBeGreaterThan(deltaSteel * 1.5);
+  expect(sfTi).toBeGreaterThan(sfSteel * 2);
+  expect(errors).toEqual([]);
+});
+
+test("propped cantilever: overload past yield warns, never a silent wrong number", async ({ page }) => {
+  await page.goto("things/propped-cantilever/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+  // a soft material at high load: σ_max = 3wL²/(4bh²) races past nylon's yield.
+  // the w slider reads in its first display unit, kN/m (max 50 = 50000 N/m).
+  await page.getByTestId("material-select").selectOption("nylon-66");
+  await page.locator("#knob-w").fill("50");
+  await expect(page.locator(".validity-warn, .validity-invalid").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/yield/i);
+});
+
 test("derivations and equations render as KaTeX with MathML", async ({ page }) => {
   await page.goto("things/planetary-gearset/");
   expect(await page.locator(".katex").count()).toBeGreaterThan(5);
@@ -262,7 +318,7 @@ test("verification page discloses authorship and the audit surface", async ({ pa
   await expect(page.getByText(/built end to end by an AI/i).first()).toBeVisible();
   await expect(page.getByText(/No human reviews the content/i).first()).toBeVisible();
   // every THING appears with its audit block (count is a deliberate change detector)
-  expect(await page.locator("section.relation-block").count()).toBe(30); // +two-bar-truss (S13)
+  expect(await page.locator("section.relation-block").count()).toBe(31); // +propped-cantilever (S15)
   await expect(page.getByText(/Where physics enters/i).first()).toBeVisible();
   expect(errors).toEqual([]);
 });
