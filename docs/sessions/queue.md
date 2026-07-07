@@ -88,7 +88,7 @@ deferred). Briefs are DRAFT: the Phase 2 closing session verifies them against m
 | S16 | fixed-fixed-beam + fixed-fixed-torsion-shaft                     | +2       | DONE | #34 | 2026-07-06 · phase3/fixed-fixed-family | [S16](briefs/S16-fixed-fixed-family.md) |
 | S17 | multi-material binding slots + composite-bar                     | +1       | DONE | #36 | 2026-07-06 · phase3/multi-material-slots | [S17](briefs/S17-multi-material-composite-bar.md) |
 | S18 | CTE material column + thermal-assembly                           | +1       | DONE | #37 | 2026-07-06 · phase3/thermal-cte | [S18](briefs/S18-thermal-assembly-cte.md) |
-| S19 | bolted-joint-gasket (separation = global refusal)                | +1       | IN_PROGRESS | —  | 2026-07-06 · thing/bolted-joint-gasket | [S19](briefs/S19-bolted-joint-gasket.md) |
+| S19 | bolted-joint-gasket (separation = global refusal)                | +1       | DONE | #38 | 2026-07-06 · thing/bolted-joint-gasket | [S19](briefs/S19-bolted-joint-gasket.md) |
 | S20 | Phase 3 close: optional three-parallel-rods + reconciliation + report | +0/1 | QUEUED | —  | —    | [S20](briefs/S20-phase3-close.md) |
 
 ## Phase 4 — Chaining as the product

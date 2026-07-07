@@ -1,0 +1,94 @@
+Tighten a bolt through two flanges and it stretches like a stiff spring, squeezing the members
+between its head and nut with a **preload** $F_i$. Now hang an external tensile load $P$ on the joint —
+internal pressure trying to lift a vessel head, a pipe flange fighting the line pressure behind it.
+The question every fastener course turns on is deceptively simple: *how much of $P$ does the bolt
+actually feel?*
+
+The naïve answer — all of it — is wrong, and usefully so. The bolt and the clamped members are **two
+springs in parallel**, both anchored between the same head and nut. When $P$ tries to pull them apart,
+the bolt stretches a little more and the members, already squeezed, relax a little. They must move
+*together* as long as they stay in contact, so the external load **splits between them by stiffness**.
+A well-preloaded joint routes most of $P$ into *unloading the members* and only a small fraction into
+*more bolt tension* — which is the entire reason bolts are preloaded at all.
+
+You meet this joint wherever a seal has to hold pressure: cylinder heads, pressure-vessel flanges,
+pump and valve bonnets, pipe flange pairs, the head of a hydraulic cylinder. The **gasket** is what
+makes it its own THING.
+
+## The load splits by stiffness
+
+Give the bolt stiffness $k_b$ and the combined member-plus-gasket stiffness $k_m$. The fraction of the
+external load the bolt takes is the **joint stiffness constant**:
+
+$$ C = \frac{k_b}{k_b + k_m} $$
+
+— exactly how two parallel springs share a force. The bolt tension and the residual clamping force
+then follow from equilibrium and compatibility together:
+
+$$ F_b = F_i + C\,P, \qquad F_m = F_i - (1 - C)\,P $$
+
+The bolt sees its preload plus only its *share* $C\,P$ of the external load; the members shed the rest.
+In a bare metal joint the members are far stiffer than the bolt, so $C$ is small — typically $0.15$ to
+$0.25$, meaning the bolt feels only $15$–$25\%$ of $P$. This is the whole payoff of preload: the load
+the bolt fatigues under is a *fraction* of the applied load, and the members do the rest of the work by
+un-squeezing.
+
+The build does not hand you these formulas to trust. It certifies that equilibrium and compatibility
+form a system **linear in $\{F_b, F_m\}$**, solves that $2\times2$ system **exactly** at build time, and
+checks the solution back through both relations — the same total verification an ordinary closed form
+gets. This is the `solveLinear` capability shared with the [propped cantilever](../propped-cantilever/)
+and the [composite bar](../composite-bar/); what the machine proves and what still rests on a book is on
+the [verification page](../../verification/).
+
+## The gasket is the whole point
+
+A gasket is a **soft layer in series with the metal members**, and softness lowers $k_m$. Look at what
+that does to $C = k_b/(k_b + k_m)$: as $k_m$ falls, $C$ *rises*, so **the bolt is forced to absorb a
+larger fraction of every external load**. The default state here is already a gasketed joint — the
+members-plus-gasket stiffness $k_m$ has been brought down to equal the bolt's own $k_b$, so $C = 0.5$
+and the bolt takes *half* of every external load, well above the $0.15$–$0.25$ of a bare metal joint.
+Soften the gasket further in the widget (drop $k_m$ below $k_b$) and watch $C$ climb past $0.5$ — the
+bolt force $F_b$ swings ever more for the same $P$. That is why a soft-gasketed joint is harder on its
+bolts than a metal-to-metal one, and why gasket choice is a fatigue decision, not just a sealing one. (Here $k_m$ is a **direct input** — the members
+and gasket already combined into one series stiffness. Computing $k_m$ from the members' pressure-cone
+frusta and the gasket's own rate is the standard next step, and named future work.)
+
+## Separation — where the model stops
+
+Watch $F_m = F_i - (1 - C)\,P$ as you crank $P$ up. The residual clamping force **falls**, and at
+
+$$ P_0 = \frac{F_i}{1 - C} $$
+
+it reaches zero: the members go slack and the joint **separates**. Past $P_0$ the bolt carries the
+*entire* external load, the two-spring split no longer describes anything, and — for a gasketed joint —
+the seal has already leaked. Because the linear model is void everywhere beyond separation, the widget
+**refuses the whole evaluation** there rather than draw a confident, wrong picture: every readout blanks
+and the diagram is replaced by a refusal. Separation is not a warning to design *near*; it is the cliff
+the preload exists to keep you away from.
+
+## What sets the numbers, and the honest scope
+
+Two inputs deserve a note:
+
+- **Proof strength $S_p$ is a direct knob, not a seeded material.** A bolt's strength comes from its
+  *property class* — SAE grades, ISO metric classes like 8.8 or 10.9 — which are specification grades,
+  not the alloys in this site's materials database. The default $600\ \mathrm{MPa}$ is the ISO 898-1
+  Class 8.8 proof stress (Shigley Table 8-11). The tensile stress area $A_t$ is a *separate* knob set by
+  thread size (an M16 bolt is $\approx 157\ \mathrm{mm^2}$, an M20 $\approx 245\ \mathrm{mm^2}$): the two
+  are chosen independently, and the safety factor $n_p = S_p A_t / F_b$ guards the bolt against reaching
+  proof at full external load.
+
+- **There is no material dropdown, and that is honest.** Young's modulus never appears here — the
+  stiffnesses $k_b$ and $k_m$ are supplied directly by design, so the usual "stiffer material deflects
+  more" cascade has nothing to act on. Bolt strength comes from the grade table via $S_p$, which no
+  seeded metal represents. A token material picker that changed nothing would be dishonest, so there
+  isn't one. (A frusta-based $k_m$ and a bolt-grade lookup table would each re-introduce a real axis;
+  both are future work.)
+
+## Sign convention
+
+$F_i$ is the assembly preload — bolt tension equals member compression before any external load. $F_b$ is
+the total bolt tension and is always positive. $F_m$ is the **residual clamping force, taken positive in
+compression**: it starts at $F_i$ and falls as $P$ grows, and **separation is $F_m \le 0$**. (Shigley
+writes the member force as $(1-C)P - F_i$ with compression negative; the sign is flipped here so that a
+positive $F_m$ reads directly as "the joint is still clamped.")

@@ -1385,3 +1385,75 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   per-slot default trap persists: thermal-assembly's slots land on al-2024-t3(left)/al-6061-t6(right); always
   selectOption explicit materials on `material-select-left`/`-right`. (f) Nothing is paused; S19 (bolted-joint-gasket)
   is the topmost QUEUED row of active Phase 3.
+
+## S19 — bolted-joint-gasket — 2026-07-06 — PR #38 — MERGED
+- Shipped: THING 36 `bolted-joint-gasket` (a preloaded gasketed joint under external tensile load) — a 2×2
+  `solve_linear` for the bolt/member force split {F_b, F_m}, with readouts C = k_b/(k_b+k_m) (the joint
+  stiffness constant), separation load P₀ = F_i/(1−C), bolt stress σ_b = F_b/A_t, and proof safety factor
+  n_p = S_p·A_t/F_b. Separation (F_m ≤ 0) is a GLOBAL (unscoped) invalid refusal. NO material binding —
+  honest: E never enters (k_b/k_m are DIRECT inputs by design) and S_p is a bolt-grade spec value, not a
+  seeded material. Pure S15 solveLinear consumer: ZERO new kinds/schema/engine machinery. Added display
+  units GN/m, MN/m, mm² (DISPLAY_FACTORS data rows, per the brief's Notes). Catalog 35 → 36.
+- Gates: pytest 354 (347 baseline + 7 test_boltedjoint_physics); pnpm build clean (WARM — no pipeline-source
+  edit, only the new THING compiles + astro; 43 pages, katex 1527, mdx 72 files, parity 1485 values, units
+  884 refs incl. the 3 new display units); unit 19 (no engine change); e2e 106 (102 baseline + 3 bolted-joint
+  [goldens+load-split; GLOBAL separation refusal = all 6 readouts blank + SimRefusal; proof warn while
+  clamped] + 1 axe on the new no-material-picker page); relation-block change-detector 35→36.
+  visual pass (built dist /Mechanic/ via preview + screenshots normal+separation+warn): sim renders VISIBLY
+  (blue bolt head/shank/nut, violet members, amber gasket line, outward P arrows, and two force-share bars
+  straddling a dashed preload line — 15 rects, real fills, NOT the invisible-SVG trap); drove P 10→60 kN past
+  P₀=50 and SAW the GLOBAL refusal (SimRefusal "separated" figure + red invalid banner + ALL readouts "—");
+  raised F_i=40/P=44 kN and SAW the bolt bar turn red (#dc2626) with the amber proof warn while readouts
+  stayed LIVE (page stands, F_m=18 kN>0); softened k_m 1.0→0.25 GN/m and SAW C rise 0.5→0.8, F_b 30→33 kN
+  (the gasket legibility moment — soft gasket drives the bolt harder); KaTeX 0 errors, console clean;
+  /things/ card + /verification/(36 relation blocks) present.
+- review: 5 INDEPENDENT fresh-context passes (§4) — (a) physics, (b) invariants, (c) code/tests subagents +
+  /code-review high (correctness + cleanup/conventions finders). Physics re-derived the load-share TWO ways
+  from scratch (APPROVED, ZERO findings; explicitly confirmed the soft-gasket prose is NOT backwards — soft
+  gasket raises C AND raises P₀, kept distinct). Invariants: all five PASS (DOF 12−6=6 via the real Jacobian
+  rank check; det = 1/k_b+1/k_m never singular; no-material justification honest; sim pure layout consuming
+  `invalid` + SimRefusal, no destructuring defaults). Code/tests: 9 checks pass (physics test imports only
+  sympy — genuinely first-principles; golden hand-checkable + exact; every CSS class exists; units convert
+  correctly; no committed artifacts). 3 findings FIXED: (a) dead `F_i` removed from `scaleMax=Math.max(P0,F_b)`
+  (F_b ≥ F_i always; positivity now rests on the ok-guard's P₀>0, with a comment); (b) overview prose tension
+  resolved (named the DEFAULT as an already-gasketed joint at C=0.5, above bare-metal's 0.15–0.25); (c)
+  separation e2e completed with the n_p blanked-readout assertion (all 6 derived readouts). Rebutted (no
+  change): invalidVars unread is correct (this THING's refusal is global-only, matching composite/thermal);
+  `S_p ?? Infinity` and the per-sim arrow helper are established sibling idioms; the "is this really S19?" nit
+  is confirmed correct against queue.md.
+- Golden: HAND-DERIVED (labeled honestly — no accessible Shigley worked example was web-pinnable), a clean
+  C = 1/2 state: F_i=25 kN, P=10 kN, k_b=k_m=1 GN/m, A_t=100 mm², S_p=600 MPa → C=0.5, F_b=30 kN, F_m=20 kN,
+  P₀=50 kN, σ_b=300 MPa, n_p=2.0. Every value checked by hand and re-derived TWO independent ways
+  (compatibility solve; combined-stiffness δ=P/(k_b+k_m)) in test_boltedjoint_physics.py; matches the live
+  widget default exactly.
+- Citations pinned: `shigley` (Budynas & Nisbett, Shigley's Mechanical Engineering Design, 10th ed., ch. 8 —
+  §8-4 joint constant C, §8-5 bolt/member forces + separation, Table 8-11 metric proof strengths) —
+  topic-level, NOT page-pinned (textbook PDF not web-accessible, same honest limit as sibling THINGs);
+  web-corroborated 2026-07-06 (MechaniCalc "Bolted Joint Analysis"; Univ. of Portland ME fastener notes) AND
+  re-derived from first principles. HONEST proof-strength nuance recorded in sources[].verification: ISO 898-1
+  splits Class 8.8 into 580 MPa (d≤16 mm) / 600 MPa (16<d≤72 mm); 600 MPa is Shigley Table 8-11's M16–M36
+  value (the default); S_p (property class) and A_t (thread size) are independent knobs, so the default
+  pairing is honest.
+- Deviations from brief: (1) Golden is hand-derived, not a Shigley worked example (the gate authorizes either;
+  none was web-pinnable — labeled honestly in the test + verification). (2) Added display units GN/m (1e9),
+  MN/m (1e6), mm² (1e-6) — anticipated by the brief's Notes as "routine data covered by check-units, not a
+  capability" (joint stiffnesses run ~1e9 N/m; N/m and kN/m alone render unreadably). (3) Default A_t=100 mm²
+  is a clean representative area (≈ between M12 and M16), framed as an independent thread-size input while S_p
+  carries the cited Class-8.8 value with its diameter nuance disclosed — keeps the core load-share golden
+  clean and honest. (4) Sim adds a proof-warn tint (bolt bar red at σ_b≥S_p) — presentational, computed from
+  the same engine values as the sibling yield tints (composite/thermal), not bespoke physics.
+- New capabilities future briefs may rely on: none (pure S15 solveLinear consumer; zero new kinds/schema/
+  engine). Display units GN/m, MN/m, mm² now in DISPLAY_FACTORS. Pattern: a non-cancelling-determinant 2×2
+  solve_linear whose coefficients read only INPUTS (k_b, k_m, F_i, P) needs NO EI-cancellation gymnastics
+  (contrast propped/fixed-fixed) — det guard is a plain k_b+k_m≠0 and the forces are input-dependent (like
+  composite/thermal). A GLOBAL invalid on a SIGNED derived var (F_m: no `positive:`, bounds spanning negative)
+  is the simple original refusal path.
+- Notes-for-next (S20 = Phase 3 close): (a) S19 is the last catalog-growing Phase 3 row before the close; S20
+  writes reports/phase-3.md, reconciles the Phase 4 DRAFT briefs, and sets the queue header to
+  `Active phase: 3 — AWAITING OWNER` then STOPS (protocol §8) — do NOT start Phase 4 (no ruling line exists).
+  (b) the transient pnpm deps-check failure ("pnpm install failed" before test:unit) hit once — run
+  `pnpm install --frozen-lockfile` ("Already up to date") then re-run; not a real failure (S03/S04 precedent).
+  (c) the /verification/ relation-block e2e count is now 36 — S20's optional three-parallel-rods THING would
+  bump it to 37 (else it stays 36). (d) a NO-material THING is fully supported end to end (material_binding
+  null; [slug].astro + ThingWidget guard it; e2e asserts material-select count 0) — 8 THINGs now omit
+  materials. (e) Nothing is paused; S20 (Phase 3 close) is the topmost QUEUED row.

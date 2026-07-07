@@ -14,6 +14,7 @@ for (const path of [
   "things/fixed-fixed-beam/", // S16: new sim component (FixedFixedBeamSim)
   "things/fixed-fixed-torsion-shaft/", // S16: new sim component (FixedFixedShaftSim)
   "things/composite-bar/", // S17: TWO labelled material selects (core + sleeve) + new sim (CompositeBarSim)
+  "things/bolted-joint-gasket/", // S19: new sim (BoltedJointSim) + a NO-material-picker page (direct-stiffness inputs)
   "materials/",
   "verification/",
   "",

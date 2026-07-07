@@ -18,6 +18,7 @@ import { ValidityBanner } from "./ValidityBanner";
 import { BeamSim } from "./sims/BeamSim";
 import { BearingSim } from "./sims/BearingSim";
 import { BeltSim } from "./sims/BeltSim";
+import { BoltedJointSim } from "./sims/BoltedJointSim";
 import { CircularPlateSim } from "./sims/CircularPlateSim";
 import { ClutchSim } from "./sims/ClutchSim";
 import { ColumnSim } from "./sims/ColumnSim";
@@ -96,6 +97,7 @@ const SIMS: Record<
   "fixed-fixed-beam": FixedFixedBeamSim,
   "composite-bar": CompositeBarSim,
   "thermal-assembly": ThermalAssemblySim,
+  "bolted-joint-gasket": BoltedJointSim,
 };
 
 interface Props {
