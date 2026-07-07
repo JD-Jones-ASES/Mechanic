@@ -2117,3 +2117,34 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   session-launch framing in favor of a general agent entry point per R12; (e) frozen example
   URLs: mint via a temp node script importing encodeChain (Node 24 type-strips .ts imports) —
   worked exactly as the S25 recipe promised.
+
+## V1 — v1.0.0 release: docs + human-POV pass + repo polish + tag — 2026-07-07 — PR #52 — MERGED
+- Shipped: **the release close** (R10 + R12). CLAUDE.md rewritten as the agent entry point for a
+  fresh repo download (status · invariants · factory pattern · build/test with pins and the
+  Playwright first-run note · hard-won traps · toolchain · provenance · "Working on this repo" ·
+  doc map · out-of-scope; phase history moved to roadmap/log). README gained the v1.0.0 status
+  paragraph. roadmap.md: Release marked complete; "Phase 5 — Materials depth" → **Future paths
+  (owner-commissioned; no standing queue)**. queue.md: terminal dormant header (protocol §8
+  language). New: CITATION.cff (CFF 1.2.0-valid) + CONTRIBUTING.md. After merge: `v1.0.0` tag +
+  GitHub Release on the deployed main commit (R12; recorded below by the same session).
+- Gates: warm pnpm build clean (45 pages); e2e 149 passed (one earlier run showed the documented
+  local high-parallelism flake — clean on re-run; S24 note); pipeline untouched on this branch
+  (pytest 375 green on the S26 base). No pipeline/schema/site-behavior change — docs, two root
+  metadata files, and one build-inert comment sweep rode S26.
+- Golden: N/A (docs/metadata session; per-THING gate items 2–4 N/A per protocol §3).
+- Citations pinned: N/A — no new citation/material/relation.
+- Deviations from brief: none. (The brief's optional CITATION.cff judged worth it and added.)
+- Review findings + dispositions: docs-accuracy agent — FIXED: CITATION.cff `notes:` is not a
+  CFF 1.2.0 top-level key (schema-checked) → `abstract:`; FIXED: "ADR-0008 = solver scope" label
+  collided with ADR-0002's literal title → "solveLinear/solveND split"; FIXED (optional taken):
+  roadmap done-bar parenthetical (13 materials vs the ~30 final-product bar). Fresh-agent
+  usability test — FIXED: Playwright chromium first-run install was missing from CLAUDE.md's
+  build table (the one command that would strand a fresh clone). Human-POV pass: zero findings.
+- New capabilities future briefs may rely on: none (docs only).
+- Notes-for-next: **This queue is dormant.** v1.0.0 is tagged and released; there is no active
+  phase and nothing claimable — a future session must stop at the header unless the owner has
+  written a new ruling line (protocol §8) and commissioned briefs. The development record is
+  this log + docs/sessions/reports/ + the ADRs; the Future paths live in docs/roadmap.md.
+  Standing traps for whoever comes next: pnpm from site/ (Bash CWD persists); local e2e
+  --workers=2; any pipeline-source edit costs one cold build; PS 5.1 never touches repo files;
+  merge is publish.

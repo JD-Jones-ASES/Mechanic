@@ -3,6 +3,11 @@
 **Live site: https://jd-jones-ases.github.io/Mechanic/**
 [![CI](https://github.com/JD-Jones-ASES/Mechanic/actions/workflows/ci.yml/badge.svg)](https://github.com/JD-Jones-ASES/Mechanic/actions/workflows/ci.yml)
 
+**v1.0.0** — initial development is complete (37 THINGs, the chain builder, the verification
+model). The site stays live and corrections land through the errata path; future growth (new
+THINGs, materials depth) happens as owner-commissioned work — see
+[`docs/roadmap.md`](docs/roadmap.md).
+
 A browsable, citation-backed database of mechanical and physical THINGS — gears, beams, shafts,
 springs, belts, pressure vessels, linkages — for engineering undergraduates. Every THING ships
 its governing equations **with machine-verified derivations**, an interactive simulation,
@@ -92,8 +97,8 @@ unchanged THINGs in seconds (locally and in CI). The site deploys from CI on eve
 
 ## Orientation
 
-- [`CLAUDE.md`](CLAUDE.md) — the master spec: mission, the five invariants, factory pattern,
-  provenance rules.
+- [`CLAUDE.md`](CLAUDE.md) — the entry point for coding agents, and the master spec: mission, the
+  five invariants, the factory pattern, build/test commands, and the hard-won traps.
 - [`docs/architecture.md`](docs/architecture.md) — pipeline + the compiled-artifact schema
   (single source of truth).
 - [`docs/authoring-things.md`](docs/authoring-things.md) — how to add a THING.
