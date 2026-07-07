@@ -1670,3 +1670,51 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   compile.py + two tests; it does not affect D1. The monkeypatch pattern in `test_config_guards.py`
   (`monkeypatch.setattr(compile_mod, "auto_guards", ...)`) is the way to test a compiler-internal invariant that
   has no authoring path — reuse it if you need to prove "the compiler can't emit X."
+
+## D1 — Portal IA: course-spine taxonomy + structured home/catalog + Pagefind search — 2026-07-07 — PR #44 — MERGED
+- Shipped: the flat unordered home grid → a course-spine catalog (hero + build-proof stats + Pagefind
+  search + 36 THINGs grouped by category/topic in ADR-0010 spine order); `/things/` renders the same
+  shared `CatalogSections.astro` (no drift). New authored fields `category` (required Zod enum) + `topic`
+  (optional) in content.config.ts + all 36 thing.yaml. `Search.astro` (Pagefind Default UI, PROD-gated,
+  catalog pages only). `lib/stats.ts` (shared build-proof totals for the hero AND /verification/).
+  Catalog unchanged at 36 THINGs — a design/IA session, no THING added.
+- Gates: pytest 362 (unchanged, pipeline untouched); pnpm build clean COLD (36 yaml re-fingerprint → full
+  pipeline pass ~3.5 min, then warm rebuilds seconds) — 43 pages, katex/mdx/parity/units + pagefind green;
+  unit 38 (unchanged); e2e 108 → 113 (+5: catalog spine-order ×2 surfaces, search returns a THING,
+  no-search-script-on-THING-pages, axe /things/) — ALL prior specs unmodified & green; visual pass (built
+  dist, /Mechanic/): 3 category sections in spine order w/ distinct accents+icons, 36 cards, hero stats
+  36/288/136/186 == /verification/, live search "planetary" → planetary-gearset #1, dark + mobile (375px,
+  zero h-overflow) clean, console clean; review: 6 fresh-context agents (3 angle + 3 code-review finders)
+  — zero correctness bugs / zero invariant weakenings; 10 findings fixed, 5 rebutted/deferred (PR #44).
+- Golden: N/A — no emitted numbers (IA/design session; per-THING gate items 2–4 N/A per protocol §3). The
+  regression net is the full 113-spec e2e + the honesty gate proven loud locally (remove a category line →
+  Zod build error; unknown topic / topic-on-topicless-category / empty topic → CatalogSections build error).
+- Citations pinned: N/A — no new citation/material/relation.
+- Deviations from brief: (1) PATH CORRECTION — Pagefind 1.5.2 emits its UI to `dist/pagefind/`, NOT
+  `dist/_pagefind/` as the brief entry-criterion + ADR-0010 §3 assumed (underscore dropped at Pagefind 1.0
+  so the dir survives Jekyll/GitHub-Pages). Verified locally AND live (/Mechanic/pagefind/pagefind-ui.js
+  serves the real lib). Search.astro uses the real path; ADR-0010 §3 carries a dated implementation note.
+  NOT a BLOCK — the criterion's intent (Pagefind emits a usable UI) is satisfied. (2) Fixed a pre-existing
+  mobile nav overflow (≤375px) via global.css flex-wrap — in scope for the D1 restrained-polish track,
+  spotted in the visual/adversarial pass. (3) Restored the home→/materials/ link (the ADR hero spec listed
+  only stats+chain; a reviewer flagged the dropped Ashby entry point — invariant 3 showcase). Else per brief.
+- New capabilities future briefs may rely on: authored `category`/`topic` taxonomy is LIVE (required enum
+  + optional slug, validated in CatalogSections.astro; unknown/empty → loud build error);
+  `CatalogSections.astro` is the shared catalog (single owner of display names + spine order) — D2 renders
+  or extends it; `lib/stats.ts` `catalogTotals(compiled)` is the one source for build-proof numbers;
+  Pagefind Default UI wiring (PROD-gated, `pagefind/` path, JS aria-label fix) is reusable.
+- Notes-for-next (immediate next QUEUED row = D2, THING-page wayfinding): (a) PAGEFIND INDEX NOISE (owner
+  decision pending) — all four broad reviewers flagged that the catalog listing pages (home, /things/, and
+  secondarily /verification/ /chain-demo/) are Pagefind-indexed, so search returns them as low-ranked noise
+  (the THING page always ranks #1 — clutter, not wrong answers). D1 did NOT fix it because the brief says
+  "do not change indexing scope in this session." Recommended fix (repo's own pattern): add
+  `data-pagefind-ignore` to the `<div class="catalog">` in CatalogSections.astro (THING pages stay indexed)
+  + an e2e that a THING search omits the listing pages. Spawned as a task chip. (b) the `pagefind/` (no
+  underscore) path is the real one — do NOT reintroduce `_pagefind`. (c) category/topic slugs + display
+  names live ONLY in CatalogSections.astro `CATEGORIES[]`; a new topic with zero THINGs now fails the build
+  (empty-topic assertion) — assign ≥1 THING when you add a topic. (d) hero + /verification/ stats share
+  lib/stats.ts — change the arithmetic once, both follow. (e) e2e catalog pins run against the BUILT dist
+  (Pagefind assets exist only post-build); `SPINE_ORDER` in catalog.spec.ts is the alphabetical-within-topic
+  order — update it if a THING title changes. (f) axe now covers / and /things/; the Pagefind input needs
+  its JS-injected aria-label (Search.astro) or axe label-title-only fails. (g) catalog still 36 — no
+  CLAUDE.md/README count change this session.

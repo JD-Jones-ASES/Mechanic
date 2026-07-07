@@ -5,6 +5,8 @@ summary: >-
   stiffness (E) and strength (σ_y) are independent axes: swap steel for titanium and deflection goes
   UP while the safety factor also goes up.
 facets: [stress, mass-cost]
+category: mechanics-of-materials
+topic: beams-plates
 
 variables:
   - symbol: P

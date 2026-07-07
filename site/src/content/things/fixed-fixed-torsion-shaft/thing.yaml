@@ -6,6 +6,8 @@ summary: >-
   compatibility — the twist at the load point is single-valued — and the build solves the coupled
   2×2 system exactly. The larger reaction lands on the SHORTER segment, and the material cancels out.
 facets: [stress, mass-cost]
+category: mechanics-of-materials
+topic: torsion-combined
 
 # Sign / geometry convention (fixed for this whole THING): x runs from the left wall A (x=0) to the
 # right wall B (x=L). The applied torque T acts at the interior station x=a; the left segment has

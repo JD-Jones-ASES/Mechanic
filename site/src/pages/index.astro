@@ -1,39 +1,56 @@
 ---
 import { getCollection } from "astro:content";
 import Base from "../layouts/Base.astro";
+import CatalogSections from "../components/CatalogSections.astro";
+import Search from "../components/Search.astro";
+import { catalogTotals } from "../lib/stats";
 import { withBase } from "../lib/url";
 
-const things = await getCollection("things");
+// Build-proof stats from the compiled artifacts, via the shared helper that also
+// feeds /verification/ (ADR-0010 §2) — one source, so the two surfaces can never
+// drift. Never hardcoded (a hardcoded count is the drift QC audits keep finding).
+const compiled = (await getCollection("compiled")).map((c) => c.data);
+const stats = catalogTotals(compiled);
+const verify = withBase("verification/");
+// Each stat links to the page that proves it. Numbers render raw (no
+// thousands-separator) to read identically to /verification/.
+const heroStats = [
+  { value: stats.things, label: "THINGs" },
+  { value: stats.relations, label: "cited relations" },
+  { value: stats.identities, label: "identities proven" },
+  { value: stats.samples, label: "parity samples" },
+];
 ---
 
 <Base title="Home">
-  <h1>A reference of mechanical <em>things</em></h1>
-  <p>
-    Each entry declares its variables and governing relations, derives them step by step
-    (machine-verified), and lets you turn the knobs — including the material — to see the physics
-    respond. Built for engineering undergraduates.
-  </p>
-  <ul class="card-grid">
-    {
-      things.map((t) => (
-        <li class="card">
-          <h3>
-            <a href={withBase(`things/${t.id}/`)}>{t.data.title}</a>
-          </h3>
-          <p>{t.data.summary}</p>
-          <p>
-            {t.data.facets.map((f) => (
-              <span class="facet">{f}</span>
-            ))}
-          </p>
-        </li>
-      ))
-    }
-  </ul>
-  <p>
-    Browse the <a href={withBase("materials/")}>materials database &amp; Ashby chart</a> — every value
-    carries its citation and basis. Or watch two THINGs work as one machine in the{" "}
-    <a href={withBase("chain-demo/")}>gearbox → shaft chaining demo</a>, where every connection is
-    type-checked by dimension <em>and</em> quantity kind.
-  </p>
+  <section class="hero">
+    <h1 class="hero-title">A reference of mechanical <em>things</em></h1>
+    <p class="hero-lede">
+      Gears, beams, shafts, columns, vessels. Each THING declares its variables and governing
+      relations, derives them step by step, and lets you turn the knobs — including the material —
+      to watch the physics respond. Built for engineering undergraduates; every number cites its
+      source.
+    </p>
+    <ul class="hero-stats" role="list">
+      {
+        heroStats.map((s) => (
+          <li class="stat">
+            <a href={verify}>
+              <span class="stat-num">{s.value}</span>
+              <span class="stat-label">{s.label}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+    <p class="hero-chain">
+      Watch two THINGs work as one machine in the{" "}
+      <a href={withBase("chain-demo/")}>gearbox → shaft chaining demo</a>, where every connection is
+      type-checked by dimension <em>and</em> quantity kind. Every material value traces to its
+      source in the <a href={withBase("materials/")}>materials database &amp; Ashby chart</a>.
+    </p>
+  </section>
+
+  <Search />
+  <CatalogSections />
 </Base>

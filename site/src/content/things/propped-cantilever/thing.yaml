@@ -6,6 +6,8 @@ summary: >-
   (the prop deflects to zero) supplies the missing equation, and the build solves the coupled
   3×3 system exactly.
 facets: [stress, mass-cost]
+category: mechanics-of-materials
+topic: beams-plates
 
 # Sign convention (fixed for this whole THING): x runs from the wall A (x=0) to the prop B (x=L);
 # downward load and downward deflection are positive; R_A and R_B are the UPWARD support reactions;

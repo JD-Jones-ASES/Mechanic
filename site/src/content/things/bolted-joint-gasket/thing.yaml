@@ -6,6 +6,8 @@ summary: >-
   splits by stiffness. The build solves the coupled bolt/member force system exactly and refuses the
   moment the members go slack.
 facets: [stress]
+category: machine-design
+topic: joints-springs-clutches
 
 # Sign convention (fixed for this whole THING): F_i is the assembly preload (tension in the bolt,
 # equal compression in the members, before any external load). P is an external tensile load pulling

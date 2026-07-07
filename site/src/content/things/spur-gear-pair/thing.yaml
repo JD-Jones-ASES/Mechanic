@@ -5,6 +5,8 @@ summary: >-
   that force into a root-bending stress, and a cited form-factor table sets how much a tooth of N
   teeth can take. Same load, same module — yet the pinion, with fewer teeth, always works harder.
 facets: [stress, torque-power]
+category: machine-design
+topic: gears-drives
 
 variables:
   # --- knobs (free inputs) ---

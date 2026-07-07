@@ -6,6 +6,8 @@ summary: >-
   member's axial stiffness A·E — and the build solves that coupled 2×2 share exactly. Swap the
   sleeve's metal and watch the load migrate to the stiffer member.
 facets: [stress, mass-cost]
+category: mechanics-of-materials
+topic: axial-thermal-impact
 
 # Sign convention (fixed for this whole THING): the bar carries a compressive OR tensile centric
 # axial load P > 0 shared by the two members; P_1, P_2 are the (positive) internal axial forces in

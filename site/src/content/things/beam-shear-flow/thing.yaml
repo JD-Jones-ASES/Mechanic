@@ -6,6 +6,8 @@ summary: >-
   parabola (peak 3V/2A at the neutral axis, zero at the surfaces), and the shear flow q = VQ/I sets
   the fastener spacing. Statics and geometry only: no stiffness enters at all.
 facets: [stress]
+category: mechanics-of-materials
+topic: beams-plates
 
 variables:
   # --- free inputs ---

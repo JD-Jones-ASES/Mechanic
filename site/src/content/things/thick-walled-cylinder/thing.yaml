@@ -5,6 +5,8 @@ summary: >-
   The stress piles up at the bore and decays as 1/r² — and the bore shear always exceeds the
   pressure, so past p = σ_y/2 no amount of thickness can contain it elastically.
 facets: [stress, mass-cost]
+category: mechanics-of-materials
+topic: pressure-rotating
 
 variables:
   - symbol: p

@@ -6,6 +6,7 @@ summary: >-
   assemblies (open and crossed): the first THING in the catalog where one input has two honest
   answers, and the widget lets you pick the circuit.
 facets: [kinematics]
+category: mechanisms-dynamics
 
 variables:
   - symbol: a

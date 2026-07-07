@@ -6,6 +6,8 @@ summary: >-
   doubles the stress; a real drop multiplies it many times over. Stiffer members take HIGHER impact
   stress, because a smaller static deflection means a larger n.
 facets: [dynamics, stress]
+category: mechanics-of-materials
+topic: axial-thermal-impact
 
 variables:
   # --- knobs (free inputs) ---

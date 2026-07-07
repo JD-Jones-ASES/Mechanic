@@ -7,6 +7,8 @@ summary: >-
   and is hottest at the center. This is the page where Poisson's ratio moves a STRESS: the
   simply-supported stress carries ν, the clamped-edge stress carries no material property at all.
 facets: [stress]
+category: mechanics-of-materials
+topic: beams-plates
 
 # Two ALWAYS-VALID models share this page (clamped and simply supported), each with its own
 # variables — not two branches of one solution and not a model hand-off (no scoped refusal). The

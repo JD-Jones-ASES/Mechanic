@@ -79,6 +79,14 @@ built output — the component must degrade gracefully under `astro dev` (visibl
 runs on the built site" note or progressive enhancement), and e2e exercises it against the built
 dist as usual.
 
+> **Implementation note (D1, 2026-07-07):** the emitted directory is `dist/pagefind/`, **not**
+> `dist/_pagefind/` as written above. Pagefind dropped the leading underscore at v1.0 (an
+> underscore-prefixed dir is skipped by Jekyll/GitHub Pages, this site's host) and the repo pins
+> pagefind 1.5.2. Verified locally (`dist/pagefind/pagefind-ui.js`) and live
+> (`/Mechanic/pagefind/pagefind-ui.js` serves the real library). `Search.astro` uses the real
+> path; the `_pagefind` references here and in the D1 brief are the stale pre-1.0 convention, left
+> in place as the historical record rather than silently rewritten.
+
 ### 4. THING-page wayfinding (D2) — all build-time, all static
 
 - **Related THINGs**: same topic first, then same category/shared facets; small card row after

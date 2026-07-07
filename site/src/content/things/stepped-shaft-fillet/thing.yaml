@@ -5,6 +5,8 @@ summary: >-
   the fillet of radius r. The peak stress is the nominal stress times a geometric factor K_t read from
   a cited chart — pure geometry: the material changes the safety factor but never K_t.
 facets: [stress]
+category: machine-design
+topic: shafts-bearings
 
 variables:
   # --- knobs (free inputs): the two chart ratios plus the nominal stress ---

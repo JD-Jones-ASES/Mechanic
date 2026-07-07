@@ -5,6 +5,8 @@ summary: >-
   distributed load at once. Because the governing equation is linear, the two answers simply
   add — superposition, the single most-used trick in structural analysis, made visible.
 facets: [stress, mass-cost]
+category: mechanics-of-materials
+topic: beams-plates
 
 variables:
   - symbol: P

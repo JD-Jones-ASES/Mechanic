@@ -1,0 +1,187 @@
+---
+/**
+ * The structured catalog (ADR-0010 §1–§2): the 36 THINGs grouped by
+ * course-spine `category` and `topic`, in spine order, alphabetical within a
+ * topic. This component is the SINGLE OWNER of category/topic display names and
+ * order — home and /things/ both render it, so there is no drift between the two
+ * catalog surfaces, and no drift between the authored slugs and their display
+ * names. An unknown category or topic value FAILS THE BUILD here (invariant-5
+ * house style: no silent "Other" bucket, no unplaced THING).
+ */
+import { getCollection } from "astro:content";
+import { withBase } from "../lib/url";
+
+interface Topic {
+  slug: string;
+  name: string;
+}
+interface Category {
+  slug: string;
+  name: string;
+  blurb: string;
+  accentVar: string; // CSS token for this category's accent (see global.css)
+  topics: Topic[]; // empty ⇒ no subgrouping; THINGs render directly (ADR §1)
+}
+
+// Spine order. Topic order within a category is pedagogical (this list), NOT
+// alphabetical — only the THINGs inside a topic sort alphabetically by title.
+const CATEGORIES: Category[] = [
+  {
+    slug: "mechanics-of-materials",
+    name: "Mechanics of Materials",
+    blurb: "How solids stretch, bend, twist, buckle, and fail under load.",
+    accentVar: "--cat-mom",
+    topics: [
+      { slug: "axial-thermal-impact", name: "Axial, Thermal & Impact" },
+      { slug: "beams-plates", name: "Beams & Plates" },
+      { slug: "torsion-combined", name: "Torsion & Combined Loading" },
+      { slug: "columns-stability", name: "Columns & Stability" },
+      { slug: "pressure-rotating", name: "Pressure & Rotating Bodies" },
+    ],
+  },
+  {
+    slug: "machine-design",
+    name: "Machine Design",
+    blurb: "Sizing the elements that transmit power and carry service loads.",
+    accentVar: "--cat-md",
+    topics: [
+      { slug: "gears-drives", name: "Gears & Drives" },
+      { slug: "shafts-bearings", name: "Shafts & Bearings" },
+      { slug: "joints-springs-clutches", name: "Joints, Springs & Clutches" },
+    ],
+  },
+  {
+    slug: "mechanisms-dynamics",
+    name: "Mechanisms, Dynamics & Vibration",
+    blurb: "Motion, stored energy, and the frequencies machines ring at.",
+    accentVar: "--cat-mech",
+    topics: [],
+  },
+];
+
+const things = (await getCollection("things")).map((t) => ({
+  id: t.id,
+  title: t.data.title,
+  summary: t.data.summary,
+  facets: t.data.facets,
+  category: t.data.category,
+  topic: t.data.topic,
+}));
+
+const byTitle = (a: { title: string }, b: { title: string }) => a.title.localeCompare(b.title);
+const catBySlug = new Map(CATEGORIES.map((c) => [c.slug, c]));
+
+// Machine-checkable honesty (ADR-0010 §1): every THING must resolve to exactly
+// one known (category, topic). `category` is already a Zod enum, so a bad/missing
+// category fails the collection load before we get here; `topic` is a free string
+// in the schema, so its membership is enforced HERE and nowhere else.
+for (const t of things) {
+  const cat = catBySlug.get(t.category);
+  if (!cat) throw new Error(`CatalogSections: THING '${t.id}' has unknown category '${t.category}'`);
+  if (cat.topics.length === 0) {
+    if (t.topic)
+      throw new Error(
+        `CatalogSections: THING '${t.id}' is in category '${cat.slug}' (no topics) yet declares topic '${t.topic}'`,
+      );
+  } else {
+    if (!t.topic)
+      throw new Error(
+        `CatalogSections: THING '${t.id}' in category '${cat.slug}' must declare a topic (one of: ${cat.topics
+          .map((x) => x.slug)
+          .join(", ")})`,
+      );
+    if (!cat.topics.some((x) => x.slug === t.topic))
+      throw new Error(
+        `CatalogSections: THING '${t.id}' has unknown topic '${t.topic}' for category '${cat.slug}'`,
+      );
+  }
+}
+
+// Build the render tree in spine order.
+const render = CATEGORIES.map((cat) => {
+  const inCat = things.filter((t) => t.category === cat.slug);
+  const groups =
+    cat.topics.length === 0
+      ? [{ topic: null as Topic | null, things: [...inCat].sort(byTitle) }]
+      : cat.topics.map((topic) => ({
+          topic: topic as Topic | null,
+          things: inCat.filter((t) => t.topic === topic.slug).sort(byTitle),
+        }));
+  return { cat, groups };
+});
+
+// Fail loud on a declared-but-empty topic: a topic slug in CATEGORIES with no
+// THING assigned is a taxonomy mistake, and a bare subhead over zero cards would
+// otherwise ship silently (invariant-5 house style — no silent empty section).
+for (const { cat, groups } of render)
+  for (const g of groups)
+    if (g.topic && g.things.length === 0)
+      throw new Error(`CatalogSections: topic '${g.topic.slug}' in category '${cat.slug}' has no THINGs`);
+
+// Post-render backstop: exactly one card per THING across all rendered groups.
+// Given the validation above this can only trip on a DUPLICATE slug in the
+// CATEGORIES list or a render-filter bug — cheap insurance against a silently
+// wrong catalog, counting the actual cards rather than category membership.
+const placed = render.reduce((n, r) => n + r.groups.reduce((m, g) => m + g.things.length, 0), 0);
+if (placed !== things.length)
+  throw new Error(`CatalogSections: rendered ${placed} cards for ${things.length} THINGs — a THING was dropped or duplicated`);
+
+// Hand-authored inline category icons (ADR §5 — no icon library). Decorative
+// (aria-hidden): the category name text carries the meaning. currentColor picks
+// up the per-category accent set on .cat-icon.
+const CX = 12,
+  CY = 12,
+  R_IN = 6.5,
+  R_OUT = 9;
+const gearTeeth = Array.from({ length: 8 }, (_, i) => {
+  const a = (i * Math.PI) / 4;
+  const c = Math.cos(a),
+    s = Math.sin(a);
+  return `M${(CX + R_IN * c).toFixed(2)} ${(CY + R_IN * s).toFixed(2)} L${(CX + R_OUT * c).toFixed(2)} ${(CY + R_OUT * s).toFixed(2)}`;
+}).join(" ");
+
+const ICONS: Record<string, string> = {
+  // a simply-supported beam sagging under a point load
+  "mechanics-of-materials": `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9 Q12 15.5 21 9"/><path d="M1.5 13 L3 9 L4.5 13 Z" fill="currentColor" stroke="none"/><path d="M19.5 13 L21 9 L22.5 13 Z" fill="currentColor" stroke="none"/><path d="M12 2.5 L12 11"/><path d="M9.6 8.4 L12 11 L14.4 8.4"/></svg>`,
+  // an 8-tooth cog
+  "machine-design": `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="6.5"/><path d="${gearTeeth}"/><circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/></svg>`,
+  // a pendulum on a pivot, with a faint swing arc
+  "mechanisms-dynamics": `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4 H13"/><circle cx="9" cy="4" r="1.2" fill="currentColor" stroke="none"/><path d="M9 4 L16 16"/><circle cx="16" cy="16" r="3.1" fill="currentColor" stroke="none"/><path d="M7.5 18 Q12 21 18.5 18.5" stroke-dasharray="2 2" opacity="0.6"/></svg>`,
+};
+---
+
+<div class="catalog">
+  {
+    render.map(({ cat, groups }) => (
+      <section class="cat-section" style={`--cat-accent: var(${cat.accentVar})`} data-category={cat.slug} aria-labelledby={`cat-${cat.slug}`}>
+        <header class="cat-header">
+          <span class="cat-icon" aria-hidden="true" set:html={ICONS[cat.slug]} />
+          <div>
+            <h2 class="cat-title" id={`cat-${cat.slug}`}>{cat.name}</h2>
+            <p class="cat-blurb">{cat.blurb}</p>
+          </div>
+        </header>
+        {groups.map((g) => (
+            <div class="topic-block">
+              {g.topic && <h3 class="topic-title">{g.topic.name}</h3>}
+              <ul class="thing-grid" role="list">
+                {g.things.map((t) => (
+                  <li class="thing-card">
+                    <a class="thing-card-link" href={withBase(`things/${t.id}/`)}>
+                      {t.title}
+                    </a>
+                    <p class="thing-card-summary">{t.summary}</p>
+                    <ul class="facet-row" role="list">
+                      {t.facets.map((f) => (
+                        <li class="facet">{f}</li>
+                      ))}
+                    </ul>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+      </section>
+    ))
+  }
+</div>

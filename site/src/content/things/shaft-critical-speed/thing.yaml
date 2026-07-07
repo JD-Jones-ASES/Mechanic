@@ -6,6 +6,8 @@ summary: >-
   critical speed is pure stiffness over inertia. Dunkerley's estimate folds in the shaft's own mass
   and is provably never higher than Rayleigh's.
 facets: [dynamics, stress]
+category: machine-design
+topic: shafts-bearings
 
 variables:
   - symbol: m

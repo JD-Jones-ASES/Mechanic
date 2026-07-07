@@ -6,6 +6,8 @@ summary: >-
   coupled equilibrium-and-compatibility pair. Swap a segment's metal and watch the thermal stress
   move, because a stiff, high-expansion metal pushes hardest.
 facets: [stress]
+category: mechanics-of-materials
+topic: axial-thermal-impact
 
 # Sign convention (fixed for this whole THING): F_1, F_2 are the internal axial forces in the two
 # segments, taken POSITIVE IN COMPRESSION. With rigid walls a uniform temperature RISE (ΔT > 0) makes

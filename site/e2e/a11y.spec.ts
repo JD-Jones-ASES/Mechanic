@@ -17,7 +17,8 @@ for (const path of [
   "things/bolted-joint-gasket/", // S19: new sim (BoltedJointSim) + a NO-material-picker page (direct-stiffness inputs)
   "materials/",
   "verification/",
-  "",
+  "things/", // D1: redesigned catalog (category sections + Pagefind search UI)
+  "", // D1: redesigned home (hero + stats + search + category sections)
 ]) {
   test(`axe smoke: /${path}`, async ({ page }) => {
     await page.goto(path);

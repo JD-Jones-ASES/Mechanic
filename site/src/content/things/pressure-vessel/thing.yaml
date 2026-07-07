@@ -6,6 +6,8 @@ summary: >-
   relations are undirected, the same widget runs backwards as a design tool: pick a safety factor
   and the wall thickness falls out.
 facets: [stress, mass-cost]
+category: mechanics-of-materials
+topic: pressure-rotating
 
 variables:
   - symbol: p

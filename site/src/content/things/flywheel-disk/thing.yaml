@@ -5,6 +5,7 @@ summary: >-
   grows with ρω²R², so the energy a flywheel can hold per kilogram is capped not by its size
   but by one material index: strength over density.
 facets: [energy-storage, stress, mass-cost]
+category: mechanisms-dynamics
 
 variables:
   - symbol: R

@@ -118,7 +118,7 @@ S25 remains the phase-closing row (protocol §8).
 |-----|----------------------------------------------------------------|--------|----|------|-------|
 | QC2 | Phase-3 QC fixes + per-slot default_material (R7)              | DONE | #41 | 2026-07-07 · phase4/qc2-fixes | [QC2](briefs/QC2-phase3-qc-fixes.md) |
 | S21 | chain-eval engine extraction + refusal/provenance propagation  | DONE | #42 | 2026-07-07 · phase4/chain-eval-engine | [S21](briefs/S21-chain-eval-engine.md) |
-| D1  | Portal IA: category taxonomy + home/catalog redesign + search  | QUEUED | —  | —    | [D1](briefs/D1-portal-ia-catalog.md) |
+| D1  | Portal IA: category taxonomy + home/catalog redesign + search  | DONE | #44 | 2026-07-07 · phase4/portal-ia-catalog | [D1](briefs/D1-portal-ia-catalog.md) |
 | D2  | THING-page wayfinding + cross-linking + visual polish          | QUEUED | —  | —    | [D2](briefs/D2-thing-wayfinding.md) |
 | S22 | /chain-builder/ MVP (native controls, no drag-and-drop)        | QUEUED | —  | —    | [S22](briefs/S22-chain-builder-mvp.md) |
 | S23 | URL serialization of chains (versioned fragment encoding)      | QUEUED | —  | —    | [S23](briefs/S23-chain-url-serialization.md) |

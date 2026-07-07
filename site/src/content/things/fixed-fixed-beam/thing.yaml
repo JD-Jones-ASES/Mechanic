@@ -6,6 +6,8 @@ summary: >-
   and zero deflection at a released end) close the system, and the build solves the coupled 4×4 group
   exactly. The fixing moment at each wall governs, and none of the reactions cares about the material.
 facets: [stress, mass-cost]
+category: mechanics-of-materials
+topic: beams-plates
 
 # Sign convention (fixed for this whole THING): x runs from wall A (x=0) to wall B (x=L); downward
 # load and downward deflection are positive; R_A and R_B are the UPWARD support reactions;

@@ -5,6 +5,8 @@ summary: >-
   honest knob here — it decides the torque, eats the efficiency, and (the good part) decides
   whether the load politely stays put or back-drives the screw when you let go.
 facets: [torque-power]
+category: machine-design
+topic: gears-drives
 
 variables:
   - symbol: F
