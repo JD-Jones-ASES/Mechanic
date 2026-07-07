@@ -2,7 +2,7 @@
 
 Read `docs/sessions/protocol.md` first; it defines every status and transition used here.
 
-**Active phase: 3 — AWAITING OWNER**
+**Active phase: 4**
 
 ## Phase gate rulings
 
@@ -11,7 +11,7 @@ owner writes the ruling line AND flips the **Active phase** header above in the 
 
 - Phase 2 approved — JD 2026-07-04 (this launch)
 - Phase 3 approved — JD 2026-07-06 (ruled in-session; recorded on owner instruction, `reports/phase-2.md` reviewed)
-- Phase 4: NOT YET RULED
+- Phase 4 approved — JD 2026-07-06 (ruled in-session; recorded on owner instruction, `reports/phase-3.md` reviewed; phase scope extended same ruling — see R7–R9 below)
 
 ## Owner rulings on record (2026-07-04)
 
@@ -31,6 +31,21 @@ verify/update DRAFT briefs against merged reality but may **not** alter or drop 
   not redesign.
 - **R6** — Session plan approved: the S01–S25 queue below, incl. S14 as pre-authorized shed item
   and the pre-answered design decisions embedded in the briefs.
+
+## Owner rulings on record (2026-07-06, with the Phase 4 ruling)
+
+- **R7** — Per-slot `default_material` additive schema field approved (phase-3 report decision 2):
+  a material slot may name its landing material; compile passes it through to the artifact; the
+  widget's initial selection honors it (falling back to current behavior if the id doesn't
+  qualify); landing-state e2e pins added. Built in QC2. Nothing beyond this field is granted.
+- **R8** — Portal design track approved per `docs/decisions/ADR-0010-portal-ia.md` (course-spine
+  category taxonomy + `topic` subgrouping, home/catalog redesign with Pagefind search UI,
+  THING-page wayfinding, restrained visual polish). Rows D1/D2 below, deliberately placed before
+  S22 so the chain-builder ships into the final shell/nav.
+- **R9** — QC2 row added at the top of Phase 4: the Phase-3 QC audit report
+  (`reports/phase-3-qc-audit.md`) is its findings brief, plus the R7 field (spec in
+  `briefs/QC2-phase3-qc-fixes.md`). The motor-THING decision stays open until S25 (phase-3
+  report decision 3, unchanged).
 
 ## OWNER NOTES
 
@@ -91,13 +106,20 @@ deferred). Briefs are DRAFT: the Phase 2 closing session verifies them against m
 | S19 | bolted-joint-gasket (separation = global refusal)                | +1       | DONE | #38 | 2026-07-06 · thing/bolted-joint-gasket | [S19](briefs/S19-bolted-joint-gasket.md) |
 | S20 | Phase 3 close: optional three-parallel-rods + reconciliation + report | +0/1 | DONE | #39 | 2026-07-06 · docs/phase3-close | [S20](briefs/S20-phase3-close.md) |
 
-## Phase 4 — Chaining as the product
+## Phase 4 — Chaining as the product + portal design
 
-Briefs are DRAFT: the Phase 3 closing session verifies them against merged reality.
+Two tracks in one phase by owner ruling 2026-07-06 (R8, R9): the chaining sessions S21–S25 as
+planned 2026-07-04 (S21–S25 briefs verified against merged reality by S20 — see
+`reports/phase-3.md`), plus the Phase-3 QC-fix session (QC2) and the portal-design track (D1/D2,
+per ADR-0010). **Strict top-to-bottom order; IDs are labels, table position is priority.**
+S25 remains the phase-closing row (protocol §8).
 
 | ID  | Session                                                        | Status | PR | Date | Brief |
 |-----|----------------------------------------------------------------|--------|----|------|-------|
+| QC2 | Phase-3 QC fixes + per-slot default_material (R7)              | QUEUED | —  | —    | [QC2](briefs/QC2-phase3-qc-fixes.md) |
 | S21 | chain-eval engine extraction + refusal/provenance propagation  | QUEUED | —  | —    | [S21](briefs/S21-chain-eval-engine.md) |
+| D1  | Portal IA: category taxonomy + home/catalog redesign + search  | QUEUED | —  | —    | [D1](briefs/D1-portal-ia-catalog.md) |
+| D2  | THING-page wayfinding + cross-linking + visual polish          | QUEUED | —  | —    | [D2](briefs/D2-thing-wayfinding.md) |
 | S22 | /chain-builder/ MVP (native controls, no drag-and-drop)        | QUEUED | —  | —    | [S22](briefs/S22-chain-builder-mvp.md) |
 | S23 | URL serialization of chains (versioned fragment encoding)      | QUEUED | —  | —    | [S23](briefs/S23-chain-url-serialization.md) |
 | S24 | citation/provenance flow through chains + /verification/ section | QUEUED | — | —    | [S24](briefs/S24-chain-provenance.md) |
