@@ -2,7 +2,7 @@
 
 Read `docs/sessions/protocol.md` first; it defines every status and transition used here.
 
-**Active phase: 4 — AWAITING OWNER**
+**Active phase: R — v1.0.0 release (final)**
 
 ## Phase gate rulings
 
@@ -12,6 +12,7 @@ owner writes the ruling line AND flips the **Active phase** header above in the 
 - Phase 2 approved — JD 2026-07-04 (this launch)
 - Phase 3 approved — JD 2026-07-06 (ruled in-session; recorded on owner instruction, `reports/phase-2.md` reviewed)
 - Phase 4 approved — JD 2026-07-06 (ruled in-session; recorded on owner instruction, `reports/phase-3.md` reviewed; phase scope extended same ruling — see R7–R9 below)
+- Release phase approved — JD 2026-07-07 (ruled in-session; recorded on owner instruction, `reports/phase-4.md` reviewed; **supersedes Phase 5 — there is no Phase 5**; see R10–R12 below)
 
 ## Owner rulings on record (2026-07-04)
 
@@ -46,6 +47,22 @@ verify/update DRAFT briefs against merged reality but may **not** alter or drop 
   (`reports/phase-3-qc-audit.md`) is its findings brief, plus the R7 field (spec in
   `briefs/QC2-phase3-qc-fixes.md`). The motor-THING decision stays open until S25 (phase-3
   report decision 3, unchanged).
+
+## Owner rulings on record (2026-07-07, the release ruling)
+
+- **R10** — **There is no Phase 5.** Initial development concludes with the release phase below;
+  after v1.0.0 the queue holds no standing rows. Future development (new THINGs, materials depth,
+  the deferred `solveND`, chain-builder UX) is a set of optional paths the owner may commission
+  later — the roadmap's Phase 5 section is rewritten as "Future paths" by V1.
+- **R11** — The minimal motor THING approved to build (phase-4 report decision 1, reaffirmed): a
+  permanent-magnet DC motor with the linear torque–speed curve (stall torque + no-load speed), and
+  it **enters the headline curated example** — the chain becomes motor → planetary → shaft +
+  flywheel with the motor's torque AND shaft speed wired in (owner choice 2026-07-07, in-session).
+- **R12** — v1.0.0 release performed by the session: after all gates pass and the final merge
+  deploys green, the session creates the `v1.0.0` tag and the GitHub Release (owner choice
+  2026-07-07, in-session). Docs are reshaped for public release: `CLAUDE.md` = lean agent entry
+  point branching to `docs/`; `README.md` = human entry point; dev history stays in
+  `docs/sessions/`.
 
 ## OWNER NOTES
 
@@ -124,3 +141,15 @@ S25 remains the phase-closing row (protocol §8).
 | S23 | URL serialization of chains (versioned fragment encoding)      | DONE | #48 | 2026-07-07 · phase4/chain-url-serialization | [S23](briefs/S23-chain-url-serialization.md) |
 | S24 | citation/provenance flow through chains + /verification/ section | DONE | #49 | 2026-07-07 · phase4/chain-provenance | [S24](briefs/S24-chain-provenance.md) |
 | S25 | curated example chains + spin-up story + Phase 4 close         | DONE | #50 | 2026-07-07 · phase4/chain-examples-close | [S25](briefs/S25-chain-examples-close.md) |
+
+## Release — v1.0.0 (final working sessions; no Phase 5)
+
+Approved JD 2026-07-07 (R10–R12). S26 ships THING 37 and closes the headline example's honesty
+gap; V1 is the release close: docs for public consumption, the human-POV site pass, and the
+v1.0.0 tag + GitHub Release. After V1 merges and the tag is published, this queue is dormant —
+a future session must not claim anything here without a new owner ruling line.
+
+| ID  | Session                                                        | Status | PR | Date | Brief |
+|-----|----------------------------------------------------------------|--------|----|------|-------|
+| S26 | dc-motor THING (linear torque–speed) + motor into the headline chain | IN_PROGRESS | | 2026-07-07 · thing/dc-motor | [S26](briefs/S26-dc-motor.md) |
+| V1  | v1.0.0 release: docs rewrite + human-POV pass + repo polish + tag | QUEUED | | | [V1](briefs/V1-release.md) |
