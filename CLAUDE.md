@@ -105,8 +105,9 @@ Generated artifacts (`site/src/generated/`, `data/build/`) are **never committed
 
 Nonlinear/cyclic solving (`solveND`, ADR-0008 part (b) — PROPOSED, unbuilt; certified linear
 `solve_linear` groups are the shipped subset) · full chaining UI beyond the shipped `/chain-builder/`
-MVP (S22 — pick/wire/evaluate up to six nodes; URL sharing, provenance flow, and curated examples land
-S23–S25) · Materials Project integration · fluids & time-integration dynamics engines ·
+MVP (S22 — pick/wire/evaluate up to six nodes — and shareable `#v1=` chain URLs with graceful
+decode-on-load degradation (S23); provenance flow and curated examples land S24–S25) · Materials
+Project integration · fluids & time-integration dynamics engines ·
 Pyodide sandbox · integer tooth-count synthesis · eccentric-column solve-for-P (transcendental) ·
 coupler-curve inverse · custom domain · analytics (none, stated policy) · accounts/comments (static site).
 

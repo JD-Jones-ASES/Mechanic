@@ -1850,3 +1850,70 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   works). (d) instance ids are n1..n6, lowest-free reused on removal. (e) material is ONE id per node (see
   deviation 2) — S23 need not encode per-slot. (f) the picker option value is `slug::configId` split on the
   FIRST "::" (slug is `[a-z0-9-]+`). (g) catalog still 36 — no CLAUDE.md/README count change.
+
+## S23 — URL serialization of chains (versioned fragment encoding) — 2026-07-07 — PR #48 — MERGED
+- Shipped: shareable chain URLs. New `site/src/engines/chain-url.ts` — `encodeChain(store,{artifacts})` /
+  `decodeChain(fragment,ctx)` / `previewSlugs(fragment)`; a chain serializes to a `#v1=` fragment =
+  base64url(UTF-8 JSON) of the S22 store verbatim, knobs equal to the variable default OMITTED (decoder
+  refills), floats via JSON shortest-round-trip. Decode-on-load degrades gracefully against the LIVE catalog:
+  unknown slug/config drops the node + its wires; a wire the real ChainGraph now rejects (unknown port /
+  type-rot / fan-in / cycle) is dropped with the engine's own reason (invariant 4, ONE type-checker); unknown
+  material → node default; unknown display unit → default unit; EVERY drop is named in a banner (invariant 5).
+  A newer `#v2=` refuses the whole link; a malformed/oversized/non-number-knob payload refuses to an empty
+  builder (never coerces a number, never silently computes a different chain). `ChainBuilder.tsx`: mount-only
+  decode (lazy-loads ONLY the catalog slugs the link names), `history.replaceState` URL sync on change (no
+  history spam / scroll jump / hashchange re-decode), a native copy-link button, degradation/version banners,
+  a >2000-char length warning (warns, never truncates). No new dependency, no storage API, no schema/pipeline
+  change, engine otherwise untouched. Catalog stays 36.
+- Gates: pytest 362 passed (pipeline untouched); pnpm build clean WARM (44 pages, pipeline cache-warm,
+  katex/mdx/parity/units + pagefind green); unit 54 → 71 (+17 chain-url.test.mjs: a 400-state seeded round-trip
+  proving decode∘encode = identity — coverage counts 53/213/356/359 vs floors 20/20/20/50 — plus omit-default
+  refill, float bit-faithfulness incl. a -0→+0 pin, and every degradation + whole-link refusal); e2e 130 → 136
+  (+6 chain-url.spec.ts: FROZEN v1 URL append-only contract, knob-edit→URL→hard-reload reproduction, clipboard
+  read-back, dropped-port banner, all-nodes-dropped banner, #v2= refusal; ALL prior specs byte-identical);
+  visual pass (built dist, /Mechanic/chain-builder/): frozen link → 2 evaluated nodes + 2 wires + T_out 700 /
+  τ 55.704 MPa, shaft auto-picked its default material with NO banner; bad-port link → both nodes stand, wire
+  dropped, amber banner names it ("'ZZZ' is not an input of n2"); #v2= → empty builder + "newer version"; dark
+  + mobile-375 zero h-overflow, `.cb-share-warn` dark fix verified rgb(251,191,36), console clean; clipboard
+  success path e2e-verified, graceful-failure (NotAllowedError) path shown honestly. review: 4 fresh-context
+  passes (3 angle + /code-review) — TWO reviewers independently caught the same invariant-5 UI bug; all
+  findings fixed or dispositioned (below).
+- Golden: N/A per protocol §3 (engine+UI serialization session; per-THING gate items 2–4 N/A). The
+  machine-proven fact is decode∘encode = identity over the generated space + the frozen v1 URL decoding to its
+  pinned chain — a test, not a promise.
+- Citations pinned: N/A — no new citation/material/relation.
+- Deviations from brief: (1) `encodeChain`/`decodeChain` take a CONTEXT arg (catalog/artifacts/materials) the
+  brief's one-arg sketch abbreviated — the degradation table REQUIRES catalog/artifact knowledge. (2)
+  `previewSlugs` helper added so the caller lazy-loads only the slugs a link names (page weight). Otherwise per
+  the DECIDED spec.
+- Review fixes (from 4 passes): (a) CRITICAL — a stray NUL byte in the fan-in dedup key silently made
+  chain-url.ts ripgrep-binary, so the brief's own `rg localStorage site/src/` gate had been SKIPPING the one new
+  module (genuinely clean under `-na`); key now JSON.stringify (evaluateChain's form), all 5 files NUL-swept
+  clean. (b) MEDIUM (2 reviewers) — an all-nodes-dropped link showed a blank builder with NO banner; finish()
+  now setDropped in the empty branch. This exposed a deeper bug my new test caught: an unknown slug made
+  ensureLoaded THROW synchronously (import.meta.glob miss → undefined()), crashing the mount — now only catalog
+  slugs load and decodeChain drops the rest. (c) MEDIUM-LOW — dark-mode `.cb-share-warn` was ~1.96:1; amber
+  override added. (d) mount-decode deps → []. (e) fragment preserved when empty-due-to-refusal (reload
+  re-shows the notice). (f) -0→+0 documented + test-pinned.
+- Owner decision flagged: cross-version DEFAULT DRIFT. A knob left at its default is omitted and refilled from
+  the LIVE catalog, so if a variable's authored `default` changes between the catalog that MADE a link and the
+  one OPENING it, that knob shifts with NO banner — the one un-nameable catalog-rot axis. This is INHERENT to
+  the owner-DECIDED omit-defaults rule; closing it needs stored defaults or a catalog fingerprint (brief
+  rejected an inner-version field / compact grammar). A refilled default is a valid, verified current input (no
+  WRONG number, only a possibly-different chain). Documented in the chain-url.ts header; NOT redesigned
+  unilaterally. Recommend: accept as documented limitation.
+- New capabilities future briefs may rely on: `chain-url.ts` `encodeChain`/`decodeChain`/`previewSlugs` +
+  `FORMAT_VERSION`=1 (a forever-decodable contract pinned by the frozen e2e). D2's "chains with" → prefilled
+  chain-builder URLs is now UNBLOCKED (encode a store to a link); encode omits default knobs, so a prefilled
+  link need only set non-defaults.
+- Notes-for-next (next QUEUED = S24, provenance flow through chains): (a) the URL carries slug/config/ports/
+  material-id/knobs ONLY — NEVER property values (they come from data/materials/), so provenance is recomputed
+  at load, not serialized. (b) decode returns `{store, dropped, error}`; a degraded/partial load is the NORMAL
+  path, so S24's provenance surface must handle a partial chain (and an all-dropped empty one with a banner).
+  (c) the frozen v1 URL in e2e is APPEND-ONLY — never edit it; add a new case if the format grows. (d) the
+  fan-in dedup + evaluateChain's fan-in guard + tryConnect's fan-in guard are now in THREE places (all keyed
+  JSON.stringify([node,port]) except tryConnect); a future cleanup could move fan-in into ChainGraph.connect
+  (would change evaluateChain's throw contract — do it deliberately). (e) NUL-byte trap bit again: sweep new
+  source files (`python -c "print(open(f,'rb').read().count(0))"`) — a stray U+0000 renders as a space in the
+  editor AND makes the file ripgrep/git-binary, so a `rg` gate silently skips it. (f) catalog still 36 — no
+  CLAUDE.md/README count change.
