@@ -1586,3 +1586,62 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   use NO selectOption + assert the select value + a readout — copy that pattern. (e) any pipeline edit
   re-fingerprints everything → cold build ~3.5 min; the QC2 cold build doubled as Track A (don't run it
   twice). (f) catalog still 36 — D1 mapping unaffected.
+
+## S21 — chain-eval engine extraction + refusal/provenance propagation — 2026-07-07 — PR #42 — MERGED
+- Shipped: `site/src/engines/chain-eval.ts` — the one place chain orchestration lives. `evaluateChain(nodes,
+  bindings)` builds the real `ChainGraph` (type-check + forward order), evaluates each node with ONE
+  `RelationEngine` per INSTANCE, propagates refusals per the brief's decided rule table (a/b/c/d), and returns
+  per-node eval records (`status: evaluated | refused-by-upstream | incomplete`) + per-binding provenance.
+  `ChainDemo.tsx` refactored to a thin consumer (−39 net lines; `ports()` moved into the engine, `planTargets`
+  exported from it). Closes the invariant-5 gap: a refused upstream output — FINITE values included — is now
+  withheld, never forwarded. Catalog unchanged (36). No emitted number changed (demo goldens byte-identical).
+- Gates: unit 22 → 37 (+15 chain-eval, all in `tests/chain-eval.test.mjs`); pnpm build clean (WARM — only site
+  TS touched, no fingerprint bust; 43 pages, parity/katex/mdx/units green), exit 0; e2e 108 passed (incl. axe;
+  `chain-demo.spec.ts` byte-identical to main — the regression net); tsc clean on both files (only the
+  pre-existing playwright.config `process` error remains); visual pass (built dist, /Mechanic/chain-demo/):
+  ready=true, T_out=350 / τ=27.852 MPa / P=1 kW at defaults, T_s=200→700, T_s=500+d=20mm → shear-yield WARN
+  banner renders (Greek σ_y + em-dash intact), steel-4340 vs al-2024-t3 → τ material-blind (1114.1) while SF/θ
+  move and T_out unchanged, console clean; review: 5 fresh-context passes (3 angle + 2 code-review finders) +
+  /code-review high — findings below, all fixed or dispositioned; **two mutations the code/tests reviewer
+  found were fixed AND the fix verified by re-injecting each mutation and watching the new test fail.**
+- Golden: N/A (engine session — per-THING gate items 2–4 do not apply, protocol §3). Regression net is the
+  hand-derived demo goldens (T_out=350, τ=27.852, P=1 kW; T_s=200→700, τ=55.704), all green unmodified.
+- Citations pinned: N/A (no new citation/material/relation).
+- Deviations from brief: (1) Added two robustness features BEYOND the literal deliverables, both inside the
+  granted module and review-driven: a FAN-IN guard (two wires into one input → fail loud, was silent last-wins
+  with misreported provenance) and WIRE-OWNED bound ports (a withheld/incomplete binding deletes its target
+  port from the eval env so a stale knob default can't silently satisfy a driven input). (2) Provenance is
+  NODE-level (per binding: all cited relations of the upstream THINGs, transitive, deduped), not per-step —
+  plain eval steps carry no per-step relation linkage in the artifact and inventing one is forbidden (brief:
+  "do not invent a parallel metadata path"); solve1d/solveLinear steps DO carry links (residual_fn /
+  via.solve_linear) for a future S24 refinement. (3) `constantValues` (role:constant) are injected into each
+  node eval (matching ThingWidget) — additive vs the original demo, no-op for the two demo THINGs (neither
+  declares a constant). Everything else per brief.
+- New capabilities future briefs may rely on: `evaluateChain` + exported types (`ChainNodeSpec`,
+  `NodeEvalRecord`, `ProvenanceRecord`, `ChainEvalResult`, `NodeStatus`, `UpstreamRelation`) and `planTargets`,
+  `classifyBoundInput`. The refusal-propagation rule table is LIVE. S22 (chain-builder) and S24 (provenance
+  rendering) are the intended consumers.
+- Notes-for-next (immediate next QUEUED row is **D1 — Portal IA**, a design session that does NOT touch
+  chaining; the notes below are the engine handoff for **S22**, the real consumer): (a) `evaluateChain(nodes,
+  bindings)` builds the ChainGraph itself and THROWS on illegal/cyclic/**fan-in** wiring — it does NOT yet
+  tolerate a binding to a node absent from `nodes` (that also throws, via connect "unknown node"). So S22 either
+  passes only complete chains, or extends evaluateChain to tolerate absent sources → `incomplete`. (b) `knobs`
+  = a node's UNBOUND input values ONLY; bound ports are owned by the wire (a knob for a bound port is deleted
+  when the wire is withheld). (c) Material resolution stays in the UI (`pickProperty` → `materialValues`
+  VarRecord); the engine is HEADLESS — keep it that way (a build-check greps `components/|preact`). (d) A
+  refused node is FORCED `result.invalid=true` (so Readouts/sims blank it) — `status` and `result.invalid` are
+  separate signals; read status for UI copy, invalid for value-trust. (e) `incomplete` is effectively
+  unreachable end-to-end with the CURRENT RelationEngine (an undefined output only arises from a global-invalid
+  node → rule a), so its logic is unit-pinned via `classifyBoundInput`; it becomes reachable only when S22 adds
+  partial-graph support. (f) TRAP — the NUL-byte bite: I accidentally wrote a raw NUL (U+0000) as a
+  template-literal separator (`\`${a}<NUL>${b}\``); `file <f>` then reports "data", ripgrep/Grep treat the file
+  as binary, and it commits as a git-binary blob. SWEEP every new engine file:
+  `python -c "print(open(F,'rb').read().count(b'\x00'))"`. Fix with the Edit tool or Git-Bash `tr -d '\000'`
+  (UTF-8-safe; only 0x00, never a valid UTF-8 continuation byte) — NEVER PowerShell. (g) TRAP — a review
+  subagent that runs `git checkout <file>` to "restore after mutation testing" will CLOBBER your uncommitted
+  working-tree fixes on that file; commit fixes before spawning cleanup-prone reviewers, or instruct them
+  read-only. (h) PRE-EXISTING latent gap (NOT fixed here, out of scope): config-level `predicate` guards are
+  never checked in `relation.ts` (dead `:false` branch + a comment promising a post-eval pass that doesn't
+  exist). Confirmed dormant — `auto_guards` only emits `nonzero`/`nonneg`; `predicate` is exclusively
+  relation-`validity` (which IS checked). A future THING that expresses a whole-node refusal must use relation
+  validity, not a config guard — or add a build assert. Worth an owner ticket.
