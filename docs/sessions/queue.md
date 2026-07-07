@@ -151,5 +151,5 @@ a future session must not claim anything here without a new owner ruling line.
 
 | ID  | Session                                                        | Status | PR | Date | Brief |
 |-----|----------------------------------------------------------------|--------|----|------|-------|
-| S26 | dc-motor THING (linear torque–speed) + motor into the headline chain | IN_PROGRESS | | 2026-07-07 · thing/dc-motor | [S26](briefs/S26-dc-motor.md) |
+| S26 | dc-motor THING (linear torque–speed) + motor into the headline chain | DONE | #51 | 2026-07-07 · thing/dc-motor | [S26](briefs/S26-dc-motor.md) |
 | V1  | v1.0.0 release: docs rewrite + human-POV pass + repo polish + tag | QUEUED | | | [V1](briefs/V1-release.md) |

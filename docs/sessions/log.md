@@ -2060,3 +2060,60 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   example links need a reload. (c) the **auto denominator guard** trap in the capabilities note above.
   (d) run local e2e `--workers=2` for a clean pass (145 green; S24's high-parallelism-flake note).
   (e) catalog stays 36 — no CLAUDE.md/README count change (S25 adds no THING).
+
+## S26 — dc-motor THING + motor into the headline chain — 2026-07-07 — PR #51 — MERGED
+- Shipped: **dc-motor** (THING 37, PM DC linear torque–speed line; catalog 36 → 37) — 8 vars /
+  5 relations / 2 configs (speed-in · torque-in), no material axis by design (bolted-joint
+  precedent: the two datasheet intercepts ARE the spec); circuit-model derivation via the repo's
+  FIRST electrical locals (V_s/k_m/R_a/I_a — `dims.py` grew `"V"`/`"ohm"`, first use of the
+  7-vector I slot); DcMotorSim (rotor + torque–speed chart through engine anchors + P-vs-P_max
+  bar); **headline example re-minted to 4 nodes** (motor T→T_s AND ω_out→ω_s wired; all prior
+  goldens preserved except P_w 1→15 kW, the real consequence of ω_s = 150); planetary `omega_s`
+  bounds widened ±50→±300 (a curated example must not drive a THING outside its authored range).
+- Gates: pytest 375 (367 + 8 test_motor_physics.py); pnpm build clean (one cold rebuild for the
+  dims.py fingerprint, then warm; 45 pages; katex/mdx/parity/units green); unit 71; e2e 149
+  (145 + 4: peak-power defaults · torque-in inversion · over-stall GLOBAL refusal · past-no-load
+  warn with negative T/P; catalog+verification counts 36→37); visual pass (built dist): normal /
+  warn (T=−40 N·m, red dot on the dashed braking extension) / refused ("no operating point"
+  figure, all readouts withheld) states seen; 4-node headline live (T_out 350 / τ 27.852 MPa /
+  P_w 15 kW / t_spin 0.13411 s) and the N_s 24→12 trade watched by eye (t_spin 0.134→0.094 s,
+  τ 27.9→39.8 MPa, P conserved 15 kW end to end); mobile-375 zero overflow; console clean.
+  Review: **8 fresh-context streams** (3 protocol angles + 5 /code-review finder angles) — ZERO
+  wrong emitted numbers; 1 MEDIUM prose-physics error found and fixed, LOWs fixed or rebutted
+  (PR body has every disposition).
+- Golden: T = 100 N·m / P = 15 kW = P_max at declared defaults (hand arithmetic in the test
+  docstring; the default point IS the vertex); chain handoff golden 100 N·m × 150 rad/s →
+  350 N·m × 42.857 rad/s (power balance exact, ideal-gearset check).
+- Citations pinned: hughes 5th ed. ch. 3 §§3.3–3.4.6 eqs (3.5)–(3.10) read in situ (indexed full
+  text, 2026-07-07); norton-dom 6th ed. §2.19 PMDC subsection + stall-overheating sentence read
+  directly; mit-motors live-fetched (the explicit half-speed/half-torque peak-power statement);
+  shigley §3-12 reused. HONEST: Hughes names no T_stall symbol — recorded in the verification
+  note, never attributed.
+- Deviations from brief: (1) the brief's third envelope ("warn past stall demand") not shipped —
+  unreachable in speed-in and strictly subsumed by the unscoped invalid in torque-in; (2)
+  derivation step 4 shipped `check: definition`, not identity — its machine check was VACUOUS
+  (an Eq(target, <the config solution>) step reduces to 0≡0 by construction), and the
+  circuit→knob identification is proven in test_motor_physics.py instead.
+- Review findings + dispositions (condensed; full list in PR #51): FIXED MEDIUM — failure.mdx
+  demagnetization physics was backwards (flux loss RAISES no-load speed V/k while stall torque
+  falls; two reviewers independently); FIXED — envelope message worded for BOTH regimes
+  (KnobPanel passes typed values below the slider floor, so negative ω is reachable in
+  speed-in); FIXED — sim chart floor budgets the dashed extension (drew ~14 px below the frame
+  at defaults), ω_p finiteness guard, shared clamp(), chart-point class composition; FIXED —
+  ADR-0010 mapping 22+10+5=37, five stale "36" comments → count-agnostic, wayfinding.spec index
+  comment, CLAUDE.md stale phase sentence, /verification/ conservation bullet names chain-demo
+  AND the 15 kW headline; REBUTTED — rotor-glyph triplication (pre-existing pattern, cross-sim
+  refactor out of scope), rigid-coupling citation aptness (definitional relation).
+- New capabilities future briefs may rely on: electrical units `"V"`/`"ohm"` in
+  dims.UNIT_NAMESPACE (derivation-locals-only so far — no THING variable carries an electrical
+  dimension yet). Reusable lesson: **a final derivation step whose expr IS the configuration
+  solution verifies vacuously** — mark such steps `check: definition` (candidate one-line
+  addition to authoring-things.md; systemic, several THINGs likely have one).
+- Notes-for-next (V1 = the release close, R10–R12: docs rewrite, human-POV pass, repo polish,
+  tag v1.0.0 + GitHub Release): (a) pnpm runs from `site/` — the Bash CWD persists and bites
+  every session; (b) local e2e at `--workers=2`; (c) any pipeline-source edit (dims.py this
+  time) re-fingerprints EVERYTHING — budget one ~4 min cold build; (d) the V1 CLAUDE.md rewrite
+  should fold in: catalog 37, the release ruling, the vacuous-final-step lesson, and drop the
+  session-launch framing in favor of a general agent entry point per R12; (e) frozen example
+  URLs: mint via a temp node script importing encodeChain (Node 24 type-strips .ts imports) —
+  worked exactly as the S25 recipe promised.
