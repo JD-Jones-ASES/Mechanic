@@ -931,6 +931,20 @@ class ThingCompiler:
                     guards.append({"guard_fn": g_name, "kind": kind, "severity": "invalid",
                                    "message": msg, "auto": True})
 
+            # config-level guards are ONLY the auto-emitted denominator/sqrt checks
+            # (nonzero/nonneg) plus solveLinear determinant guards (nonzero) — the
+            # runtime (relation.ts) checks exactly those two kinds. A 'predicate'
+            # kind belongs on a relation's validity envelope, never at the config
+            # level; machine-enforce that here so a future emit path cannot ship a
+            # config guard the runtime would silently ignore (invariant 5).
+            for g in guards:
+                if g["kind"] not in ("nonzero", "nonneg"):
+                    raise BuildError(
+                        f"{c}: config guard '{g.get('guard_fn')}' has kind '{g['kind']}' — "
+                        f"only nonzero/nonneg are checked at the config level; a predicate "
+                        f"envelope belongs on a relation's validity"
+                    )
+
             cfgs.append({
                 "id": cid, "label": str(cfg.get("label", cid)),
                 "constraints": {str(k): float(v) if v.is_number else str(v) for k, v in constraints.items()},
