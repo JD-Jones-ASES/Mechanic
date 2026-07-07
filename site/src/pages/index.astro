@@ -3,26 +3,23 @@ import { getCollection } from "astro:content";
 import Base from "../layouts/Base.astro";
 import CatalogSections from "../components/CatalogSections.astro";
 import Search from "../components/Search.astro";
+import { catalogTotals } from "../lib/stats";
 import { withBase } from "../lib/url";
 
-// Build-proof stats, computed from the compiled artifacts at build time — the
-// SAME arithmetic /verification/ does (ADR-0010 §2). Never hardcoded: a hardcoded
-// count is exactly the drift QC audits keep finding. Each stat links to the page
-// that proves it.
+// Build-proof stats from the compiled artifacts, via the shared helper that also
+// feeds /verification/ (ADR-0010 §2) — one source, so the two surfaces can never
+// drift. Never hardcoded (a hardcoded count is the drift QC audits keep finding).
 const compiled = (await getCollection("compiled")).map((c) => c.data);
-const stats = {
-  things: compiled.length,
-  relations: compiled.reduce((n, a) => n + a.relations.length, 0),
-  identities: compiled.reduce(
-    (n, a) => n + a.derivation.filter((d) => d.check === "identity").length,
-    0,
-  ),
-  samples: compiled.reduce(
-    (n, a) => n + a.configurations.reduce((m, c) => m + c.samples.length, 0),
-    0,
-  ),
-};
+const stats = catalogTotals(compiled);
 const verify = withBase("verification/");
+// Each stat links to the page that proves it. Numbers render raw (no
+// thousands-separator) to read identically to /verification/.
+const heroStats = [
+  { value: stats.things, label: "THINGs" },
+  { value: stats.relations, label: "cited relations" },
+  { value: stats.identities, label: "identities proven" },
+  { value: stats.samples, label: "parity samples" },
+];
 ---
 
 <Base title="Home">
@@ -35,35 +32,22 @@ const verify = withBase("verification/");
       source.
     </p>
     <ul class="hero-stats" role="list">
-      <li class="stat">
-        <a href={verify}>
-          <span class="stat-num">{stats.things}</span>
-          <span class="stat-label">THINGs</span>
-        </a>
-      </li>
-      <li class="stat">
-        <a href={verify}>
-          <span class="stat-num">{stats.relations}</span>
-          <span class="stat-label">cited relations</span>
-        </a>
-      </li>
-      <li class="stat">
-        <a href={verify}>
-          <span class="stat-num">{stats.identities}</span>
-          <span class="stat-label">derivations proven</span>
-        </a>
-      </li>
-      <li class="stat">
-        <a href={verify}>
-          <span class="stat-num">{stats.samples.toLocaleString()}</span>
-          <span class="stat-label">parity samples</span>
-        </a>
-      </li>
+      {
+        heroStats.map((s) => (
+          <li class="stat">
+            <a href={verify}>
+              <span class="stat-num">{s.value}</span>
+              <span class="stat-label">{s.label}</span>
+            </a>
+          </li>
+        ))
+      }
     </ul>
     <p class="hero-chain">
       Watch two THINGs work as one machine in the{" "}
       <a href={withBase("chain-demo/")}>gearbox → shaft chaining demo</a>, where every connection is
-      type-checked by dimension <em>and</em> quantity kind.
+      type-checked by dimension <em>and</em> quantity kind. Every material value traces to its
+      source in the <a href={withBase("materials/")}>materials database &amp; Ashby chart</a>.
     </p>
   </section>
 

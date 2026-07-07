@@ -26,7 +26,7 @@ const bundlePath = withBase("pagefind/");
     import.meta.env.PROD ? (
       <>
         <link rel="stylesheet" href={uiCss} />
-        <div id="search" class="pagefind-ui-mount" />
+        <div id="search" />
         <script is:inline defer src={uiJs} />
         <script is:inline define:vars={{ bundlePath }}>
           window.addEventListener("DOMContentLoaded", () => {
@@ -34,20 +34,19 @@ const bundlePath = withBase("pagefind/");
             new PagefindUI({ element: "#search", bundlePath, showImages: false });
             // Pagefind's Default UI input ships with only a `title` attribute, which
             // axe flags as label-title-only (a serious violation). Give the generated
-            // input a real accessible name. The input is created synchronously by the
-            // constructor; a one-shot observer covers any version that defers it.
-            const label = () => {
+            // input a real accessible name. Returns true once the input EXISTS (work
+            // done → stop observing) whether or not we had to add the label, so the
+            // observer can't leak if a future Pagefind ships its own aria-label.
+            const ensureLabelled = () => {
               const input = document.querySelector("#search input");
-              if (input && !input.getAttribute("aria-label")) {
-                input.setAttribute("aria-label", "Search the catalog");
-                return true;
-              }
-              return false;
+              if (!input) return false;
+              if (!input.getAttribute("aria-label")) input.setAttribute("aria-label", "Search the catalog");
+              return true;
             };
             const mount = document.querySelector("#search");
-            if (!label() && mount) {
+            if (!ensureLabelled() && mount) {
               const obs = new MutationObserver(() => {
-                if (label()) obs.disconnect();
+                if (ensureLabelled()) obs.disconnect();
               });
               obs.observe(mount, { childList: true, subtree: true });
             }

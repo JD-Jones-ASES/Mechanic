@@ -7,6 +7,7 @@
 import { getCollection } from "astro:content";
 import katex from "katex";
 import Base from "../layouts/Base.astro";
+import { catalogTotals } from "../lib/stats";
 import { withBase } from "../lib/url";
 
 const compiled = (await getCollection("compiled"))
@@ -27,13 +28,8 @@ const rows = compiled.map((a) => {
   return { a, identities, modeling, envelopes, samples, guards, sourceById };
 });
 
-const totals = {
-  things: rows.length,
-  relations: rows.reduce((n, r) => n + r.a.relations.length, 0),
-  identities: rows.reduce((n, r) => n + r.identities, 0),
-  modeling: rows.reduce((n, r) => n + r.modeling.length, 0),
-  samples: rows.reduce((n, r) => n + r.samples, 0),
-};
+// same shared helper the home hero uses, so the two surfaces never drift
+const totals = catalogTotals(compiled);
 ---
 
 <Base

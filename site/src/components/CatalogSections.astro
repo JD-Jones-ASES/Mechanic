@@ -97,9 +97,7 @@ for (const t of things) {
   }
 }
 
-// Build the render tree in spine order. A topic group here is guaranteed
-// non-empty by the mapping; an empty one would surface as a bare subhead (a
-// visible signal the mapping drifted) rather than being silently swallowed.
+// Build the render tree in spine order.
 const render = CATEGORIES.map((cat) => {
   const inCat = things.filter((t) => t.category === cat.slug);
   const groups =
@@ -109,12 +107,24 @@ const render = CATEGORIES.map((cat) => {
           topic: topic as Topic | null,
           things: inCat.filter((t) => t.topic === topic.slug).sort(byTitle),
         }));
-  return { cat, groups, count: inCat.length };
+  return { cat, groups };
 });
 
-const placed = render.reduce((n, r) => n + r.count, 0);
+// Fail loud on a declared-but-empty topic: a topic slug in CATEGORIES with no
+// THING assigned is a taxonomy mistake, and a bare subhead over zero cards would
+// otherwise ship silently (invariant-5 house style — no silent empty section).
+for (const { cat, groups } of render)
+  for (const g of groups)
+    if (g.topic && g.things.length === 0)
+      throw new Error(`CatalogSections: topic '${g.topic.slug}' in category '${cat.slug}' has no THINGs`);
+
+// Post-render backstop: exactly one card per THING across all rendered groups.
+// Given the validation above this can only trip on a DUPLICATE slug in the
+// CATEGORIES list or a render-filter bug — cheap insurance against a silently
+// wrong catalog, counting the actual cards rather than category membership.
+const placed = render.reduce((n, r) => n + r.groups.reduce((m, g) => m + g.things.length, 0), 0);
 if (placed !== things.length)
-  throw new Error(`CatalogSections: placed ${placed} of ${things.length} THINGs — a THING fell through the taxonomy`);
+  throw new Error(`CatalogSections: rendered ${placed} cards for ${things.length} THINGs — a THING was dropped or duplicated`);
 
 // Hand-authored inline category icons (ADR §5 — no icon library). Decorative
 // (aria-hidden): the category name text carries the meaning. currentColor picks
@@ -143,7 +153,7 @@ const ICONS: Record<string, string> = {
 <div class="catalog">
   {
     render.map(({ cat, groups }) => (
-      <section class="cat-section" style={`--cat-accent: var(${cat.accentVar})`} data-category={cat.slug}>
+      <section class="cat-section" style={`--cat-accent: var(${cat.accentVar})`} data-category={cat.slug} aria-labelledby={`cat-${cat.slug}`}>
         <header class="cat-header">
           <span class="cat-icon" aria-hidden="true" set:html={ICONS[cat.slug]} />
           <div>

@@ -46,7 +46,9 @@ main { max-width: 60rem; margin: 0 auto; padding: 1rem 1.25rem 4rem; }
 .skip-link:focus { left: 0.5rem; top: 0.5rem; background: var(--paper); padding: 0.5rem; z-index: 10; }
 
 .site-header { border-bottom: 1px solid var(--line); }
-.site-header nav { max-width: 60rem; margin: 0 auto; padding: 0.75rem 1.25rem; display: flex; gap: 1.25rem; align-items: baseline; }
+/* flex-wrap: at ≤375px the five nav links otherwise overflow the viewport and
+   scroll the whole page — wrap them to a second row instead (a no-op on desktop) */
+.site-header nav { max-width: 60rem; margin: 0 auto; padding: 0.75rem 1.25rem; display: flex; flex-wrap: wrap; gap: 0.4rem 1.25rem; align-items: baseline; }
 .brand { font-weight: 700; font-size: 1.15rem; }
 a { color: var(--accent); }
 .edu-banner {
