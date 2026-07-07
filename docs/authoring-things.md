@@ -113,7 +113,17 @@ component (`site/src/components/CatalogSections.astro`), never by the Python pip
 
 THINGs sort alphabetically by title within a topic (no rank field). Pick the category/topic that
 matches the THING's actual physics, not just its title — the mapping in ADR-0010 §1 is a spec to
-verify against each overview, not to transcribe blind (protocol rule 6).
+verify against each overview, not to transcribe blind (protocol rule 6). The canonical spine order
+(category → topic → title) lives once in `site/src/lib/catalog.ts`; both the catalog and the
+THING-page prev/next import it, so they never drift.
+
+**THING-page wayfinding is entirely derived — there is nothing to author for it (ADR-0010 §4, D2).**
+The related-THINGs row (same topic → same category → shared facet), the "Chains with" block (the
+legal output→input wires, computed at build time by the engine's own `connectionLegal`), the
+prev/next spine links, the per-THING verification badge, and the materials chips are all computed
+in `site/src/lib/wayfinding.ts` + `things/[slug].astro` from the compiled artifacts and taxonomy
+you already write. Get `category`/`topic`, `facets`, and the relation citations right and the
+wayfinding follows.
 
 ## Rules the build enforces (fail loudly, by design)
 

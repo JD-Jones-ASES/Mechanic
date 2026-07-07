@@ -7,7 +7,7 @@
 import { getCollection } from "astro:content";
 import katex from "katex";
 import Base from "../layouts/Base.astro";
-import { catalogTotals } from "../lib/stats";
+import { catalogTotals, thingAudit } from "../lib/stats";
 import { withBase } from "../lib/url";
 
 const compiled = (await getCollection("compiled"))
@@ -17,15 +17,13 @@ const compiled = (await getCollection("compiled"))
 const tex = (s: string) => katex.renderToString(s, { displayMode: false, throwOnError: true });
 
 const rows = compiled.map((a) => {
-  const identities = a.derivation.filter((d) => d.check === "identity").length;
-  const modeling = a.derivation.filter((d) => d.check === "definition");
-  const envelopes = a.relations.flatMap((r) =>
-    r.validity.map((v) => ({ severity: v.severity, message: v.message })),
-  );
-  const samples = a.configurations.reduce((n, c) => n + c.samples.length, 0);
-  const guards = a.configurations.reduce((n, c) => n + c.guards.length, 0);
-  const sourceById = new Map(a.sources.map((s) => [s.id, s]));
-  return { a, identities, modeling, envelopes, samples, guards, sourceById };
+  // counts from the shared audit helper (the THING-page badge reads the same one,
+  // so the two surfaces cannot drift — D2)
+  const audit = thingAudit(a);
+  // the modeling STEPS themselves (not just their count) drive the "where physics
+  // enters" list below
+  const modelingSteps = a.derivation.filter((d) => d.check === "definition");
+  return { a, audit, modelingSteps };
 });
 
 // same shared helper the home hero uses, so the two surfaces never drift
@@ -158,25 +156,25 @@ const totals = catalogTotals(compiled);
     </p>
 
     {
-      rows.map(({ a, identities, modeling, envelopes, samples, guards, sourceById }) => (
-        <section class="relation-block">
+      rows.map(({ a, audit, modelingSteps }) => (
+        <section class="relation-block" id={a.thing}>
           <h3>
             <a href={withBase(`things/${a.thing}/`)}>{a.title}</a>
           </h3>
           <p class="citation">
-            {a.relations.length} relations · {identities} identities proven ·{" "}
-            {`${modeling.length} modeling step${modeling.length === 1 ? "" : "s"}`} ·{" "}
-            {`${envelopes.length} validity envelope${envelopes.length === 1 ? "" : "s"}`} ·{" "}
-            {`${guards} domain guard${guards === 1 ? "" : "s"}`} · {samples} parity samples
+            {audit.relations} relations · {audit.identities} identities proven ·{" "}
+            {`${audit.modeling} modeling step${audit.modeling === 1 ? "" : "s"}`} ·{" "}
+            {`${audit.envelopes} validity envelope${audit.envelopes === 1 ? "" : "s"}`} ·{" "}
+            {`${audit.guards} domain guard${audit.guards === 1 ? "" : "s"}`} · {audit.samples} parity samples
           </p>
-          {modeling.length ? (
+          {modelingSteps.length ? (
             <div>
               <p>
                 <strong>Where physics enters</strong> (everything else on that page follows by
                 machine-proven algebra):
               </p>
               <ul>
-                {modeling.map((m) => (
+                {modelingSteps.map((m) => (
                   <li>
                     <Fragment set:html={tex(m.latex)} /> — <em>{m.rule}</em>
                   </li>

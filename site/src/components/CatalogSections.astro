@@ -9,55 +9,12 @@
  * house style: no silent "Other" bucket, no unplaced THING).
  */
 import { getCollection } from "astro:content";
+// The spine taxonomy (category/topic slugs, display names, order, accents) is
+// owned by lib/catalog.ts so this catalog and the THING-page prev/next walk the
+// SAME order and never drift (ADR-0010 §1; D2). This component still owns the
+// topic-membership validation and the render tree — they are rendering concerns.
+import { CATEGORIES, type Topic } from "../lib/catalog";
 import { withBase } from "../lib/url";
-
-interface Topic {
-  slug: string;
-  name: string;
-}
-interface Category {
-  slug: string;
-  name: string;
-  blurb: string;
-  accentVar: string; // CSS token for this category's accent (see global.css)
-  topics: Topic[]; // empty ⇒ no subgrouping; THINGs render directly (ADR §1)
-}
-
-// Spine order. Topic order within a category is pedagogical (this list), NOT
-// alphabetical — only the THINGs inside a topic sort alphabetically by title.
-const CATEGORIES: Category[] = [
-  {
-    slug: "mechanics-of-materials",
-    name: "Mechanics of Materials",
-    blurb: "How solids stretch, bend, twist, buckle, and fail under load.",
-    accentVar: "--cat-mom",
-    topics: [
-      { slug: "axial-thermal-impact", name: "Axial, Thermal & Impact" },
-      { slug: "beams-plates", name: "Beams & Plates" },
-      { slug: "torsion-combined", name: "Torsion & Combined Loading" },
-      { slug: "columns-stability", name: "Columns & Stability" },
-      { slug: "pressure-rotating", name: "Pressure & Rotating Bodies" },
-    ],
-  },
-  {
-    slug: "machine-design",
-    name: "Machine Design",
-    blurb: "Sizing the elements that transmit power and carry service loads.",
-    accentVar: "--cat-md",
-    topics: [
-      { slug: "gears-drives", name: "Gears & Drives" },
-      { slug: "shafts-bearings", name: "Shafts & Bearings" },
-      { slug: "joints-springs-clutches", name: "Joints, Springs & Clutches" },
-    ],
-  },
-  {
-    slug: "mechanisms-dynamics",
-    name: "Mechanisms, Dynamics & Vibration",
-    blurb: "Motion, stored energy, and the frequencies machines ring at.",
-    accentVar: "--cat-mech",
-    topics: [],
-  },
-];
 
 const things = (await getCollection("things")).map((t) => ({
   id: t.id,

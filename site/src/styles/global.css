@@ -157,6 +157,14 @@ a { color: var(--accent); }
 }
 .table-scroll { overflow-x: auto; }
 .config-select, .branch-select { display: inline-block; margin: 0 1.25rem 0.75rem 0; }
+/* a long option label (e.g. a "power-in — 50 kW @ …" config) makes the native
+   select wider than a phone viewport; on narrow screens stack the control and
+   cap it to the widget width (desktop keeps the inline layout). Spotted in the
+   D2 visual pass; the material picker already does this via .material-picker. */
+@media (max-width: 40rem) {
+  .config-select, .branch-select { display: block; margin-right: 0; }
+  .config-select select, .branch-select select { max-width: 100%; }
+}
 
 /* sims */
 .sim { margin: 1rem 0 0; }
@@ -460,6 +468,56 @@ a { color: var(--accent); }
   .chain-ok { background: #14532d; color: #bbf7d0; }
   .chain-no { background: #450a0a; color: #fecaca; }
 }
+
+/* ---------- THING-page wayfinding (ADR-0010 §4; D2) ---------- */
+/* verification badge — compact, factual, near the title; links to the THING's
+   own /verification/ block. No gamified iconography (ADR §4). */
+.verify-badge {
+  display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 0.3rem 0.6rem;
+  margin: 0.25rem 0 1.25rem; padding: 0.4rem 0.75rem;
+  font-size: 0.82rem; text-decoration: none; color: var(--muted);
+  background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--accent);
+  border-radius: 8px;
+}
+.verify-badge:hover, .verify-badge:focus-visible { border-color: var(--accent); }
+.verify-badge-key { font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.72rem; }
+.verify-badge-counts { font-variant-numeric: tabular-nums; }
+.verify-badge [data-badge] { font-weight: 650; color: var(--ink); }
+
+/* static material chips (invariant 3): the materials this THING binds, linking
+   to their /materials/ rows */
+.material-chips { font-size: 0.85rem; margin: 0.75rem 0 0; }
+.material-chips-label { color: var(--muted); }
+.material-chip { display: inline-block; font-size: 0.78rem; border: 1px solid var(--line); border-radius: 999px; padding: 0.05rem 0.55rem; margin: 0.15rem 0.2rem 0 0; text-decoration: none; }
+.material-chip:hover, .material-chip:focus-visible { border-color: var(--accent); }
+
+/* related + chains-with sections; related cards reuse .thing-grid/.thing-card */
+.wayfinding { margin: 2.25rem 0 0; }
+.wayfinding > h2 { margin-bottom: 0.75rem; }
+
+/* "chains with" — one card per legal target THING, its accepted port pairs as
+   chips. Every wire is a real connectionLegal verdict (invariant 2). */
+.chains-list { list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 0.75rem; padding: 0; margin: 0.5rem 0 0; }
+.chains-target { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 0.6rem 0.8rem; }
+.chains-target-link { font-weight: 650; text-decoration: none; }
+.chains-target-link:hover { text-decoration: underline; }
+.port-wires { list-style: none; display: flex; flex-wrap: wrap; gap: 0.3rem; padding: 0; margin: 0.4rem 0 0; }
+.port-wire { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.75rem; border: 1px solid var(--line); border-radius: 999px; padding: 0.05rem 0.5rem; background: var(--paper); white-space: nowrap; }
+.port-wire code { font-size: 0.72rem; color: var(--ink); }
+.port-arrow { color: var(--muted); }
+
+/* prev/next spine navigation — a footer walk of the course sequence */
+.thing-nav { display: flex; justify-content: space-between; gap: 1rem; margin: 2.5rem 0 0; padding-top: 1.25rem; border-top: 1px solid var(--line); }
+.thing-nav-link { display: inline-flex; flex-direction: column; gap: 0.15rem; max-width: 47%; text-decoration: none; padding: 0.5rem 0.85rem; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); transition: border-color 0.15s ease; }
+.thing-nav-link:hover, .thing-nav-link:focus-visible { border-color: var(--cat-accent); }
+.thing-nav-prev { border-left: 3px solid var(--cat-accent); }
+.thing-nav-next { border-right: 3px solid var(--cat-accent); text-align: right; }
+.thing-nav-dir { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.thing-nav-title { font-weight: 650; color: var(--accent); }
+.thing-nav-spacer { display: inline-block; }
+
+/* anchor targets gain a little breathing room when jumped to */
+.material-props tr[id], .relation-block[id] { scroll-margin-top: 1rem; }
 
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
