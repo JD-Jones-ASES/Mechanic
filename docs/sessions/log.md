@@ -1718,3 +1718,30 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   order — update it if a THING title changes. (f) axe now covers / and /things/; the Pagefind input needs
   its JS-injected aria-label (Search.astro) or axe label-title-only fails. (g) catalog still 36 — no
   CLAUDE.md/README count change this session.
+
+## PFN — exclude catalog listings from Pagefind index (owner-directed, D1 follow-up) — 2026-07-07 — PR #45 — MERGED
+- Shipped: `data-pagefind-ignore` on the `<div class="catalog">` root in CatalogSections.astro, so the
+  36-THING catalog LISTING is no longer indexed a 2nd/3rd time on the home + /things/ aggregator pages.
+  Closes the D1 search-quality finding all four D1 review agents flagged (search returned Home / "The
+  catalog" as noise for almost any THING term). THING pages keep their own data-pagefind-body → every
+  THING stays findable; the home hero + /things/ intro (outside .catalog) stay indexed. Owner-directed
+  (task chip from the D1 review) — not a queue row. Catalog unchanged (36).
+- Gates: pytest 362 (unchanged, pipeline untouched); pnpm build clean WARM (only CatalogSections.astro +
+  catalog.spec.ts touched, no fingerprint bust); unit 38 (unchanged); e2e 113 (the search spec EXTENDED
+  to assert results include a THING AND exclude `/` and `/things/`, with a results>0 guard on the
+  selector — passes); behavioral pass (built dist): search "beam" → 5 beam THING pages with home/things
+  ABSENT (were present before the fix), "planetary" → planetary-gearset present + listings absent
+  (e2e-pinned); rendering unchanged (36 cards, spine order, axe /+/things/ green). Review: single
+  documented self-review (3 angles) — zero findings; the diff is one indexing attribute (repo's own
+  pattern) + one assertion, behaviorally verified with two terms, and CatalogSections was already
+  6-agent-reviewed in D1.
+- Golden: N/A. Citations pinned: N/A.
+- Deviations from brief: N/A — owner-directed, no brief. The D1 brief's "do not change indexing scope"
+  no longer binds (owner explicitly directed this change via the task chip).
+- New capabilities future briefs may rely on: catalog listing pages are excluded from the search index;
+  a THING-term search returns THING pages, not the aggregators. /verification/ + /chain-demo/ still index
+  their own content (they legitimately discuss THINGs) so they can still appear — that's content, not
+  listing noise.
+- Notes-for-next: next QUEUED row is unchanged — **D2 (THING-page wayfinding)**. This closes D1
+  Notes-for-next item (a). The `.pagefind-ui__result-link` selector is Pagefind Default UI's result
+  anchor — reuse it for any future search assertion.
