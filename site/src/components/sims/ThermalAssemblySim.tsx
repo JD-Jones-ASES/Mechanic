@@ -85,11 +85,20 @@ export function ThermalAssemblySim({
   const h2 = hMax * (A_2 / maxA);
   const junctionX = wallL + w1;
 
-  // ---- free-expansion ghost (dashed), same px/m scale, anchored at the left wall ----
+  // ---- free-expansion ghost (dashed), anchored at the left wall ----
+  // Real thermal strains are ~1e-3, so the TRUE overhang is sub-pixel. The ghost's
+  // growth is drawn EXAGGERATED (the numeric ε_i and the caption carry the true size),
+  // the same schematic licence beam sims take with deflection. Each segment grows by
+  // its own free strain so both visibly participate; the total is capped on-screen.
   const yGhost = 150;
   const hGhost = 18;
-  const gw1 = L_1 * (1 + eps_1) * pxPerM;
-  const gw2 = L_2 * (1 + eps_2) * pxPerM;
+  const GHOST_AMP = 60;
+  const gExtra1 = L_1 * eps_1 * pxPerM * GHOST_AMP;
+  const gExtra2 = L_2 * eps_2 * pxPerM * GHOST_AMP;
+  const rawExtra = gExtra1 + gExtra2;
+  const capScale = Math.abs(rawExtra) > 58 ? 58 / Math.abs(rawExtra) : 1;
+  const gw1 = w1 + gExtra1 * capScale;
+  const gw2 = w2 + gExtra2 * capScale;
   const ghostEnd = wallL + gw1 + gw2;
   const overhang = ghostEnd - wallR; // + heating (blocked expansion), − cooling (shrink gap)
 
@@ -157,7 +166,7 @@ export function ThermalAssemblySim({
         <text x={junctionX + w2 / 2} y={yBar + 4} text-anchor="middle" class="sim-label-small">right</text>
 
         {/* free-expansion ghost row */}
-        <text x={wallL} y={yGhost - 6} class="sim-label-small">free (unclamped) length after ΔT</text>
+        <text x={wallL} y={yGhost - 6} class="sim-label-small">free (unclamped) length after ΔT — growth exaggerated</text>
         {/* the amount blocked / short: shade between the wall and the ghost's free end */}
         {Math.abs(overhang) > 0.5 && (
           <rect
