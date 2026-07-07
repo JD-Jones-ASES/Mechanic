@@ -83,4 +83,19 @@ properties:
     results); MakeItFrom H02 page: 420 MPa (61 x 10^3 psi)'
   notes: Typical, not a spec minimum. ASTM B927/B927M-23 spec MINIMUM for H02 rod under 1/2 in dia is 57 ksi (Wieland
     Concast datasheet) — different product form.
+- key: coefficient_of_thermal_expansion
+  value: 11.1
+  unit: 1e-6/degF_interval
+  basis: typical
+  source_id: cda-c26000
+  citation: 'Copper Development Association, C26000 (Cartridge Brass, 70/30) alloy datasheet
+    (alloys.copper.org), Thermal Properties: Coefficient of Thermal Expansion 11.1 x 10^-6 per degF
+    over 68-572 degF (20-300 degC).'
+  verified_at: https://alloys.copper.org/alloy/C26000
+  cross_check: 'AZoM ''Cartridge Brass UNS C26000'': 19.9 um/m-degC over 20-300 degC/68-572 degF - the
+    same measurement in metric (11.1 x 10^-6/degF x 1.8 = 20.0 x 10^-6/degC, matching 19.9). Brass has
+    the highest CTE of this catalogue''s metals.'
+  notes: 'Coefficient of thermal expansion averaged over 68-572 degF, as published by the CDA. [unit
+    spelling normalized from ''10^-6 per degF''; the degF here is a temperature INTERVAL = 5/9 K exactly,
+    purely multiplicative with no 32 deg offset.]'
 errata: []

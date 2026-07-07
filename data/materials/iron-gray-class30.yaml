@@ -68,4 +68,19 @@ properties:
     (https://castingsr.com/technical-knowledge-of-astm-a48-class-30-a-complete-guide/)'
   notes: Gray iron density varies slightly with graphite content/section size; 0.258 lb/in3 is the commonly published
     class 30 nominal. [unit spelling normalized from 'lb/in3']
+- key: coefficient_of_thermal_expansion
+  value: 10.5
+  unit: 1e-6/K
+  basis: typical
+  source_id: asm-desk-ed
+  citation: 'AmesWeb ''Thermal Expansion Coefficient of Iron and Cast Iron'' table (citing Davis, J.R.,
+    Metals Handbook Desk Edition, ASM International, 1998), Gray cast iron row: 10.5 x 10^-6/degC
+    (5.8 x 10^-6/degF) over 0-100 degC (32-212 degF).'
+  verified_at: https://amesweb.info/Materials/Thermal_Expansion_Coefficient_of_Cast_Iron.aspx
+  cross_check: 'Penticton Foundry ''Gray Iron ASTM A48 Class 30 Data Sheet'' gives 5.8 (10.5) x 10^-6
+    per degF (per degC), average between 68-212 degF - grade-specific foundry sheet matching the ASM
+    value exactly. MakeItFrom ASTM Grade 30 grey iron: 11 um/m-K (no range).'
+  notes: 'Mean coefficient of linear thermal expansion, 0-100 degC. Gray iron is the low end of the
+    cast-iron/steel band (~10.5-11), slightly below plain-carbon steel. [unit spelling normalized from
+    ''10^-6/degC''; a linear CTE per degC equals the same value per K, since both are interval degrees.]'
 errata: []

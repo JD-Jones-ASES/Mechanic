@@ -24,13 +24,14 @@ VALID_COST = ("low", "medium", "high", "very_high")
 PROPERTY_KEYS = (
     "density", "youngs_modulus", "shear_modulus", "poisson_ratio",
     "yield_strength", "ultimate_strength", "compressive_strength",
-    "modulus_of_rupture",
+    "modulus_of_rupture", "coefficient_of_thermal_expansion",
 )
 # SI display convention per property (values stored in coherent SI base units)
 SI_UNIT = {
     "density": "kg/m^3", "youngs_modulus": "Pa", "shear_modulus": "Pa",
     "poisson_ratio": "1", "yield_strength": "Pa", "ultimate_strength": "Pa",
     "compressive_strength": "Pa", "modulus_of_rupture": "Pa",
+    "coefficient_of_thermal_expansion": "1/K",  # linear CTE α; published in 1e-6/K, µm/(m·K), or 1e-6/°F
 }
 
 SCHEMA_SQL = """

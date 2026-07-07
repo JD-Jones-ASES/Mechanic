@@ -1,0 +1,69 @@
+Take two rods of **different** metals, weld them end to end, and wedge the pair between two walls
+stiff enough not to move. Now change the temperature uniformly by $\Delta T$. Each segment *wants* to
+grow (or shrink) by its own free thermal strain $\varepsilon_{i,\mathrm{th}} = \alpha_i \Delta T$ —
+but the walls forbid it. Something has to give, and since the length cannot, a force does: an
+internal axial force builds up with **no external load at all.** A rail pinned between fixed
+abutments on a hot afternoon, a bridge girder without its expansion joint, a bolt clamping parts of
+mixed metals through a temperature swing — all live here.
+
+This is the temperature-driven cousin of the [composite bar](../composite-bar/): there two materials
+shared a *load*; here they share a *temperature change*, and the "load" is one they manufacture
+themselves. Like the [propped cantilever](../propped-cantilever/) it is **statically
+indeterminate** — a bar built in at both ends has a redundant reaction, and statics alone cannot say
+how large the force is. The missing equation, again, is geometry.
+
+## Free expansion, then the force that cancels it
+
+Equilibrium is almost trivial: the two segments are in series with nothing pushing at their junction,
+so the same internal force runs through both, $F_1 = F_2$ (call it $F$). That is one equation for one
+unknown magnitude — but it is the *compatibility* condition that fixes the value. The rigid walls
+hold the total length fixed, so the **net elongation is zero**: whatever each segment expands
+thermally must be taken straight back out elastically by the force. Segment by segment,
+
+$$ \alpha_1 L_1 \Delta T + \alpha_2 L_2 \Delta T = \frac{F L_1}{A_1 E_1} + \frac{F L_2}{A_2 E_2} $$
+
+Solve the pair together and the force is the total free expansion divided by the total flexibility:
+
+$$ F = \frac{(\alpha_1 L_1 + \alpha_2 L_2)\,\Delta T}{\dfrac{L_1}{A_1 E_1} + \dfrac{L_2}{A_2 E_2}} $$
+
+The build does not ask you to trust this. It certifies that equilibrium and compatibility form a
+system **linear in the unknowns** $\{F_1, F_2\}$, runs an exact $2\times2$ solve at build time (the
+same `solveLinear` capability the propped cantilever introduced), and checks the result back through
+every relation. The flexibility sum in the denominator is the system determinant, guarded non-zero.
+What the machine proves and what still rests on a textbook is on the
+[verification page](../../verification/).
+
+## The material really matters here — through the $E\,\alpha$ product
+
+Set both segments to the same material and area and the whole thing collapses to the classic result
+every mechanics text carries,
+
+$$ \sigma = E\,\alpha\,\Delta T $$
+
+and it holds a surprise. The stress depends on **stiffness times expansivity**, not expansivity
+alone. Aluminium expands about twice as much as steel ($\alpha \approx 23$ vs $12 \times 10^{-6}/\mathrm{K}$),
+so intuition says aluminium should stress more — but steel's modulus is nearly three times larger, and
+$E\,\alpha$ wins: a fully restrained **steel** bar develops *higher* thermal stress than an aluminium
+one for the same $\Delta T$. This is the temperature-world echo of the composite bar's "stiffer
+carries more," and of the flywheel's "titanium deflects more than steel." Swap either segment's metal
+in the widget and watch $F$ and both stresses move:
+
+- **Young's modulus $E$** and **expansion coefficient $\alpha$** enter *together* as the product
+  $E\alpha$ that drives the force; a high-$\alpha$ but compliant metal (aluminium) and a low-$\alpha$
+  but stiff metal (steel) can push comparably hard.
+- **Yield strength $\sigma_y$** sets each segment's own margin and is independent of $E\alpha$: the
+  segment that stresses most is not always the one that yields first.
+- **Density plays no part** — this is a force-and-stiffness story, not a mass one, so $\rho$ is not
+  bound here.
+
+## Sign convention and scope
+
+$F$ is taken **positive in compression.** A temperature **rise** ($\Delta T > 0$) makes both
+segments want to lengthen against the walls, so the bar goes into compression: $F > 0$ and the
+stresses $\sigma_i = F/A_i$ are compressive (reported positive). A temperature **drop** flips every
+sign — the bar is held stretched, $F < 0$, the stresses are tensile. $\Delta T = 0$ recovers the
+unstressed state exactly, $F = \sigma_1 = \sigma_2 = 0$ (the widget's zero check). The slimmer segment
+carries the higher stress because the force is common while $\sigma = F/A$. The model is
+linear-elastic and assumes truly rigid walls, a uniform temperature through both segments, and a bar
+braced against sideways buckling; the moment **either** segment reaches its yield stress the linear
+numbers stop being the truth, and the widget says so.

@@ -92,4 +92,20 @@ properties:
     483 MPa / 70 ksi, YS 345 MPa / 50 ksi); MatWeb itself not accessed per EULA
   notes: Typical (average) cross-check row, included alongside the MIL-HDBK-5J A-basis design minimum to show the
     spread between typical and statistical-minimum values.
+- key: coefficient_of_thermal_expansion
+  value: 12.7
+  unit: 1e-6/degF_interval
+  basis: typical
+  source_id: asm-desk-ed
+  citation: 'ASM Metals Handbook Desk Edition (Davis, J.R., ed., ASM International, 1998), linear
+    thermal-expansion table for aluminum alloys, 2024 row: 12.7 x 10^-6/degF (22.8 x 10^-6/degC),
+    mean over 20-100 degC (68-212 degF). Read from the AmesWeb reproduction of the ASM table.'
+  verified_at: https://amesweb.info/Materials/Thermal_Expansion_Coefficient_of_Aluminum.aspx
+  cross_check: 'MIL-HDBK-5J (31 Jan 2003) publishes 2024 CTE as a temperature curve, Figure 3.2.3.0
+    (10^-6 in/in/degF) rather than a scalar; its near-room value is consistent with ~12.6-12.7. 2024
+    is the LOWEST-CTE of these three aluminums. Consistent with MatWeb 23.2 x 10^-6/degC (named as
+    cross-check only, not a source).'
+  notes: 'Mean coefficient of linear thermal expansion, 20-100 degC. Temper-independent for 2024 (one
+    alpha(T) curve for all tempers). [unit spelling normalized from ''10^-6 in/in/degF''; the degF here
+    is a temperature INTERVAL = 5/9 K exactly, purely multiplicative with no 32 deg offset.]'
 errata: []

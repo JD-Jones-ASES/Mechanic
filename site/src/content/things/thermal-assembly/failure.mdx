@@ -1,0 +1,48 @@
+The widget guards first yield of **each segment separately**, warning the moment $|\sigma_i|$ reaches
+that segment's yield strength. Because thermal stress scales with $E\,\alpha\,\Delta T$, it climbs
+fast: a fully restrained steel bar passes $250$ MPa after only about a $100\,\mathrm{K}$ rise. But
+yield is rarely the *first* thing that goes wrong here.
+
+- **Buckling gets there first, on heating.** A temperature rise puts the bar in **compression**, and
+  a bar in compression between two walls is a column. A slender segment will **buckle sideways long
+  before it yields** — the failure the published worked examples quietly assume away with the phrase
+  "suitably braced against buckling." The critical temperature rise for buckling scales with
+  $(r/L)^2$ and is independent of $\alpha$'s partner effects; a long, thin restrained rail bows in the
+  sun for exactly this reason. That is a stability limit governed by geometry and $E$ (see the
+  [Euler column](../euler-column/)), not the axial stress shown here, and this model does **not**
+  see it. The widget's numbers are the stress *if* the bar stays straight.
+
+- **Past yield, the elastic force is a lie.** Every number here assumes both segments stay
+  linear-elastic. Once one yields it can carry no more force as the temperature climbs further; it
+  flows plastically, the force plateaus, and on cooling back down the bar is left with a **residual
+  stress** of the opposite sign. Repeated heating and cooling past yield **ratchets** — each cycle
+  adds a little permanent strain until the part cracks (thermal fatigue). The $|\sigma| \ge \sigma_y$
+  warning marks where the linear model stops telling the truth; it says nothing about the cycles that
+  follow.
+
+- **Cooling loads it in tension — where brittle materials fail.** Drop the temperature and the bar is
+  stretched: $F < 0$, both stresses tensile. A brittle segment (gray cast iron, a casting) has no
+  yield plateau to blunt a tensile overload and can simply crack; rate it against ultimate strength
+  with a generous margin, not the yield-based warning here. A welded or bonded junction between the
+  two metals sees this full tension too, and an interface is often the weakest link.
+
+- **The walls are never truly rigid.** The entire force follows from *zero* net elongation. Give the
+  supports even a little flexibility — a real abutment settles, a bolted joint draws down, a designed
+  expansion gap of width $g$ opens — and the compatibility equation changes: the bar first expands
+  freely to close the gap, and only the *blocked* remainder generates force. This is precisely why
+  bridges have expansion joints and pipelines have loops: a few millimetres of designed give can drop
+  the thermal force from dangerous to negligible. Model the supports as springs, not walls, and every
+  number here shrinks.
+
+- **The properties themselves drift with temperature.** This page treats $E$ and $\alpha$ as
+  **constants read at a stated temperature** — the mean CTE over a modest range near room temperature,
+  the room-temperature modulus. Over a wide swing both change: $\alpha$ generally rises with
+  temperature and $E$ falls, so a large $\Delta T$ computed from a single room-temperature $\alpha$ is
+  only a first estimate. A faithful analysis integrates $\alpha(T)\,dT$ and uses $E(T)$ — outside this
+  model's scope, and flagged on the [verification page](../../verification/) as a declared modeling
+  choice.
+
+- **Uniform temperature is an assumption too.** The whole bar is taken to reach one temperature. A
+  real transient heats the surface and the ends first; the resulting *gradients* drive their own
+  stresses (and, in a bar of two conductivities, an uneven split) that a single lumped $\Delta T$
+  cannot represent. Time-dependent heat flow is a separate engine this THING does not carry.

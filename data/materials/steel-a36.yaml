@@ -81,4 +81,21 @@ properties:
   cross_check: 'Wikipedia ''A36 steel'': shear modulus 11,500 ksi (79.3 GPa)'
   notes: Included as a bonus alongside Poisson's ratio. Note AISC-aligned sources use G = 11,200 ksi (see discrepancies).
     [unit spelling normalized from 'Mpsi']
+- key: coefficient_of_thermal_expansion
+  value: 11.7
+  unit: 1e-6/K
+  basis: typical
+  source_id: amesweb-metals
+  citation: 'AmesWeb ''Thermal Expansion Coefficient (CTE) of Metals'' table (citing Callister, W.D.,
+    Materials Science and Engineering: An Introduction, 7th ed., Wiley, 2007; and Oberg et al.,
+    Machinery''s Handbook, 29th ed., Industrial Press, 2012, pp. 376-377), row ''Steel Alloy A36'':
+    11.7 x 10^-6/degC (6.5 x 10^-6/degF), room-temperature average.'
+  verified_at: https://amesweb.info/Materials/Linear-Thermal-Expansion-Coefficient-Metals.aspx
+  cross_check: 'Same table also prints 6.5 x 10^-6/degF for A36 — the value used verbatim by standard
+    strength-of-materials worked examples (Hibbeler, and Pytel & Singer Prob. 266). MakeItFrom ASTM A36
+    lists 11 um/m-K (rounded, no range). SSAB''s official A36 page publishes strength/tolerance only, no
+    CTE (verified: absent).'
+  notes: 'Room-temperature average; the AmesWeb metals table prints no explicit temperature range for
+    the A36 row (it notes alpha rises with temperature). [unit spelling normalized from ''10^-6/degC'';
+    a linear CTE per degC equals the same value per K, since both are interval degrees.]'
 errata: []

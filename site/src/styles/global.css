@@ -331,6 +331,15 @@ a { color: var(--accent); }
 .composite-core { fill: var(--accent); opacity: 0.75; }
 .composite-sleeve { fill: #8b5cf6; opacity: 0.7; }
 .composite-yield { fill: #dc2626; opacity: 0.8; }
+/* thermal assembly (ThermalAssemblySim): the two clamped segments in distinct fills
+   (left = accent, right = violet, matching the composite-bar palette), each turning
+   red past its OWN first yield; the free-expansion ghost reuses .beam-ghost (dashed),
+   and .ta-blocked shades the expansion the walls blocked (amber) or the shrink gap.
+   Walls/hatch/arrows reuse .beam-wall/.propped-hatch/.load-arrow. */
+.ta-seg-left { fill: var(--accent); opacity: 0.75; }
+.ta-seg-right { fill: #8b5cf6; opacity: 0.7; }
+.ta-yield { fill: #dc2626; opacity: 0.8; }
+.ta-blocked { fill: #f59e0b; opacity: 0.4; }
 /* helical spring */
 .spring-coil { fill: none; stroke: var(--accent); stroke-linecap: round; stroke-linejoin: round; }
 .spring-coil-hot { fill: none; stroke: #dc2626; stroke-linecap: round; stroke-linejoin: round; }

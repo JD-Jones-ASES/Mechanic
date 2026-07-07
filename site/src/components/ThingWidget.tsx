@@ -23,6 +23,7 @@ import { ClutchSim } from "./sims/ClutchSim";
 import { ColumnSim } from "./sims/ColumnSim";
 import { CombinedShaftSim } from "./sims/CombinedShaftSim";
 import { CompositeBarSim } from "./sims/CompositeBarSim";
+import { ThermalAssemblySim } from "./sims/ThermalAssemblySim";
 import { CurvedBeamSim } from "./sims/CurvedBeamSim";
 import { CylinderSim } from "./sims/CylinderSim";
 import { DiskBoreSim } from "./sims/DiskBoreSim";
@@ -94,6 +95,7 @@ const SIMS: Record<
   "fixed-fixed-torsion-shaft": FixedFixedShaftSim,
   "fixed-fixed-beam": FixedFixedBeamSim,
   "composite-bar": CompositeBarSim,
+  "thermal-assembly": ThermalAssemblySim,
 };
 
 interface Props {

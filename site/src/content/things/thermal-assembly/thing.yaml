@@ -1,0 +1,358 @@
+id: thermal-assembly
+title: Thermal Assembly (Two-Segment Bar Between Rigid Walls)
+summary: >-
+  Two different materials joined end to end and pinned between rigid walls, then heated or cooled
+  uniformly. Neither segment can expand, so an internal force builds up — solved exactly from the
+  coupled equilibrium-and-compatibility pair. Swap a segment's metal and watch the thermal stress
+  move, because a stiff, high-expansion metal pushes hardest.
+facets: [stress]
+
+# Sign convention (fixed for this whole THING): F_1, F_2 are the internal axial forces in the two
+# segments, taken POSITIVE IN COMPRESSION. With rigid walls a uniform temperature RISE (ΔT > 0) makes
+# both segments want to lengthen, the walls resist, and the bar goes into compression: F > 0, σ > 0.
+# A temperature DROP (ΔT < 0) flips every sign — the bar is stretched, F < 0, σ < 0 (tension). ΔT = 0
+# recovers the unstressed state exactly (F = σ = 0). σ_i = F_i/A_i is the segment axial stress
+# (compression-positive). ε_i = α_i ΔT is the segment's FREE (unconstrained) thermal strain — what it
+# WOULD do if the walls were absent — shown so the blocked expansion is legible.
+
+variables:
+  - symbol: dT
+    name: Temperature change ΔT
+    latex: '\Delta T'
+    unit: K
+    quantity_kind: temperature_difference
+    default: 50
+    bounds: [-150, 300]
+    integer: false
+    role: free
+    display_units: [K]
+  - symbol: L_1
+    name: Left segment length
+    latex: L_1
+    unit: m
+    quantity_kind: length
+    default: 0.3
+    bounds: [0.05, 3.0]
+    positive: true
+    display_units: [mm, m]
+  - symbol: A_1
+    name: Left segment area
+    latex: A_1
+    unit: m**2
+    quantity_kind: area
+    default: 4.0e-4
+    bounds: [1.0e-5, 1.0e-2]
+    positive: true
+    display_units: ["cm^2", "m**2"]
+  - symbol: L_2
+    name: Right segment length
+    latex: L_2
+    unit: m
+    quantity_kind: length
+    default: 0.3
+    bounds: [0.05, 3.0]
+    positive: true
+    display_units: [mm, m]
+  - symbol: A_2
+    name: Right segment area
+    latex: A_2
+    unit: m**2
+    quantity_kind: area
+    default: 6.0e-4
+    bounds: [1.0e-5, 1.0e-2]
+    positive: true
+    display_units: ["cm^2", "m**2"]
+  # --- left segment material (slot `left`) ---
+  - symbol: E_1
+    name: Left Young's modulus
+    latex: E_1
+    unit: Pa
+    quantity_kind: elastic_modulus
+    default: 200.0e9
+    bounds: [1.0e9, 400.0e9]
+    positive: true
+    role: material
+    display_units: [GPa, Pa]
+  - symbol: alpha_1
+    name: Left thermal expansion coeff.
+    latex: '\alpha_1'
+    unit: 1/K
+    quantity_kind: thermal_expansion_coefficient
+    default: 11.7e-6
+    bounds: [1.0e-6, 1.0e-4]
+    positive: true
+    role: material
+    display_units: ["1e-6/K"]
+  - symbol: sigma_y_1
+    name: Left yield strength
+    latex: '\sigma_{y1}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 250.0e6
+    bounds: [10.0e6, 2.0e9]
+    positive: true
+    role: material
+    display_units: [MPa, Pa]
+  # --- right segment material (slot `right`) ---
+  - symbol: E_2
+    name: Right Young's modulus
+    latex: E_2
+    unit: Pa
+    quantity_kind: elastic_modulus
+    default: 69.0e9
+    bounds: [1.0e9, 400.0e9]
+    positive: true
+    role: material
+    display_units: [GPa, Pa]
+  - symbol: alpha_2
+    name: Right thermal expansion coeff.
+    latex: '\alpha_2'
+    unit: 1/K
+    quantity_kind: thermal_expansion_coefficient
+    default: 23.4e-6
+    bounds: [1.0e-6, 1.0e-4]
+    positive: true
+    role: material
+    display_units: ["1e-6/K"]
+  - symbol: sigma_y_2
+    name: Right yield strength
+    latex: '\sigma_{y2}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 276.0e6
+    bounds: [10.0e6, 2.0e9]
+    positive: true
+    role: material
+    display_units: [MPa, Pa]
+  # --- the two internal forces, solved as ONE linear group (ADR-0008) ---
+  # signed (compression-positive); a temperature DROP makes them negative (tension)
+  - symbol: F_1
+    name: Left internal force
+    latex: F_1
+    unit: N
+    quantity_kind: force
+    default: 47879.407
+    bounds: [-2.0e6, 2.0e6]
+    role: derived
+    display_units: [kN, N]
+  - symbol: F_2
+    name: Right internal force
+    latex: F_2
+    unit: N
+    quantity_kind: force
+    default: 47879.407
+    bounds: [-2.0e6, 2.0e6]
+    role: derived
+    display_units: [kN, N]
+  # --- downstream readouts ---
+  - symbol: sigma_1
+    name: Left stress
+    latex: '\sigma_1'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 1.19698517e8
+    bounds: [-2.0e9, 2.0e9]
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: sigma_2
+    name: Right stress
+    latex: '\sigma_2'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 7.9799012e7
+    bounds: [-2.0e9, 2.0e9]
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: eps_1
+    name: Left free thermal strain
+    latex: '\varepsilon_{1,\mathrm{th}}'
+    unit: '1'
+    quantity_kind: strain
+    default: 5.85e-4
+    bounds: [-0.05, 0.05]
+    role: derived
+  - symbol: eps_2
+    name: Right free thermal strain
+    latex: '\varepsilon_{2,\mathrm{th}}'
+    unit: '1'
+    quantity_kind: strain
+    default: 1.17e-3
+    bounds: [-0.05, 0.05]
+    role: derived
+
+materials:
+  binds:
+    left:
+      E_1: youngs_modulus
+      alpha_1: coefficient_of_thermal_expansion
+      sigma_y_1: yield_strength
+    right:
+      E_2: youngs_modulus
+      alpha_2: coefficient_of_thermal_expansion
+      sigma_y_2: yield_strength
+
+relations:
+  # --- the coupled system: equilibrium + zero-net-elongation compatibility ---
+  - id: equilibrium
+    group: stress
+    latex: 'F_1 = F_2'
+    residual: F_1 - F_2
+    assumptions:
+      - >-
+        the two segments are in series between the walls with no load applied at their junction, so
+        the internal axial force is the same throughout: F_1 = F_2 (call it F)
+      - one internal force path; the wall reactions are equal and opposite
+    citation: gere
+  - id: compatibility
+    group: stress
+    latex: '\alpha_1 L_1 \Delta T + \alpha_2 L_2 \Delta T = \frac{F_1 L_1}{A_1 E_1} + \frac{F_2 L_2}{A_2 E_2}'
+    residual: alpha_1*L_1*dT + alpha_2*L_2*dT - F_1*L_1/(A_1*E_1) - F_2*L_2/(A_2*E_2)
+    assumptions:
+      - >-
+        rigid walls hold the total length fixed, so the net elongation is zero: the free thermal
+        expansion α_i L_i ΔT of each segment is exactly cancelled by its elastic shortening
+        F_i L_i /(A_i E_i) under the compression-positive internal force
+      - linear-elastic segments (Hooke's law), uniform temperature change, stress below yield
+    citation: gere
+  # --- segment stresses (compression-positive; sign follows F) ---
+  - id: stress-left
+    group: stress
+    latex: '\sigma_1 = \frac{F_1}{A_1}'
+    residual: sigma_1*A_1 - F_1
+    assumptions:
+      - uniform axial stress over the left segment section
+    citation: gere
+    validity:
+      - condition: sigma_1**2 < sigma_y_1**2
+        severity: warn
+        message: >-
+          The LEFT segment has yielded — the magnitude of its thermal stress σ_1 reached the left
+          material's yield strength. Past yield the response is no longer linear-elastic, so the
+          computed force and stress (which assume Hooke's law) stop being trustworthy — the geometry
+          still stands, but read the numbers as "at least this large."
+        citation: gere
+  - id: stress-right
+    group: stress
+    latex: '\sigma_2 = \frac{F_2}{A_2}'
+    residual: sigma_2*A_2 - F_2
+    assumptions:
+      - uniform axial stress over the right segment section
+    citation: gere
+    validity:
+      - condition: sigma_2**2 < sigma_y_2**2
+        severity: warn
+        message: >-
+          The RIGHT segment has yielded — the magnitude of its thermal stress σ_2 reached the right
+          material's yield strength. Past yield the linear-elastic force/stress numbers stop being
+          trustworthy — the geometry still stands, but read the numbers as "at least this large."
+        citation: gere
+  # --- free (unconstrained) thermal strains: what each segment WOULD do with no walls ---
+  - id: freestrain-left
+    group: stress
+    latex: '\varepsilon_{1,\mathrm{th}} = \alpha_1 \Delta T'
+    residual: eps_1 - alpha_1*dT
+    assumptions:
+      - free thermal strain of the left segment if unconstrained (α_1 ΔT)
+    citation: gere
+  - id: freestrain-right
+    group: stress
+    latex: '\varepsilon_{2,\mathrm{th}} = \alpha_2 \Delta T'
+    residual: eps_2 - alpha_2*dT
+    assumptions:
+      - free thermal strain of the right segment if unconstrained (α_2 ΔT)
+    citation: gere
+
+configurations:
+  - id: analyze
+    label: Temperature change and geometry in — the internal force, segment stresses and free strains out
+    constraints: {}
+    inputs: [dT, L_1, A_1, L_2, A_2]
+    # {F_1, F_2} are a coupled 2×2 linear system: one equilibrium equation (F_1 = F_2) and one
+    # zero-net-elongation compatibility equation. Certified and solved exactly at build time
+    # (ADR-0008), then desugared into ordinary verified closed forms. The stiffness does NOT cancel
+    # (A_i, E_i stay in the compatibility coefficients — areas are inputs, moduli are materials, both
+    # legal group coefficients), so the determinant carries the segment flexibilities and the thermal
+    # force is material-DEPENDENT: a stiffer, higher-expansion segment drives a bigger force.
+    solve_linear:
+      - targets: [F_1, F_2]
+        relations: [equilibrium, compatibility]
+    solutions:
+      sigma_1: F_1/A_1
+      sigma_2: F_2/A_2
+      eps_1: alpha_1*dT
+      eps_2: alpha_2*dT
+
+derivation:
+  verifies_configuration: analyze
+  steps:
+    - expr: Eq(eps_1, alpha_1*dT)
+      prose: >-
+        Heat a bar by ΔT and, left free, it strains α ΔT — the material constant α (the coefficient of
+        thermal expansion) is exactly how much strain each degree buys. Here the two segments carry
+        DIFFERENT α, so left to themselves they would expand by different amounts: this mismatch, fought
+        by the rigid walls, is the whole source of the stress.
+      rule: 'thermal strain: ε_th = α ΔT'
+      check: definition
+    - expr: Eq(F_1, F_2)
+      prose: >-
+        The bar is two segments in series between the walls with nothing pushing at their junction, so
+        the same internal axial force runs through both — F_1 = F_2 (call it F). Statics gives only
+        this; it cannot say how big F is, because a bar built in at both ends is statically
+        indeterminate. The missing equation is geometric.
+      rule: 'statics: one internal force path'
+      check: definition
+    - expr: Eq(alpha_1*L_1*dT + alpha_2*L_2*dT, F_1*L_1/(A_1*E_1) + F_2*L_2/(A_2*E_2))
+      prose: >-
+        Compatibility supplies it. The rigid walls hold the total length fixed, so the net elongation
+        is zero: the free thermal growth α_i L_i ΔT of each segment must be swallowed exactly by its
+        elastic shortening F_i L_i /(A_i E_i) under the compression-positive force. This is where the
+        moduli and areas enter — the equation the walls impose.
+      rule: 'compatibility: zero net elongation (rigid walls)'
+      check: definition
+    - expr: Eq(F_1, (alpha_1*L_1 + alpha_2*L_2)*dT / (L_1/(A_1*E_1) + L_2/(A_2*E_2)))
+      prose: >-
+        Solve the coupled pair exactly. With F_1 = F_2 = F, compatibility becomes one equation in F,
+        and the thermal force is the total free expansion divided by the total flexibility. The build
+        certifies the 2×2 system is linear in {F_1, F_2} and solves it in one step — no blind solve() —
+        and the flexibility sum L_1/(A_1E_1) + L_2/(A_2E_2) in the denominator is the determinant that
+        must stay non-zero. A temperature RISE gives F > 0 (compression); ΔT = 0 gives F = 0 exactly.
+      rule: exact linear solve of the coupled system
+    - expr: Eq(sigma_1, F_1/A_1)
+      prose: >-
+        Each segment's axial stress is its force over its area, σ_i = F/A_i — so the slimmer segment
+        carries the higher stress even though the force is common. Swap either segment's metal and the
+        force F (hence both stresses) shifts: a stiffer, higher-expansion metal pushes harder, the
+        classic "which material stresses more when you heat it" question that the E·α product answers.
+      rule: 'axial stress: σ = F/A'
+
+sim:
+  engine: statics-cascade
+  config:
+    draw: thermal-assembly
+
+sources:
+  - id: gere
+    citation: >-
+      Gere, J. M., & Goodno, B. J., Mechanics of Materials, 9th ed., Cengage, 2018 — ch. 2 (Axially
+      Loaded Members), §2.5 "Thermal Effects, Misfits, and Prestrains": free thermal strain α ΔT, and
+      statically indeterminate bars with temperature changes solved by equilibrium + compatibility.
+    verification: >-
+      Topic-level citation, not section-pinned (the textbook PDF is not web-accessible for a
+      page-exact quote, the same limit as the sibling axial THINGs). The governing results — free
+      thermal strain ε = α ΔT, and a fully restrained bar developing σ = E α ΔT (the single-material
+      limit of this two-segment model) — were web-corroborated 2026-07-07 AND re-derived from first
+      principles in pipeline/tests/test_thermal_physics.py, which also reproduces a PUBLISHED worked
+      example (Pytel & Singer, Strength of Materials, 4th ed., Problem 266: a series steel+aluminum
+      bar between unyielding supports heated 100°F, F = 26,691.84 lb, σ_steel = 17,795 psi,
+      σ_al = 13,346 psi) to the pound and psi.
+  - id: hibbeler
+    citation: >-
+      Hibbeler, R. C., Mechanics of Materials, 10th ed., Pearson, 2017 — ch. 4 (Axial Load), thermal
+      stress: a fully restrained bar heated by ΔT carries σ = E α ΔT; a compound restrained bar is
+      solved by superposition (free expansion, then the restoring force that returns the length).
+    verification: >-
+      Topic-level cross-check citation for the thermal-stress setup. Not section-pinned; the free
+      expansion + restoring-force superposition is re-derived from first principles in the physics
+      test. Hibbeler ch. 4 is the standard cross-reference for the restrained-thermal-bar method used
+      here, consistent with Gere §2.5. A36 steel α = 6.5 ×10⁻⁶/°F is the value Hibbeler's worked
+      examples use, matching this catalogue's steel-a36 CTE entry.

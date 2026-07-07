@@ -82,4 +82,20 @@ properties:
     kmac-distribution lists 12500 ksi (disagrees - see discrepancies)
   notes: Published by AK Steel as modulus of elasticity 'in torsion'. Supplementary to Poisson's ratio; sources
     disagree (11.2 vs 12.5 x 10^3 ksi), flagged in discrepancies. [unit spelling normalized from 'x 10^3 ksi']
+- key: coefficient_of_thermal_expansion
+  value: 9.2
+  unit: 1e-6/degF_interval
+  basis: typical
+  source_id: sandmeyer-304
+  citation: 'Sandmeyer Steel Company, ''Alloy 304/304L (UNS S30400/S30403)'' plate datasheet, ''Mean
+    Coefficient of Thermal Expansion'' table, 68-212 degF (20-100 degC) row: 9.2 x 10^-6 in/in-degF
+    (16.6 x 10^-6 cm/cm-degC).'
+  verified_at: https://www.sandmeyersteel.com/alloy-304-304l/
+  cross_check: 'AZoM Grade 304 (S30400): 16-18 x 10^-6/K (no band stated); many handbooks quote
+    17.2-17.3 x 10^-6/degC for 0-100 degC (higher). All confirm austenitic 304 expands markedly MORE
+    than carbon steel (~11-12), the reason a 304 element in a restrained assembly develops higher
+    thermal force. NIST cryogenic 304 data is a 4-300 K contraction curve, not a room-temp mean.'
+  notes: 'Mean coefficient of thermal expansion, 68-212 degF. Sandmeyer''s mill datasheet sits at the
+    low end (16.6) of the 16.6-17.3 room-temperature band for 304. [unit spelling normalized from
+    ''10^-6 in/in/degF''; the degF here is a temperature INTERVAL = 5/9 K exactly, no 32 deg offset.]'
 errata: []
