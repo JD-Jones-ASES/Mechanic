@@ -3,37 +3,20 @@
  * a material fans E/σ_y/ρ out through every relation. Each value shows its
  * basis and source; defaults to `typical` (matches coursework) per
  * docs/data-provenance.md, falling back to design/spec minimums.
+ *
+ * The pure data + basis-preference lookup live in `material-data.ts` (so
+ * headless glue can reuse them without importing this JSX component); they are
+ * re-exported here so existing `from "./MaterialPicker"` imports are unchanged.
  */
-export interface MaterialProperty {
-  key: string;
-  basis: "spec_minimum" | "design_minimum" | "typical";
-  value_published: number;
-  unit_published: string;
-  value_si: number;
-  unit_si: string;
-  source_id: string;
-  citation: string;
-}
+import {
+  BASIS_LABEL,
+  type MaterialProperty,
+  type MaterialRow,
+  pickProperty,
+} from "./material-data";
 
-export interface MaterialRow {
-  id: string;
-  name: string;
-  class: string;
-  condition: string;
-  cost_class: string;
-  properties: MaterialProperty[];
-}
-
-const BASIS_PREFERENCE = ["typical", "design_minimum", "spec_minimum"] as const;
-const BASIS_LABEL = { typical: "typical", design_minimum: "design min.", spec_minimum: "spec min." };
-
-export function pickProperty(m: MaterialRow, key: string): MaterialProperty | undefined {
-  for (const basis of BASIS_PREFERENCE) {
-    const p = m.properties.find((p) => p.key === key && p.basis === basis);
-    if (p) return p;
-  }
-  return undefined;
-}
+export { pickProperty };
+export type { MaterialProperty, MaterialRow };
 
 interface Props {
   materials: MaterialRow[];

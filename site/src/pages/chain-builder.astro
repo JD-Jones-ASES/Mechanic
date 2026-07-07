@@ -1,0 +1,132 @@
+---
+/**
+ * /chain-builder/ (S22): the interactive chain builder. Pick verified THINGs,
+ * wire type-checked ports, and watch the planner evaluate the whole system —
+ * refusals propagating, materials cascading, every number keeping its citation.
+ *
+ * The catalog index handed to the island is SLIM (slug + title + taxonomy +
+ * branches===null configs); the full compiled artifact and generated fns for a
+ * THING load lazily in the island on node-add, so 36 artifacts (~1 MB) never sit
+ * in the eager payload. The legality table below is built with the same
+ * connectionLegal() the runtime planner uses — real engine verdicts as content.
+ */
+import { getCollection, getEntry } from "astro:content";
+import ChainBuilder from "../components/ChainBuilder";
+import { portOf } from "../engines/chain-eval";
+import { connectionLegal } from "../engines/units";
+import { CATEGORIES, spineOrdered } from "../lib/catalog";
+import Base from "../layouts/Base.astro";
+import { withBase } from "../lib/url";
+
+const compiled = await getCollection("compiled");
+const things = await getCollection("things");
+const taxonomyBy = new Map(
+  things.map((t) => [t.data.id, { category: t.data.category, topic: t.data.topic ?? null }]),
+);
+
+// buildable catalog: every THING/configuration with branches===null (multi-branch
+// four-bar excluded in v1; solve1d configs INCLUDED — the browser runs Brent).
+const placeables = compiled
+  .map((c) => {
+    const tax = taxonomyBy.get(c.data.thing);
+    const configs = c.data.configurations
+      .filter((cfg) => cfg.branches === null)
+      .map((cfg) => ({ id: cfg.id, label: cfg.label }));
+    return {
+      id: c.data.thing,
+      slug: c.data.thing,
+      title: c.data.title,
+      category: tax?.category ?? "",
+      topic: tax?.topic ?? undefined,
+      configs,
+    };
+  })
+  .filter((t) => t.configs.length > 0);
+
+const catalog = spineOrdered(placeables).map((t) => ({
+  slug: t.slug,
+  title: t.title,
+  category: t.category,
+  topic: t.topic ?? null,
+  configs: t.configs,
+}));
+const categories = CATEGORIES.map((c) => ({ slug: c.slug, name: c.name }));
+const materials = (await getCollection("materials")).map((m) => m.data);
+
+// static legality table — real connectionLegal() verdicts over buildable THINGs
+const gear = (await getEntry("compiled", "planetary-gearset"))!.data;
+const shaft = (await getEntry("compiled", "torsion-shaft"))!.data;
+const flywheel = (await getEntry("compiled", "flywheel-disk"))!.data;
+const column = (await getEntry("compiled", "euler-column"))!.data;
+// same Port constructor the runtime planner uses (invariant 4, one definition)
+const checks = [
+  { from: "planetary T_out — torque", to: "shaft T — torque", res: connectionLegal(portOf(gear, "T_out"), portOf(shaft, "T")) },
+  { from: "planetary ω_c — angular velocity", to: "flywheel ω — angular velocity", res: connectionLegal(portOf(gear, "omega_c"), portOf(flywheel, "omega")) },
+  { from: "planetary ω_c — angular velocity", to: "shaft T — torque", res: connectionLegal(portOf(gear, "omega_c"), portOf(shaft, "T")) },
+  { from: "planetary N_r — tooth count", to: "column K — end-fixity ratio", res: connectionLegal(portOf(gear, "N_r"), portOf(column, "K")) },
+];
+---
+
+<Base
+  title="Chain builder"
+  description="Wire verified THINGs into a system: pick components, connect type-checked ports, and watch the planner evaluate the whole chain with every number keeping its citation."
+>
+  <h1>Chain builder</h1>
+  <p>
+    Every machine is THINGs wired together. Pick components from the catalog, connect one THING's
+    output port to another's input, and the planner evaluates the whole chain in dependency order —
+    stress, twist, stored energy, and safety factors propagating from node to node. A connection is
+    legal only when the SI dimension <strong>and</strong> the quantity kind both match (invariant 2),
+    so a torque can never be mistaken for an energy, nor an angle for a ratio. Swap a downstream
+    material and watch the numbers move; drive a node past its validity envelope and watch the
+    refusal propagate — a refused value is <em>withheld</em>, never forwarded as a plausible wrong
+    number (invariant 5).
+  </p>
+  <p class="citation">
+    This is the v1 builder: forward chains only, up to six nodes, single-branch configurations. For a
+    fixed worked example see the <a href={withBase("chain-demo/")}>chaining demo</a> (a planetary
+    reduction driving a torsion shaft, power conserved through the wiring).
+  </p>
+
+  <div data-pagefind-ignore>
+    <ChainBuilder client:load catalog={catalog} categories={categories} materials={materials} />
+  </div>
+
+  <h2>Connections are type-checked</h2>
+  <p>
+    A binding is legal iff the SI dimension 7-vector <strong>and</strong> the quantity kind both
+    match. Dimensions alone are not enough: an angle and a Poisson ratio are both dimensionless, and
+    torque shares dimensions with energy. The verdicts below come from the same
+    <code>connectionLegal()</code> the builder runs when you press <em>Connect</em>:
+  </p>
+  <div class="table-scroll">
+    <table class="material-props">
+      <thead>
+        <tr><th scope="col">From port</th><th scope="col">To port</th><th scope="col">Engine verdict</th></tr>
+      </thead>
+      <tbody>
+        {
+          checks.map((c) => (
+            <tr>
+              <td>{c.from}</td>
+              <td>{c.to}</td>
+              <td>
+                {c.res.ok ? (
+                  <span class="chain-ok">legal</span>
+                ) : (
+                  <span class="chain-no">rejected — {c.res.reason}</span>
+                )}
+              </td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+  <p class="citation">
+    The planner also rejects any binding that would close a feedback loop — cyclic solving is out of
+    scope in v1 (relations are stored undirected, so a cyclic solver can be added later without
+    rewriting THINGs). Everything here is computed in the browser from build-time-verified functions;
+    the site remains a pure static site.
+  </p>
+</Base>

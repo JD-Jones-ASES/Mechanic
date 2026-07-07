@@ -147,7 +147,12 @@ function dedupe(xs: string[]): string[] {
   return xs.filter((x) => (seen.has(x) ? false : (seen.add(x), true)));
 }
 
-function ports(artifact: CompiledThing, cfgId: string): { inputs: Record<string, Port>; outputs: Record<string, Port> } {
+/** A configuration's input/output Port maps. Exported so the chain-builder's
+ * UI-side wire-legality check (S22) builds the SAME port map this engine
+ * evaluates from — one definition, so the UI can never accept a wire the engine
+ * would reject (the "invariant 4 in miniature" that portOf/planTargets already
+ * serve). */
+export function ports(artifact: CompiledThing, cfgId: string): { inputs: Record<string, Port>; outputs: Record<string, Port> } {
   const cfg = artifact.configurations.find((c) => c.id === cfgId);
   if (!cfg) throw new Error(`unknown configuration '${cfgId}' for ${artifact.thing}`);
   return {

@@ -519,6 +519,65 @@ a { color: var(--accent); }
 /* anchor targets gain a little breathing room when jumped to */
 .material-props tr[id], .relation-block[id] { scroll-margin-top: 1rem; }
 
+/* ---------- chain builder (S22) ---------- */
+.chain-builder { margin: 1.5rem 0; }
+
+/* toolbar: pick a component + add */
+.cb-toolbar { display: flex; flex-wrap: wrap; align-items: end; gap: 0.75rem; margin-bottom: 1rem; }
+/* flex:1 1 16rem + min-width:0 lets the picker shrink below its longest option
+   (a very long "THING — configuration" string) instead of forcing page overflow
+   on a narrow viewport; the select fills the constrained label */
+.cb-pick { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.85rem; color: var(--muted); flex: 1 1 16rem; min-width: 0; }
+.cb-pick select { width: 100%; max-width: 100%; }
+.cb-add, .cb-connect { border: 1px solid var(--accent); background: var(--accent); color: var(--paper); border-radius: 6px; padding: 0.4rem 0.9rem; font: inherit; cursor: pointer; }
+.cb-add:disabled, .cb-connect:disabled { opacity: 0.5; cursor: not-allowed; }
+.cb-count { font-size: 0.8rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.cb-hint, .cb-empty { font-size: 0.85rem; color: var(--muted); }
+.cb-empty { border: 1px dashed var(--line); border-radius: 8px; padding: 1rem; }
+
+/* binding editor */
+.cb-wiring { border: 1px solid var(--line); border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1.25rem; background: var(--surface); }
+.cb-wiring h2 { margin: 0 0 0.5rem; font-size: 1.05rem; }
+.cb-wire-list { list-style: none; padding: 0; margin: 0 0 0.75rem; display: grid; gap: 0.35rem; }
+.cb-wire-row { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; background: var(--paper); border: 1px solid var(--line); border-radius: 6px; padding: 0.3rem 0.6rem; }
+.cb-wire-label { font-size: 0.85rem; }
+.cb-wire-label code { font-size: 0.78rem; color: var(--accent); }
+.cb-add-wire { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem; }
+.cb-add-wire label { min-width: 0; }
+.cb-add-wire select { max-width: 100%; min-width: 0; }
+.cb-arrow { color: var(--muted); font-weight: 700; }
+.cb-remove { border: 1px solid var(--line); background: transparent; color: var(--muted); border-radius: 6px; padding: 0.2rem 0.6rem; font: inherit; font-size: 0.8rem; cursor: pointer; }
+.cb-remove:hover, .cb-remove:focus-visible { border-color: var(--invalid-ink); color: var(--invalid-ink); }
+.cb-wire-error { min-height: 1.2rem; margin: 0.5rem 0 0; font-size: 0.85rem; color: var(--invalid-ink); }
+.cb-wire-error:empty { min-height: 0; }
+
+/* node cards, laid out in planner evaluation order */
+.cb-nodes { display: grid; grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr)); gap: 1rem; align-items: start; }
+.cb-node { border: 1px solid var(--line); border-left: 4px solid var(--line); border-radius: 8px; padding: 0.75rem 1rem; background: var(--paper); }
+.cb-node-ok { border-left-color: var(--accent); }
+.cb-node-warn { border-left-color: var(--warn-ink); }
+.cb-node-refused, .cb-node-refused-upstream, .cb-node-partial { border-left-color: var(--invalid-ink); }
+.cb-node-incomplete, .cb-node-loading { border-left-color: var(--muted); }
+.cb-node-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.4rem 0.6rem; }
+.cb-node-head h3 { margin: 0; font-size: 1rem; flex: 1 1 auto; }
+.cb-node-id { color: var(--muted); font-weight: 400; font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+.cb-node-body { margin-top: 0.5rem; display: grid; gap: 0.6rem; }
+.cb-incomplete { font-size: 0.85rem; color: var(--muted); background: var(--surface); border: 1px dashed var(--line); border-radius: 6px; padding: 0.4rem 0.6rem; margin: 0; }
+
+/* state chips — factual, not gamified */
+.cb-state { font-size: 0.72rem; border-radius: 999px; padding: 0.05rem 0.5rem; white-space: nowrap; }
+/* .cb-state-ok reuses the "legal green" already established by .chain-ok above
+   (the palette has no success token); keep the two in step. */
+.cb-state-ok { background: #dcfce7; color: #14532d; }
+.cb-state-warn { background: var(--warn-bg); color: var(--warn-ink); }
+.cb-state-refused, .cb-state-refused-upstream, .cb-state-partial { background: var(--invalid-bg); color: var(--invalid-ink); }
+.cb-state-incomplete, .cb-state-loading { background: var(--surface); color: var(--muted); border: 1px solid var(--line); }
+
+@media (prefers-color-scheme: dark) {
+  .cb-add, .cb-connect { color: #0b1220; }
+  .cb-state-ok { background: #14532d; color: #bbf7d0; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }

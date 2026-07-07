@@ -105,7 +105,10 @@ already makes arbitrary forward chains legal; the work is a chain-builder page (
 ports, planner orders evaluation), chains serialized into the URL (shareable on a static site),
 and curated examples (planetary → shaft → flywheel: spin-up time and what it costs in stress).
 Every number keeps its citation through the chain. Sessions S21–S25 as planned 2026-07-04; briefs
-verified against merged reality by S20.
+verified against merged reality by S20. S21 ✅ (chain-eval engine, PR #42) and the **`/chain-builder/`
+MVP ✅ shipped (S22, PR #47, 2026-07-07)** — pick/wire/evaluate up to six nodes, type-checked
+bindings, refusals propagating; URL serialization (S23), provenance flow (S24), and curated examples
++ phase close (S25) remain.
 
 **Track 2 — the portal undergraduates deserve** (owner-directed 2026-07-06, ADR-0010). The
 Phase-3 QC audit ran at the ruling (zero wrong emitted numbers; 4 findings — report

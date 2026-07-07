@@ -19,6 +19,7 @@ for (const path of [
   "verification/",
   "things/", // D1: redesigned catalog (category sections + Pagefind search UI)
   "", // D1: redesigned home (hero + stats + search + category sections)
+  "chain-builder/", // S22: the chain-builder shell (empty state; populated axe in chain-builder.spec.ts)
 ]) {
   test(`axe smoke: /${path}`, async ({ page }) => {
     await page.goto(path);
