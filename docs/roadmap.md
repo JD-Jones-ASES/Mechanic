@@ -108,8 +108,11 @@ Every number keeps its citation through the chain. Sessions S21–S25 as planned
 verified against merged reality by S20. S21 ✅ (chain-eval engine, PR #42), the **`/chain-builder/`
 MVP ✅ shipped (S22, PR #47, 2026-07-07)** — pick/wire/evaluate up to six nodes, type-checked
 bindings, refusals propagating — and **URL serialization ✅ shipped (S23, PR #48, 2026-07-07)**:
-shareable `#v1=` fragment links with graceful, banner-named decode-on-load degradation. Provenance
-flow (S24) and curated examples + phase close (S25) remain.
+shareable `#v1=` fragment links with graceful, banner-named decode-on-load degradation. **Provenance
+flow ✅ shipped (S24, PR #49, 2026-07-07)**: per-readout citation trails tracing each chained number
+home + a chain-level assumptions-in-play panel + a `/verification/` chaining honesty section (what the
+build proves about a chain vs. the cross-THING modeling consistency it does not). Curated examples +
+phase close (S25) remain.
 
 **Track 2 — the portal undergraduates deserve** (owner-directed 2026-07-06, ADR-0010). The
 Phase-3 QC audit ran at the ruling (zero wrong emitted numbers; 4 findings — report

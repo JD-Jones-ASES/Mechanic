@@ -42,8 +42,10 @@ import {
   setMaterial,
   tryConnect,
 } from "./chain-builder-model";
+import { ChainAssumptions } from "./ChainAssumptions";
 import { KnobPanel } from "./KnobPanel";
 import { MaterialPicker, type MaterialRow } from "./MaterialPicker";
+import { type ChainProvenanceCtx, ProvenanceTrail, type TrailNode } from "./ProvenanceTrail";
 import { Readouts } from "./Readouts";
 import { ValidityBanner } from "./ValidityBanner";
 
@@ -247,6 +249,23 @@ export default function ChainBuilder({ catalog, categories, materials }: Props) 
     const lt = n && loaded[n.slug];
     return lt ? lt.artifact.title : id;
   };
+
+  // Provenance context (S24): resolve an instance id to its title + artifact for
+  // the per-readout trails and the assumptions panel. Rebuilt when result/loaded
+  // change, so an opened trail always reflects the current evaluation (no
+  // stale-closure provenance after a knob edit).
+  const nodeInfo = useCallback(
+    (id: string): TrailNode | undefined => {
+      const n = nodeById.get(id);
+      const lt = n && loaded[n.slug];
+      return lt ? { title: lt.artifact.title, artifact: lt.artifact } : undefined;
+    },
+    [nodeById, loaded],
+  );
+  const provCtx: ChainProvenanceCtx = useMemo(
+    () => ({ provenance: result?.provenance ?? [], bindings: store.bindings, nodeInfo }),
+    [result, store.bindings, nodeInfo],
+  );
 
   // --- wire-draft options, always recomputed so a removed node can't strand a
   //     stale selection (the effective value falls back to the first option) ---
@@ -541,6 +560,7 @@ export default function ChainBuilder({ catalog, categories, materials }: Props) 
                   record={record}
                   state={state}
                   setStore={setStore}
+                  provCtx={provCtx}
                 />
               ) : (
                 <p class="cb-hint">Loading module…</p>
@@ -549,6 +569,11 @@ export default function ChainBuilder({ catalog, categories, materials }: Props) 
           );
         })}
       </div>
+
+      {/* ---------------- chain-level assumptions & active flags (S24) ---------------- */}
+      {result && store.nodes.length > 0 ? (
+        <ChainAssumptions order={result.order} nodeInfo={nodeInfo} records={result.nodes} />
+      ) : null}
     </section>
   );
 }
@@ -564,9 +589,10 @@ interface NodeBodyProps {
   record: NodeEvalRecord | undefined;
   state: string;
   setStore: (u: (s: ChainStore) => ChainStore) => void;
+  provCtx: ChainProvenanceCtx;
 }
 
-function NodeBody({ id, artifact, config, store, materials, record, state, setStore }: NodeBodyProps) {
+function NodeBody({ id, artifact, config, store, materials, record, state, setStore, provCtx }: NodeBodyProps) {
   const cfg = configOf(artifact, config);
   const bound = boundInputsOf(store, id);
   const freeInputs = cfg.inputs.filter((s) => !bound.has(s));
@@ -612,6 +638,9 @@ function NodeBody({ id, artifact, config, store, materials, record, state, setSt
         invalidVars={res?.invalidVars ?? []}
         displayUnits={units}
         onUnitChange={(sym, u) => setStore((s) => setDisplayUnit(s, id, sym, u))}
+        provenanceSlot={
+          record ? (sym) => <ProvenanceTrail rootInstance={id} sym={sym} ctx={provCtx} /> : undefined
+        }
       />
 
       {state === "incomplete" ? (

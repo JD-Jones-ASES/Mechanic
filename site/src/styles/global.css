@@ -593,6 +593,51 @@ a { color: var(--accent); }
   .cb-state-ok { background: #14532d; color: #bbf7d0; }
 }
 
+/* ---------------- provenance trail + assumptions panel (S24) ---------------- */
+/* Per-readout trails render in their own block below the readouts <dl> (a
+   <details> may not sit inside a definition-list group — axe). Each trail names
+   its own variable so the association stays clear. */
+.readout-provenance { display: grid; gap: 0.3rem; margin-top: 0.5rem; }
+.prov-trail { font-size: 0.82rem; }
+.prov-summary { color: var(--muted); cursor: pointer; }
+.prov-summary:hover, .prov-trail > summary:focus-visible { color: var(--accent); }
+.prov-var { font-weight: 600; color: var(--ink); }
+.prov-body { margin-top: 0.4rem; padding-left: 0.6rem; border-left: 2px solid var(--line); display: grid; gap: 0.4rem; }
+.prov-note { margin: 0; color: var(--muted); font-size: 0.78rem; }
+.prov-node { display: grid; gap: 0.3rem; }
+.prov-thing { margin: 0; }
+.prov-inst { color: var(--muted); font-variant-numeric: tabular-nums; font-size: 0.78rem; }
+.prov-rels { margin: 0; padding-left: 1rem; display: grid; gap: 0.2rem; }
+.prov-rels code, .prov-input code { font-size: 0.78rem; }
+.prov-cite { color: var(--muted); }
+.prov-inputs { margin-top: 0.2rem; display: grid; gap: 0.3rem; }
+.prov-inputs-label { margin: 0; color: var(--muted); font-size: 0.78rem; }
+/* nested disclosure per bound input — depth reads through the stacked borders */
+.prov-input { border-left: 2px solid var(--line); padding-left: 0.6rem; }
+.prov-input > summary { cursor: pointer; }
+.prov-input-capped { margin: 0; }
+.prov-value { font-variant-numeric: tabular-nums; font-weight: 600; }
+.prov-withheld { color: var(--invalid-ink); font-weight: 600; }
+.prov-unavailable { margin: 0; color: var(--muted); }
+
+/* chain-level assumptions panel — a plain visible section, NOT a disclosure, so
+   a refusal is never hidden (invariant 5) */
+.chain-assumptions { margin-top: 1.5rem; border: 1px solid var(--line); border-radius: 8px; padding: 0.75rem 1rem; background: var(--surface); }
+.chain-assumptions h2 { margin-top: 0; font-size: 1.05rem; }
+.chain-assumptions h3 { font-size: 0.9rem; margin-bottom: 0.3rem; }
+.ca-intro { font-size: 0.85rem; color: var(--muted); }
+.ca-flags ul, .ca-node-list { list-style: none; padding-left: 0; margin: 0; display: grid; gap: 0.4rem; }
+.ca-flags li { font-size: 0.85rem; }
+.ca-node { border-top: 1px dashed var(--line); padding-top: 0.4rem; }
+.ca-node-title { margin: 0 0 0.2rem; }
+.ca-assumption-items { margin: 0; padding-left: 1.1rem; display: grid; gap: 0.15rem; font-size: 0.85rem; color: var(--muted); }
+.ca-none, .ca-noflags { font-size: 0.85rem; color: var(--muted); margin: 0; }
+
+@media (prefers-color-scheme: dark) {
+  /* --invalid-ink is a light-mode ink; lift withheld text to a light red on dark */
+  .prov-withheld { color: #fecaca; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
