@@ -122,5 +122,5 @@ S25 remains the phase-closing row (protocol §8).
 | D2  | THING-page wayfinding + cross-linking + visual polish          | DONE | #46 | 2026-07-07 · phase4/thing-wayfinding | [D2](briefs/D2-thing-wayfinding.md) |
 | S22 | /chain-builder/ MVP (native controls, no drag-and-drop)        | DONE | #47 | 2026-07-07 · phase4/chain-builder-mvp | [S22](briefs/S22-chain-builder-mvp.md) |
 | S23 | URL serialization of chains (versioned fragment encoding)      | DONE | #48 | 2026-07-07 · phase4/chain-url-serialization | [S23](briefs/S23-chain-url-serialization.md) |
-| S24 | citation/provenance flow through chains + /verification/ section | IN_PROGRESS | — | 2026-07-07 · phase4/chain-provenance | [S24](briefs/S24-chain-provenance.md) |
+| S24 | citation/provenance flow through chains + /verification/ section | DONE | #49 | 2026-07-07 · phase4/chain-provenance | [S24](briefs/S24-chain-provenance.md) |
 | S25 | curated example chains + spin-up story + Phase 4 close         | QUEUED | —  | —    | [S25](briefs/S25-chain-examples-close.md) |

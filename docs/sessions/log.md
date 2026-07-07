@@ -1917,3 +1917,68 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   source files (`python -c "print(open(f,'rb').read().count(0))"`) — a stray U+0000 renders as a space in the
   editor AND makes the file ripgrep/git-binary, so a `rg` gate silently skips it. (f) catalog still 36 — no
   CLAUDE.md/README count change.
+
+## S24 — provenance trails + assumptions panel + /verification/ chaining — 2026-07-07 — PR #49 — MERGED
+- Shipped: per-readout provenance disclosures + a chain-level "assumptions in play" panel on BOTH
+  `/chain-builder/` and `/chain-demo/`, plus a `/verification/` chaining honesty section. New files:
+  `components/ProvenanceTrail.tsx` (collapsed `<details>` per readout → value → its THING's cited
+  relations → each bound input → upstream instance/port + crossing value → recursively, capped at the
+  6-node depth; render-on-open at every level; nested `<details>` for a11y) and
+  `components/ChainAssumptions.tsx` (each node's relation assumptions by component + every active
+  ValidityMessage tagged severity+instance; refusals shown in the open, warns listed-not-propagated) and
+  `e2e/chain-provenance.spec.ts`. `Readouts` gained an OPTIONAL `provenanceSlot` (default-off → THING
+  pages byte-identical; trails render OUTSIDE the `<dl>` — a `<details>` inside a dl group is an axe
+  serious violation, caught in the visual/e2e pass). Data supply = S21 provenance records + compiled
+  `RelationMeta` only (invariant 4): upstream relations/citations come from the records, the root node's
+  own relations from its artifact, citation ids → text via each node's `sources[]`. No THING, no new
+  physics/number, no pipeline/schema change, no new dependency. Catalog unchanged at 36.
+- Gates: pytest N/A (pipeline untouched — no `pnpm build` pipeline re-run beyond warm cache); unit 71
+  (unchanged; pure models untouched); pnpm build clean WARM (44 pages, katex/mdx/parity/units + pagefind
+  green); e2e 136 → 140 (+4 chain-provenance.spec.ts; existing specs byte-identical — `git diff main --
+  site/e2e site/tests` empty). Visual pass (built dist, `/Mechanic/`): opened the shaft-τ trail on
+  chain-demo — SAW the recursive trace (shaft relations→Gere/Shigley §3-12; "T ← Planetary … T_out =
+  350 N·m" expanding into willis→Norton + torque-balance→Shigley §13-13; "ω ← … ω_c = 2.8571 rad/s") and
+  the assumptions panel (16 assumptions, clean-state "No validity flags"); on chain-builder drove
+  disk-clutch r_i=150>r_o → panel surfaced 3 Invalid flags (clutch reason, "refused by upstream", "τ
+  undefined") and the trail showed "T ← … T_up = withheld (refused upstream)" in red; console clean;
+  dark+light+mobile-375 zero h-overflow; /verification/ chaining section renders. Review: 3 fresh-context
+  angle subagents (correctness/citations · invariants · code/tests) — ZERO product correctness bugs; 6
+  findings fixed (ChainAssumptions type-predicate TS2677; dead `ProvenanceSlot` export; `key={i}`→`key={a}`;
+  "solved together"→node-level wording; non-root artifact-fallback hardened to a structural invariant-4
+  boundary; open-then-change added to the stale-closure e2e).
+- Golden: N/A — feature+docs session, no emitted numbers (per-THING gate items 2–4 N/A, protocol §3). The
+  machine-proven fact is the existing conservation chain (T_out=350 N·m / τ=27.852 MPa / P=1 kW), which the
+  provenance surface RENDERS but does not author; e2e re-pins it.
+- Citations pinned: N/A — no new citation/material/relation (the trail RESOLVES existing relation
+  `citation` source-ids to their `sources[]` text; nothing new to pin).
+- Deviations from brief: (1) Per-readout trails render in a `.readout-provenance` block OUTSIDE the
+  readouts `<dl>` rather than inside each readout row — a `<details>` inside a dl group is invalid list
+  semantics (axe serious), so the brief's "wired into the Readouts rendering" is honored via an optional
+  slot that renders a sibling block; each trail names its own variable so the association stays explicit.
+  (2) Assumptions "union" is presented grouped-by-node (attribution-preserving) rather than a flat deduped
+  set — nothing dropped, and it answers "which component assumes what," which a flat union can't. Otherwise
+  per the DECIDED spec.
+- New capabilities future briefs may rely on: `ProvenanceTrail` + `ChainAssumptions` components and the
+  page-agnostic `ChainProvenanceCtx` ({provenance, bindings, nodeInfo}); `Readouts` `provenanceSlot`
+  (optional, THING-page-safe). S25's curated-example pages render on `/chain-builder/`, which already
+  carries the trails + panel, so examples inherit provenance for free.
+- Notes-for-next (S25 = curated examples + flywheel spin-up + Phase 4 CLOSE — the phase-closing row,
+  protocol §8): (a) **e2e-flakiness trap (important):** the full suite is reliably green at `--workers=1`
+  AND at `--workers=2` (CI's parallelism on 4-core ubuntu-latest — 3/3 clean, 45.7s), but on a 16-core
+  local box Playwright defaults to 8 workers where it flakes on CPU contention (a different single existing
+  test each run, each passing in isolation; the multi-page axe scan is the heaviest new load). Main baseline
+  (136 tests) is 3/3 clean at 8 workers, so the contention is a high-parallelism artifact my +4 tests tip,
+  NOT a logic bug and NOT a CI concern. Run local e2e with `--workers=2` (or `=1`) for a clean sequential
+  pass; do not chase it as a regression. (b) **Bash-CWD trap (bit me repeatedly):** the Bash tool's CWD
+  PERSISTS across calls — any `cd C:/GitHub_Files/Mechanic` (repo root, e.g. for a git/grep call) then a
+  bare `pnpm …` fails with `runDepsStatusCheck`/`ERR_PNPM_NO_PKG_MANIFEST` because there's no package.json
+  at the root. Keep the CWD at `site/` for pnpm; use `git -C <root>` for git. (c) the owner's non-engineer-UX
+  note (hard to form valid wires by guessing; "pre-made examples?") is exactly S25's curated-examples scope
+  — the S23 `#v1=` URL system makes them shareable frozen links; S24 already gives every number a
+  click-to-open "Where this comes from" story + a plain-language assumptions panel, so lean on those in the
+  walkthrough prose. A further UX idea worth an owner decision (out of S25's brief): the wire dropdowns
+  currently offer ALL target ports and reject illegal picks on Connect — surfacing only type-COMPATIBLE
+  targets would stop the guessing entirely; flag it, don't build it. (d) provenance is node-granular by the
+  S21 contract (a value carries the whole upstream chain's citations) — the trail says so honestly; don't
+  "fix" it into per-relation precision without an S21 engine change. (e) catalog still 36 — no
+  CLAUDE.md/README count change (S25 adds NO THING either; motor deferred).
