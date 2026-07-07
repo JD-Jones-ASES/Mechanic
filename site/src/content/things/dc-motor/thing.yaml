@@ -114,10 +114,11 @@ relations:
       - condition: omega >= 0
         severity: invalid
         message: >-
-          No operating point exists: the demanded torque exceeds the stall torque, and the only
-          "solution" on the extended line has the shaft turning backwards — the load back-driving
-          a stalled motor. A PM DC motor at this voltage cannot deliver more than T_stall, so the
-          evaluation refuses rather than report a fictitious speed.
+          No motoring operating point exists at a negative shaft speed. Demanding more torque
+          than T_stall solves to exactly this state — the only "solution" on the extended line
+          has the load back-driving a stalled motor backwards — and a negative speed entered or
+          wired in directly lands in the same plugging regime this model does not cover. The
+          evaluation refuses rather than report a fictitious operating point.
         citation: hughes
   - id: shaft-power
     group: torque-power
@@ -221,8 +222,12 @@ derivation:
         stall torque T_stall = k_m·V_s/R_a (all the supply's current, none of its back-EMF) and
         no-load speed ω₀ = V_s/k_m (back-EMF eats the whole supply, no current left to make
         torque). Measure those two numbers and the entire behavior at this voltage is known —
-        the THING's knobs are the datasheet.
+        the THING's knobs are the datasheet. This identification of the knobs with the circuit
+        constants is a naming step, not a machine-checkable identity (T_stall and ω₀ are free
+        knobs); it is proven independently against the circuit model in the pipeline's
+        cross-check test.
       rule: name the datasheet intercepts
+      check: definition
     - expr: Eq(P, T_stall*omega*(1 - omega/omega_0))
       prose: >-
         Mechanical power is torque times speed, P = Tω — zero at BOTH ends of the line (at stall

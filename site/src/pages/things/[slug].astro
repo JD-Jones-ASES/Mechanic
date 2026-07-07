@@ -61,7 +61,7 @@ const a = compiled.data;
 
 // build-time wayfinding (ADR-0010 §4): related THINGs, "chains with", prev/next.
 // buildWayfinding computes the whole catalog's maps ONCE and memoises them, so the
-// O(N²·ports) chain scan runs a single time across all 36 page builds, not per page.
+// O(N²·ports) chain scan runs a single time across all THING page builds, not per page.
 const allThings = (await getCollection("things")).map((t) => ({
   id: t.id,
   title: t.data.title,

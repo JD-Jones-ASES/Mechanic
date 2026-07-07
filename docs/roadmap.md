@@ -131,6 +131,16 @@ spine, per-THING verification badges **(shipped 2026-07-07, PR #46)**. Restraine
 (tokens/system fonts/dark-mode/native controls stay; no webfonts, no frameworks). D1/D2 deliberately
 precede S22 so the chain-builder ships into the final shell.
 
+## Release — v1.0.0 (owner ruling 2026-07-07: there is no Phase 5)
+
+Initial development concludes with the release pair (queue rulings R10–R12): **S26** ✅ shipped
+2026-07-07 — the minimal motor THING (`dc-motor`, PM DC linear torque–speed line, catalog 36 → 37)
+closing the phase-4 report's decision 1, wired into the headline chain example as a real torque
+source (motor → planetary → shaft + flywheel, torque AND shaft speed bound, power conserved end to
+end) — and **V1** — docs reshaped for public release, the human-POV site pass, repo polish, and the
+`v1.0.0` tag + GitHub Release. The section below is retained as a *future path*, not a scheduled
+phase.
+
 ## Phase 5 — Materials depth
 
 Grow `data/materials/` under the same Feist/provenance rules. Each new property *column* unlocks

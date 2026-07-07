@@ -443,7 +443,7 @@ export function decodeChain(fragment: string, ctx: ChainUrlContext): DecodeResul
 /**
  * The distinct slugs a fragment names, for the caller to lazy-load BEFORE
  * decoding (so decode's `ctx.artifacts` is populated, and page weight stays
- * targeted — only the link's THINGs load, not all 36). Returns [] for an empty,
+ * targeted — only the link's THINGs load, not the whole catalog). Returns [] for an empty,
  * foreign, version-mismatched, or malformed fragment — decode surfaces those.
  */
 export function previewSlugs(fragment: string): string[] {

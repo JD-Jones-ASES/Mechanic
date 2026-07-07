@@ -9,7 +9,7 @@ exactly the ones the thermal reality forbids.
   than a short time overheats the windings; sustained operation lives well inside the line, not
   on its edge. Real datasheets draw this on the curve: a *continuous* region the motor can hold
   indefinitely and an *intermittent* region it may only pulse into (duty-cycle ratings are
-  standardized — NEMA's continuous/intermittent classes, IEC 60034-1's S1–S8).
+  standardized — NEMA's continuous/intermittent classes, IEC 60034-1's S1–S10 duty types).
 
 - **Peak power costs half the heat budget.** The maximum-output point at $\omega_0/2$ is also
   the point where the machine converts electrical power at roughly 50% efficiency — it sheds
@@ -20,14 +20,17 @@ exactly the ones the thermal reality forbids.
 
 - **Demagnetization: the curve that never comes back.** The "permanent" in permanent magnet is
   conditional. Overcurrent spikes and overtemperature can partially demagnetize the field
-  (modern Nd-Fe-B magnets have a high energy product but a modest Curie point) — and since
-  both intercepts of the line scale with the flux, a demagnetized motor keeps its no-load
-  speed behavior but delivers permanently less torque everywhere. The line doesn't bend when
-  this happens; it quietly moves, and stays moved.
+  (modern Nd-Fe-B magnets have a high energy product but a modest Curie point) — and the two
+  intercepts move in *opposite* directions when flux is lost: stall torque $k V/R$ falls with
+  $k$, while the no-load speed $V/k$ *rises*. The line pivots — less torque per ampere at the
+  low-speed end where torque is needed most, more speed where it isn't (drive designers exploit
+  the same physics deliberately as *field weakening*). Unlike a thermal excursion, this pivot
+  is permanent: the line moves, and stays moved.
 
 - **Brushes and the commutator wear out.** A brushed machine carries its full armature current
-  through sliding graphite contacts that reverse the current in each coil hundreds of times per
-  revolution. They spark, they generate electrical noise, and they wear — a few thousand hours
+  through sliding graphite contacts that reverse each coil's current every half-turn per pole
+  pair — hundreds of reversals per second at speed. They spark, they generate electrical noise,
+  and they wear — a few thousand hours
   is a typical service interval — which is the main reason brushless machines have displaced
   brushed ones wherever electronics are affordable.
 

@@ -6,8 +6,8 @@
  *
  * The catalog index handed to the island is SLIM (slug + title + taxonomy +
  * branches===null configs); the full compiled artifact and generated fns for a
- * THING load lazily in the island on node-add, so 36 artifacts (~1 MB) never sit
- * in the eager payload. The legality table below is built with the same
+ * THING load lazily in the island on node-add, so the full catalog's artifacts
+ * (~1 MB) never sit in the eager payload. The legality table below is built with the same
  * connectionLegal() the runtime planner uses — real engine verdicts as content.
  */
 import { getCollection, getEntry } from "astro:content";

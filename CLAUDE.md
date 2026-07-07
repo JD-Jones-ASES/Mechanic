@@ -125,9 +125,10 @@ statically-indeterminate/coupled THINGs (catalog 30 → 36; report `reports/phas
 Phase 4 approved JD 2026-07-06 and closed 2026-07-07 — chaining as the product + portal design
 (ADR-0010): the `/chain-builder/` (pick/wire/evaluate, shareable `#v1=` URLs, per-readout provenance
 trails, three curated example chains) + the course-spine portal (category taxonomy, Pagefind search,
-THING-page wayfinding); catalog stays 36; report `reports/phase-4.md`; header AWAITING OWNER for the
-Phase 5 ruling. The Phase-3 QC audit found zero wrong emitted numbers, findings in
-`docs/sessions/reports/phase-3-qc-audit.md`).
+THING-page wayfinding); report `reports/phase-4.md`. The Phase-3 QC audit found zero wrong emitted
+numbers, findings in `docs/sessions/reports/phase-3-qc-audit.md`. Release ruling 2026-07-07: there
+is NO Phase 5 — the release pair S26 (dc-motor, catalog → 37) + V1 (v1.0.0 docs/tag) closes initial
+development; future work is owner-commissioned paths, not scheduled phases).
 `docs/sessions/` — session protocol, queue, briefs, log, and the owner runbook; the queue is the
 single source of truth for what to work on next. Build: `pnpm build` in `site/` runs the
 Python pipeline first; `uv run pytest` in `pipeline/` for math-layer tests. A cold build takes ≈ 3–4

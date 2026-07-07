@@ -13,6 +13,7 @@
  */
 import type { VarRecord } from "../../engines/types";
 import { toDisplay } from "../../engines/units";
+import { clamp } from "./simMath";
 import { SimRefusal } from "./SimRefusal";
 import { useSimClock } from "./useSimClock";
 
@@ -26,9 +27,13 @@ export function DcMotorSim({ values, invalid = false }: { values: VarRecord; inv
   const P = values.P ?? NaN;
   const P_max = values.P_max ?? NaN;
   const omega_p = values.omega_p ?? NaN;
+  // dc-motor has no scoped envelopes (both are unscoped), so `invalid` is the
+  // complete refusal signal here; a future scoped envelope on this THING must
+  // add invalidVars handling per the authoring checklist. omega_p rides the
+  // guard because px(omega_p) feeds SVG attributes directly.
   const refused =
     invalid ||
-    ![T_stall, omega_0, omega, T].every(Number.isFinite) ||
+    ![T_stall, omega_0, omega, T, omega_p].every(Number.isFinite) ||
     T_stall <= 0 ||
     omega_0 <= 0;
   const { t, playing, setPlaying } = useSimClock(!refused);
@@ -67,14 +72,16 @@ export function DcMotorSim({ values, invalid = false }: { values: VarRecord; inv
   const chTop = 18;
   const chBottom = 148;
   const xMax = 1.12 * Math.max(omega_0, omega, 1e-9);
+  // geometric extension of the anchor line to the chart's right edge
+  const slope = -T_stall / omega_0; // rise per rad/s, from the two anchors
+  const tAtXMax = T_stall + slope * xMax; // always < 0 (xMax ≥ 1.12·ω₀)
   const yTop = 1.12 * T_stall;
-  const yBot = Math.min(0, 1.15 * T); // extend below the axis only when T < 0
+  // budget the floor for the operating point AND the dashed extension's
+  // endpoint, so nothing draws below the chart frame
+  const yBot = Math.min(0, 1.15 * T, tAtXMax);
   const px = (w: number) => chX + (w / xMax) * chW;
   const py = (torque: number) => chTop + ((yTop - torque) / (yTop - yBot)) * (chBottom - chTop);
   const axisY = py(0);
-  // geometric extension of the anchor line to the chart's right edge
-  const slope = -T_stall / omega_0; // rise per rad/s, from the two anchors
-  const tAtXMax = T_stall + slope * xMax;
   const braking = T < 0;
 
   /* ---------- below: delivered power vs peak available ---------- */
@@ -82,7 +89,7 @@ export function DcMotorSim({ values, invalid = false }: { values: VarRecord; inv
   const barWidth = 260;
   const barY = 200;
   const pFrac = Number.isFinite(P) && Number.isFinite(P_max) && P_max > 0 ? P / P_max : 0;
-  const fillW = barWidth * Math.min(Math.max(pFrac, 0), 1);
+  const fillW = barWidth * clamp(pFrac, 0, 1);
   const rpm = toDisplay(omega, "rpm"); // same conversion table the readouts use
   const kW = (x: number) => (Number.isFinite(x) ? toDisplay(x, "kW").toFixed(1) : "—");
 
@@ -148,7 +155,7 @@ export function DcMotorSim({ values, invalid = false }: { values: VarRecord; inv
         ) : null}
 
         {/* operating point at the engine's (ω, T) */}
-        <circle cx={px(omega)} cy={py(T)} r={5} class={braking ? "chart-point-danger" : "chart-point"} />
+        <circle cx={px(omega)} cy={py(T)} r={5} class={braking ? "chart-point chart-point-danger" : "chart-point"} />
 
         {/* delivered power vs peak available */}
         <rect x={barX} y={barY} width={barWidth} height={10} rx={2} class="fw-bar-track" />
