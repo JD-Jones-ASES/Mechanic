@@ -85,7 +85,48 @@ not run in this read-only session. QC2 runs it as its verification step and appe
 to this report's Dispositions section, QC1-style. Until then, the standing evidence is CI green
 on every Phase-3 merge plus the live-site spot checks in `reports/phase-3.md`.
 
-## Dispositions — pending QC2
+## Dispositions — QC2 (2026-07-07, PR #41)
 
-*(QC2 appends here: per-finding fix commits, Track A counts, and any rule-6 re-verification
-notes, following the `phase-2-qc-audit.md` precedent.)*
+All four confirmed findings fixed, the three hardening notes actioned, the R7 `default_material`
+field shipped, and Track A run green. **No emitted number changed** — every existing golden and
+parity sample passed unmodified (the headline holds).
+
+**Per-finding:**
+
+| # | Fix | Evidence |
+|---|-----|----------|
+| 1 (solve_linear/solutions seam) | `compile.py` snapshots the group targets before the solutions loop and raises a `BuildError` naming thing/config/target on a collision. | `test_solve_linear.py::test_solve_linear_target_also_in_solutions_fails` authors the collision with the *correct* `R_B = 3wL/8` form (so it compiled cleanly before) and asserts the refusal — verified **red→green** (neutered guard → `DID NOT RAISE`; restored). |
+| 2 (landing-state e2e gap) | Subsumed by R7: `things.spec.ts` landing pins for composite-bar and thermal-assembly — no `selectOption`, assert the declared pair + a hand-derived readout. | 2 new e2e; both LAND on steel-a36 + al-6061-t6 (browser-confirmed). |
+| 3 (undocumented slot form) | `authoring-things.md` "Material slots and landing materials (S17 / R7)" section: named slots, one-time normalization, per-slot qualifying filter, R7 `defaults`, slots×scoped-refusal note (hardening c). | Section present; flat-`binds` comment points to it. |
+| 4 (stale solve_hint) | Replaced the never-built `solve_hint` reference with the two real non-closed-form paths (solve1d / solve_linear). | `rg solve_hint docs/authoring-things.md` → none. |
+
+**R7 `default_material` (ruling R7, ADR-0010 §6):** additive `materials.defaults` schema field; compile
+passthrough + cache-independent `validate_default_materials` (existence + per-slot qualification, loud
+`BuildError` on a bad id); `ThingWidget` landing honors it with the staggered fallback intact;
+composite-bar lands steel-a36 core + al-6061-t6 sleeve, thermal-assembly lands steel-a36 left +
+al-6061-t6 right. Pins: `test_default_materials.py` (passthrough, null, unknown-id, non-qualifying,
+unknown-slot).
+
+**Hardening:** (a) `_build_fingerprint` uses `rglob('*.py')` (captures a future subpackage) — material
+seed deliberately NOT in the fingerprint; R7 validation is cache-independent instead (runs before the
+per-THING cache loop, so a seed edit that de-qualifies a landing id is caught even on a fully-cached
+rebuild). (b) `units.test.mjs` Θ-kinds display↔SI round-trip (K interval 1:1, CTE ×10⁻⁶/K ↔ 1/K by
+1e-6). (c) slots×scoped-refusal note added to the authoring guide.
+
+**Track A — cold full-gate re-run (2026-07-07):**
+- `rm -rf site/src/generated/things` then cold `pnpm build`: **clean, 3m20s**, 43 pages; check:parity
+  **1485** values / 36 artifacts; check:units **884** refs; pagefind 43 pages / 9331 words.
+- `uv run pytest -q`: **360 passed** (was 354; +5 default-materials, +1 collision).
+- `pnpm run test:unit`: **22 passed** (was 19; +3 Θ round-trip).
+- `pnpm exec playwright test`: **108 passed** (was 106; +2 landing) incl. axe smoke 0 serious/critical.
+- Browser visual pass: both THINGs LAND on ASTM A36 steel + 6061-T6 aluminium with sensible readouts;
+  composite-bar P→max fires the CORE-yielded warn (SF_1=0.15); console clean.
+
+**Self-review:** six independent passes (3 angle + 3 `/code-review high` finders) — zero
+critical/major/real correctness findings. Two non-blocking cleanup nits fixed by comment (cross-reference
+the three copies of the qualification predicate; note that ChainDemo does not yet honor R7 defaults —
+chain-builder S21+); one rebutted (the deliberate cache-independent yaml re-parse).
+
+**Rule-6 / literal-criterion note:** the exit criterion `rg -n "solve_hint" docs/` is satisfied for the
+finding's target (`authoring-things.md`); the QC2 brief, this report, and `log.md` still contain the word
+because they *document* the finding (append-only history — not rewritten to satisfy a literal grep).
