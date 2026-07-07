@@ -95,7 +95,7 @@ In dependency order:
    ruling. The optional stretch THING (three-parallel-rods) was **not** taken, to protect the
    non-abandonable closure budget (both outcomes were pre-authorized by the S20 brief).
 
-## Phase 4 — Chaining as the product + portal design
+## Phase 4 — Chaining as the product + portal design ✅ complete (2026-07-07, catalog 36; report `docs/sessions/reports/phase-4.md`)
 
 **Approved JD 2026-07-06** (ruled in-session; queue rulings R7–R9 recorded with it). Two tracks,
 one phase, strict queue order QC2 → S21 → D1 → D2 → S22 → S23 → S24 → S25 (S25 closes).
@@ -111,8 +111,13 @@ bindings, refusals propagating — and **URL serialization ✅ shipped (S23, PR 
 shareable `#v1=` fragment links with graceful, banner-named decode-on-load degradation. **Provenance
 flow ✅ shipped (S24, PR #49, 2026-07-07)**: per-readout citation trails tracing each chained number
 home + a chain-level assumptions-in-play panel + a `/verification/` chaining honesty section (what the
-build proves about a chain vs. the cross-THING modeling consistency it does not). Curated examples +
-phase close (S25) remain.
+build proves about a chain vs. the cross-THING modeling consistency it does not). **Curated examples +
+phase close ✅ shipped (S25, PR #50, 2026-07-07)**: `/chain-builder/` opens with three curated example
+cards (frozen `#v1=` URLs) — the headline planetary → shaft → flywheel spin-up story, where cranking
+the gear ratio trades spin-up time against shaft stress — plus a new cited, pipeline-verified spin-up
+relation `t_spin = I_z·ω/T_d` in flywheel-disk (angular impulse–momentum; scoped refusal on
+`T_d > 0`). The catalog stays 36 (no new THING; the minimal motor THING is deferred to an owner
+decision — see the phase report).
 
 **Track 2 — the portal undergraduates deserve** (owner-directed 2026-07-06, ADR-0010). The
 Phase-3 QC audit ran at the ruling (zero wrong emitted numbers; 4 findings — report

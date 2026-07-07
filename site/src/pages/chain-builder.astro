@@ -53,6 +53,19 @@ const catalog = spineOrdered(placeables).map((t) => ({
 const categories = CATEGORIES.map((c) => ({ slug: c.slug, name: c.name }));
 const materials = (await getCollection("materials")).map((m) => m.data);
 
+// --- curated example chains (S25). Each `frag` is a FROZEN v1 URL fragment
+// generated against the merged S23 encoder (never hand-composed) and verified to
+// decode with zero drops and reproduce its hand-checked goldens — the proof lives
+// in site/e2e/chain-examples.spec.ts. Editing a fragment by hand is forbidden;
+// regenerate it from a ChainStore through encodeChain(). ---
+const EX_HEADLINE =
+  "#v1=eyJub2RlcyI6W3siaWQiOiJuMSIsInNsdWciOiJwbGFuZXRhcnktZ2VhcnNldCIsImNvbmZpZyI6InJpbmctZml4ZWQifSx7ImlkIjoibjIiLCJzbHVnIjoidG9yc2lvbi1zaGFmdCIsImNvbmZpZyI6InRvcnF1ZS1pbiJ9LHsiaWQiOiJuMyIsInNsdWciOiJmbHl3aGVlbC1kaXNrIiwiY29uZmlnIjoic3BlZWQtaW4ifV0sImJpbmRpbmdzIjpbeyJmcm9tIjp7Im5vZGUiOiJuMSIsInBvcnQiOiJUX291dCJ9LCJ0byI6eyJub2RlIjoibjIiLCJwb3J0IjoiVCJ9fSx7ImZyb20iOnsibm9kZSI6Im4xIiwicG9ydCI6Im9tZWdhX2MifSwidG8iOnsibm9kZSI6Im4yIiwicG9ydCI6Im9tZWdhIn19LHsiZnJvbSI6eyJub2RlIjoibjEiLCJwb3J0IjoiVF9vdXQifSwidG8iOnsibm9kZSI6Im4zIiwicG9ydCI6IlRfZCJ9fV0sImtub2JzIjp7fSwibWF0ZXJpYWxzIjp7Im4zIjoic3RlZWwtMTA0NSJ9LCJkaXNwbGF5VW5pdHMiOnt9fQ";
+const EX_BELT =
+  "#v1=eyJub2RlcyI6W3siaWQiOiJuMSIsInNsdWciOiJiZWx0LWRyaXZlIiwiY29uZmlnIjoiYW5hbHl6ZSJ9LHsiaWQiOiJuMiIsInNsdWciOiJ0b3JzaW9uLXNoYWZ0IiwiY29uZmlnIjoicG93ZXItaW4ifV0sImJpbmRpbmdzIjpbeyJmcm9tIjp7Im5vZGUiOiJuMSIsInBvcnQiOiJQX3QifSwidG8iOnsibm9kZSI6Im4yIiwicG9ydCI6IlBfdyJ9fV0sImtub2JzIjp7fSwibWF0ZXJpYWxzIjp7fSwiZGlzcGxheVVuaXRzIjp7fX0";
+const EX_INDETERMINATE =
+  "#v1=eyJub2RlcyI6W3siaWQiOiJuMSIsInNsdWciOiJwbGFuZXRhcnktZ2VhcnNldCIsImNvbmZpZyI6InJpbmctZml4ZWQifSx7ImlkIjoibjIiLCJzbHVnIjoiZml4ZWQtZml4ZWQtdG9yc2lvbi1zaGFmdCIsImNvbmZpZyI6ImFuYWx5emUifV0sImJpbmRpbmdzIjpbeyJmcm9tIjp7Im5vZGUiOiJuMSIsInBvcnQiOiJUX291dCJ9LCJ0byI6eyJub2RlIjoibjIiLCJwb3J0IjoiVCJ9fV0sImtub2JzIjp7fSwibWF0ZXJpYWxzIjp7fSwiZGlzcGxheVVuaXRzIjp7fX0";
+const chainBuilderPath = withBase("chain-builder/");
+
 // static legality table — real connectionLegal() verdicts over buildable THINGs
 const gear = (await getEntry("compiled", "planetary-gearset"))!.data;
 const shaft = (await getEntry("compiled", "torsion-shaft"))!.data;
@@ -88,9 +101,92 @@ const checks = [
     reduction driving a torsion shaft, power conserved through the wiring).
   </p>
 
+  <section class="cb-examples" aria-labelledby="examples-heading" data-pagefind-ignore>
+    <h2 id="examples-heading">Start from an example</h2>
+    <p>
+      Wiring a legal chain from scratch takes some knowing-what-connects-to-what. These three are
+      built and verified — open one to load it into the builder below, then turn its knobs and watch
+      the consequences travel. Every number keeps the citation trail (<em>Where this comes from</em>)
+      and the assumptions panel you see under any chain.
+    </p>
+    <ul class="cb-example-grid">
+      <li class="cb-example">
+        <h3>Spin-up time vs. shaft stress</h3>
+        <p>
+          The headline. A motor — the sun-torque knob <code>T_s</code> stands in for one — drives a
+          ring-fixed <strong>planetary reduction</strong>, whose 3.5:1 ratio turns 100 N·m into
+          <strong>T_out = 350 N·m</strong> delivered to the load. That one torque does two jobs at
+          once. Wired into a <strong>driveshaft</strong> (with the carrier speed wired across too, so
+          the shaft carries the full <strong>1 kW</strong> the motor put in — power survives the
+          wiring), it winds the shaft to <strong>τ = 27.9 MPa</strong>. Wired into a steel
+          <strong>flywheel</strong>, the same torque spins it up from rest to 300 rad/s in
+          <strong>t_spin = 0.13 s</strong>. Now crank the gear ratio up (drop the sun teeth
+          <code>N_s</code>): the flywheel spins up faster <em>and</em> the shaft winds tighter.
+          Storing energy quickly costs shaft stress — that is the trade.
+        </p>
+        <a class="cb-example-link" data-chain-example href={`${chainBuilderPath}${EX_HEADLINE}`}>
+          Open this chain <span aria-hidden="true">→</span>
+        </a>
+      </li>
+      <li class="cb-example">
+        <h3>A belt drive sizing a shaft</h3>
+        <p>
+          A flat <strong>belt on the verge of slip</strong> (400 N tight side, 180° wrap, μ = 0.3)
+          transmits <strong>P = 3.15 kW</strong>. Feed that power into a <strong>shaft</strong> in its
+          <em>power-in</em> configuration: the shaft first backs out the torque it must carry,
+          <strong>T = P/ω = 31.5 N·m</strong> at 100 rad/s, then the shear that torque produces,
+          <strong>τ = 2.50 MPa</strong>. Two unrelated physics — capstan friction and the torsion
+          formula — chained by the one quantity both speak, <strong>power</strong>.
+        </p>
+        <a class="cb-example-link" data-chain-example href={`${chainBuilderPath}${EX_BELT}`}>
+          Open this chain <span aria-hidden="true">→</span>
+        </a>
+      </li>
+      <li class="cb-example">
+        <h3>A gearbox into a doubly-clamped shaft</h3>
+        <p>
+          The same planetary delivers <strong>350 N·m</strong> — now into a shaft built into a wall at
+          <em>both</em> ends, with the torque applied off-centre. That shaft is
+          <strong>statically indeterminate</strong>: equilibrium alone cannot split the torque between
+          the two walls. The build solves the coupled 2×2 compatibility system exactly, so the chain
+          shows <strong>T_A = 210 N·m</strong> on the shorter segment and <strong>T_B = 140 N·m</strong>
+          on the longer — a Phase-3 indeterminate solve fed by a chain. Swap the shaft's material and
+          the reactions do not move (the GJ cancels); only the twist does.
+        </p>
+        <a class="cb-example-link" data-chain-example href={`${chainBuilderPath}${EX_INDETERMINATE}`}>
+          Open this chain <span aria-hidden="true">→</span>
+        </a>
+      </li>
+    </ul>
+  </section>
+
   <div data-pagefind-ignore>
     <ChainBuilder client:load catalog={catalog} categories={categories} materials={materials} />
   </div>
+
+  <script is:inline>
+    // Example-chain links load a frozen chain into the builder. The builder decodes
+    // the URL fragment ONCE at mount (S23) and has no hashchange listener, so when a
+    // visitor clicks an example while ALREADY on this page a bare same-page hash
+    // change would update the URL without rebuilding the chain. Force a reload so the
+    // island remounts and re-decodes. Arriving from another page loads fresh anyway,
+    // so this only intercepts the same-page case (progressive enhancement — the link
+    // still works without JS from elsewhere in the site).
+    document.addEventListener("click", (e) => {
+      // let the browser handle modified / non-primary clicks (open-in-new-tab,
+      // download, etc.) — only intercept a plain left-click.
+      if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      const a = e.target.closest && e.target.closest("a[data-chain-example]");
+      if (!a || !a.hash) return;
+      if (location.pathname === new URL(a.href, location.href).pathname) {
+        e.preventDefault();
+        // set the fragment via replaceState (no history spam, matching the
+        // builder's URL-sync convention), then reload so the island re-decodes it.
+        history.replaceState(history.state, "", a.href);
+        location.reload();
+      }
+    });
+  </script>
 
   <h2>Connections are type-checked</h2>
   <p>

@@ -104,9 +104,12 @@ Generated artifacts (`site/src/generated/`, `data/build/`) are **never committed
 ## Out of scope (v1)
 
 Nonlinear/cyclic solving (`solveND`, ADR-0008 part (b) — PROPOSED, unbuilt; certified linear
-`solve_linear` groups are the shipped subset) · full chaining UI beyond the shipped `/chain-builder/`
-MVP (S22 — pick/wire/evaluate up to six nodes — and shareable `#v1=` chain URLs with graceful
-decode-on-load degradation (S23); provenance flow and curated examples land S24–S25) · Materials
+`solve_linear` groups are the shipped subset) · chaining UI beyond the shipped `/chain-builder/`
+(S22 pick/wire/evaluate up to six nodes; S23 shareable `#v1=` chain URLs with graceful decode-on-load
+degradation; S24 per-readout provenance trails + assumptions panel; S25 three curated example chains
+with frozen `#v1=` URLs — cyclic/multi-branch chaining and a drag-and-drop canvas stay out) ·
+a minimal motor THING as a first-class torque source (deferred to an owner decision at the Phase 4
+close; the spin-up example drives the chain with the planetary's existing `T_s` knob) · Materials
 Project integration · fluids & time-integration dynamics engines ·
 Pyodide sandbox · integer tooth-count synthesis · eccentric-column solve-for-P (transcendental) ·
 coupler-curve inverse · custom domain · analytics (none, stated policy) · accounts/comments (static site).
@@ -121,8 +124,11 @@ ACCEPTED with split scope — solveLinear approved, solveND deferred; Phase 2 ta
 sessions run autonomously within a phase and stop at phase boundaries for owner direction.
 Phase 3 approved JD 2026-07-06 and closed 2026-07-06 — solver depth: `solveLinear` + six
 statically-indeterminate/coupled THINGs (catalog 30 → 36; report `reports/phase-3.md`).
-Phase 4 approved JD 2026-07-06 — chaining as the product + portal design (ADR-0010), queue order
-QC2 → S21 → D1 → D2 → S22–S25; the Phase-3 QC audit found zero wrong emitted numbers, findings in
+Phase 4 approved JD 2026-07-06 and closed 2026-07-07 — chaining as the product + portal design
+(ADR-0010): the `/chain-builder/` (pick/wire/evaluate, shareable `#v1=` URLs, per-readout provenance
+trails, three curated example chains) + the course-spine portal (category taxonomy, Pagefind search,
+THING-page wayfinding); catalog stays 36; report `reports/phase-4.md`; header AWAITING OWNER for the
+Phase 5 ruling. The Phase-3 QC audit found zero wrong emitted numbers, findings in
 `docs/sessions/reports/phase-3-qc-audit.md`).
 `docs/sessions/` — session protocol, queue, briefs, log, and the owner runbook; the queue is the
 single source of truth for what to work on next. Build: `pnpm build` in `site/` runs the

@@ -1982,3 +1982,81 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   S21 contract (a value carries the whole upstream chain's citations) — the trail says so honestly; don't
   "fix" it into per-relation precision without an S21 engine change. (e) catalog still 36 — no
   CLAUDE.md/README count change (S25 adds NO THING either; motor deferred).
+
+## S25 — curated example chains + flywheel spin-up + Phase 4 close — 2026-07-07 — PR #50 — MERGED
+- Shipped: (1) **flywheel-disk spin-up amendment** — a new cited, pipeline-verified relation
+  `t_spin = I_z·ω/T_d` (constant-drive-torque spin-up from rest, angular impulse–momentum), added to
+  both configs (+input `T_d`, +derived `t_spin`, +derivation step), with a **scoped-invalid envelope
+  `T_d > 0` → scope `[t_spin]`** (withholds only the spin-up time; energy/stress/margin stand);
+  `hibbeler-dyn` extended to ch. 19. (2) **Three curated example chains on `/chain-builder/`** —
+  frozen `#v1=` URLs generated against the S23 encoder (never hand-composed), each decoding with zero
+  drops to a hand golden: HEADLINE planetary→shaft+flywheel (gear ratio trades spin-up time vs shaft
+  stress, power conserved), belt→shaft (P→T→τ), planetary→fixed-fixed-torsion-shaft (a chain feeding a
+  solveLinear indeterminate solve). (3) **Phase 4 close** (protocol §8): report, roadmap/CLAUDE/README
+  reconciled, queue header → AWAITING OWNER. Catalog UNCHANGED at 36 (no new THING; motor deferred).
+- Gates: pytest **367** passed (362 baseline + 5 test_flywheel_spinup_physics.py); pnpm build clean
+  (WARM — thing.yaml re-fingerprint recompiles only flywheel-disk; parity 1491 values, katex 1533,
+  mdx 72 files, units 887 refs; astro + pagefind green); unit **71**; e2e **145** (140 + 5
+  chain-examples.spec.ts; existing specs byte-identical — `git diff main -- site/e2e` touches only the
+  new file); visual pass (built dist, /Mechanic/): the three example cards render (desktop dark +
+  mobile-375 light, zero h-overflow); clicked "Spin-up time vs. shaft stress" → the 3-node chain
+  loaded (T_out 350, τ 27.852 MPa, **P_w 1 kW = the sun input**, t_spin 0.13411 s); cranked N_s 24→12
+  and SAW **t_spin fall 0.134→0.0939 s while τ rose 27.85→39.79 MPa** (the headline trade); on
+  /things/flywheel-disk/ drove T_d=−50 → t_spin blanked to "—" with the Invalid banner while
+  stress/energy/margin stood and the sim kept drawing (SCOPED), and T_d=0 → **every** readout blanked
+  (GLOBAL, the auto denominator guard); KaTeX 0 error blocks, console clean. review: **4**
+  fresh-context passes (physics · invariants · code/tests · consolidated /code-review high) — 6
+  findings, 4 fixed + 2 rebutted (below).
+- Golden: t_spin default (generic steel ρ=7850, T_d=50 N·m) = **0.93637 s**; chain-builder headline
+  (steel-1045 ρ=7870, T_d = planetary T_out = 350) I_z = 0.156459, t_spin = **0.13411 s** — both
+  hand-derived in the physics test. Chain e2e goldens: headline T_out 350 / τ 27.852 MPa / P_w 1 kW /
+  t_spin 0.13411 s; belt P_t 3.147 kW / T 31.47 N·m / τ 2.504 MPa; indeterminate T_A 210 / T_B 140 /
+  τ_1 16.71 MPa (all re-derived by 3 review agents independently).
+- Citations pinned: `hibbeler-dyn` extended to ch. 19 (Planar Kinetics of a Rigid Body: Impulse and
+  Momentum, §19.1 angular momentum + §19.2 principle of impulse and momentum), chapter/section titles
+  web-corroborated 2026-07-07 (Vaia + Simer 14th-ed listings). HONEST: the spin-up time is
+  machine-proven (symbolic identity + parity) AND independently re-derived (SymPy dsolve of I·dω/dt=T +
+  the impulse–momentum integral) — not transcribed. No new material/relation elsewhere.
+- Deviations from brief: (1) Example-3 = the S20-pinned SIMPLEST legal wire (planetary `T_out` →
+  fixed-fixed-torsion-shaft `T`), driving a statically-indeterminate solveLinear consumer from a chain
+  (per the brief's deliberately-open slot; logged as the deliverable requires). (2) On-page example
+  links carry a small progressive-enhancement `<script>` (reload on a same-page click) because the
+  ChainBuilder decodes the URL fragment ONLY at mount (S23) — a bare hash change wouldn't rebuild;
+  the e2e navigates directly (`goto`), needing no script. (3) The scoped-refusal message + overview
+  were reworded from "zero or negative" to "NEGATIVE" after the physics review (below).
+- Review findings + dispositions: **(a) FIXED — two reviewers independently:** the reload `<script>`
+  hijacked modifier/non-primary clicks (Ctrl/Cmd-click on an example → reloaded the current tab
+  instead of open-in-new-tab) — added `if (e.button!==0||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)
+  return;` and switched to `history.replaceState` (no history spam). **(b) FIXED:** the "cards render"
+  e2e asserted only the headline href → now asserts ALL 3 card hrefs against the pinned fragments, so
+  an astro↔spec drift on belt/indeterminate fails the test. **(c) FIXED:** belt/indeterminate e2e
+  tests lacked the `pageerror` guard the headline has — added. **(d) FIXED (honesty):** the pipeline
+  AUTO-emits a config-level `nonzero` guard on the `t_spin` denominator, and being unscoped it refuses
+  the WHOLE page at exactly T_d=0 — so "zero … readouts still stand" was false at that point; the
+  message + overview now say a NEGATIVE torque scopes only t_spin, and note that exactly-zero divides
+  by zero and refuses everything (visual-confirmed: T_d=−50 scoped, T_d=0 global). **(e) FIXED:** I_z
+  headline golden literal 0.156456 → 0.156459 (last-digit slip; was inside tolerance). **(f) REBUTTED:**
+  belt τ golden 2.504 — the physics reviewer's 2.5049 used exact π; the belt uses θ_w=3.1416, giving
+  the rendered 2.50435 MPa, so 2.504 is correct to 3 d.p. **(g) REBUTTED/kept:** t_spin bounds [0,100]
+  can be exceeded by a tiny positive T_d, but derived-var bounds are display-only (never build-gated,
+  no UI gauge-scales to them) — a loose sensible-range ceiling per the S05 convention.
+- New capabilities future briefs may rely on: none new (authored-content amendment through the
+  existing pipeline). Reusable knowledge: **the pipeline auto-emits an unscoped config-level `nonzero`
+  guard for EVERY solution denominator** (severity invalid → GLOBAL refuse), so a scoped refusal on a
+  variable whose formula divides by a knob coexists with a global divide-by-zero guard, and they differ
+  at exactly the zero point — check the compiled artifact's `guards` and word the envelope message to
+  cover BOTH regimes. Frozen `#v1=` example URLs are cheap to mint: build a ChainStore with EMPTY
+  knobs (the S23 encoder omits defaults, so no artifacts are needed for encode) + a pinned per-node
+  material id, run `encodeChain`, then verify decode + `evaluateStore` reproduce the golden before
+  freezing the literal.
+- Notes-for-next: **This closed Phase 4 — the queue header is `Active phase: 4 — AWAITING OWNER` and
+  there is NO next-phase row to claim (protocol §8). Do NOT start Phase 5 work; a session that finds no
+  ruling line stops and reports.** Phase 5 (Materials depth) has **no briefs drafted** — the owner must
+  commission them (or a planning session like S00) when ruling Phase 5, and decide the motor-THING
+  placement (phase-4 report decision 1). Traps: (a) the **Bash-tool CWD persists** across calls — a
+  `cd site` or `cd data/materials` sticks and then a bare `pnpm`/`uv`/relative path fails; prefix with
+  `cd /c/GitHub_Files/Mechanic &&` and use `--directory pipeline` for pytest (bit me twice). (b) the
+  **ChainBuilder decodes the fragment only at mount** (deliberate, no hashchange listener) — same-page
+  example links need a reload. (c) the **auto denominator guard** trap in the capabilities note above.
+  (d) run local e2e `--workers=2` for a clean pass (145 green; S24's high-parallelism-flake note).
+  (e) catalog stays 36 — no CLAUDE.md/README count change (S25 adds no THING).
