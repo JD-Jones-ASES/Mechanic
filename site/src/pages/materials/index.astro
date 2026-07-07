@@ -143,7 +143,9 @@ for (const p of [...points].sort((a, b) => y(a.E / 1e9) - y(b.E / 1e9))) {
     <tbody>
       {rows.flatMap((m) =>
         m.properties.map((p, i) => (
-          <tr>
+          // id on the first row of each material's rowgroup: the THING-page
+          // material chips (D2) link here as /materials/#<id>
+          <tr id={i === 0 ? m.id : undefined}>
             {i === 0 ? <th scope="rowgroup" rowspan={m.properties.length}>{m.name}</th> : null}
             {i === 0 ? <td rowspan={m.properties.length}>{m.condition}</td> : null}
             <td>{p.key.replaceAll("_", " ")}</td>

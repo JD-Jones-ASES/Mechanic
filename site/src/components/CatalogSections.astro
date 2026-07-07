@@ -9,55 +9,13 @@
  * house style: no silent "Other" bucket, no unplaced THING).
  */
 import { getCollection } from "astro:content";
+// The spine taxonomy AND its group-by-spine ordering (category/topic slugs,
+// display names, order, accents, the byTitle-within-topic algorithm) are owned by
+// lib/catalog.ts, so this catalog and the THING-page prev/next walk the SAME order
+// and never drift (ADR-0010 §1; D2). This component still owns the topic-membership
+// validation — a rendering concern.
+import { categoryBySlug, spineGroups } from "../lib/catalog";
 import { withBase } from "../lib/url";
-
-interface Topic {
-  slug: string;
-  name: string;
-}
-interface Category {
-  slug: string;
-  name: string;
-  blurb: string;
-  accentVar: string; // CSS token for this category's accent (see global.css)
-  topics: Topic[]; // empty ⇒ no subgrouping; THINGs render directly (ADR §1)
-}
-
-// Spine order. Topic order within a category is pedagogical (this list), NOT
-// alphabetical — only the THINGs inside a topic sort alphabetically by title.
-const CATEGORIES: Category[] = [
-  {
-    slug: "mechanics-of-materials",
-    name: "Mechanics of Materials",
-    blurb: "How solids stretch, bend, twist, buckle, and fail under load.",
-    accentVar: "--cat-mom",
-    topics: [
-      { slug: "axial-thermal-impact", name: "Axial, Thermal & Impact" },
-      { slug: "beams-plates", name: "Beams & Plates" },
-      { slug: "torsion-combined", name: "Torsion & Combined Loading" },
-      { slug: "columns-stability", name: "Columns & Stability" },
-      { slug: "pressure-rotating", name: "Pressure & Rotating Bodies" },
-    ],
-  },
-  {
-    slug: "machine-design",
-    name: "Machine Design",
-    blurb: "Sizing the elements that transmit power and carry service loads.",
-    accentVar: "--cat-md",
-    topics: [
-      { slug: "gears-drives", name: "Gears & Drives" },
-      { slug: "shafts-bearings", name: "Shafts & Bearings" },
-      { slug: "joints-springs-clutches", name: "Joints, Springs & Clutches" },
-    ],
-  },
-  {
-    slug: "mechanisms-dynamics",
-    name: "Mechanisms, Dynamics & Vibration",
-    blurb: "Motion, stored energy, and the frequencies machines ring at.",
-    accentVar: "--cat-mech",
-    topics: [],
-  },
-];
 
 const things = (await getCollection("things")).map((t) => ({
   id: t.id,
@@ -68,15 +26,12 @@ const things = (await getCollection("things")).map((t) => ({
   topic: t.data.topic,
 }));
 
-const byTitle = (a: { title: string }, b: { title: string }) => a.title.localeCompare(b.title);
-const catBySlug = new Map(CATEGORIES.map((c) => [c.slug, c]));
-
 // Machine-checkable honesty (ADR-0010 §1): every THING must resolve to exactly
 // one known (category, topic). `category` is already a Zod enum, so a bad/missing
 // category fails the collection load before we get here; `topic` is a free string
 // in the schema, so its membership is enforced HERE and nowhere else.
 for (const t of things) {
-  const cat = catBySlug.get(t.category);
+  const cat = categoryBySlug.get(t.category);
   if (!cat) throw new Error(`CatalogSections: THING '${t.id}' has unknown category '${t.category}'`);
   if (cat.topics.length === 0) {
     if (t.topic)
@@ -97,18 +52,9 @@ for (const t of things) {
   }
 }
 
-// Build the render tree in spine order.
-const render = CATEGORIES.map((cat) => {
-  const inCat = things.filter((t) => t.category === cat.slug);
-  const groups =
-    cat.topics.length === 0
-      ? [{ topic: null as Topic | null, things: [...inCat].sort(byTitle) }]
-      : cat.topics.map((topic) => ({
-          topic: topic as Topic | null,
-          things: inCat.filter((t) => t.topic === topic.slug).sort(byTitle),
-        }));
-  return { cat, groups };
-});
+// Build the render tree in spine order — the SAME grouping prev/next flattens
+// (lib/catalog `spineGroups`), so the two surfaces cannot diverge.
+const render = spineGroups(things);
 
 // Fail loud on a declared-but-empty topic: a topic slug in CATEGORIES with no
 // THING assigned is a taxonomy mistake, and a bare subhead over zero cards would

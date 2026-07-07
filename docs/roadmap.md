@@ -115,9 +115,9 @@ Phase-3 QC audit ran at the ruling (zero wrong emitted numbers; 4 findings — r
 Dynamics & Vibration), build-proof stats in the hero, and a Pagefind search UI **(shipped
 2026-07-07, PR #44)**; D2 adds THING-page
 wayfinding — related THINGs, a `connectionLegal`-driven "chains with" block, prev/next along the
-spine, per-THING verification badges. Restrained visual polish only (tokens/system
-fonts/dark-mode/native controls stay; no webfonts, no frameworks). D1/D2 deliberately precede S22
-so the chain-builder ships into the final shell.
+spine, per-THING verification badges **(shipped 2026-07-07, PR #46)**. Restrained visual polish only
+(tokens/system fonts/dark-mode/native controls stay; no webfonts, no frameworks). D1/D2 deliberately
+precede S22 so the chain-builder ships into the final shell.
 
 ## Phase 5 — Materials depth
 
