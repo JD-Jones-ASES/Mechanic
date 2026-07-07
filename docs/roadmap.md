@@ -56,7 +56,9 @@ brief's transcribed deflection formula (cos³α) failed independent re-derivatio
 ships the correct cos²α; that incident plus S11's wrong recalled Weibull θ became protocol
 rule 6 (**a brief is a spec, not a source**). The per-THING gate is protocol §3.
 
-## Phase 3 — Solver depth — ACTIVE (approved JD 2026-07-06; items 1–2 ✅ shipped 2026-06-10; item 3 scope split 2026-07-04)
+## Phase 3 — Solver depth ✅ complete (2026-07-06, 30 → 36 THINGs; report `docs/sessions/reports/phase-3.md`)
+
+Approved JD 2026-07-06; items 1–2 ✅ shipped 2026-06-10; item 3 scope split 2026-07-04.
 
 In dependency order:
 1. **Johnson parabola** ✅ — second model on the Euler page with its own envelope; the refusal
@@ -87,7 +89,11 @@ In dependency order:
    material-DEPENDENT solveLinear solve, catalog → 35). S19 ✅ shipped (bolted-joint-gasket — a
    preloaded gasketed joint under external tensile load; a 2×2 solveLinear for the bolt/member force
    split by stiffness, with separation F_m ≤ 0 as a GLOBAL refusal and no material axis by design
-   since the stiffnesses are direct inputs, catalog → 36); S20 (Phase 3 close) in progress.
+   since the stiffnesses are direct inputs, catalog → 36). S20 ✅ closed the phase (PR #39): this
+   report, the roadmap/CLAUDE/README reconciliation, the `/verification/` and ADR-0008 sweeps, and
+   the Phase 4 DRAFT-brief verification, then set the queue header to AWAITING OWNER for the Phase 4
+   ruling. The optional stretch THING (three-parallel-rods) was **not** taken, to protect the
+   non-abandonable closure budget (both outcomes were pre-authorized by the S20 brief).
 
 ## Phase 4 — Chaining as the product
 

@@ -50,9 +50,12 @@ verification systems; the AI authors everything under them ([ADR-0007](docs/deci
 - **No blind solving.** Authors supply closed-form solutions; SymPy *verifies* them against the
   declared relations (symbolic tiers + 50-digit numeric sampling), checks degree-of-freedom
   arithmetic on the solution manifold, and proves every displayed derivation step. Multi-branch
-  solutions (a four-bar's two circuits) are each verified independently. Where no closed form
-  exists at all (the eccentric column's secant equation), the build certifies an authored
-  *bracket* instead — a proven sign change containing exactly one root — and checks the
+  solutions (a four-bar's two circuits) are each verified independently. Coupled systems with no
+  evaluation order — the redundant reactions of a statically indeterminate structure — are proven
+  *linear* in their unknowns, solved exactly by Gaussian elimination at build time, with the system
+  determinant checked non-zero at every sample and shipped as a runtime refusal guard. Where no
+  closed form exists at all (the eccentric column's secant equation), the build certifies an
+  authored *bracket* instead — a proven sign change containing exactly one root — and checks the
   browser's live root-finder against 60-digit bisection on every build.
 - **A declared audit surface.** Steps where physics *enters* (modeling steps) are labeled as
   such on every page; each gets an independent first-principles cross-check in
