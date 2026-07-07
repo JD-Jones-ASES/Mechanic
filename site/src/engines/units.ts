@@ -60,6 +60,9 @@ export const DISPLAY_FACTORS: Record<string, { factor: number; label: string }> 
   deg: { factor: Math.PI / 180, label: "°" },
   "rad/m": { factor: 1, label: "rad/m" }, // twist rate (angle of twist per length); SI base
   "deg/m": { factor: Math.PI / 180, label: "°/m" }, // 1 deg/m = π/180 rad/m
+  K: { factor: 1, label: "K" }, // temperature INTERVAL ΔT (interval only; ΔT in K = ΔT in °C, and this
+                                // site never displays an absolute temperature — no offset scales)
+  "1e-6/K": { factor: 1e-6, label: "×10⁻⁶/K" }, // linear CTE α, the readable "23.4 ×10⁻⁶/K" idiom
 };
 
 // Unknown units fall back to identity: the engine computes in SI, so showing

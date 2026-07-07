@@ -1309,3 +1309,79 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   `material-select` (a `default` slot). (d) composite-bar's det does NOT cancel, so it carries BOTH an explicit det
   guard and an auto-denominator guard (harmless, both invalid, trip together). (e) Nothing is paused; S18 is the
   topmost QUEUED row of active Phase 3.
+
+## S18 — CTE material column + thermal-assembly — 2026-07-06 — PR #37 — MERGED
+- Shipped: the `coefficient_of_thermal_expansion` material column (SI `1/K`; 10 metals seeded, append-only) + two
+  new quantity kinds `temperature_difference` (K — the FIRST nonzero Θ slot in the 7-vector) and
+  `thermal_expansion_coefficient` (Θ⁻¹) + display units `K` and `1e-6/K` + two `dims.py` unit tokens (`degF_interval`
+  = 5/9 K exactly, interval-only; `um` micrometer) + THING 35 `thermal-assembly`: a two-segment bar clamped between
+  rigid walls under uniform ΔT, the FIRST Θ-slot consumer. `{F_1,F_2}` is a certified 2×2 `solve_linear` group
+  (equilibrium F_1=F_2 + zero-net-elongation compatibility); the determinant does NOT cancel (like composite-bar), so
+  the thermal force is material-DEPENDENT. Sign convention: F positive in COMPRESSION (heating→compression→F>0,
+  σ>0; cooling→tension; ΔT=0→unstressed exactly). The E·α punchline: a fully restrained STEEL bar out-stresses an
+  ALUMINIUM one for the same ΔT (steel Eα 2.34e6 > al 1.60e6) even though aluminium expands ~2× as much. Catalog 34 → 35.
+- Gates: pytest 347 (336 baseline + 11 new: 6 test_thermal_physics + 2 negative-Θ dimension-gate + 3 CTE conversion
+  goldens); pnpm build clean (COLD ~3–4 min — kinds/dims/ingest changed the fingerprint, all 35 re-verified; then WARM
+  seconds after the sim-visual fix; 42 pages, katex/mdx/parity/units green incl. the two new display units); unit 19
+  (kinds ride the artifact, no new engine unit test); e2e 102 (99 baseline + 3 thermal-assembly `things` pins:
+  [goldens + ΔT=0→σ=0 EXACT unstressed recovery] · [Eα cascade steel>al though al expands more + slot isolation] ·
+  [yield warn]); relation-block change-detector 34→35. visual pass (built dist /Mechanic/ via preview + screenshots
+  normal+warn+unstressed): sim renders VISIBLY (left steel rgb(147,197,253), right al rgb(139,92,246) — NOT the
+  invisible-SVG trap), clamped bar between two hatched walls with INWARD compression arrows; drove ΔT 50→300 K and SAW
+  BOTH segments turn RED (rgb(220,38,38)) with 2 "has yielded" warn banners (σ_1 713>248, σ_2 475>276 MPa); drove
+  ΔT→0 and SAW F=σ_1=σ_2=ε=0 EXACTLY (unstressed); switched materials and SAW σ cascade (steel+al 118.84/79.22 MPa);
+  the free-expansion ghost shows the aluminium segment growing MORE than steel (differential expansion) with an amber
+  "blocked" overhang. KaTeX 0 errors, console clean; /things/ card + /verification/(35) block present. review: 3
+  INDEPENDENT fresh-context subagents (§4). (a) Physics ZERO defects — re-derived F by superposition + coupled 2×2,
+  every limit (ΔT=0, single-material σ=EαΔT, cooling→tension), all 6 declared defaults, the Pytel-Singer golden, and
+  all 10 CTE conversions; found 1 NON-physics provenance nit (FIXED, below). (b) Invariants ZERO — DOF (5 inputs, group
+  = 2 relations), Θ-slot participates (negative tests non-vacuous), append-only CTE (0 deletions), ρ NOT bound, sim
+  consumes `invalid` with no bespoke math, solve_linear certified with det guard + taint=0, no weakened/deleted tests,
+  no committed artifacts, planetary 2-DOF canary still compiles. (c) Code/tests SOUND — physics test imports only
+  math+sympy (no thing.yaml), every SVG class exists in global.css, e2e pins meaningful, degF_interval exact+safely
+  named, tsc clean. THREE findings total, ALL resolved: the source_id nit (fixed) + the visual-pass ghost bug (fixed)
+  + a rebutted-none.
+- Golden: PUBLISHED — Pytel & Singer, *Strength of Materials*, 4th ed., **Problem 266** (steel L=15in A=1.5in²
+  E=29e6psi α=6.5e-6/°F + al L=10in A=2.0in² E=10e6psi α=12.8e-6/°F, ΔT=100°F, "braced against buckling"):
+  F=26,691.84 lb, σ_steel=17,795 psi, σ_al=13,346 psi — reproduced to 4 sig figs from first principles (via MATHalino).
+  Seeded steel-a36+al-6061-t6 golden at THING defaults: F=47,534.7 N, σ_1=118.84 MPa, σ_2=79.22 MPa, matched live.
+- Citations pinned: gere (Gere & Goodno 9th §2.5 Thermal Effects) + hibbeler (ch.4) — topic-level (textbook PDFs not
+  web-accessible, same limit as S02–S17). Every CTE value PERSONALLY web-fetched from its source: ASM Metals Handbook
+  Desk Edition (Davis 1998) via AmesWeb (al-2024/6061/7075, ti-6al-4v, iron-gray), ASM Ready Reference (Cverna 2002)
+  via AmesWeb (steel-1045/4340), Callister 7e/Machinery's Handbook via AmesWeb (steel-a36), Sandmeyer mill datasheet
+  (ss-304), Copper Development Association copper.org (brass-c26000) — each verified_at URL recorded. Pytel-Singer
+  Prob 266 web-corroborated + re-derived. Θ kinds & degF_interval ×1.8 conversion machine-tested.
+- Deviations from brief: (1) CTE PRIMARY source for the al/ti alloys is ASM Metals Handbook Desk Edition (via AmesWeb),
+  NOT MIL-HDBK-5J as the brief pre-named — because MIL-HDBK-5J publishes CTE only as a temperature CURVE (figure-read,
+  no typeset scalar), so the ASM typeset value is the honest precise primary and MIL-HDBK-5J rides as graphical
+  cross-check (protocol rule 6: honest provenance over brief-transcription; the brief is a spec not a source). (2)
+  nylon-66, wood-douglas-fir, concrete-normal OMITTED from the CTE column (pre-authorized): nylon's datasheets are
+  PDF-only (couldn't personally fetch-verify a value; unfilled PA66 spread 80–120e-6/K), wood anisotropic +
+  moisture-confounded, concrete no source pre-named. (3) iron-gray-class30 GAINED a CTE entry but does NOT appear in
+  thermal-assembly's dropdown — it has no yield_strength (brittle cast iron), and the per-slot filter (needs E+α+σ_y)
+  correctly drops it; the UI honestly shows "4 materials not listed" (nylon/wood/concrete/iron-gray). (4) Landing
+  default is al-2024-t3(left)+al-6061-t6(right) per the S17 slot-position rule, NOT steel+al — declared file defaults +
+  e2e + visual pass all select steel+al explicitly (same forced deviation as S17 composite-bar; a literal steel-left
+  landing needs an approved per-slot default-material field — ⚠️ OWNER, still open from S17). (5) No SF readout: with
+  signed stress (cooling→tension) a σ_y/σ margin flips sign confusingly, so yield is conveyed by the warn (σ²<σ_y²) +
+  the red sim; the brief's readout list (σ, free strain) did not require SF. (6) Sim ghost GROWTH is exaggerated ×60
+  (capped on-screen, disclosed in the label "growth exaggerated") because real thermal strains (~5e-4) render the true
+  overhang sub-pixel — the numeric ε_i and caption carry the true magnitudes (the §5 pass caught this; beam-deflection
+  precedent). (7) Two derived readouts F_1 AND F_2 both shown though equal — the equilibrium F_1=F_2 needs both as
+  group targets, and showing them equal teaches "one force through both segments."
+- New capabilities future briefs may rely on (S19+): the `coefficient_of_thermal_expansion` property COLUMN (SI 1/K;
+  add to `PROPERTY_KEYS`+`SI_UNIT` is done); kinds `temperature_difference` (Θ, unit K) and
+  `thermal_expansion_coefficient` (Θ⁻¹, unit 1/K), with α·ΔT = the existing `strain` kind; display units `K` and
+  `1e-6/K`; `dims.py` tokens `degF_interval` (=Rational(5,9)·kelvin, interval-only, ×1.8 to /K) and `um` (micrometer).
+  A THING may bind α per slot alongside E/σ_y; a material lacking any bound property is auto-dropped from that slot.
+- Notes-for-next (S19 = bolted-joint-gasket): (a) the Θ slot works exactly like any other dimension now; a
+  temperature-difference knob is a normal free variable (NOT positive — ΔT can be negative) whose product with a
+  thermal_expansion_coefficient material is a strain. (b) SIGNED derived stresses (σ can be ±) need bounds spanning
+  negative (e.g. [-2e9, 2e9]) and NO `positive:`; the yield warn is `sigma**2 < sigma_y**2` (sign-agnostic |σ|<σ_y),
+  which stays a Relational at parse time (σ free, σ_y positive). (c) a real thermal strain is ~1e-3, so ANY sim
+  drawing a displacement/expansion must EXAGGERATE it (disclose in-label) or it's sub-pixel — Playwright green ≠
+  visible; do the §5 pass. (d) CTE provenance: MIL-HDBK-5J gives CTE as a figure not a scalar — cite the ASM
+  Desk-Ed/AmesWeb typeset value as primary; the pre-existing repo id for that source is `asm-desk-ed-1998`. (e) e2e
+  per-slot default trap persists: thermal-assembly's slots land on al-2024-t3(left)/al-6061-t6(right); always
+  selectOption explicit materials on `material-select-left`/`-right`. (f) Nothing is paused; S19 (bolted-joint-gasket)
+  is the topmost QUEUED row of active Phase 3.

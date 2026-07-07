@@ -29,6 +29,12 @@ GOOD = textwrap.dedent("""
         basis: typical
         source_id: fe-handbook
         citation: "FE Reference Handbook"
+      - key: coefficient_of_thermal_expansion
+        value: 13.0
+        unit: 1e-6/degF_interval
+        basis: typical
+        source_id: asm-desk-ed
+        citation: "ASM Metals Handbook Desk Edition, test CTE row"
 """)
 
 
@@ -47,7 +53,7 @@ def test_ingest_converts_and_persists(mat_dir, tmp_path):
 
     con = sqlite3.connect(db)
     rows = con.execute(
-        "SELECT key, value_published, unit_published, value_si, basis FROM properties ORDER BY key"
+        "SELECT key, value_published, unit_published, value_si, basis, unit_si FROM properties ORDER BY key"
     ).fetchall()
     con.close()
     by_key = {r[0]: r for r in rows}
@@ -55,6 +61,9 @@ def test_ingest_converts_and_persists(mat_dir, tmp_path):
     assert abs(by_key["yield_strength"][3] - 289.58e6) / 289.58e6 < 1e-3
     assert abs(by_key["density"][3] - 2712.6) / 2712.6 < 1e-3
     assert by_key["yield_strength"][4] == "design_minimum"
+    # 13.0e-6/°F-interval -> ×1.8 exactly = 23.4e-6/K (the S18 CTE column), stored in SI 1/K
+    assert abs(by_key["coefficient_of_thermal_expansion"][3] - 23.4e-6) < 1e-12
+    assert by_key["coefficient_of_thermal_expansion"][5] == "1/K"  # unit_si column
 
     data = json.loads(js.read_text(encoding="utf-8"))
     assert data["educational_only"] is True

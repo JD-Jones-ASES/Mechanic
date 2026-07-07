@@ -92,4 +92,18 @@ properties:
     Strength is entirely heat-treat dependent; see discrepancies for other levels and typical normalized values.
     MIL-HDBK-5J page images loaded from the archive.org scan (item milhdbk-5-j): leaf 75 = p. 2-22 (Table 2.3.1.0(f1)),
     leaf 78 = p. 2-25 (Table 2.3.1.0(g2)).'
+- key: coefficient_of_thermal_expansion
+  value: 12.3
+  unit: 1e-6/K
+  basis: typical
+  source_id: asm-ready-ref
+  citation: 'AmesWeb ''Thermal Expansion Coefficient of Steel by Grade'' table (citing Cverna, F.,
+    ASM Ready Reference: Thermal Properties of Metals, ASM International, 2002), AISI 4340 (tempered at
+    600 degC) row: 12.3 x 10^-6/degC over 20-100 degC (68-212 degF).'
+  verified_at: https://amesweb.info/Materials/Linear_Thermal_Expansion_Coefficient_of_Steel.aspx
+  cross_check: 'AZoM ''AISI 4340 Alloy Steel (UNS G43400)'': 12.3 um/m-degC (oil-hardened + 600 degC
+    temper) - identical value. Slightly above plain-carbon 1045/A36, as expected for the alloy steel.'
+  notes: 'Mean coefficient of linear thermal expansion, 20-100 degC, tempered at 600 degC (CTE is only
+    weakly heat-treat sensitive). [unit spelling normalized from ''10^-6/degC''; a linear CTE per degC
+    equals the same value per K, since both are interval degrees.]'
 errata: []

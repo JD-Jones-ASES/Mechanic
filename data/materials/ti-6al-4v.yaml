@@ -86,4 +86,21 @@ properties:
   notes: 'A-basis (statistical design minimum). B-basis is 139 ksi. Plate 0.1875-2.000 in: A-basis Ftu 130 ksi.
     Annealed AMS 4928 bar (Table 5.4.1.0(c1), p. 5-54): S-basis Ftu(L) 135 ksi for <0.500 in; Upmet datasheet lists
     UTS 131000 psi for annealed bar. Rolled Alloys typical annealed bar range 138-155 ksi.'
+- key: coefficient_of_thermal_expansion
+  value: 4.78
+  unit: 1e-6/degF_interval
+  basis: typical
+  source_id: asm-desk-ed-1998
+  citation: 'ASM Metals Handbook Desk Edition (Davis, J.R., ed., ASM International, 1998), linear
+    thermal-expansion table for titanium alloys, Ti-6Al-4V (Grade 5) annealed row: 4.78 x 10^-6/degF
+    (8.6 x 10^-6/degC), mean over 0-100 degC (32-212 degF). Read from the AmesWeb reproduction of the
+    ASM table.'
+  verified_at: https://amesweb.info/Materials/Thermal_Expansion_Coefficient_of_Titanium.aspx
+  cross_check: 'MIL-HDBK-5J (31 Jan 2003) publishes Ti-6Al-4V CTE as a temperature curve, Figure 5.4.1.0
+    (10^-6 in/in/degF) rather than a scalar; its near-room value is consistent with ~4.8. Manufacturer
+    TA6V datasheets give ~9.0 x 10^-6/degC over the wider 20-200 degC range (mean CTE rises with the
+    upper bound). Ti-6Al-4V CTE is about one-third that of the aluminums.'
+  notes: 'Mean coefficient of linear thermal expansion, 0-100 degC, annealed. The lowest CTE in this
+    catalogue''s metals. [unit spelling normalized from ''10^-6 in/in/degF''; the degF here is a
+    temperature INTERVAL = 5/9 K exactly, purely multiplicative with no 32 deg offset.]'
 errata: []

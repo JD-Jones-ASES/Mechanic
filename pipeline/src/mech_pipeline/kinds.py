@@ -69,4 +69,13 @@ QUANTITY_KINDS: frozenset[str] = frozenset({
     "specific_energy",  # J/kg = m^2/s^2 — same dims as velocity²; the kind keeps them apart
     # machine elements
     "stiffness",  # N/m — spring rate; dims [0,1,-2,…] (so it can't chain into a force)
+    # thermal — the first consumers of the temperature (Theta) slot in the 7-vector
+    "temperature_difference",  # K — a temperature INTERVAL ΔT, dims [0,0,0,0,1,0,0] (first nonzero
+                               # Theta slot in the catalog). Deliberately NOT an absolute temperature:
+                               # this is an interval quantity (differences only), so it may carry K but
+                               # never an offset scale (°C/°F absolute). It must NOT chain into any other
+                               # Theta-bearing port that might later mean an absolute temperature.
+    "thermal_expansion_coefficient",  # 1/K — linear CTE α, dims [0,0,0,0,-1,0,0]. α·ΔT is a strain
+                                      # (dimensionless), so a thermal_expansion_coefficient port times a
+                                      # temperature_difference port yields the existing `strain` kind.
 })

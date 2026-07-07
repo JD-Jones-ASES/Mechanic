@@ -329,6 +329,90 @@ test("composite bar: a member past its own yield warns, never a silent wrong num
   await expect(page.locator(".validity")).toContainText(/yield/i);
 });
 
+/**
+ * Thermal assembly (S18 — the CTE column + Θ kinds, a solveLinear consumer).
+ * Two segments clamped between rigid walls, heated ΔT. Defaults ΔT = 50 K,
+ * L_1 = L_2 = 0.3 m, A_1 = 4 cm², A_2 = 6 cm². With a steel-a36 left segment
+ * (E = 199.95 GPa, α = 11.7e-6/K) and an al-6061-t6 right segment (E = 68.26 GPa,
+ * α = 23.4e-6/K): F = (α_1L_1+α_2L_2)ΔT / (L_1/A_1E_1 + L_2/A_2E_2) ≈ 47.53 kN,
+ * σ_1 = F/A_1 ≈ 118.8 MPa, σ_2 = F/A_2 ≈ 79.2 MPa. The slimmer segment (A_1<A_2)
+ * carries the higher stress. ΔT = 0 must recover the unstressed state EXACTLY.
+ */
+test("thermal assembly: the coupled thermal force and stresses; ΔT=0 recovers the unstressed state exactly", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/thermal-assembly/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  // two independent labelled segment slots exist (S17 slots reused)
+  await expect(page.getByTestId("material-select-left")).toBeVisible();
+  await expect(page.getByTestId("material-select-right")).toBeVisible();
+
+  await page.getByTestId("material-select-left").selectOption("steel-a36");
+  await page.getByTestId("material-select-right").selectOption("al-6061-t6");
+  const f1 = await readOutput(page, "F_1"); // kN
+  const f2 = await readOutput(page, "F_2");
+  const s1 = await readOutput(page, "sigma_1"); // MPa
+  const s2 = await readOutput(page, "sigma_2");
+  expect(f1).toBeGreaterThan(47); // ≈ 47.53 kN, compression (heating)
+  expect(f1).toBeLessThan(48);
+  expect(f2).toBeCloseTo(f1, 3); // equilibrium: one internal force through both segments
+  expect(s1).toBeCloseTo(118.84, 1); // MPa (slimmer left segment)
+  expect(s2).toBeCloseTo(79.22, 1);
+  expect(s1).toBeGreaterThan(s2); // σ = F/A, and A_1 < A_2
+
+  // ΔT = 0 → the bar is unstressed EXACTLY (the S18 zero-state pin). The ΔT knob
+  // reads in K; drive it to 0 and every force/stress must collapse to zero.
+  await page.locator("#knob-dT").fill("0");
+  expect(await readOutput(page, "F_1")).toBeCloseTo(0, 6);
+  expect(await readOutput(page, "sigma_1")).toBeCloseTo(0, 6);
+  expect(await readOutput(page, "sigma_2")).toBeCloseTo(0, 6);
+  expect(errors).toEqual([]);
+});
+
+test("thermal assembly: steel out-stresses aluminium though aluminium expands more (the Eα cascade); slots are isolated", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/thermal-assembly/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  // both segments STEEL: read the left stress and its free thermal strain
+  await page.getByTestId("material-select-left").selectOption("steel-a36");
+  await page.getByTestId("material-select-right").selectOption("steel-a36");
+  const s1Steel = await readOutput(page, "sigma_1"); // ≈ 140.4 MPa
+  const epsSteel = await readOutput(page, "eps_1"); // ≈ 5.85e-4
+
+  // swap ONLY the left segment to aluminium (isolation check comes next)
+  await page.getByTestId("material-select-left").selectOption("al-6061-t6");
+  await page.getByTestId("material-select-right").selectOption("al-6061-t6");
+  const s1Al = await readOutput(page, "sigma_1"); // ≈ 95.8 MPa
+  const epsAl = await readOutput(page, "eps_1"); // ≈ 1.17e-3
+
+  // THE cascade: aluminium expands ~2× as much (bigger free strain)...
+  expect(epsAl).toBeGreaterThan(epsSteel * 1.8);
+  // ...yet the STEEL bar develops the HIGHER thermal stress, because σ ∝ Eα and
+  // steel's stiffness wins the Eα product — the invariant-3 legibility moment.
+  expect(s1Steel).toBeGreaterThan(s1Al);
+
+  // slot isolation: set the two segments to DIFFERENT metals and confirm swapping
+  // the right selector never disturbs the left selector's value.
+  await page.getByTestId("material-select-left").selectOption("steel-a36");
+  await page.getByTestId("material-select-right").selectOption("al-6061-t6");
+  await page.getByTestId("material-select-right").selectOption("brass-c26000");
+  await expect(page.getByTestId("material-select-left")).toHaveValue("steel-a36");
+  expect(errors).toEqual([]);
+});
+
+test("thermal assembly: a large temperature rise past yield warns, never a silent wrong number", async ({ page }) => {
+  await page.goto("things/thermal-assembly/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+  await page.getByTestId("material-select-left").selectOption("steel-a36");
+  await page.getByTestId("material-select-right").selectOption("al-6061-t6");
+  // ΔT to its max (300 K): σ_1 = Eα-driven stress races the steel segment far past
+  // its ~248 MPa yield (σ_1 ≈ 713 MPa), so the yield warn must fire.
+  await page.locator("#knob-dT").fill("300");
+  await expect(page.locator(".validity-warn, .validity-invalid").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/yield/i);
+});
+
 test("derivations and equations render as KaTeX with MathML", async ({ page }) => {
   await page.goto("things/planetary-gearset/");
   expect(await page.locator(".katex").count()).toBeGreaterThan(5);
@@ -518,7 +602,7 @@ test("verification page discloses authorship and the audit surface", async ({ pa
   await expect(page.getByText(/built end to end by an AI/i).first()).toBeVisible();
   await expect(page.getByText(/No human reviews the content/i).first()).toBeVisible();
   // every THING appears with its audit block (count is a deliberate change detector)
-  expect(await page.locator("section.relation-block").count()).toBe(34); // +composite-bar (S17)
+  expect(await page.locator("section.relation-block").count()).toBe(35); // +thermal-assembly (S18)
   await expect(page.getByText(/Where physics enters/i).first()).toBeVisible();
   expect(errors).toEqual([]);
 });

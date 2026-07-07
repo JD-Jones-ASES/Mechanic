@@ -47,6 +47,7 @@ PHYSICS_TESTS = {
     "slider-crank": "test_slider_crank_physics.py",
     "spur-gear-pair": "test_gear_physics.py",
     "stepped-shaft-fillet": "test_stepped_shaft_physics.py",
+    "thermal-assembly": "test_thermal_physics.py",
     "thick-walled-cylinder": "test_cylinder_physics.py",
     "thin-tube-torsion": "test_tube_physics.py",
     "torsion-shaft": "test_shaft_physics.py",

@@ -88,4 +88,18 @@ properties:
     primary supplier datasheet, with third-party reproduction agreeing on every accompanying value except tensile.
     CAUTION (cross-check): single-primary-source value; conflicting 540 MPa reproductions exist. 640 MPa is the
     hardness-consistent choice (187 HB x ~3.4 = 645); normalized band is 570-700 MPa.'
+- key: coefficient_of_thermal_expansion
+  value: 11.6
+  unit: 1e-6/K
+  basis: typical
+  source_id: asm-ready-ref
+  citation: 'AmesWeb ''Thermal Expansion Coefficient of Steel by Grade'' table (citing Cverna, F.,
+    ASM Ready Reference: Thermal Properties of Metals, ASM International, 2002), AISI 1045 (annealed)
+    row: 11.6 x 10^-6/degC over 0-100 degC (32-212 degF).'
+  verified_at: https://amesweb.info/Materials/Linear_Thermal_Expansion_Coefficient_of_Steel.aspx
+  cross_check: 'AZoM ''AISI 1045 Carbon Steel (UNS G10450)'': 11.2 um/m-degC over 0-100 degC/32-212 degF
+    (a hair lower, same range). Both sit in the 11-12 x 10^-6/degC band expected for medium-carbon steel.'
+  notes: 'Mean coefficient of linear thermal expansion, 0-100 degC, annealed. [unit spelling normalized
+    from ''10^-6/degC''; a linear CTE per degC equals the same value per K, since both are interval
+    degrees.]'
 errata: []

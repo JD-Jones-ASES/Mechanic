@@ -22,6 +22,9 @@ def test_dim_vectors():
     assert vec("m**4") == [4, 0, 0, 0, 0, 0, 0]
     assert vec("1") == [0, 0, 0, 0, 0, 0, 0]
     assert vec("N*m") == [2, 1, -2, 0, 0, 0, 0]  # torque == energy: kinds disambiguate
+    assert vec("K") == [0, 0, 0, 0, 1, 0, 0]  # temperature: the first nonzero Theta slot in the catalog
+    assert vec("1/K") == [0, 0, 0, 0, -1, 0, 0]  # linear CTE dimension (Theta^-1)
+    assert vec("1e-6/degF_interval") == [0, 0, 0, 0, -1, 0, 0]  # CTE per °F-interval: still Theta^-1
 
 
 def test_unknown_unit_fails():
@@ -62,6 +65,10 @@ GOLDENS = [
     ("lb/ft**3", 150.0, 2402.8, 1e-3),    # 150 pcf -> kg/m^3
     ("GPa", 200.0, 200e9, 1e-9),
     ("MPa", 276.0, 276e6, 1e-9),
+    # CTE conversions (S18) -> coherent SI 1/K
+    ("1e-6/K", 23.6, 23.6e-6, 1e-9),               # 23.6e-6/K reads through unchanged
+    ("um/(m*K)", 23.6, 23.6e-6, 1e-9),             # µm/(m·K) is numerically 1e-6/K
+    ("1e-6/degF_interval", 12.8, 23.04e-6, 1e-12),  # per °F-INTERVAL -> ×1.8 EXACTLY (12.8 -> 23.04e-6/K)
 ]
 
 
@@ -69,3 +76,32 @@ GOLDENS = [
 def test_si_factor_goldens(unit, val, expected, rtol):
     got = val * si_factor(parse_unit(unit, "t"), "t")
     assert abs(got - expected) / expected < rtol, f"{val} {unit} -> {got}, expected {expected}"
+
+
+# --- Negative Theta-slot gates (S18): the temperature slot must actually participate ---
+
+def test_temperature_difference_is_not_a_length():
+    """A temperature interval carries the Theta slot, so it can never be added to a length. If the
+    Theta slot did NOT participate (e.g. dT typed as dimensionless), this would silently pass."""
+    dT, L = sp.symbols("dT L", positive=True)
+    units = {dT: parse_unit("K", "t"), L: parse_unit("m", "t")}
+    with pytest.raises(BuildError, match="homogeneous"):
+        check_homogeneous(dT + L, units, "temperature-plus-length")
+
+
+def test_thermal_compatibility_needs_the_length_in_alpha_L_dT():
+    """thermal-assembly's compatibility term alpha*L*dT is a LENGTH only because Theta^-1 (alpha) times
+    Theta (dT) cancels to a strain, which times L is a length. Drop the L and the thermal term becomes a
+    bare strain — adding it to the mechanical elongation F*L/(A*E) (a length) is inhomogeneous and MUST
+    fail the build. This is the machine proof that the Theta slot is load-bearing in the compatibility
+    relation (brief S18: 'dropping L from an alphadT term must raise BuildError')."""
+    alpha, dT, L, F, A, E = sp.symbols("alpha dT L F A E", positive=True)
+    units = {
+        alpha: parse_unit("1/K", "t"), dT: parse_unit("K", "t"), L: parse_unit("m", "t"),
+        F: parse_unit("N", "t"), A: parse_unit("m**2", "t"), E: parse_unit("Pa", "t"),
+    }
+    # correct: alpha*L*dT (length) minus the mechanical elongation F*L/(A*E) (length) is homogeneous
+    check_homogeneous(alpha * L * dT - F * L / (A * E), units, "thermal-compat-ok")
+    # mis-authored: drop L from the thermal term -> strain minus length -> build fails
+    with pytest.raises(BuildError, match="homogeneous"):
+        check_homogeneous(alpha * dT - F * L / (A * E), units, "thermal-compat-missing-L")

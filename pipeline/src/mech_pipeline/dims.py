@@ -28,6 +28,7 @@ UNIT_NAMESPACE: dict[str, object] = {
     "rad": u.radian, "deg": u.degree,
     # common multiples used in authored content
     "mm": u.millimeter, "cm": u.centimeter, "km": u.kilometer,
+    "um": u.micro * u.meter,  # micrometer (µm); CTE is often published as µm/(m·K)
     "g": u.gram, "kPa": u.kilo * u.pascal, "MPa": u.mega * u.pascal,
     "GPa": u.giga * u.pascal, "kN": u.kilo * u.newton,
     "minute": u.minute, "hour": u.hour,
@@ -35,6 +36,11 @@ UNIT_NAMESPACE: dict[str, object] = {
     "inch": u.inch, "ft": u.foot, "lb": u.pound, "psi": u.psi,
     "ksi": 1000 * u.psi, "Msi": 10**6 * u.psi,
     "lbf": u.pound * u.gee,  # sympy has no pound_force; lbf = lb x standard gravity
+    # Temperature INTERVAL on the Fahrenheit scale = exactly 5/9 kelvin. Named `_interval` so it can
+    # NEVER be mistaken for an absolute °F temperature: it is purely multiplicative (no 32° offset),
+    # which is the only honest way to carry a per-°F rate like a CTE (1e-6 in/in/°F -> 1e-6/degF_interval)
+    # through the factor-only unit machinery. 1/degF_interval = 9/5 /K, so 1e-6/degF_interval = 1.8e-6/K.
+    "degF_interval": sp.Rational(5, 9) * u.kelvin,
 }
 
 _DIM_ORDER = (

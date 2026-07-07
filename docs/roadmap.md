@@ -81,7 +81,10 @@ In dependency order:
    (fixed-fixed beam 4×4 + fixed-fixed torsion shaft 2×2, the range-exercising pure solveLinear
    consumers, catalog → 33). S17 ✅ shipped (multi-material binding slots — one THING binds two
    independent materials — + composite-bar, the first non-cancelling-determinant solveLinear
-   consumer where the load share is material-DEPENDENT, catalog → 34); S18–S20 in progress.
+   consumer where the load share is material-DEPENDENT, catalog → 34). S18 ✅ shipped (CTE material
+   column + `temperature_difference`/`thermal_expansion_coefficient` kinds — the first nonzero Θ slot —
+   + thermal-assembly, a two-segment bar clamped between rigid walls whose thermal force is a
+   material-DEPENDENT solveLinear solve, catalog → 35); S19–S20 in progress.
 
 ## Phase 4 — Chaining as the product
 
