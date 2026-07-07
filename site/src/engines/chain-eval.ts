@@ -179,6 +179,18 @@ export function evaluateChain(nodes: ChainNodeSpec[], bindings: Binding[]): Chai
     const res = graph.connect(b);
     if (!res.ok) throw new Error(`chain wiring rejected: ${res.reason}`);
   }
+  // one wire per input port: fan-in to a single input is malformed — its value
+  // would be overwritten by binding order, and the losing binding's provenance
+  // would misreport a value that never crossed the wire. Fail loud, matching the
+  // type-check contract. (The chain-builder UI, S22, prevents it at the source.)
+  const boundInputs = new Set<string>();
+  for (const b of bindings) {
+    const key = JSON.stringify([b.to.node, b.to.port]);
+    if (boundInputs.has(key)) {
+      throw new Error(`chain wiring rejected: input '${b.to.node}.${b.to.port}' has more than one binding`);
+    }
+    boundInputs.add(key);
+  }
   const order = graph.evaluationOrder();
 
   const records: Record<string, NodeEvalRecord> = {};
@@ -199,7 +211,7 @@ export function evaluateChain(nodes: ChainNodeSpec[], bindings: Binding[]): Chai
     const seen = new Set<string>();
     const out: UpstreamRelation[] = [];
     const push = (r: UpstreamRelation) => {
-      const key = `${r.instance} ${r.id}`;
+      const key = JSON.stringify([r.instance, r.id]);
       if (!seen.has(key)) {
         seen.add(key);
         out.push(r);
@@ -228,7 +240,16 @@ export function evaluateChain(nodes: ChainNodeSpec[], bindings: Binding[]): Chai
       d: classifyBoundInput(records[b.from.node], b.from.port),
     }));
 
-    const bound: VarRecord = {};
+    // Assemble the node's evaluation env. Bound ports are OWNED BY THE WIRE: a
+    // forwarded binding drives its port; a withheld/incomplete binding REMOVES
+    // the port so a stale knob default or material value can never silently
+    // satisfy a driven input — it goes absent and the plan refuses honestly
+    // instead of emitting a plausible wrong number (invariant 5).
+    const env: VarRecord = {
+      ...constantValues(node.artifact),
+      ...node.knobs,
+      ...(node.materialValues ?? {}),
+    };
     const refusedBy: { instance: string; port: string }[] = [];
     const injected: ValidityMessage[] = [];
     let refused = false;
@@ -236,8 +257,11 @@ export function evaluateChain(nodes: ChainNodeSpec[], bindings: Binding[]): Chai
 
     for (const { b, d } of decisions) {
       if (d.effect === "forward") {
-        bound[b.to.port] = d.value;
-      } else if (d.effect === "withheld-global") {
+        env[b.to.port] = d.value;
+        continue;
+      }
+      delete env[b.to.port]; // withheld/incomplete: the wire, not a default, owns this port
+      if (d.effect === "withheld-global") {
         refused = true;
         refusedBy.push({ instance: b.from.node, port: b.from.port });
         injected.push({
@@ -257,11 +281,7 @@ export function evaluateChain(nodes: ChainNodeSpec[], bindings: Binding[]): Chai
     }
 
     const engine = new RelationEngine(node.artifact, node.fns);
-    const base = engine.evaluate(
-      node.configId,
-      { ...constantValues(node.artifact), ...node.knobs, ...(node.materialValues ?? {}), ...bound },
-      node.branch,
-    );
+    const base = engine.evaluate(node.configId, env, node.branch);
 
     let result = base;
     let status: NodeStatus = "evaluated";

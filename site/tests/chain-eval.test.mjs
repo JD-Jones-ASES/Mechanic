@@ -83,9 +83,45 @@ function relayThing() {
 }
 const relayFns = { eval_p: (e) => e.u * 10, rel_def_p: (e) => e.p - 10 * e.u };
 
+// Ignore THING: p = 10k — declares an input `u` its plan NEVER reads, so a node
+// bound on `u` can be refused-by-upstream while its OWN evaluation stays finite.
+// This is what makes the engine's forced-invalid (UI-blanking) observable.
+function ignoreThing() {
+  return {
+    schema_version: 1, thing: "ign", title: "Ignore",
+    variables: { u: variable("free"), k: variable("free"), p: variable("derived") },
+    relations: [{ id: "def-p2", group: "g", latex: "p=10k", residual_fn: "rel_def_p2", assumptions: ["p is ten k"], validity: [], citation: "ignCite" }],
+    configurations: [{
+      id: "c", label: "c", constraints: {}, inputs: ["u", "k"],
+      plan: [{ type: "eval", target: "p", fn: "eval_p2", latex: "" }],
+      branches: null, guards: [], samples: [],
+    }],
+    material_binding: null, material_defaults: null, sources: [{ id: "ignCite", citation: "Source I" }],
+  };
+}
+const ignFns = { eval_p2: (e) => e.k * 10, rel_def_p2: (e) => e.p - 10 * e.k };
+
+// Merge THING: s = a + b — two bound inputs, for the one-node mixed-input case.
+function mergeThing() {
+  return {
+    schema_version: 1, thing: "mrg", title: "Merge",
+    variables: { a: variable("free"), b: variable("free"), s: variable("derived") },
+    relations: [{ id: "def-s", group: "g", latex: "s=a+b", residual_fn: "rel_def_s", assumptions: ["s is a plus b"], validity: [], citation: "mrgCite" }],
+    configurations: [{
+      id: "c", label: "c", constraints: {}, inputs: ["a", "b"],
+      plan: [{ type: "eval", target: "s", fn: "eval_s", latex: "" }],
+      branches: null, guards: [], samples: [],
+    }],
+    material_binding: null, material_defaults: null, sources: [{ id: "mrgCite", citation: "Source S" }],
+  };
+}
+const mrgFns = { eval_s: (e) => e.a + e.b, rel_def_s: (e) => e.s - (e.a + e.b) };
+
 const srcNode = (id, x, validity = []) => ({ instanceId: id, artifact: srcThing(validity), configId: "c", fns: srcFns, knobs: { x } });
 const dstNode = (id) => ({ instanceId: id, artifact: dstThing(), configId: "c", fns: dstFns, knobs: {} });
 const relayNode = (id) => ({ instanceId: id, artifact: relayThing(), configId: "c", fns: relayFns, knobs: {} });
+const ignoreNode = (id, k = 5) => ({ instanceId: id, artifact: ignoreThing(), configId: "c", fns: ignFns, knobs: { k } });
+const mergeNode = (id) => ({ instanceId: id, artifact: mergeThing(), configId: "c", fns: mrgFns, knobs: {} });
 const wire = (fromNode, fromPort, toNode, toPort) => ({ from: { node: fromNode, port: fromPort }, to: { node: toNode, port: toPort } });
 
 // ---- tests -----------------------------------------------------------------
@@ -212,4 +248,69 @@ test("a withheld binding still yields a provenance record, with value null", () 
   assert.equal(r.provenance.length, 1);
   assert.equal(r.provenance[0].withheld, true);
   assert.equal(r.provenance[0].value, null);
+});
+
+test("a refused node whose OWN evaluation is finite is still forced invalid, and refusal is transitive", () => {
+  // src is globally invalid but leaves y finite (unscoped validity fires post-plan).
+  // `ign` binds src.y -> ign.u but NEVER reads u (p = 10k), so ign's own eval
+  // succeeds and is finite — without the engine's forced-invalid it would look
+  // 'evaluated' and its readouts would render. This is the mutation the mechanism
+  // exists to stop: dropping the `invalid: true` forcing makes ign.result.invalid
+  // false here. Then ign.p -> sink.u must STILL refuse (transitive through a
+  // finite-but-refused node).
+  const nodes = [srcNode("src", 10, [invalidWhenHigh]), ignoreNode("ign", 5), dstNode("sink")];
+  const bindings = [wire("src", "y", "ign", "u"), wire("ign", "p", "sink", "u")];
+  const r = evaluateChain(nodes, bindings);
+
+  assert.equal(r.nodes.src.result.invalid, true);
+  assert.equal(Number.isFinite(r.nodes.src.result.values.y), true); // finite, but refused
+
+  assert.equal(r.nodes.ign.status, "refused-by-upstream");
+  assert.equal(r.nodes.ign.result.values.p, 50); // ign's OWN eval succeeded (10 * 5)
+  assert.equal(r.nodes.ign.result.invalid, true); // ...yet forced invalid so the UI blanks it
+  assert.match(r.nodes.ign.result.messages[0].message, /refused by upstream: 'src' is invalid/);
+
+  assert.equal(r.nodes.sink.status, "refused-by-upstream"); // transitive through finite ign
+  assert.equal(Number.isFinite(r.nodes.sink.result.values.z), false);
+});
+
+test("classifyBoundInput: rule (a) beats rule (b) when a port is BOTH globally invalid and scoped", () => {
+  // the two effects emit DIFFERENT messages, so this pins the precedence, not
+  // just the effect (swapping the two branches would flip this).
+  const rec = { instanceId: "s", status: "evaluated", refusedBy: [], result: { values: { y: 20 }, messages: [], invalid: true, invalidVars: ["y"] } };
+  assert.deepEqual(classifyBoundInput(rec, "y"), { effect: "withheld-global" });
+});
+
+test("one node with a MIX of forwarded and withheld inputs: only the poisoned wire withholds", () => {
+  // src scoped-invalid on y only; mrg binds src.y (poisoned) AND src.w (clean).
+  const nodes = [srcNode("src", 10, [scopedWhenHigh]), mergeNode("mrg")];
+  const bindings = [wire("src", "y", "mrg", "a"), wire("src", "w", "mrg", "b")];
+  const r = evaluateChain(nodes, bindings);
+  assert.equal(r.nodes.mrg.status, "refused-by-upstream");
+  assert.deepEqual(r.nodes.mrg.refusedBy, [{ instance: "src", port: "y" }]); // only y, not w
+  const pa = r.provenance.find((p) => p.to.port === "a");
+  const pb = r.provenance.find((p) => p.to.port === "b");
+  assert.equal(pa.withheld, true);
+  assert.equal(pa.value, null);
+  assert.equal(pb.withheld, false);
+  assert.equal(pb.value, 110); // src.w = 10 + 100, forwarded normally
+});
+
+test("a withheld bound input never falls back to a stale knob default (the wire owns the port)", () => {
+  // dst passes knobs.u = 999; the wire src.y -> dst.u is withheld (src invalid).
+  // The engine must DROP u, not silently compute z = 999 + 1 from the leftover
+  // default — that would be a plausible wrong number crossing an open wire.
+  const dstWithKnob = { instanceId: "dst", artifact: dstThing(), configId: "c", fns: dstFns, knobs: { u: 999 } };
+  const r = evaluateChain([srcNode("src", 10, [invalidWhenHigh]), dstWithKnob], [wire("src", "y", "dst", "u")]);
+  assert.equal(r.nodes.dst.status, "refused-by-upstream");
+  assert.notEqual(r.nodes.dst.result.values.z, 1000); // the 999 default did NOT leak through
+  assert.equal(Number.isFinite(r.nodes.dst.result.values.z), false);
+});
+
+test("fan-in to a single input port is rejected (one wire per input)", () => {
+  // two wires into mrg.a is malformed: one value would silently overwrite the
+  // other and the loser's provenance would misreport. Fail loud.
+  const nodes = [srcNode("src", 1), mergeNode("mrg")];
+  const bindings = [wire("src", "y", "mrg", "a"), wire("src", "w", "mrg", "a")];
+  assert.throws(() => evaluateChain(nodes, bindings), /more than one binding/);
 });
