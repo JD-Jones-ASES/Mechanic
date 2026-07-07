@@ -125,16 +125,26 @@ export default function ThingWidget({ artifact, materials, sim }: Props) {
   };
   const [knobs, setKnobs] = useState<VarRecord>(() => defaultsFor(cfgId));
   const [displayUnits, setDisplayUnits] = useState<Record<string, string>>({});
-  // one selected material id per binding slot (S17). Each slot defaults to a
-  // DISTINCT qualifying material by position (slot 0 -> its list[0], slot 1 ->
-  // its list[1], … clamped) so a two-material THING lands on two different
-  // materials and its load share reads as material-driven, not just geometric.
-  // A single-slot THING is unaffected: slot 0 -> list[0], exactly today's default.
+  // one selected material id per binding slot (S17). A slot with an authored R7
+  // landing material (`material_defaults`) lands on it; otherwise each slot
+  // defaults to a DISTINCT qualifying material by position (slot 0 -> its list[0],
+  // slot 1 -> its list[1], … clamped) so a two-material THING lands on two
+  // different materials and its load share reads as material-driven, not just
+  // geometric. A single-slot THING without a default is unaffected: slot 0 ->
+  // list[0], exactly today's behavior.
   const [materialIds, setMaterialIds] = useState<Record<string, string>>(() =>
     Object.fromEntries(
       Object.keys(artifact.material_binding ?? {}).map((slot, i) => {
         const list = materials[slot] ?? [];
-        return [slot, list[Math.min(i, list.length - 1)]?.id ?? ""];
+        // R7: honor the authored default when it is in this slot's qualifying list
+        // (compile validates that against the full seed; the membership guard is
+        // belt-and-suspenders against seed/build divergence). Else the staggered
+        // per-slot fallback — unchanged legacy behavior for THINGs without defaults.
+        const declared = artifact.material_defaults?.[slot];
+        const landing =
+          (declared && list.some((m) => m.id === declared) ? declared : undefined) ??
+          list[Math.min(i, list.length - 1)]?.id;
+        return [slot, landing ?? ""];
       }),
     ),
   );

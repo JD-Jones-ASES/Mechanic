@@ -34,6 +34,11 @@ const allMaterials = needsMaterials ? (await getCollection("materials")).map((m)
 // data", never a silently wrong number. This mirrors the single-binding filter,
 // once per slot. materials is slot -> qualifying list (one `default` slot for a
 // legacy single-binding THING).
+// The SAME qualification predicate is enforced at BUILD time by the R7
+// landing-material gate (pipeline `validate_default_materials` /
+// `ingest.material_property_coverage`); this filter (here + chain-demo.astro) and
+// that gate must stay in step — a build gate looser than this filter could land a
+// THING on a material its own dropdown hides.
 const hasKeys = (m: (typeof allMaterials)[number], keys: string[]) =>
   keys.every((k) => m.properties.some((p) => p.key === k));
 const materials = Object.fromEntries(

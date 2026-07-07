@@ -19,6 +19,7 @@ from sympy.parsing.sympy_parser import parse_expr
 from . import BuildError
 from .dims import check_homogeneous, check_relational_homogeneous, dim_vector, parse_unit
 from .emit_js import auto_guards, emit_function, render_fns_ts
+from .ingest import material_property_coverage
 from .kinds import QUANTITY_KINDS
 from .verify import (
     TableSpec,
@@ -227,6 +228,12 @@ class ThingCompiler:
                 raise BuildError(f"{self.ctx}: bound variable '{var_sym}' must have role: material")
         self.artifact["variables"] = out
         self.artifact["material_binding"] = material_binding or None
+        # per-slot landing material (R7): passed through verbatim. Existence and
+        # per-slot qualification are validated in compile_all against the material
+        # SEED — cache-independent, so a later material edit that de-qualifies a
+        # landing id is still caught even when this THING's artifact is cache-reused
+        # (see validate_default_materials).
+        self.artifact["material_defaults"] = (self.raw.get("materials") or {}).get("defaults") or None
 
     # ---------- relations ----------
     def load_relations(self) -> None:
@@ -516,11 +523,26 @@ class ThingCompiler:
                     seen_targets.append(tsym)
                     targets_needed.discard(tsym)
 
+            # solve_linear targets are now in seen_targets; snapshot them so the
+            # solutions loop below can REFUSE a target authored in both paths. A
+            # collision would let resolve_solutions silently overwrite the certified
+            # closed form with the manual one (verify.py `resolved[target] = …`),
+            # dropping the certificate without an error — so it is a loud build
+            # failure, not a latent seam (Phase-3 QC audit finding 1).
+            linear_group_targets = set(seen_targets)
+
             for target_name, sol in solutions_raw.items():
                 tc = f"{c}, solution for '{target_name}'"
                 if target_name not in self.table:
                     raise BuildError(f"{tc}: unknown target")
                 target = self.table[target_name]
+                if target in linear_group_targets:
+                    raise BuildError(
+                        f"{tc}: target is also solved by a solve_linear group in this "
+                        f"configuration — a certified linear-group solve must not be "
+                        f"overridden by an authored `solutions` entry (the certificate "
+                        f"would be silently lost). Remove it from one of the two paths."
+                    )
                 if target in inputs or target in constraints or self.specs[target].role in ("material", "constant"):
                     raise BuildError(f"{tc}: target is an input/constraint/material/constant variable")
                 if isinstance(sol, dict) and "solve1d" in sol:
@@ -1036,22 +1058,79 @@ def _build_fingerprint() -> str:
     Compilation is deterministic (seeded sampling), so an unchanged
     fingerprint + unchanged yaml means byte-identical artifacts — safe to
     reuse instead of re-verifying (four-bar branch verification dominates
-    full builds)."""
+    full builds).
+
+    rglob (not glob('*.py')): the package is flat today, but a future subpackage
+    under mech_pipeline/ must still be captured — a plain top-level glob would
+    silently miss it and reuse stale artifacts after a subdirectory refactor
+    (QC2 hardening a). The material seed is deliberately NOT hashed here: an
+    artifact's bytes do not depend on materials (R7 landing ids are validated
+    cache-independently in validate_default_materials), so a seed edit needn't
+    bust every THING's cache."""
     import hashlib
 
     h = hashlib.sha256()
-    for p in sorted(Path(__file__).resolve().parent.glob("*.py")):
+    for p in sorted(Path(__file__).resolve().parent.rglob("*.py")):
         h.update(p.read_bytes())
     h.update(sp.__version__.encode())
     return h.hexdigest()
 
 
-def compile_all(things_dir: Path, out_dir: Path) -> list[str]:
+def validate_default_materials(yaml_paths: list[Path], materials_dir: Path) -> None:
+    """R7: every authored ``materials.defaults`` landing id must EXIST in the
+    material seed and QUALIFY for its slot (publish every property the slot binds)
+    — a bad landing id is a loud build error naming thing/slot/id, never a silent
+    fallback (ADR-0010 §6).
+
+    Runs in compile_all OUTSIDE the per-THING artifact cache: qualification
+    depends on the material seed, not thing.yaml, so a THING whose artifact is
+    cache-reused must STILL be re-validated when a seed changes. The seed is read
+    lazily — only when some THING declares defaults — so materials_dir need not
+    exist otherwise (and tests without defaults never touch it)."""
+    pending: list[tuple[str, dict, dict]] = []
+    for yp in yaml_paths:
+        raw = yaml.safe_load(yp.read_text(encoding="utf-8"))
+        mats = (raw or {}).get("materials") or {}
+        defaults = mats.get("defaults")
+        if defaults:
+            pending.append((yp.parent.name, mats, defaults))
+    if not pending:
+        return
+    coverage = material_property_coverage(materials_dir)
+    for slug_name, mats, defaults in pending:
+        ctx = f"thing '{slug_name}', materials.defaults"
+        if not isinstance(defaults, dict):
+            raise BuildError(f"{ctx}: must be a mapping {{slot: material_id}}")
+        binding, _ = _normalize_material_binds(mats.get("binds", {}), ctx)
+        for slot, mid in defaults.items():
+            if slot not in binding:
+                raise BuildError(f"{ctx}: unknown material slot '{slot}' (slots: {sorted(binding)})")
+            if not isinstance(mid, str) or mid not in coverage:
+                raise BuildError(
+                    f"{ctx}['{slot}']: unknown material id '{mid}' — not in {materials_dir.name}/"
+                )
+            needed = set(binding[slot].values())
+            missing = needed - coverage[mid]
+            if missing:
+                raise BuildError(
+                    f"{ctx}['{slot}']: material '{mid}' does not qualify for this slot — its "
+                    f"cited sources publish no {sorted(missing)} (slot binds {sorted(needed)}); "
+                    f"a landing material must publish every property the slot binds"
+                )
+
+
+def compile_all(things_dir: Path, out_dir: Path, materials_dir: Path | None = None) -> list[str]:
     """Compile every THING, reusing cached artifacts for THINGs whose yaml and
     build fingerprint are unchanged (manifest: out_dir/.hashes.json, which is
-    inside the gitignored generated tree). Returns all current slugs."""
+    inside the gitignored generated tree). Returns all current slugs.
+
+    R7 default-material landing ids are validated up front against the material
+    seed (materials_dir, defaulting to the repo's data/materials) — see
+    validate_default_materials for why this is deliberately cache-independent."""
     import hashlib
 
+    if materials_dir is None:
+        materials_dir = Path(__file__).resolve().parents[3] / "data" / "materials"
     out_dir.mkdir(parents=True, exist_ok=True)
     manifest_path = out_dir / ".hashes.json"
     try:
@@ -1061,6 +1140,7 @@ def compile_all(things_dir: Path, out_dir: Path) -> list[str]:
     fingerprint = _build_fingerprint()
 
     yaml_paths = sorted(things_dir.glob("*/thing.yaml"))
+    validate_default_materials(yaml_paths, materials_dir)  # R7: fail fast, cache-independent
     current = {p.parent.name for p in yaml_paths}
     # drop artifacts of deleted THINGs so the site can't render orphans
     for stale in out_dir.glob("*.compiled.json"):
@@ -1097,9 +1177,10 @@ def main() -> None:
     repo = Path(__file__).resolve().parents[3]  # pipeline/src/mech_pipeline -> repo root
     ap.add_argument("--things", type=Path, default=repo / "site" / "src" / "content" / "things")
     ap.add_argument("--out", type=Path, default=repo / "site" / "src" / "generated" / "things")
+    ap.add_argument("--materials", type=Path, default=repo / "data" / "materials")
     args = ap.parse_args()
     try:
-        compiled = compile_all(args.things, args.out)
+        compiled = compile_all(args.things, args.out, args.materials)
     except BuildError as e:
         print(f"BUILD FAILED: {e}", file=sys.stderr)
         sys.exit(1)

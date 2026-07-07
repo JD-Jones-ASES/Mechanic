@@ -1543,3 +1543,46 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   HEAD before editing (rule 6 applies to audit reports too); (c) do NOT "fix" the refuted envelope
   criticals; (d) QC2's cold build IS Track A — run it once, append counts to the report's Dispositions;
   (e) D1 expects catalog = 36 — if QC2 or anything grows it, extend the ADR-0010 mapping first.
+
+## QC2 — Phase-3 QC fixes + per-slot default_material (R7) — 2026-07-07 — PR #41 — MERGED
+- Shipped: the four confirmed Phase-3 QC-audit findings + the R7 `default_material` field. (1)
+  compile-time rejection of a solve_linear/solutions target collision (BuildError naming
+  thing/config/target — closes the verify.py:198 dict last-wins seam); (2) R7 additive
+  `materials.defaults` (schema → compile passthrough → cache-independent `validate_default_materials`
+  → `ThingWidget` landing) — composite-bar lands steel-a36 core + al-6061-t6 sleeve, thermal-assembly
+  lands steel-a36 left + al-6061-t6 right; (3) authoring-things.md "Material slots and landing
+  materials" section; (4) solve_hint→solve1d/solve_linear doc fix. Hardening: fingerprint
+  glob→rglob, Θ round-trip unit test, slots×scoped-refusal doc note. Catalog UNCHANGED (36 → 36); no
+  emitted number changed (audit headline holds).
+- Gates: pytest 360 passed (was 354; +5 test_default_materials, +1 collision); pnpm build clean —
+  Track A COLD (rm -rf generated/things) 3m20s, parity 1485/36, units 884, 43 pages; unit 22 (+3 Θ
+  round-trip); e2e 108 (+2 landing) incl. axe 0 serious/critical; visual pass (built dist, /Mechanic/):
+  both THINGs LAND on ASTM A36 steel + 6061-T6 aluminium (browser values f_1=0.66135, σ_1=118.84),
+  composite P→max fires the CORE-yielded warn (SF_1=0.15), console clean; review: 6 fresh-context
+  passes (3 angle + 3 /code-review high) — ZERO critical/major/real findings; 2 cleanup nits fixed by
+  comment, 1 rebutted.
+- Golden: composite f_1 = (4·199.948)/(4·199.948+6·68.258) = 0.6613 (A·E load share); thermal
+  σ_1 = F/A_1 = 47.53 kN / 4 cm² = 118.84 MPa. Both in e2e comments and reproduced live.
+- Citations pinned: N/A — no new citation/material/relation. R7 only names existing material ids the
+  e2e already selects (steel-a36, al-6061-t6), validated to EXIST + QUALIFY against data/materials/.
+- Deviations from brief: (1) the exit criterion `rg -n "solve_hint" docs/` reads literally as "returns
+  nothing", but the QC2 brief, the audit report, and this log necessarily contain the word (they
+  DOCUMENT the finding — append-only history, not rewritten to satisfy a grep) — the criterion is
+  satisfied for the finding's actual target, authoring-things.md. (2) Added cross-reference comments in
+  [slug].astro / chain-demo.astro / ChainDemo.tsx beyond the brief's named files, per a self-review
+  finding (comment-only; ties the three qualification-predicate copies to the R7 build gate + notes
+  ChainDemo doesn't yet honor defaults). Everything else per brief.
+- New capabilities future briefs may rely on: the R7 `materials.defaults` field is LIVE — a THING may
+  name each slot's landing material (compile-validated to exist + qualify; else a loud BuildError).
+  Slots×scoped-refusal remains untested (documented — first THING to combine them adds the e2e).
+- Notes-for-next (S21 is the topmost QUEUED row): (a) `validate_default_materials` is cache-INDEPENDENT
+  (runs before the per-THING cache loop) — a data/materials edit that de-qualifies a landing id is
+  caught even on a warm build; the material seed is deliberately NOT in the build fingerprint (artifact
+  bytes don't depend on materials). (b) the R7 qualification predicate now lives in THREE places
+  (things/[slug].astro `hasKeys`, chain-demo.astro, pipeline `material_property_coverage`) —
+  cross-referenced in comments; keep them in step or a build gate looser than the UI filter could land
+  a THING on a material its dropdown hides. (c) ChainDemo does NOT yet honor `material_defaults` (inert
+  — no chained THING declares defaults; S21+ chain-builder work, noted inline). (d) landing e2e pins
+  use NO selectOption + assert the select value + a readout — copy that pattern. (e) any pipeline edit
+  re-fingerprints everything → cold build ~3.5 min; the QC2 cold build doubled as Track A (don't run it
+  twice). (f) catalog still 36 — D1 mapping unaffected.

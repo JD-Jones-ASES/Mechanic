@@ -190,6 +190,12 @@ materials:
       E_2: youngs_modulus
       alpha_2: coefficient_of_thermal_expansion
       sigma_y_2: yield_strength
+  # R7 landing materials (QC2): a steel left segment + aluminium right segment —
+  # the pedagogical pair for the Eα cascade (steel out-stresses aluminium though
+  # aluminium expands more). Compile validates each id publishes the slot's binds.
+  defaults:
+    left: steel-a36
+    right: al-6061-t6
 
 relations:
   # --- the coupled system: equilibrium + zero-net-elongation compatibility ---

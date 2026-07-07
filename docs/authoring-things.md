@@ -28,6 +28,9 @@ variables:
     role: material                 # material-bound: never an input knob, never a derived output
 
 materials:
+  # flat single-material binding {symbol: property_key}; compile folds it into a
+  # lone `default` slot. For TWO independent materials use named slots, and to pick
+  # a landing material add `defaults:` — see "Material slots and landing materials".
   binds: { E: youngs_modulus, sigma_y: yield_strength, rho: density }
 
 relations:
@@ -95,8 +98,9 @@ sources:
 2. `len(inputs) == variables − independent relations − constraints` per configuration.
 3. Every authored solution back-substitutes to zero residual in every relation (tiered symbolic check,
    then ≥30 high-precision numeric samples). **Never rely on blind `solve()`** — it hangs on loop-closure
-   trig systems; if you can't write the closed form, write a `solve_hint` (substitution recipe) or mark the
-   target `solve1d` with a bracket.
+   trig systems; if you can't write the closed form, either mark the target `solve1d` with a bracket (a
+   bracketed 1-D root of a declared relation) or, for a coupled square system, author a `solve_linear`
+   group — the only two non-closed-form paths that ship (both detailed below).
 4. Every derivation step must reduce to an identity under the verified solutions.
 5. Every LaTeX string must render in KaTeX — including MDX prose math. Display math in
    `overview.mdx`/`failure.mdx` must be single-line (`$$ ... $$`) or a bare-`$$` fence; a block
@@ -217,6 +221,48 @@ What the build does with this (ADR-0008 part a; and fails loudly on):
   steps MAY reference the group's targets (unlike solve1d/table outputs — closed forms exist here).
 - A `solve_linear` group may not be combined with solve1d, table, or multi-branch solutions in one
   configuration (v1). `solveND` (nonlinear/cyclic groups, ADR-0008 part b) stays reserved and unbuilt.
+
+## Material slots and landing materials (S17 / R7)
+
+One THING can bind **two independent materials** — a composite bar's core and sleeve, a thermal
+assembly's two segments. Author `binds` as **named slots** instead of a flat map, and optionally name
+the material each slot LANDS on with `defaults`:
+
+```yaml
+materials:
+  binds:
+    core:   { E_1: youngs_modulus, sigma_y_1: yield_strength, rho_1: density }
+    sleeve: { E_2: youngs_modulus, sigma_y_2: yield_strength, rho_2: density }
+  defaults:                 # R7: per-slot landing material (optional)
+    core:   steel-a36
+    sleeve: al-6061-t6
+```
+
+How the pipeline and UI treat this:
+
+- **One normalization point.** `compile.py` (`_normalize_material_binds`) folds a flat
+  `{symbol: property_key}` map into a lone `default` slot, so a legacy single-material THING compiles
+  byte-identical while everything downstream sees ONE shape — slot-keyed `material_binding`
+  (`{slot: {symbol: property_key}}`). Author EITHER the flat map OR named slots, never both; a bound
+  symbol must be globally unique across slots (invariant 3's cascade runs per slot).
+- **Per-slot qualifying filter.** Each slot's dropdown offers only materials whose cited sources
+  publish **every property that slot binds** — a missing value reads as "no data", never a silently
+  wrong number. The filter is the site's (`things/[slug].astro`); a material lacking one bound
+  property for a slot is simply absent from that slot.
+- **Landing material (`defaults`, R7).** Each slot may name the material it lands on. Compile
+  validates the id EXISTS in `data/materials/` AND qualifies for that slot (publishes every bound
+  property) — a bad id is a **build error naming thing/slot/id**, never a silent fallback. Omit
+  `defaults` (or a slot within it) and that slot keeps the staggered-alphabetical default (slot 0 →
+  its first qualifying material, slot 1 → its second, … clamped). A single-material THING lands with
+  `defaults: { default: <id> }`.
+- **Slot isolation.** Swapping one slot's material fans out only that slot's bound symbols; the other
+  slot is untouched (e2e-pinned).
+
+> **Untested interaction — add the coverage if you hit it first (QC audit hardening c):** no shipped
+> THING combines named material slots with a *scoped* invalid envelope (`scope:` on a validity
+> condition). The two features are independent by construction, but the combination is unexercised —
+> the first THING to author both must add the e2e proving a scoped refusal still blanks only its named
+> readouts across a slot swap.
 
 ## Multi-branch configurations (the four-bar pattern)
 

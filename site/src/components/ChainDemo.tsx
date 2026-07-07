@@ -99,6 +99,10 @@ export default function ChainDemo({ gear, shaft, materials }: Props) {
     // the chain demo wires a single-material THING (the torsion shaft, one
     // `default` binding slot); multi-slot node support is deferred to Phase 4 (S17
     // out of scope — a multi-slot THING is excluded from chaining, not supported).
+    // NB: this demo does not yet honor R7 `material_defaults` (its picker lands on
+    // the qualifying list's first entry, MaterialPicker's default). Inert today —
+    // no chained THING declares defaults — but wiring landing materials through a
+    // chain is chain-builder work (S21+).
     const shaftBinds = shaft.material_binding?.default ?? {};
     if (mat) {
       for (const [sym, key] of Object.entries(shaftBinds)) {

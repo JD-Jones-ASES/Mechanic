@@ -134,6 +134,10 @@ export interface CompiledThing {
    * THING binds no materials.
    */
   material_binding: Record<string, Record<string, string>> | null;
+  /** per-slot landing material (R7): slot -> material id the widget selects on
+   * load (compile-validated to exist and qualify). null when none declared; a
+   * slot omitted here keeps the staggered-alphabetical default. */
+  material_defaults: Record<string, string> | null;
   /** cited sources (always emitted); role: constant variables reference these by id for display */
   sources: SourceRecord[];
 }
