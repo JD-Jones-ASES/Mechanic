@@ -117,7 +117,9 @@ coupler-curve inverse · custom domain · analytics (none, stated policy) · acc
 `docs/roadmap.md` — the phased plan toward the final product (owner rulings 2026-07-04: ADR-0008
 ACCEPTED with split scope — solveLinear approved, solveND deferred; Phase 2 target ≈30 THINGs, met;
 sessions run autonomously within a phase and stop at phase boundaries for owner direction.
-Phase 3 approved — JD 2026-07-06: solver depth, sessions S15–S20, active phase).
+Phase 3 approved JD 2026-07-06 and closed 2026-07-06 — solver depth: `solveLinear` + six
+statically-indeterminate/coupled THINGs (catalog 30 → 36; report `reports/phase-3.md`); AWAITING
+OWNER for the Phase 4 ruling).
 `docs/sessions/` — session protocol, queue, briefs, log, and the owner runbook; the queue is the
 single source of truth for what to work on next. Build: `pnpm build` in `site/` runs the
 Python pipeline first; `uv run pytest` in `pipeline/` for math-layer tests. A cold build takes ≈ 3–4

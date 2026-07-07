@@ -1457,3 +1457,50 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   bump it to 37 (else it stays 36). (d) a NO-material THING is fully supported end to end (material_binding
   null; [slug].astro + ThingWidget guard it; e2e asserts material-select count 0) — 8 THINGs now omit
   materials. (e) Nothing is paused; S20 (Phase 3 close) is the topmost QUEUED row.
+
+## S20 — Phase 3 close: reconciliation + report — 2026-07-06 — PR #39 — MERGED
+- Shipped: the Phase 3 closure (docs-only; ZERO site/pipeline/test files touched). `docs/sessions/reports/
+  phase-3.md` (the §11 phase report); roadmap/CLAUDE/README reconciled to merged reality (Phase 3 → ✅ complete,
+  catalog 30 → 36 via `solveLinear` + 6 statically-indeterminate/coupled THINGs); the README "No blind solving"
+  bullet gained a certified-linear-solve sentence (the flagship Phase 3 capability /verification/ already
+  describes); the S25 brief pinned its delegated example-3 chain wire; queue header → `Active phase: 3 —
+  AWAITING OWNER`, S20 → DONE. Catalog UNCHANGED at 36 — the optional stretch THING three-parallel-rods was
+  NOT taken (pre-authorized skip to protect the non-abandonable closure budget; go/no-go decided after scoping
+  the reconciliation, both outcomes compliant per the brief).
+- Gates: docs session (protocol §3 minus per-THING items 2–4). NO site/pipeline file touched, so no local
+  `pnpm build`/e2e/axe required by the brief's exit criteria — CI green on the PR is the docs-session merge
+  gate (S00 precedent). Evidence sweep: `ls site/src/content/things | wc -l` → 36 (matches CLAUDE/README, both
+  already 36 on main from S19/#38); `rg -i "solvend" pipeline/ site/src` → 1 hit (reserved schema comment, no
+  implementation — part (b) still PROPOSED/deferred; verbatim command+output recorded in the report);
+  `/verification/` is auto-generated (an audit block per THING by construction, so all 6 solveLinear THINGs
+  covered + totals self-reconcile 30 → 36) and its hand-authored "Coupled linear systems (solveLinear)" prose
+  was checked against `verify.certify_linear_group` TODAY and matches (affine proof → exact linsolve/Gaussian
+  → per-sample non-zero det → desugar → runtime refusal guard); all S21–S25 entry-criteria commands re-run and
+  hold. review: 3 INDEPENDENT fresh-context subagents (§4, adapted for a docs diff) — (A) reality audit vs
+  git/gh/disk/source = ZERO defects (every PR↔session↔THING mapping, count, technical claim confirmed); (B)
+  completeness/drift = 1 finding FIXED (the solveND sweep command+output was prose-only → added a verbatim
+  "ADR-0008 scope sweep" section, Deliverable 5) + flagged header-flip/log-entry which THIS bookkeeping commit
+  lands; (C) protocol compliance = COMPLIANT on all 6 checks (no gate lowered — docs-only diff touches zero
+  tests/engine/pipeline; §8 plan correct; stretch SKIP recorded, no partial THING; no Phase-4 work; no
+  encoding churn, UTF-8 no BOM, Θ/σ/√/→/× intact; branch `docs/phase3-close`, PR title per §6).
+- Golden: N/A (no THING shipped).
+- Citations pinned: N/A (docs session). The report's per-session PR links + THING numbers were fact-checked
+  against `gh pr list --state merged` and `git log` (S15=#32/T31 propped-cantilever, S16=#34/T32-33 fixed-fixed
+  family, S17=#36/T34 composite-bar, S18=#37/T35 thermal-assembly, S19=#38/T36 bolted-joint-gasket — all
+  correct; #33 = S15 brief erratum, #35 = shaft-CSS hotfix).
+- Deviations from brief: (1) Stretch THING three-parallel-rods NOT built (pre-authorized optional; both
+  outcomes compliant) — rationale in the report's SKIPPED + gate-compliance sections. (2) README gained a
+  one-sentence solveLinear addition beyond Deliverable 3's literal "count/catalog sentence" — reconciles the
+  public trust story to the flagship Phase 3 capability (already on /verification/), i.e. Phase-3
+  reconciliation, not out-of-scope drift; noted here per the out-of-scope clause. Everything else per brief.
+- New capabilities future briefs may rely on: none (docs). Phase 3 is CLOSED and AWAITING OWNER.
+- Notes-for-next (owner / next session): (a) the queue header reads `Active phase: 3 — AWAITING OWNER`; the
+  OWNER — never a session — rules Phase 4 by writing the literal `Phase 4 approved — JD <date>` line AND
+  flipping the header to `Active phase: 4` in the SAME edit (runbook 2e). A session that finds a ruling line
+  but an unflipped header STOPS and reports (§8). (b) `reports/phase-3.md` "Decisions needed" has THREE items:
+  rule on Phase 4 (recommend APPROVE — S21–S25 verified, entry criteria hold), the per-slot default-material
+  schema field (flagged by S17 AND S18 — multi-material THINGs LAND on al+al not steel+al; cosmetic-but-real,
+  safe to defer, needs an approved additive field, buildable only after sign-off §9.2), and the optional motor
+  THING (surfaces when S25 runs). (c) all five Phase 4 briefs are verified against merged reality; S25 carries
+  the S20-pinned example-3 wire `planetary-gearset.T_out → fixed-fixed-torsion-shaft.T` (both torque). (d) once
+  ruled, S21 (chain-eval engine extraction — headless, no UI change) is the topmost Phase 4 row.

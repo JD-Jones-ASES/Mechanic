@@ -138,6 +138,20 @@ not a correction — no errata needed, DECIDED) · starting any next-phase row (
 
 ## Notes
 
+- **S20 example-3 pin (Phase 3 close, 2026-07-06).** The deliberately-open example-3 slot is
+  satisfiable against the merged Phase 3 catalog; the S20 verification pass pinned these legal wires:
+  - **Recommended (simplest):** `planetary-gearset` output `T_out` (`quantity_kind: torque`) →
+    `fixed-fixed-torsion-shaft` input `T` (`quantity_kind: torque`). This mirrors the existing
+    `/chain-demo/` planetary→shaft wire but drives a *statically-indeterminate* THING — the
+    fixed-fixed shaft splits the applied torque into two wall reactions `{T_A, T_B}` via
+    solveLinear, so the example shows a Phase-3 coupled solve fed by a chain. (`belt-drive` or
+    `spur-gear-pair` torque outputs are equally legal sources.)
+  - **Alternatives (force wire):** any `quantity_kind: force` output → `composite-bar` input `P`
+    (`inputs: [P, L, A_1, A_2]`) or `bolted-joint-gasket` input `P`. `two-bar-truss` and
+    `beam-shear-flow` expose force-kind outputs.
+  - All ports verified present against the merged catalog 2026-07-06 (S20). Choose the simplest
+    legal wire and log the choice per the deliverable; no substitution is needed (nothing was
+    SKIPPED that this slot depends on).
 - The design JSON writes the inertia symbol as `I_m`; flywheel-disk's shipped symbol is `I_z`
   (thing.yaml). The on-disk symbol wins — do not rename a shipped variable for a doc's notation.
 - Trap: appending to a shipped thing.yaml re-fingerprints it — expect a cold-ish rebuild for
