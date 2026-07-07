@@ -2152,7 +2152,7 @@ test("dc motor: demanding more than stall torque refuses everything (no motoring
   await expect(page.locator('[data-output="P"] output')).toHaveText("—");
   await expect(page.locator('[data-output="P_max"] output')).toHaveText("—");
   // the sim shows the shared refusal figure, not a confident motor
-  await expect(page.locator(".sim figcaption")).toContainText(/undefined/i);
+  await expect(page.locator(".sim figcaption")).toContainText(/no point on the torque/i);
 });
 
 test("dc motor: past no-load speed the machine brakes — a warn, torque and power negative", async ({ page }) => {

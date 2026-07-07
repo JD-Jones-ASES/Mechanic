@@ -43,7 +43,13 @@ export function DcMotorSim({ values, invalid = false }: { values: VarRecord; inv
 
   // after the hooks (rules of hooks): refuse to draw a state the engine refused
   if (refused) {
-    return <SimRefusal ariaLabel="DC motor diagram (undefined state)" />;
+    return (
+      <SimRefusal
+        ariaLabel="DC motor diagram (undefined state)"
+        label="no operating point"
+        caption="This state was refused — no point on the torque–speed line delivers it; nothing honest to draw."
+      />
+    );
   }
 
   /* ---------- left: the rotor, spinning at (compressed) ω ---------- */
