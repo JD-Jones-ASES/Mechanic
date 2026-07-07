@@ -13,8 +13,10 @@ import { useEffect, useMemo, useState } from "preact/hooks";
 import type { Binding } from "../engines/chain";
 import { evaluateChain, planTargets } from "../engines/chain-eval";
 import type { CompiledThing, Fn, VarRecord } from "../engines/types";
+import { ChainAssumptions } from "./ChainAssumptions";
 import { KnobPanel } from "./KnobPanel";
 import { MaterialPicker, pickProperty, type MaterialRow } from "./MaterialPicker";
+import { type ChainProvenanceCtx, ProvenanceTrail } from "./ProvenanceTrail";
 import { Readouts } from "./Readouts";
 import { ValidityBanner } from "./ValidityBanner";
 
@@ -90,6 +92,24 @@ export default function ChainDemo({ gear, shaft, materials }: Props) {
   const shaftRes = result?.nodes[shaft.thing]?.result;
   const unitChange = (s: string, u: string) => setDisplayUnits((d) => ({ ...d, [s]: u }));
 
+  // Provenance context (S24): the current evaluation's records/bindings + a
+  // resolver from instance id (here, the THING slug) to title + artifact. Built
+  // fresh whenever `result` changes, so an opened trail always reflects the
+  // latest knob/material state (no stale-closure provenance).
+  const provCtx: ChainProvenanceCtx = useMemo(
+    () => ({
+      provenance: result?.provenance ?? [],
+      bindings: BINDINGS,
+      nodeInfo: (id) =>
+        id === gear.thing
+          ? { title: gear.title, artifact: gear }
+          : id === shaft.thing
+            ? { title: shaft.title, artifact: shaft }
+            : undefined,
+    }),
+    [result, gear, shaft],
+  );
+
   return (
     <section class="chain-demo" data-testid="chain-demo" data-ready={fns ? "true" : "false"}>
       <div class="chain-grid">
@@ -113,6 +133,9 @@ export default function ChainDemo({ gear, shaft, materials }: Props) {
             invalidVars={gearRes?.invalidVars ?? []}
             displayUnits={displayUnits}
             onUnitChange={unitChange}
+            provenanceSlot={
+              result ? (sym) => <ProvenanceTrail rootInstance={gear.thing} sym={sym} ctx={provCtx} /> : undefined
+            }
           />
           <ValidityBanner messages={gearRes?.messages ?? []} />
         </div>
@@ -152,10 +175,19 @@ export default function ChainDemo({ gear, shaft, materials }: Props) {
             invalidVars={shaftRes?.invalidVars ?? []}
             displayUnits={displayUnits}
             onUnitChange={unitChange}
+            provenanceSlot={
+              result ? (sym) => <ProvenanceTrail rootInstance={shaft.thing} sym={sym} ctx={provCtx} /> : undefined
+            }
           />
           <ValidityBanner messages={shaftRes?.messages ?? []} />
         </div>
       </div>
+
+      <ChainAssumptions
+        order={result?.order ?? []}
+        nodeInfo={provCtx.nodeInfo}
+        records={result?.nodes ?? {}}
+      />
     </section>
   );
 }

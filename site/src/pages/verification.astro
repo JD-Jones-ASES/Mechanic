@@ -149,6 +149,60 @@ const totals = catalogTotals(compiled);
       <em>are</em> re-derived from equilibrium in the test pipeline.
     </p>
 
+    <h2>Chaining: what carries across a wire, and what doesn't</h2>
+    <p>
+      A machine is THINGs wired together. On the <a href={withBase("chain-builder/")}>chain builder</a>
+      and the <a href={withBase("chain-demo/")}>chaining demo</a> you can bind one THING's output port
+      into another's input and watch a consequence propagate. Each output on those pages carries a
+      <em>provenance disclosure</em> tracing the number back through every relation and every upstream
+      port it depends on, and each page shows an <em>assumptions-in-play</em> panel. Here is exactly
+      what those surfaces do and do not certify.
+    </p>
+    <p><strong>What the build proves about a chain:</strong></p>
+    <ul>
+      <li>
+        <strong>Every node is a whole THING.</strong> A chained value is produced by the same
+        compiled function whose closed form was substituted back into every relation and sampled at
+        50-digit precision above — chaining adds no new math to a THING (a widget never computes;
+        the engine only forwards a verified output into a verified input).
+      </li>
+      <li>
+        <strong>Every wire is type-checked.</strong> A binding is legal only if the SI dimension
+        7-vector <em>and</em> the quantity kind both match — torque shares dimensions with energy,
+        an angle with a Poisson ratio, so dimension alone never suffices. The planner that orders
+        the evaluation is the type-checker: it rejects an illegal binding, and it rejects any wire
+        that would close a feedback loop (cyclic solving is out of scope in v1). The verdicts shown
+        on the demo's legality table are that same check run at build time, not prose.
+      </li>
+      <li>
+        <strong>Refusals propagate; wrong numbers do not.</strong> When an upstream THING refuses —
+        its own envelope is violated, or one of <em>its</em> inputs was withheld — the value is
+        withheld from the wire rather than forwarded, and the downstream THING refuses in turn
+        instead of computing on a plausible-but-wrong input. A scoped refusal withholds only the
+        poisoned outputs. Every withheld readout blanks to “—”; none shows a fabricated number.
+      </li>
+      <li>
+        <strong>Conservation survives the wiring.</strong> In the reference chain (a ring-fixed
+        planetary reduction driving a torsion shaft) the gearbox multiplies torque by 3.5× and
+        divides speed by the same factor, so the shaft's transmitted power <em>P = Tω</em> equals
+        the gearbox's input power exactly: T<sub>out</sub> = 350&nbsp;N·m, τ = 27.852&nbsp;MPa, and
+        P = 1&nbsp;kW = the 100&nbsp;N·m × 10&nbsp;rad/s put in. Those are hand-derived numbers a
+        browser test checks against the built site on every deploy — a verified fact, not a claim.
+      </li>
+    </ul>
+    <p>
+      <strong>What the machine does not prove: cross-THING modeling consistency.</strong> That two
+      THINGs are <em>legitimate to compose</em> is a citation-level modeling judgment, not a proof.
+      When the gearbox's output feeds the shaft, the numbers cross a wire that is dimensionally and
+      kind-legal, but whether the gearbox's <em>ideal, lossless</em> torque and power are really what
+      the physical shaft would see — no bearing drag, no mesh loss, no shock load — rests on each
+      stage's cited assumptions, exactly as it would on a single page. The type system guarantees the
+      units and kinds line up; it cannot certify that the idealizations of two different models agree.
+      That is why every chained number keeps its citations in the provenance disclosure and every
+      stage's assumptions are surfaced in the assumptions panel: the composition is
+      <em>disclosed, not asserted</em> (ADR-0007).
+    </p>
+
     <p class="citation">
       Catalog totals: {totals.things} THINGs · {totals.relations} relations (each cited) ·
       {totals.identities} derivation identities machine-proven · {totals.modeling} modeling steps
