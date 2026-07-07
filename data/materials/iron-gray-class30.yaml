@@ -72,7 +72,7 @@ properties:
   value: 10.5
   unit: 1e-6/K
   basis: typical
-  source_id: asm-desk-ed
+  source_id: asm-desk-ed-1998
   citation: 'AmesWeb ''Thermal Expansion Coefficient of Iron and Cast Iron'' table (citing Davis, J.R.,
     Metals Handbook Desk Edition, ASM International, 1998), Gray cast iron row: 10.5 x 10^-6/degC
     (5.8 x 10^-6/degF) over 0-100 degC (32-212 degF).'

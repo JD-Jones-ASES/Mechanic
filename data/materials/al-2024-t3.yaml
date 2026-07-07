@@ -96,7 +96,7 @@ properties:
   value: 12.7
   unit: 1e-6/degF_interval
   basis: typical
-  source_id: asm-desk-ed
+  source_id: asm-desk-ed-1998
   citation: 'ASM Metals Handbook Desk Edition (Davis, J.R., ed., ASM International, 1998), linear
     thermal-expansion table for aluminum alloys, 2024 row: 12.7 x 10^-6/degF (22.8 x 10^-6/degC),
     mean over 20-100 degC (68-212 degF). Read from the AmesWeb reproduction of the ASM table.'
