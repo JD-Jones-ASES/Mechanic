@@ -118,8 +118,10 @@ coupler-curve inverse · custom domain · analytics (none, stated policy) · acc
 ACCEPTED with split scope — solveLinear approved, solveND deferred; Phase 2 target ≈30 THINGs, met;
 sessions run autonomously within a phase and stop at phase boundaries for owner direction.
 Phase 3 approved JD 2026-07-06 and closed 2026-07-06 — solver depth: `solveLinear` + six
-statically-indeterminate/coupled THINGs (catalog 30 → 36; report `reports/phase-3.md`); AWAITING
-OWNER for the Phase 4 ruling).
+statically-indeterminate/coupled THINGs (catalog 30 → 36; report `reports/phase-3.md`).
+Phase 4 approved JD 2026-07-06 — chaining as the product + portal design (ADR-0010), queue order
+QC2 → S21 → D1 → D2 → S22–S25; the Phase-3 QC audit found zero wrong emitted numbers, findings in
+`docs/sessions/reports/phase-3-qc-audit.md`).
 `docs/sessions/` — session protocol, queue, briefs, log, and the owner runbook; the queue is the
 single source of truth for what to work on next. Build: `pnpm build` in `site/` runs the
 Python pipeline first; `uv run pytest` in `pipeline/` for math-layer tests. A cold build takes ≈ 3–4

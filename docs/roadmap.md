@@ -95,14 +95,28 @@ In dependency order:
    ruling. The optional stretch THING (three-parallel-rods) was **not** taken, to protect the
    non-abandonable closure budget (both outcomes were pre-authorized by the S20 brief).
 
-## Phase 4 — Chaining as the product
+## Phase 4 — Chaining as the product + portal design
 
-The differentiator. The type system (dimension 7-vector + quantity kind) already makes arbitrary
-forward chains legal; the work is a chain-builder page (pick THINGs, wire ports, planner orders
-evaluation), chains serialized into the URL (shareable on a static site), and curated examples
-(motor → planetary → shaft → flywheel: spin-up time and what it costs in stress). Every number
-keeps its citation through the chain. Execution: sessions S21–S25 in `docs/sessions/queue.md`;
-those briefs are DRAFT until the Phase 3 closing session verifies them.
+**Approved JD 2026-07-06** (ruled in-session; queue rulings R7–R9 recorded with it). Two tracks,
+one phase, strict queue order QC2 → S21 → D1 → D2 → S22 → S23 → S24 → S25 (S25 closes).
+
+**Track 1 — chaining, the differentiator.** The type system (dimension 7-vector + quantity kind)
+already makes arbitrary forward chains legal; the work is a chain-builder page (pick THINGs, wire
+ports, planner orders evaluation), chains serialized into the URL (shareable on a static site),
+and curated examples (planetary → shaft → flywheel: spin-up time and what it costs in stress).
+Every number keeps its citation through the chain. Sessions S21–S25 as planned 2026-07-04; briefs
+verified against merged reality by S20.
+
+**Track 2 — the portal undergraduates deserve** (owner-directed 2026-07-06, ADR-0010). The
+Phase-3 QC audit ran at the ruling (zero wrong emitted numbers; 4 findings — report
+`docs/sessions/reports/phase-3-qc-audit.md`); QC2 fixes them and ships the R7 per-slot
+`default_material` field. Then D1 replaces the flat 36-card home page with a course-spine catalog
+(authored `category`/`topic` per THING: Mechanics of Materials / Machine Design / Mechanisms,
+Dynamics & Vibration), build-proof stats in the hero, and a Pagefind search UI; D2 adds THING-page
+wayfinding — related THINGs, a `connectionLegal`-driven "chains with" block, prev/next along the
+spine, per-THING verification badges. Restrained visual polish only (tokens/system
+fonts/dark-mode/native controls stay; no webfonts, no frameworks). D1/D2 deliberately precede S22
+so the chain-builder ships into the final shell.
 
 ## Phase 5 — Materials depth
 
