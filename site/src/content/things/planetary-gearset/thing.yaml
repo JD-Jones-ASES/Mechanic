@@ -5,6 +5,8 @@ summary: >-
   freedom, it has no single "ratio": fix a different member and the same hardware becomes a different
   transmission.
 facets: [kinematics, torque-power]
+category: machine-design
+topic: gears-drives
 
 variables:
   - symbol: omega_s

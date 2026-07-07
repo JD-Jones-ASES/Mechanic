@@ -142,6 +142,14 @@ const things = defineCollection({
     title: z.string(),
     summary: z.string(),
     facets: z.array(z.string()).min(1),
+    // course-spine taxonomy (ADR-0010 §1): `category` is the undergraduate course
+    // the THING belongs to (required enum, spine order owned by the catalog
+    // component); `topic` is an optional subgrouping slug WITHIN a category. Zod
+    // strips unknown keys, so these MUST live here or they vanish from
+    // getCollection — the catalog component then validates topic membership per
+    // category and fails the build loudly on an unknown value (no "Other" bucket).
+    category: z.enum(["mechanics-of-materials", "machine-design", "mechanisms-dynamics"]),
+    topic: z.string().optional(),
     variables: z.array(variableSchema).min(1),
     // material binding — either the flat map {symbol: property_key} or named
     // slots {slot: {symbol: property_key}} so one THING binds two independent

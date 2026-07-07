@@ -5,6 +5,8 @@ summary: >-
   hold, e^μθ in total — the same exponential that lets a sailor check a ship with two turns of
   rope. At speed, centrifugal relief steals tension back, so every belt has a power ceiling.
 facets: [torque-power]
+category: machine-design
+topic: gears-drives
 
 variables:
   - symbol: T_1

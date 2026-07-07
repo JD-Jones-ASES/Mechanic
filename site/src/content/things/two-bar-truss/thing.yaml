@@ -6,6 +6,8 @@ summary: >-
   equilibrium alone fixes the forces, no compatibility needed. Flatten it and watch the forces (and
   the joint deflection) diverge; in compression each bar must also clear Euler buckling.
 facets: [statics, stress, stability, mass-cost]
+category: mechanics-of-materials
+topic: axial-thermal-impact
 
 variables:
   # --- free knobs (inputs) ---

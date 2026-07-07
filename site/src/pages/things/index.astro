@@ -1,28 +1,16 @@
 ---
-import { getCollection } from "astro:content";
 import Base from "../../layouts/Base.astro";
-import { withBase } from "../../lib/url";
-
-const things = await getCollection("things");
+import CatalogSections from "../../components/CatalogSections.astro";
+import Search from "../../components/Search.astro";
 ---
 
 <Base title="Things">
-  <h1>Things</h1>
-  <ul class="card-grid">
-    {
-      things.map((t) => (
-        <li class="card">
-          <h3>
-            <a href={withBase(`things/${t.id}/`)}>{t.data.title}</a>
-          </h3>
-          <p>{t.data.summary}</p>
-          <p>
-            {t.data.facets.map((f) => (
-              <span class="facet">{f}</span>
-            ))}
-          </p>
-        </li>
-      ))
-    }
-  </ul>
+  <h1>The catalog</h1>
+  <p class="catalog-intro">
+    Every THING, grouped by the undergraduate course it belongs to and the topic within it. Each
+    card links to a full page: overview, governing equations with verified derivations, an
+    interactive sim, and a how-it-fails note.
+  </p>
+  <Search />
+  <CatalogSections />
 </Base>

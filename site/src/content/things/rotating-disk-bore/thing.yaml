@@ -5,6 +5,8 @@ summary: >-
   doubles — not "roughly increases": doubles, in the limit of a vanishing bore. The solid
   flywheel's optimistic numbers meet the hole every real rotor needs.
 facets: [stress, energy-storage, mass-cost]
+category: mechanics-of-materials
+topic: pressure-rotating
 
 variables:
   - symbol: R

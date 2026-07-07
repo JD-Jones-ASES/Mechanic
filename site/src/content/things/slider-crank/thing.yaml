@@ -8,6 +8,7 @@ summary: >-
   from zero to a peak and back every revolution. The classic two-term r/l approximation rides
   alongside the exact form so you can watch it drift.
 facets: [kinematics, torque-power]
+category: mechanisms-dynamics
 
 variables:
   # --- free knobs ---

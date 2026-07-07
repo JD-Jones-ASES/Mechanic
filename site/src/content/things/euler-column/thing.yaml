@@ -5,6 +5,8 @@ summary: >-
   geometry. Yield strength is nowhere in Euler's formula: the "strong" steel column buckles at
   exactly the same load as the mild one. Strength only decides where the formula stops being true.
 facets: [stability, stress, mass-cost]
+category: mechanics-of-materials
+topic: columns-stability
 
 variables:
   - symbol: P

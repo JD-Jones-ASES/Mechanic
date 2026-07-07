@@ -6,6 +6,8 @@ summary: >-
   Winkler formula behind a crane hook, a C-clamp, and a press frame: σ = M·c/(A·e·r), the tiny
   eccentricity e = r_c − r_n doing all the work, plus the direct P/A a hook's load adds on top.
 facets: [stress]
+category: mechanics-of-materials
+topic: beams-plates
 
 # Sign convention (Shigley §3-18, pinned once here and in overview.mdx): a POSITIVE
 # bending moment M straightens the curve (decreases curvature) and puts the INNER

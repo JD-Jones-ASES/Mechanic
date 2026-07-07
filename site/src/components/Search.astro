@@ -1,0 +1,64 @@
+---
+/**
+ * Pagefind search UI (ADR-0010 §3), confined to the two catalog pages so THING
+ * pages keep their current page weight.
+ *
+ * PATH NOTE (D1): the CLI at the end of `pnpm build` emits pagefind-ui.js/.css
+ * into dist/pagefind/ — NOT dist/_pagefind/ as the brief/ADR assumed. Pagefind
+ * dropped the underscore prefix at 1.0 (an underscore dir is ignored by
+ * Jekyll/GitHub Pages), and this site pins pagefind 1.5.2. Verified live:
+ * /Mechanic/pagefind/pagefind-ui.js serves the real library. Using the real path.
+ *
+ * Those assets exist ONLY in the built output, so the whole widget is PROD-gated:
+ * `astro build` (hence `pnpm preview` and the e2e suite) get real search; under
+ * `astro dev` there is no bundle, so we render a plain note and load NOTHING —
+ * keeping the dev console free of a 404 (ADR §3 graceful-degradation trap).
+ * data-pagefind-ignore keeps the search chrome out of the index it drives.
+ */
+import { withBase } from "../lib/url";
+const uiCss = withBase("pagefind/pagefind-ui.css");
+const uiJs = withBase("pagefind/pagefind-ui.js");
+const bundlePath = withBase("pagefind/");
+---
+
+<section class="catalog-search" aria-label="Search the catalog" data-pagefind-ignore>
+  {
+    import.meta.env.PROD ? (
+      <>
+        <link rel="stylesheet" href={uiCss} />
+        <div id="search" class="pagefind-ui-mount" />
+        <script is:inline defer src={uiJs} />
+        <script is:inline define:vars={{ bundlePath }}>
+          window.addEventListener("DOMContentLoaded", () => {
+            if (typeof PagefindUI === "undefined") return;
+            new PagefindUI({ element: "#search", bundlePath, showImages: false });
+            // Pagefind's Default UI input ships with only a `title` attribute, which
+            // axe flags as label-title-only (a serious violation). Give the generated
+            // input a real accessible name. The input is created synchronously by the
+            // constructor; a one-shot observer covers any version that defers it.
+            const label = () => {
+              const input = document.querySelector("#search input");
+              if (input && !input.getAttribute("aria-label")) {
+                input.setAttribute("aria-label", "Search the catalog");
+                return true;
+              }
+              return false;
+            };
+            const mount = document.querySelector("#search");
+            if (!label() && mount) {
+              const obs = new MutationObserver(() => {
+                if (label()) obs.disconnect();
+              });
+              obs.observe(mount, { childList: true, subtree: true });
+            }
+          });
+        </script>
+      </>
+    ) : (
+      <p class="search-dev-note">
+        Full-text search runs on the built site (<code>pnpm build</code> then <code>pnpm preview</code>).
+        Pagefind's index is generated at build time and isn't served under <code>astro dev</code>.
+      </p>
+    )
+  }
+</section>

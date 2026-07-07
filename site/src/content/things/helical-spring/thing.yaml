@@ -5,6 +5,8 @@ summary: >-
   σ_y sets the margin, and the geometry trades them against three envelopes — coil bind,
   buckling, and a spring index you can actually wind.
 facets: [stiffness, stress, mass-cost]
+category: machine-design
+topic: joints-springs-clutches
 
 variables:
   - symbol: d

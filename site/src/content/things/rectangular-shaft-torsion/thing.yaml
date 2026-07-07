@@ -6,6 +6,8 @@ summary: >-
   coefficients c1, c2 — functions only of the side ratio a/b — set the peak stress and the twist,
   and an equal-area round shaft beats it on both counts. Why square shafts are a bad deal.
 facets: [stress, mass-cost]
+category: mechanics-of-materials
+topic: torsion-combined
 
 # CONVENTION (pinned once — sources disagree on symbols; see overview.mdx):
 #   a = LONG side, b = SHORT side, aspect ratio a/b >= 1.

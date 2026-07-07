@@ -5,6 +5,8 @@ summary: >-
   Three material properties drive three different outputs — stiffness (G) sets the twist, strength
   (σ_y) sets the margin, and the stress itself doesn't care what the shaft is made of at all.
 facets: [stress, torque-power, mass-cost]
+category: mechanics-of-materials
+topic: torsion-combined
 
 variables:
   - symbol: T

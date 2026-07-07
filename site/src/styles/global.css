@@ -2,6 +2,7 @@
 :root {
   --ink: #1a202c;
   --paper: #ffffff;
+  --surface: #f8fafc; /* raised card/stat background, one step off --paper */
   --muted: #4a5568;
   --accent: #1d4ed8;
   --warn-bg: #fef3c7;
@@ -9,15 +10,25 @@
   --invalid-bg: #fee2e2;
   --invalid-ink: #7f1d1d;
   --line: #cbd5e0;
+  /* per-category accent tokens (ADR-0010 §5) — used for icons, borders, and
+     section rules; never as the sole carrier of meaning (the category name text
+     always stands beside them), so their contrast as decoration suffices */
+  --cat-mom: #1d4ed8; /* Mechanics of Materials — blue */
+  --cat-md: #0e7490; /* Machine Design — teal */
+  --cat-mech: #7c3aed; /* Mechanisms, Dynamics & Vibration — violet */
   color-scheme: light dark;
 }
 @media (prefers-color-scheme: dark) {
   :root {
     --ink: #e2e8f0;
     --paper: #111827;
+    --surface: #1a2436;
     --muted: #9ca3af;
     --accent: #93c5fd;
     --line: #374151;
+    --cat-mom: #93c5fd;
+    --cat-md: #67e8f9;
+    --cat-mech: #c4b5fd;
   }
 }
 
@@ -53,11 +64,53 @@ a { color: var(--accent); }
   clip-path: inset(50%); overflow: hidden;
 }
 
-/* cards */
-.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr)); gap: 1rem; padding: 0; }
-.card { list-style: none; border: 1px solid var(--line); border-radius: 8px; padding: 1rem; }
-.card h3 { margin-top: 0; }
+/* facet chips — cross-cutting physics labels; shared by THING pages, the
+   materials page, and the catalog cards (kept a plain inline chip on purpose) */
 .facet { display: inline-block; font-size: 0.75rem; border: 1px solid var(--line); border-radius: 999px; padding: 0 0.5rem; margin-right: 0.3rem; color: var(--muted); }
+
+/* ---------- home hero (ADR-0010 §2) ---------- */
+.hero { margin: 1.25rem 0 2.5rem; }
+.hero-title { font-size: clamp(1.7rem, 1.2rem + 2vw, 2.25rem); line-height: 1.12; letter-spacing: -0.02em; margin: 0 0 0.75rem; }
+.hero-lede { font-size: 1.05rem; max-width: 44rem; margin: 0 0 1.5rem; }
+.hero-stats { list-style: none; display: flex; flex-wrap: wrap; gap: 0.75rem; padding: 0; margin: 0 0 1.25rem; }
+.stat { flex: 1 1 8rem; }
+.stat a { display: block; height: 100%; text-decoration: none; color: inherit; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 0.6rem 0.85rem; transition: border-color 0.15s ease; }
+.stat a:hover, .stat a:focus-visible { border-color: var(--accent); }
+.stat-num { display: block; font-size: 1.55rem; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; color: var(--accent); }
+.stat-label { display: block; font-size: 0.8rem; color: var(--muted); }
+.hero-chain { font-size: 0.95rem; color: var(--muted); margin: 0; }
+
+/* ---------- catalog search (Pagefind UI, themed to the site tokens) ---------- */
+.catalog-search {
+  margin: 0 0 2rem;
+  --pagefind-ui-primary: var(--accent);
+  --pagefind-ui-text: var(--ink);
+  --pagefind-ui-background: var(--paper);
+  --pagefind-ui-border: var(--line);
+  --pagefind-ui-tag: var(--surface);
+  --pagefind-ui-border-width: 1px;
+  --pagefind-ui-border-radius: 8px;
+  --pagefind-ui-font: inherit;
+}
+.search-dev-note { font-size: 0.9rem; color: var(--muted); border: 1px dashed var(--line); border-radius: 8px; padding: 0.75rem 1rem; margin: 0; }
+
+/* ---------- structured catalog (ADR-0010 §1–§2) ---------- */
+.cat-section { margin: 0 0 2.75rem; }
+.cat-header { display: flex; align-items: flex-start; gap: 0.75rem; margin: 0 0 1.25rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--cat-accent); }
+.cat-icon { flex: none; color: var(--cat-accent); line-height: 0; }
+.cat-icon svg { width: 30px; height: 30px; display: block; }
+.cat-title { font-size: 1.4rem; line-height: 1.2; margin: 0; }
+.cat-blurb { font-size: 0.9rem; color: var(--muted); margin: 0.15rem 0 0; }
+.topic-block { margin: 0 0 1.5rem; }
+.topic-title { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.07em; font-weight: 600; color: var(--muted); margin: 0 0 0.75rem; }
+.thing-grid { list-style: none; display: grid; grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr)); gap: 1rem; padding: 0; margin: 0; }
+.thing-card { display: flex; flex-direction: column; gap: 0.4rem; background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--cat-accent); border-radius: 8px; padding: 0.9rem 1rem; }
+.thing-card-link { font-size: 1.02rem; font-weight: 650; line-height: 1.25; text-decoration: none; }
+.thing-card-link:hover { text-decoration: underline; }
+.thing-card-summary { font-size: 0.88rem; color: var(--muted); margin: 0; flex: 1 0 auto; }
+.facet-row { list-style: none; display: flex; flex-wrap: wrap; gap: 0.3rem; padding: 0; margin: 0.1rem 0 0; }
+.facet-row .facet { margin-right: 0; }
+.catalog-intro { max-width: 44rem; color: var(--muted); }
 
 /* widget */
 .thing-widget { border: 1px solid var(--line); border-radius: 8px; padding: 1rem; margin: 1.5rem 0; }

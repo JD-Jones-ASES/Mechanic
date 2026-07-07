@@ -7,6 +7,8 @@ summary: >-
   This page turns the two catalog numbers into a life in hours, and the reliability you demand into
   the life you actually get.
 facets: [dynamics, reliability]
+category: machine-design
+topic: shafts-bearings
 
 variables:
   # --- knobs (free inputs) ---

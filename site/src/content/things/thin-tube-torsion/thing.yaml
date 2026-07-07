@@ -6,6 +6,8 @@ summary: >-
   closed section solvable with two knobs — and the isoperimetric inequality polices which
   sections can exist at all.
 facets: [stress, mass-cost]
+category: mechanics-of-materials
+topic: torsion-combined
 
 variables:
   - symbol: T

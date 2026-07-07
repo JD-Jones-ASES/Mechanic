@@ -6,6 +6,8 @@ summary: >-
   that compression first — and at the balanced fit with the interface at √(r_i·r_o), the
   elastic pressure ceiling approaches DOUBLE the one no solid wall could pass.
 facets: [stress, mass-cost]
+category: mechanics-of-materials
+topic: pressure-rotating
 
 variables:
   - symbol: r_i

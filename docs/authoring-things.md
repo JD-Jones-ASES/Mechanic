@@ -12,6 +12,8 @@ id: cantilever-beam
 title: Cantilever Beam (End Load)
 summary: One-sentence card text.
 facets: [stress, mass-cost]        # relation-group tags, NOT a single thing-level archetype
+category: mechanics-of-materials   # REQUIRED course-spine bucket (ADR-0010) — see below
+topic: beams-plates                # subgrouping slug within the category (see below)
 
 variables:
   - symbol: P                      # valid Python identifier; used verbatim in expressions
@@ -91,6 +93,27 @@ sources:
                                        # "not section-pinned" (ADR-0007). Never invent precision
                                        # you didn't verify.
 ```
+
+## Course-spine taxonomy (`category` / `topic`, ADR-0010)
+
+Two authored fields place a THING in the catalog. They are consumed by the site's catalog
+component (`site/src/components/CatalogSections.astro`), never by the Python pipeline.
+
+- **`category`** — REQUIRED. A Zod enum: `mechanics-of-materials` · `machine-design` ·
+  `mechanisms-dynamics` (the undergraduate course, in spine order). An unknown or missing value
+  fails the collection load. There is deliberately no `statics` bucket yet (ADR-0010 §1).
+- **`topic`** — a subgrouping slug WITHIN a category. Required for the two categories that define
+  topics; **omitted** for `mechanisms-dynamics`, which has none. The catalog component owns the
+  canonical topic slugs, their display names, and their order; an unknown topic (or a topic on a
+  topicless category, or a missing topic on a topic'd one) **fails the build loudly** in
+  `CatalogSections.astro` — no silent "Other" bucket. The current topic slugs:
+  - `mechanics-of-materials`: `axial-thermal-impact` · `beams-plates` · `torsion-combined` ·
+    `columns-stability` · `pressure-rotating`
+  - `machine-design`: `gears-drives` · `shafts-bearings` · `joints-springs-clutches`
+
+THINGs sort alphabetically by title within a topic (no rank field). Pick the category/topic that
+matches the THING's actual physics, not just its title — the mapping in ADR-0010 §1 is a spec to
+verify against each overview, not to transcribe blind (protocol rule 6).
 
 ## Rules the build enforces (fail loudly, by design)
 

@@ -6,6 +6,8 @@ summary: >-
   the deflection chases. Because nothing here is linear, the safety factor must be taken on the
   LOAD — the page solves that transcendental equation live, by bracketed root-finding.
 facets: [stability, stress, mass-cost]
+category: mechanics-of-materials
+topic: columns-stability
 
 variables:
   - symbol: P

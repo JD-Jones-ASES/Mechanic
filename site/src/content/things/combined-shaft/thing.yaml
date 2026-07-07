@@ -5,6 +5,8 @@ summary: >-
   torsion land on the same surface element, Mohr's circle finds the worst plane, and two
   failure criteria — Tresca and von Mises — disagree by up to 15 % about how bad it is.
 facets: [stress, mass-cost]
+category: mechanics-of-materials
+topic: torsion-combined
 
 variables:
   - symbol: M

@@ -5,6 +5,7 @@ summary: >-
   frequency, ω_n = √(k_t/J_d). The pitch is set entirely by the shaft's stiffness and the disk's
   inertia — not by how hard you twist it — while the stress it survives is set by the amplitude.
 facets: [dynamics, stress, torque-power]
+category: mechanisms-dynamics
 
 variables:
   - symbol: d
