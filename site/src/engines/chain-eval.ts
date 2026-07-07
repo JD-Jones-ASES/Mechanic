@@ -27,6 +27,15 @@
 import { ChainGraph, type Binding } from "./chain.ts";
 import { RelationEngine } from "./relation.ts";
 import type { CompiledThing, EvalResult, Fn, ValidityMessage, VarRecord } from "./types.ts";
+import type { Port } from "./units.ts";
+
+/** A variable's chaining Port (dimension 7-vector + quantity kind), read off the
+ * compiled artifact. The ONE place that shape is constructed — reused by the
+ * per-config `ports()` below and by build-time wayfinding (D2), so the notion of
+ * "how a variable becomes a Port" lives once (invariant 4, in miniature). */
+export function portOf(artifact: CompiledThing, sym: string): Port {
+  return { dim: artifact.variables[sym]!.dim, quantity_kind: artifact.variables[sym]!.quantity_kind };
+}
 
 /**
  * Flatten a plan to the variables it produces: a `table` step fills several
@@ -138,16 +147,12 @@ function dedupe(xs: string[]): string[] {
   return xs.filter((x) => (seen.has(x) ? false : (seen.add(x), true)));
 }
 
-function ports(artifact: CompiledThing, cfgId: string): { inputs: Record<string, { dim: number[]; quantity_kind: string }>; outputs: Record<string, { dim: number[]; quantity_kind: string }> } {
+function ports(artifact: CompiledThing, cfgId: string): { inputs: Record<string, Port>; outputs: Record<string, Port> } {
   const cfg = artifact.configurations.find((c) => c.id === cfgId);
   if (!cfg) throw new Error(`unknown configuration '${cfgId}' for ${artifact.thing}`);
-  const port = (s: string) => ({
-    dim: artifact.variables[s]!.dim,
-    quantity_kind: artifact.variables[s]!.quantity_kind,
-  });
   return {
-    inputs: Object.fromEntries(cfg.inputs.map((s) => [s, port(s)])),
-    outputs: Object.fromEntries(planTargets(cfg.plan).map((t) => [t, port(t)])),
+    inputs: Object.fromEntries(cfg.inputs.map((s) => [s, portOf(artifact, s)])),
+    outputs: Object.fromEntries(planTargets(cfg.plan).map((t) => [t, portOf(artifact, t)])),
   };
 }
 

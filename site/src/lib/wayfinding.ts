@@ -18,7 +18,7 @@
  * is reused from the chain-eval engine so the output set matches what a real
  * chain would forward. Headless — no astro:content, no components.
  */
-import { planTargets } from "../engines/chain-eval";
+import { planTargets, portOf } from "../engines/chain-eval";
 import type { CompiledThing } from "../engines/types";
 import { connectionLegal, type Port } from "../engines/units";
 import { spineOrdered } from "./catalog";
@@ -41,8 +41,6 @@ export interface RelatedThing {
   category: string;
   topic?: string;
   facets: string[];
-  /** why it surfaced — the strongest tier that matched (topic > category > facet) */
-  relation: "topic" | "category" | "facet";
 }
 
 /** One legal outbound wire target: another THING this THING's outputs can drive,
@@ -77,18 +75,14 @@ const RELATED_CAP = 6;
  * never dropped silently (D2 honesty rule). */
 const DISPLAY_CAP = 8;
 
-const varPort = (a: CompiledThing, sym: string): Port => ({
-  dim: a.variables[sym]!.dim,
-  quantity_kind: a.variables[sym]!.quantity_kind,
-});
-
 /** Every variable ANY configuration of this THING produces (a `table` step fills
  * several targets; reuse `planTargets` so the set matches a real chain's forward
- * values). These are the ports another THING could read FROM. */
+ * values). These are the ports another THING could read FROM. `portOf` is the
+ * engine's own Port constructor (reuse, not a parallel copy — invariant 4). */
 function outputPorts(a: CompiledThing): Record<string, Port> {
   const syms = new Set<string>();
   for (const cfg of a.configurations) for (const t of planTargets(cfg.plan)) syms.add(t);
-  return Object.fromEntries([...syms].map((s) => [s, varPort(a, s)]));
+  return Object.fromEntries([...syms].map((s) => [s, portOf(a, s)]));
 }
 
 /** Every variable ANY configuration of this THING consumes — the ports another
@@ -97,7 +91,7 @@ function outputPorts(a: CompiledThing): Record<string, Port> {
 function inputPorts(a: CompiledThing): Record<string, Port> {
   const syms = new Set<string>();
   for (const cfg of a.configurations) for (const s of cfg.inputs) syms.add(s);
-  return Object.fromEntries([...syms].map((s) => [s, varPort(a, s)]));
+  return Object.fromEntries([...syms].map((s) => [s, portOf(a, s)]));
 }
 
 function computeChains(compiled: CompiledThing[], spineIndex: Map<string, number>): Map<string, ChainsWith> {
@@ -146,13 +140,17 @@ function computeRelated(things: ThingTaxon[]): Map<string, RelatedThing[]> {
     const shared = (o: ThingTaxon) => o.facets.filter((f) => t.facets.includes(f));
     const sameTopic = (o: ThingTaxon) => o.category === t.category && (o.topic ?? null) === (t.topic ?? null);
 
-    // three tiers, strongest first. A topicless category (mechanisms-dynamics)
-    // has all its members in tier 1 (same category counts as same topic there).
+    // three tiers, strongest first, MUTUALLY EXCLUSIVE by construction (same
+    // category+topic / same category+other topic / different category) so their
+    // concatenation needs no dedup. A topicless category (mechanisms-dynamics) has
+    // all its members in tier 1 (same category counts as same topic there), and
+    // tier 2 is then empty. Same-topic siblings therefore always precede weaker
+    // matches and are never crowded out by the cap.
     const tier1 = others.filter(sameTopic);
     const tier2 = others.filter((o) => o.category === t.category && !sameTopic(o));
     const tier3 = others.filter((o) => o.category !== t.category && shared(o).length > 0);
 
-    const rank = (arr: ThingTaxon[], relation: RelatedThing["relation"]): RelatedThing[] =>
+    const rank = (arr: ThingTaxon[]): RelatedThing[] =>
       [...arr]
         .sort((a, b) => shared(b).length - shared(a).length || a.title.localeCompare(b.title))
         .map((o) => ({
@@ -162,13 +160,14 @@ function computeRelated(things: ThingTaxon[]): Map<string, RelatedThing[]> {
           category: o.category,
           topic: o.topic,
           facets: o.facets,
-          relation,
         }));
 
-    const seen = new Set<string>();
-    const ordered = [...rank(tier1, "topic"), ...rank(tier2, "category"), ...rank(tier3, "facet")]
-      .filter((r) => (seen.has(r.id) ? false : (seen.add(r.id), true)))
-      .slice(0, RELATED_CAP);
+    // Curated "closest few" suggestions, not an enumeration: capped at RELATED_CAP
+    // with no "+k more" (unlike "chains with", which claims completeness and so
+    // discloses its cap). At the current catalog the largest topic has exactly
+    // RELATED_CAP same-topic siblings, so the cap only ever trims lower-relevance
+    // cross-topic/facet padding, never a same-topic sibling.
+    const ordered = [...rank(tier1), ...rank(tier2), ...rank(tier3)].slice(0, RELATED_CAP);
     map.set(t.id, ordered);
   }
   return map;
@@ -190,18 +189,30 @@ let _cache: Wayfinding | null = null;
 /**
  * Build (once, memoised) the whole wayfinding index. `things` is the authored
  * taxonomy (getCollection("things") data); `compiled` is the compiled-artifact
- * data (assignable to CompiledThing, as the THING page already treats it). The
- * first call computes all three maps for the whole catalog; every later page
- * reuses the cache, so the pairwise chain scan runs exactly once per build.
+ * data (assignable to CompiledThing, as the THING page already treats it).
+ *
+ * The memo is a BUILD-PROCESS singleton: `astro build` evaluates this module once
+ * and the only caller ([slug].astro) always passes the full catalog, so the first
+ * call's maps are correct for every page and the O(N²·ports) chain scan runs
+ * exactly once (the D2 "compute once" trap). The cache is deliberately NOT keyed
+ * on its arguments — it assumes that whole-catalog contract; a future caller
+ * passing a SUBSET would get the full-catalog result. (Under `astro dev` the
+ * module is not re-evaluated on a content edit, so wayfinding can go stale until
+ * restart — a dev-only wart; the deployed `astro build` is always fresh.)
  */
 export function buildWayfinding(things: ThingTaxon[], compiled: CompiledThing[]): Wayfinding {
   if (_cache) return _cache;
   const order = spineOrdered(things);
   const spineIndex = new Map(order.map((t, i) => [t.id, i]));
+  // chain only among THINGs that have a page (are in the authored spine): a stray
+  // compiled artifact with no authored THING would otherwise sort by an undefined
+  // spine index (NaN) and render a "chains with" link to a 404.
+  const authored = new Set(things.map((t) => t.id));
+  const placed = compiled.filter((a) => authored.has(a.thing));
   _cache = {
     neighbors: computeNeighbors(order),
     related: computeRelated(things),
-    chains: computeChains(compiled, spineIndex),
+    chains: computeChains(placed, spineIndex),
   };
   return _cache;
 }

@@ -98,7 +98,7 @@ const materialChips = needsMaterials
     <h1>{thing.data.title}</h1>
     <p>{thing.data.facets.map((f) => <span class="facet">{f}</span>)}</p>
 
-    <a class="verify-badge" href={withBase(`verification/#${slug}`)}>
+    <a class="verify-badge" href={withBase(`verification/#${slug}`)} data-pagefind-ignore>
       <span class="verify-badge-key">Verified build</span>
       <span class="verify-badge-counts">
         <span data-badge="relations">{audit.relations}</span> relations ·{" "}

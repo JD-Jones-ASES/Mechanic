@@ -9,11 +9,12 @@
  * house style: no silent "Other" bucket, no unplaced THING).
  */
 import { getCollection } from "astro:content";
-// The spine taxonomy (category/topic slugs, display names, order, accents) is
-// owned by lib/catalog.ts so this catalog and the THING-page prev/next walk the
-// SAME order and never drift (ADR-0010 §1; D2). This component still owns the
-// topic-membership validation and the render tree — they are rendering concerns.
-import { CATEGORIES, type Topic } from "../lib/catalog";
+// The spine taxonomy AND its group-by-spine ordering (category/topic slugs,
+// display names, order, accents, the byTitle-within-topic algorithm) are owned by
+// lib/catalog.ts, so this catalog and the THING-page prev/next walk the SAME order
+// and never drift (ADR-0010 §1; D2). This component still owns the topic-membership
+// validation — a rendering concern.
+import { categoryBySlug, spineGroups } from "../lib/catalog";
 import { withBase } from "../lib/url";
 
 const things = (await getCollection("things")).map((t) => ({
@@ -25,15 +26,12 @@ const things = (await getCollection("things")).map((t) => ({
   topic: t.data.topic,
 }));
 
-const byTitle = (a: { title: string }, b: { title: string }) => a.title.localeCompare(b.title);
-const catBySlug = new Map(CATEGORIES.map((c) => [c.slug, c]));
-
 // Machine-checkable honesty (ADR-0010 §1): every THING must resolve to exactly
 // one known (category, topic). `category` is already a Zod enum, so a bad/missing
 // category fails the collection load before we get here; `topic` is a free string
 // in the schema, so its membership is enforced HERE and nowhere else.
 for (const t of things) {
-  const cat = catBySlug.get(t.category);
+  const cat = categoryBySlug.get(t.category);
   if (!cat) throw new Error(`CatalogSections: THING '${t.id}' has unknown category '${t.category}'`);
   if (cat.topics.length === 0) {
     if (t.topic)
@@ -54,18 +52,9 @@ for (const t of things) {
   }
 }
 
-// Build the render tree in spine order.
-const render = CATEGORIES.map((cat) => {
-  const inCat = things.filter((t) => t.category === cat.slug);
-  const groups =
-    cat.topics.length === 0
-      ? [{ topic: null as Topic | null, things: [...inCat].sort(byTitle) }]
-      : cat.topics.map((topic) => ({
-          topic: topic as Topic | null,
-          things: inCat.filter((t) => t.topic === topic.slug).sort(byTitle),
-        }));
-  return { cat, groups };
-});
+// Build the render tree in spine order — the SAME grouping prev/next flattens
+// (lib/catalog `spineGroups`), so the two surfaces cannot diverge.
+const render = spineGroups(things);
 
 // Fail loud on a declared-but-empty topic: a topic slug in CATEGORIES with no
 // THING assigned is a taxonomy mistake, and a bare subhead over zero cards would

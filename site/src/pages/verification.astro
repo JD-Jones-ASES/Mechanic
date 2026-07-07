@@ -7,7 +7,7 @@
 import { getCollection } from "astro:content";
 import katex from "katex";
 import Base from "../layouts/Base.astro";
-import { catalogTotals, thingAudit } from "../lib/stats";
+import { catalogTotals, isModeling, thingAudit } from "../lib/stats";
 import { withBase } from "../lib/url";
 
 const compiled = (await getCollection("compiled"))
@@ -22,7 +22,7 @@ const rows = compiled.map((a) => {
   const audit = thingAudit(a);
   // the modeling STEPS themselves (not just their count) drive the "where physics
   // enters" list below
-  const modelingSteps = a.derivation.filter((d) => d.check === "definition");
+  const modelingSteps = a.derivation.filter(isModeling);
   return { a, audit, modelingSteps };
 });
 

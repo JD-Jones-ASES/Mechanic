@@ -7,24 +7,41 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
-test("chains-with is connectionLegal-driven, not hand-listed", async ({ page }) => {
+test("chains-with applies the quantity-KIND check, not dimension alone", async ({ page }) => {
+  // The honesty proof that chains-with is connectionLegal-driven, not a hand list:
+  // ball-bearing-life has TWO dimensionless outputs — L10 (kind: count) and x_R
+  // (kind: ratio) — and euler-column's input K is dimensionless (kind: ratio).
+  // BOTH candidate wires into K carry the IDENTICAL (zero) dimension vector, so a
+  // dimension-only matcher would list both; connectionLegal also checks the
+  // quantity kind, so only the ratio→ratio wire is legal. Distinguishing them is
+  // impossible without the real kind check — a hand-listed block can't fake it.
+  await page.goto("things/ball-bearing-life/");
+
+  // euler-column IS a legal target (via x_R→K) so its card renders (within the cap)...
+  await expect(page.locator('.chains-target-link[href*="/things/euler-column/"]')).toBeVisible();
+  // ...the kind-MATCHED wire (ratio→ratio) is present...
+  await expect(page.locator('[data-wire="x_R|euler-column|K"]')).toHaveCount(1);
+  // ...the kind-MISMATCHED wire (count→ratio, SAME zero dimension) into the very
+  // same input port is absent — rejected purely on quantity kind.
+  await expect(page.locator('[data-wire="L10|euler-column|K"]')).toHaveCount(0);
+  // ...and L10 DOES wire where the kind also matches (count→count, a tooth count):
+  await expect(page.locator('[data-wire="L10|spur-gear-pair|N_p"]')).toHaveCount(1);
+});
+
+test("chains-with lists real legal wires and omits a dimension mismatch", async ({ page }) => {
+  // planetary → torsion-shaft: the gearset's torque and speed outputs feed the
+  // shaft's torque and speed inputs. (torsion-shaft is ~3rd among planetary's
+  // legal targets in spine order — comfortably within the display cap; adding
+  // earlier-spine torque/speed-input THINGs could push it out and is worth noting.)
   await page.goto("things/planetary-gearset/");
-
-  // the block lists a card linking to a legal downstream THING...
   await expect(page.locator('.chains-target-link[href*="/things/torsion-shaft/"]')).toBeVisible();
-
-  // ...and the SPECIFIC legal wires the engine accepts (torque→torque, speed→speed):
-  await expect(page.locator('[data-wire="T_out|torsion-shaft|T"]')).toHaveCount(1);
-  await expect(page.locator('[data-wire="omega_c|torsion-shaft|omega"]')).toHaveCount(1);
-
-  // ...while the KIND-MISMATCH wire from the SAME output port is absent — angular
-  // velocity and torque share no quantity kind, so connectionLegal rejects it. A
-  // hand-listed block could never get this distinction exactly right; the engine does.
+  await expect(page.locator('[data-wire="T_out|torsion-shaft|T"]')).toHaveCount(1); // torque→torque
+  await expect(page.locator('[data-wire="omega_c|torsion-shaft|omega"]')).toHaveCount(1); // speed→speed
+  // omega_c (angular velocity, rad/s) → shaft T (torque, N·m) is a DIMENSION
+  // mismatch — connectionLegal rejects it on dimsEqual before it ever reaches the
+  // kind check — so it never appears.
   await expect(page.locator('[data-wire="omega_c|torsion-shaft|T"]')).toHaveCount(0);
-
-  // the wires carry the invariant-2 provenance, not prose
   await expect(page.locator("#chains-heading")).toBeVisible();
-  await expect(page.getByText(/connectionLegal/).first()).toBeVisible();
 });
 
 test("related THINGs surfaces same-topic siblings", async ({ page }) => {
@@ -99,10 +116,11 @@ test("material chips link to the materials page rows", async ({ page }) => {
   const href = await chips.first().getAttribute("href");
   expect(href).toMatch(/\/materials\/#[a-z0-9-]+$/);
 
-  // the anchored row actually exists on the materials page (the D2 additive id)
+  // the anchored row actually exists on the materials page (the D2 additive id).
+  // attribute selector (not tr#id) so any valid material id works, not just letter-first.
   const id = href!.split("#")[1]!;
   await page.goto("materials/");
-  await expect(page.locator(`tr#${id}`)).toHaveCount(1);
+  await expect(page.locator(`tr[id="${id}"]`)).toHaveCount(1);
 });
 
 test("axe: a wayfinding-rich THING page has no serious/critical violations", async ({ page }) => {

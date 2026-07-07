@@ -78,28 +78,46 @@ export interface SpinePlaceable {
   topic?: string;
 }
 
+/** One rendered topic bucket: its (optional) topic head and the THINGs under it. */
+export interface SpineGroup<T> {
+  topic: Topic | null;
+  things: T[];
+}
+/** One category section: the category and its topic buckets, in spine order. */
+export interface SpineSection<T> {
+  cat: Category;
+  groups: SpineGroup<T>[];
+}
+
 /**
- * The canonical flat spine order (category order → topic order → alphabetical by
- * title within a topic). This reproduces exactly what `CatalogSections.astro`
- * renders — the same category loop, the same topic loop, the same `byTitle`
- * comparator — so prev/next walks the identical sequence the catalog shows and
- * the catalog e2e's `SPINE_ORDER` pins. A THING whose (category, topic) is not
- * in the taxonomy is dropped here, exactly as it would be from the catalog; the
- * build has already failed in CatalogSections on such a value before any page
- * with this list is emitted, so the drop is unreachable in a passing build.
+ * Group THINGs into the spine's category → topic buckets (category order and
+ * topic order pedagogical; THINGs alphabetical by title within a topic; a
+ * topicless category yields one null-topic bucket). This is the ONE
+ * ordering/grouping algorithm: `CatalogSections.astro` renders these sections and
+ * `spineOrdered` flattens them, so the catalog grid and the THING-page prev/next
+ * cannot walk different sequences — the drift D2 set out to remove. (A THING with
+ * a taxonomy value outside the enum is dropped here, but the build has already
+ * failed in CatalogSections on such a value, so that is unreachable in a passing
+ * build.)
  */
-export function spineOrdered<T extends SpinePlaceable>(things: T[]): T[] {
+export function spineGroups<T extends SpinePlaceable>(things: T[]): SpineSection<T>[] {
   const byTitle = (a: T, b: T) => a.title.localeCompare(b.title);
-  const out: T[] = [];
-  for (const cat of CATEGORIES) {
+  return CATEGORIES.map((cat) => {
     const inCat = things.filter((t) => t.category === cat.slug);
-    if (cat.topics.length === 0) {
-      out.push(...[...inCat].sort(byTitle));
-    } else {
-      for (const topic of cat.topics) {
-        out.push(...inCat.filter((t) => t.topic === topic.slug).sort(byTitle));
-      }
-    }
-  }
-  return out;
+    const groups: SpineGroup<T>[] =
+      cat.topics.length === 0
+        ? [{ topic: null, things: [...inCat].sort(byTitle) }]
+        : cat.topics.map((topic) => ({
+            topic,
+            things: inCat.filter((t) => t.topic === topic.slug).sort(byTitle),
+          }));
+    return { cat, groups };
+  });
+}
+
+/** The canonical flat spine order — `spineGroups` read left to right. Prev/next
+ * walks this; it equals the catalog's card order by construction (one algorithm),
+ * which the catalog e2e's `SPINE_ORDER` pins. */
+export function spineOrdered<T extends SpinePlaceable>(things: T[]): T[] {
+  return spineGroups(things).flatMap((s) => s.groups).flatMap((g) => g.things);
 }
