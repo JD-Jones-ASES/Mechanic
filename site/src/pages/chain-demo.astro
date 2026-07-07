@@ -16,7 +16,9 @@ const shaft = (await getEntry("compiled", "torsion-shaft"))!.data;
 const fourbar = (await getEntry("compiled", "fourbar-linkage"))!.data;
 const column = (await getEntry("compiled", "euler-column"))!.data;
 
-// the shaft is single-material (one `default` binding slot, S17 normalization)
+// the shaft is single-material (one `default` binding slot, S17 normalization).
+// Same qualification predicate as things/[slug].astro and the R7 build gate
+// (pipeline validate_default_materials) — keep the three copies in step.
 const boundKeys = Object.values(shaft.material_binding?.default ?? {});
 const materials = (await getCollection("materials"))
   .map((m) => m.data)
