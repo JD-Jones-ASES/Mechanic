@@ -126,12 +126,11 @@ export default function ThingWidget({ artifact, materials, sim }: Props) {
   // its list[1], … clamped) so a two-material THING lands on two different
   // materials and its load share reads as material-driven, not just geometric.
   // A single-slot THING is unaffected: slot 0 -> list[0], exactly today's default.
-  const slots = artifact.material_binding ? Object.keys(artifact.material_binding) : [];
   const [materialIds, setMaterialIds] = useState<Record<string, string>>(() =>
     Object.fromEntries(
-      slots.map((slot, i) => {
+      Object.keys(artifact.material_binding ?? {}).map((slot, i) => {
         const list = materials[slot] ?? [];
-        return [slot, (list[Math.min(i, list.length - 1)] ?? list[0])?.id ?? ""];
+        return [slot, list[Math.min(i, list.length - 1)]?.id ?? ""];
       }),
     ),
   );
