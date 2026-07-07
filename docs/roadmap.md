@@ -112,7 +112,8 @@ Phase-3 QC audit ran at the ruling (zero wrong emitted numbers; 4 findings — r
 `docs/sessions/reports/phase-3-qc-audit.md`); QC2 fixes them and ships the R7 per-slot
 `default_material` field. Then D1 replaces the flat 36-card home page with a course-spine catalog
 (authored `category`/`topic` per THING: Mechanics of Materials / Machine Design / Mechanisms,
-Dynamics & Vibration), build-proof stats in the hero, and a Pagefind search UI; D2 adds THING-page
+Dynamics & Vibration), build-proof stats in the hero, and a Pagefind search UI **(shipped
+2026-07-07, PR #44)**; D2 adds THING-page
 wayfinding — related THINGs, a `connectionLegal`-driven "chains with" block, prev/next along the
 spine, per-THING verification badges. Restrained visual polish only (tokens/system
 fonts/dark-mode/native controls stay; no webfonts, no frameworks). D1/D2 deliberately precede S22
