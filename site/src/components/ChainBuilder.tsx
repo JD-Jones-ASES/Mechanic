@@ -15,8 +15,9 @@
  *    engine's own); refusals propagate per S21's decided rule table;
  *  - controls are native for keyboard + a11y (ADR-0006).
  */
-import { useCallback, useMemo, useRef, useState } from "preact/hooks";
+import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { type NodeEvalRecord, planTargets } from "../engines/chain-eval";
+import { decodeChain, type Drop, encodeChain, previewSlugs } from "../engines/chain-url";
 import type { CompiledThing, Fn } from "../engines/types";
 import {
   addNode,
@@ -75,6 +76,11 @@ const STATE_LABEL: Record<string, string> = {
 const effective = (opts: string[], current: string) =>
   opts.includes(current) ? current : (opts[0] ?? "");
 
+/** Soft URL length budget (S23): past this the copy control WARNS but still emits
+ * the full link — never silently shortens or truncates (invariant 5). Generous;
+ * real six-node chains sit well under it. */
+const URL_BUDGET = 2000;
+
 export default function ChainBuilder({ catalog, categories, materials }: Props) {
   const [store, setStore] = useState<ChainStore>(emptyStore);
   const [loaded, setLoaded] = useState<Loaded>({});
@@ -83,6 +89,15 @@ export default function ChainBuilder({ catalog, categories, materials }: Props) 
   const [loadError, setLoadError] = useState<string | null>(null);
   const [draft, setDraft] = useState({ fromNode: "", fromPort: "", toNode: "", toPort: "" });
   const inflight = useRef(new Map<string, Promise<LoadedThing>>());
+  // --- shareable-URL state (S23) ---
+  const [dropped, setDropped] = useState<Drop[]>([]); // load-time degradation notice
+  const [decodeError, setDecodeError] = useState<string | null>(null); // whole-link refusal
+  const [copied, setCopied] = useState(false);
+  const [copyFailed, setCopyFailed] = useState(false);
+  const [urlTooLong, setUrlTooLong] = useState(false);
+  const [hydrated, setHydrated] = useState(false); // true once the mount-decode has run
+  const bootstrapped = useRef(false); // guards the mount-decode to exactly once
+  const baselineRef = useRef<ChainStore | null>(null); // store as of load (to retire notices on first edit)
 
   const ensureLoaded = useCallback(
     (slug: string): Promise<LoadedThing> => {
@@ -130,6 +145,82 @@ export default function ChainBuilder({ catalog, categories, materials }: Props) 
     }
   }, [pick, store.nodes.length, ensureLoaded, materials]);
 
+  // slug -> compiled artifact, from the lazily-loaded modules: the encode/decode
+  // context (decode validates against these; encode reads variable defaults here).
+  const artifactsBySlug = useMemo(
+    () => Object.fromEntries(Object.entries(loaded).map(([slug, lt]) => [slug, lt.artifact])),
+    [loaded],
+  );
+
+  // Decode a shared chain from the URL fragment ONCE at mount (brief: decode at
+  // mount, encode on change — deliberately NO hashchange listener, so our own
+  // replaceState never re-triggers a decode). Read the fragment, lazy-load only
+  // the THINGs it names, then decode against the LIVE catalog. Degradation is the
+  // normal path; a newer FORMAT refuses the whole link. The `bootstrapped` guard
+  // makes this exactly-once even though deps are listed for closure freshness.
+  useEffect(() => {
+    if (bootstrapped.current) return;
+    bootstrapped.current = true;
+    const frag = window.location.hash;
+    const finish = (arts: Record<string, CompiledThing>) => {
+      const decoded = decodeChain(frag, { catalog, artifacts: arts, materials });
+      if (decoded.error) {
+        setDecodeError(decoded.error);
+        baselineRef.current = store; // the (empty) store the notice sits over
+      } else if (decoded.store.nodes.length > 0) {
+        setStore(decoded.store);
+        setDropped(decoded.dropped);
+        baselineRef.current = decoded.store;
+      } else {
+        baselineRef.current = store;
+      }
+      setHydrated(true);
+    };
+    const slugs = previewSlugs(frag);
+    if (slugs.length === 0) {
+      finish({}); // empty / foreign / newer-version / malformed — decode reports which
+      return;
+    }
+    Promise.allSettled(slugs.map((s) => ensureLoaded(s))).then((settled) => {
+      const arts: Record<string, CompiledThing> = {};
+      settled.forEach((r, i) => {
+        if (r.status === "fulfilled") arts[slugs[i]] = r.value.artifact;
+      });
+      finish(arts);
+    });
+  }, [catalog, materials, ensureLoaded, store]);
+
+  // Keep the URL fragment in sync with the store, but ONLY after the mount-decode
+  // (so the incoming fragment is read before we ever overwrite it). replaceState —
+  // not `location.hash =` — so there is no history spam and no scroll jump.
+  useEffect(() => {
+    if (!hydrated) return;
+    const url = new URL(window.location.href);
+    url.hash = store.nodes.length > 0 ? encodeChain(store, { artifacts: artifactsBySlug }) : "";
+    window.history.replaceState(window.history.state, "", url.href);
+    setUrlTooLong(url.href.length > URL_BUDGET);
+  }, [store, hydrated, artifactsBySlug]);
+
+  // Retire the load-time notices once the user edits away from the decoded chain —
+  // they described the incoming link, not the chain now being built.
+  useEffect(() => {
+    if (!hydrated || baselineRef.current === null || store === baselineRef.current) return;
+    baselineRef.current = null;
+    setDropped((d) => (d.length ? [] : d));
+    setDecodeError((e) => (e ? null : e));
+  }, [store, hydrated]);
+
+  const handleCopy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setCopyFailed(false);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopyFailed(true); // insecure context / permission denied — tell the user honestly
+    }
+  }, []);
+
   const { result, ready, error } = useMemo(
     () => evaluateStore(store, loaded, materials),
     [store, loaded, materials],
@@ -175,6 +266,23 @@ export default function ChainBuilder({ catalog, categories, materials }: Props) 
 
   return (
     <section class="chain-builder" data-testid="chain-builder" data-ready={ready ? "true" : "false"}>
+      {/* ---------------- shared-link decode notices (S23) ---------------- */}
+      {decodeError ? (
+        <p class="validity-msg validity-invalid" data-testid="decode-error" role="alert">
+          {decodeError}
+        </p>
+      ) : null}
+      {dropped.length > 0 ? (
+        <div class="cb-degraded validity-msg validity-warn" data-testid="degraded" role="status">
+          <strong>This shared chain was adjusted to the current catalog:</strong>
+          <ul>
+            {dropped.map((d, i) => (
+              <li key={i}>{d.message}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
       {/* ---------------- catalog picker ---------------- */}
       <div class="cb-toolbar">
         <label class="cb-pick">
@@ -215,6 +323,28 @@ export default function ChainBuilder({ catalog, categories, materials }: Props) 
           {store.nodes.length} / {MAX_NODES} nodes
         </span>
       </div>
+
+      {/* ---------------- shareable link (S23) ---------------- */}
+      {store.nodes.length > 0 ? (
+        <div class="cb-share" data-testid="share">
+          <button type="button" class="cb-share-copy" data-testid="copy-link" onClick={handleCopy}>
+            {copied ? "Link copied ✓" : "Copy link to this chain"}
+          </button>
+          {urlTooLong ? (
+            <span class="cb-share-warn" data-testid="length-warning" role="status">
+              This link is long — some apps may truncate it. Remove nodes or overrides to shorten it.
+            </span>
+          ) : copyFailed ? (
+            <span class="cb-share-warn" data-testid="copy-error" role="status">
+              Couldn't reach the clipboard — copy the address bar instead.
+            </span>
+          ) : (
+            <span class="cb-share-note">
+              Rebuilds this exact chain in the browser; nothing is sent to a server.
+            </span>
+          )}
+        </div>
+      ) : null}
 
       {store.nodes.length >= MAX_NODES ? (
         <p class="cb-hint" role="note">
