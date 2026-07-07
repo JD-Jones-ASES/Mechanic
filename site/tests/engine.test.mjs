@@ -145,3 +145,36 @@ test("solve1d: an unbracketed state refuses honestly instead of inventing a root
   assert.equal(r.invalid, true);
   assert.ok(r.messages.some((m) => /y is undefined/.test(m.message)));
 });
+
+test("a config-level guard of an unexpected kind fails loud, never silently no-ops", () => {
+  // config guards are the auto-emitted nonzero/nonneg denominator/sqrt checks
+  // only (the build enforces this). A 'predicate' kind at the config level would
+  // have silently never fired in the old code — leaking an unchecked refusal
+  // (invariant 5). It must throw instead. (Predicate envelopes live on relations,
+  // exercised by the scoped/unscoped tests above.)
+  const guarded = {
+    schema_version: 1,
+    thing: "guarded-fixture",
+    title: "guarded-fixture",
+    variables: {},
+    relations: [],
+    configurations: [
+      {
+        id: "default",
+        label: "default",
+        constraints: {},
+        inputs: ["x"],
+        plan: [{ type: "eval", target: "y", fn: "f_y", latex: "" }],
+        branches: null,
+        guards: [{ guard_fn: "g_pred", kind: "predicate", severity: "invalid", message: "must not be silently ignored" }],
+        samples: [],
+      },
+    ],
+    material_binding: null,
+  };
+  const guardedFns = { f_y: ({ x }) => 2 * x, g_pred: ({ x }) => x > 0 };
+  assert.throws(
+    () => new RelationEngine(guarded, guardedFns).evaluate("default", { x: 1 }),
+    /unsupported config guard kind 'predicate'/,
+  );
+});

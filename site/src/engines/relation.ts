@@ -40,15 +40,21 @@ export class RelationEngine {
       if (typeof v === "number") env[k] = v;
     }
 
-    // guards first-class: a tripped 'invalid' guard poisons downstream values
+    // guards first-class: a tripped 'invalid' guard poisons downstream values.
+    // Config guards are ONLY the auto-emitted denominator/sqrt checks
+    // (nonzero/nonneg), and the build enforces that (compile.py). Predicate
+    // envelopes live on relations and are evaluated in the validity loop below —
+    // never at the config level. Fail loud on an unexpected kind rather than
+    // silently never firing, which would leak an unchecked refusal (invariant 5).
     for (const g of cfg.guards) {
       const val = this.fns[g.guard_fn]!(env);
-      const tripped =
-        g.kind === "nonzero"
-          ? Math.abs(val as number) < EPS_NONZERO
-          : g.kind === "nonneg"
-            ? (val as number) < 0
-            : false; // predicate guards checked after evaluation (need outputs)
+      let tripped: boolean;
+      if (g.kind === "nonzero") tripped = Math.abs(val as number) < EPS_NONZERO;
+      else if (g.kind === "nonneg") tripped = (val as number) < 0;
+      else
+        throw new Error(
+          `${this.artifact.thing}: unsupported config guard kind '${g.kind}' — predicate envelopes belong on a relation's validity, not a configuration guard`,
+        );
       if (tripped) {
         messages.push({ severity: g.severity, message: g.message, citation: g.citation });
         if (g.severity === "invalid") invalid = true;

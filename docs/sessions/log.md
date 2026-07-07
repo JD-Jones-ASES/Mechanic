@@ -1645,3 +1645,28 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   exist). Confirmed dormant — `auto_guards` only emits `nonzero`/`nonneg`; `predicate` is exclusively
   relation-`validity` (which IS checked). A future THING that expresses a whole-node refusal must use relation
   validity, not a config guard — or add a build assert. Worth an owner ticket.
+
+## CGK — config-guard kind enforcement (owner-directed, from S21 review note-h) — 2026-07-07 — PR #43 — MERGED
+- Shipped: resolves the pre-existing latent gap S21 flagged (log note-h above): a config-level guard of a kind
+  other than `nonzero`/`nonneg` was silently ignored by `relation.ts` (dead `:false` branch + a comment about a
+  post-eval pass that never existed), so a config `predicate` guard with `severity:invalid` would never fire —
+  an unchecked refusal could ship (invariant-5 hole the S21 chain-eval propagation leans on). Fixed on BOTH
+  layers: (1) `relation.ts` now THROWS on an unexpected config guard kind (never silent); (2) `compile.py`
+  rejects (BuildError naming THING/config/kind) any config guard whose kind is not nonzero/nonneg. Owner-directed
+  (task chip spun from the S21 review) — not a queue row; no THING/catalog change (stays 36).
+- Gates: pytest 360 → 362 (+2 test_config_guards: baseline-compiles + predicate-rejected-via-monkeypatch);
+  unit 37 → 38 (+1 engine.test.mjs: config predicate guard throws); pnpm build clean COLD (compile.py edit busts
+  fingerprints; 43 pages, all gates); e2e 108 passed (no THING behavior change); tsc clean; **both new tests
+  mutation-verified** (revert the throw → engine test fails; remove the assert → pipeline test fails; each
+  restored green). Review: 1 fresh-context adversarial subagent → APPROVE, zero blocking findings (independently
+  re-ran both mutations; traced the guard list to exactly two nonzero/nonneg append paths → zero regression /
+  false-positive risk). No browser visual pass needed — the change is not observable in the preview (jq confirms
+  all 268 built config guards are nonzero(260)/nonneg(8), zero predicate; every THING evaluates identically).
+- Golden: N/A. Citations pinned: N/A. Deviations from brief: N/A (owner-directed, no brief).
+- New capabilities future briefs may rely on: config-level guards are now machine-guaranteed nonzero/nonneg
+  (build-asserted AND runtime-fail-loud). A whole-node refusal MUST be expressed as a relation `validity`
+  envelope (predicate, checked), never a config guard — the build now enforces this, closing S21 note-h.
+- Notes-for-next: next QUEUED row is unchanged — **D1 (Portal IA)**. This fix touched only relation.ts +
+  compile.py + two tests; it does not affect D1. The monkeypatch pattern in `test_config_guards.py`
+  (`monkeypatch.setattr(compile_mod, "auto_guards", ...)`) is the way to test a compiler-internal invariant that
+  has no authoring path — reuse it if you need to prove "the compiler can't emit X."
