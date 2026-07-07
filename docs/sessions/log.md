@@ -1504,3 +1504,42 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   THING (surfaces when S25 runs). (c) all five Phase 4 briefs are verified against merged reality; S25 carries
   the S20-pinned example-3 wire `planetary-gearset.T_out → fixed-fixed-torsion-shaft.T` (both torque). (d) once
   ruled, S21 (chain-eval engine extraction — headless, no UI change) is the topmost Phase 4 row.
+
+## P4L — Phase 4 launch: ruling recorded + Phase-3 QC audit + portal-design rulings (owner-directed) — 2026-07-06 — PR #40 — MERGED
+- Shipped (docs only, no build inputs touched): the Phase 4 ruling recorded per runbook 2e on owner
+  in-session instruction (header → `Active phase: 4`; literal ruling line; Phase-3 precedent) + THREE new
+  owner rulings R7/R8/R9 (per-slot `default_material` approved; portal design track approved as ADR-0010;
+  QC2 row added) + `reports/phase-3-qc-audit.md` + `decisions/ADR-0010-portal-ia.md` (ACCEPTED) + briefs
+  QC2/D1/D2 + roadmap Phase-4 rewrite (two tracks) + CLAUDE.md reconciliation. Phase 4 queue order is now
+  QC2 → S21 → D1 → D2 → S22 → S23 → S24 → S25; S25 remains the closing row; S21–S25 briefs untouched.
+- QC audit (read-only, ran in plan mode — Track A cold re-run deferred to QC2): 40 agents — 12 dimension
+  auditors (per-THING physics re-derived from first principles; solveLinear verifier; slots; CTE/Θ kinds;
+  provenance; refusals; tests; docs) × 3-refuter adversarial panels × completeness critic. HEADLINE: zero
+  wrong emitted numbers (Phase 2's QC0 result repeated). 4 confirmed findings → QC2: (1) major, latent
+  compile.py seam — a target authored in BOTH solve_linear and solutions silently overwrites the certified
+  form (no shipped THING does); (2) major, landing-state (default-material init) has zero e2e coverage —
+  subsumed by R7 work; (3) major, authoring-things.md never teaches the S17 slot binds form; (4) minor,
+  stale `solve_hint` reference. Hardening notes: fingerprint glob brittleness, Θ display round-trip test,
+  slots×scoped-refusal untested interaction.
+- METHODOLOGY LESSON (binding on future audits, recorded in the report): the panels CONFIRMED 2-to-1 two
+  false "criticals" claiming the beam slenderness warns (`L > 10*h`) are inverted — they are not; validity
+  conditions are VALID-WHILE regions (`site/src/engines/relation.ts:122` pushes the message when the
+  predicate is FALSE; pages render "Valid while:"). The coordinating session's engine-read overturned both
+  pre-report. Future envelope audits must pin the valid-while semantics in the auditor prompt.
+- Owner decisions taken in-session (recorded as rulings/ADR, closing phase-3.md's "Decisions needed" items
+  1–2): Phase 4 APPROVED; design track EARLY in Phase 4 (D1/D2 before S22, so the chain-builder ships into
+  the final shell); catalog IA = course-spine categories (`category` enum + optional `topic`; full 36-THING
+  mapping in ADR-0010 — 22 MoM / 10 MD / 4 Mechanisms-Dynamics; no 1-item `statics` section, enum grows
+  additively); visual identity = restrained polish (no webfonts/frameworks); R7 default_material approved
+  now (rides QC2). Item 3 (motor THING) stays open until S25, unchanged.
+- Gates: docs-only PR — CI green; S21's entry-criteria greps verified passing post-merge
+  (`rg -n "Phase 4 approved — JD" docs/sessions/queue.md`; header flipped in the same edit; no
+  IN_PROGRESS/PAUSED rows). No thing.yaml/pipeline/site-source change → no fingerprint change, no
+  site-content delta on deploy.
+- New capabilities future briefs may rely on: none yet — R7 field (QC2) and category/topic fields (D1) are
+  signed but unbuilt; §9.2 satisfied by R7/R8 + ADR-0010 when those sessions run.
+- Notes-for-next (QC2 is the topmost QUEUED row): (a) the findings brief is the audit report — read it plus
+  `briefs/QC2-phase3-qc-fixes.md` (R7 spec + execution notes); (b) re-verify finding file/lines against
+  HEAD before editing (rule 6 applies to audit reports too); (c) do NOT "fix" the refuted envelope
+  criticals; (d) QC2's cold build IS Track A — run it once, append counts to the report's Dispositions;
+  (e) D1 expects catalog = 36 — if QC2 or anything grows it, extend the ADR-0010 mapping first.
