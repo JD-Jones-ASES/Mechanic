@@ -18,12 +18,10 @@ import {
   type ChainNodeSpec,
   evaluateChain,
   type NodeEvalRecord,
-  planTargets,
-  portOf,
+  ports,
 } from "../engines/chain-eval.ts";
 import type { CompiledThing, VarRecord } from "../engines/types.ts";
-import type { Port } from "../engines/units.ts";
-import { type MaterialRow, pickProperty } from "./material-data.ts";
+import { type MaterialRow, resolveBinding } from "./material-data.ts";
 
 /** Hard node cap (brief: "no more than 6 nodes"). */
 export const MAX_NODES = 6;
@@ -88,18 +86,9 @@ export function configOf(artifact: CompiledThing, configId: string) {
 }
 
 /** A node's chaining ports (for the wire dropdowns and the UI's own legality
- * check). Reconstructed from the exported `portOf`/`planTargets` — the same
- * shape `chain-eval` builds internally, so the UI and the engine agree. */
-export function nodePorts(
-  artifact: CompiledThing,
-  configId: string,
-): { inputs: Record<string, Port>; outputs: Record<string, Port> } {
-  const cfg = configOf(artifact, configId);
-  return {
-    inputs: Object.fromEntries(cfg.inputs.map((s) => [s, portOf(artifact, s)])),
-    outputs: Object.fromEntries(planTargets(cfg.plan).map((t) => [t, portOf(artifact, t)])),
-  };
-}
+ * check) — the engine's OWN `ports()`, so the UI can never accept a wire the
+ * engine's evaluation graph would reject (single definition, invariant 4). */
+export const nodePorts = ports;
 
 /** Inputs of a node currently driven by a wire (KnobPanel hides these; their
  * stored knob value is kept so un-wiring restores it). */
@@ -129,7 +118,16 @@ export function nextInstanceId(store: ChainStore): string {
  * them — a uniform-material evaluation. That is a valid, verified configuration
  * (a composite bar of one material is just a bar); it forgoes the two-material
  * contrast the THING page shows, which is a documented v1 limitation of chaining,
- * not a wrong number. Single-slot THINGs (the common case) are unaffected. */
+ * not a wrong number. Single-slot THINGs (the common case) are unaffected.
+ *
+ * Safe for the whole current catalog: both multi-slot THINGs (composite-bar,
+ * thermal-assembly) bind identical property sets per slot and no relation divides
+ * by a material DIFFERENCE, so E₁=E₂ is a valid interior point, not a singularity.
+ * FORWARD HAZARD (revisit when authored): a future multi-slot THING whose slots
+ * bind DIFFERENT property sets would shrink `qualifyingMaterials`' intersection
+ * (possibly to empty → material-less → the node refuses, not a wrong number), and
+ * one dividing by (α₁−α₂)/(E₁−E₂) would go non-finite under one material (Readouts
+ * blanks it — still not a wrong number, but the THING would look broken here). */
 export function mergedBinding(artifact: CompiledThing): Record<string, string> {
   const out: Record<string, string> = {};
   for (const binds of Object.values(artifact.material_binding ?? {})) {
@@ -168,13 +166,7 @@ export function resolveMaterialValues(
   materialId: string,
 ): VarRecord {
   const m = materials.find((x) => x.id === materialId);
-  const out: VarRecord = {};
-  if (!m) return out;
-  for (const [sym, key] of Object.entries(mergedBinding(artifact))) {
-    const p = pickProperty(m, key);
-    if (p) out[sym] = p.value_si;
-  }
-  return out;
+  return m ? resolveBinding(m, mergedBinding(artifact)) : {};
 }
 
 /* ---------------- store mutations (all pure) ---------------- */
@@ -347,24 +339,28 @@ export type NodeUiState =
   | "loading" // module not yet loaded
   | "ok" // evaluated, no messages
   | "warn" // evaluated with a caution (local, non-refusing)
-  | "refused" // the node's OWN invalid envelope fired (local refusal)
+  | "refused" // the node's OWN unscoped invalid envelope fired (local refusal)
+  | "partial" // a SCOPED invalid envelope refused SOME outputs; the rest stand
   | "refused-upstream" // a bound input was withheld by an upstream refusal (S21)
   | "incomplete"; // engine could not produce a bound input's value (rule d)
 
 /**
  * Derive the node's display state from its evaluation record. Distinct and
  * programmatically exposed (via `data-node-state`) so a refusal that came from
- * upstream never reads as the node's own fault. `incomplete` is the engine's
- * rule-(d) status — practically unreachable with the current RelationEngine
- * (S21 note-e: an undefined bound-input value only arises from a global-invalid
- * source, which is rule (a) → refused-upstream), so it is a defensive path,
- * unit-pinned here rather than end-to-end.
+ * upstream never reads as the node's own fault — and, critically, so a SCOPED
+ * refusal (some readouts withheld, an invalid-severity banner shown, but
+ * `result.invalid === false`) is never mislabeled "ok". A scoped invalid sets
+ * `invalidVars` without setting `invalid`, so it must be checked explicitly;
+ * "violations surface, never silent" (invariant 5) applies to the state chip too.
+ * `incomplete` is the engine's rule-(d) status — practically unreachable with the
+ * current RelationEngine (S21 note-e), so it is a defensive path unit-pinned here.
  */
 export function nodeUiState(record: NodeEvalRecord | undefined): NodeUiState {
   if (!record) return "loading";
   if (record.status === "refused-by-upstream") return "refused-upstream";
   if (record.status === "incomplete") return "incomplete";
   if (record.result.invalid) return "refused";
+  if (record.result.invalidVars.length > 0) return "partial"; // scoped refusal
   if (record.result.messages.some((m) => m.severity === "warn")) return "warn";
   return "ok";
 }

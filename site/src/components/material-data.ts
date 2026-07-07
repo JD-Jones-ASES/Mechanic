@@ -42,3 +42,19 @@ export function pickProperty(m: MaterialRow, key: string): MaterialProperty | un
   }
   return undefined;
 }
+
+/** Resolve a `{symbol: property_key}` binding map against a material into SI
+ * values (invariant 3's cascade). The ONE resolve loop — the chain-builder model
+ * calls it; ThingWidget/ChainDemo still inline their own copies but can adopt
+ * this. A key the material does not publish is skipped (never a fabricated 0). */
+export function resolveBinding(
+  m: MaterialRow,
+  binds: Record<string, string>,
+): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const [sym, key] of Object.entries(binds)) {
+    const p = pickProperty(m, key);
+    if (p) out[sym] = p.value_si;
+  }
+  return out;
+}

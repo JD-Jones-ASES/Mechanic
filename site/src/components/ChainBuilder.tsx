@@ -16,7 +16,7 @@
  *  - controls are native for keyboard + a11y (ADR-0006).
  */
 import { useCallback, useMemo, useRef, useState } from "preact/hooks";
-import type { NodeEvalRecord } from "../engines/chain-eval";
+import { type NodeEvalRecord, planTargets } from "../engines/chain-eval";
 import type { CompiledThing, Fn } from "../engines/types";
 import {
   addNode,
@@ -65,15 +65,22 @@ const STATE_LABEL: Record<string, string> = {
   ok: "evaluated",
   warn: "caution",
   refused: "refused",
+  partial: "some outputs refused",
   "refused-upstream": "refused (upstream)",
   incomplete: "incomplete",
 };
+
+/** the current value if still a valid option, else the first option (keeps a
+ * wire-draft select from stranding on a removed node/port — brief trap c) */
+const effective = (opts: string[], current: string) =>
+  opts.includes(current) ? current : (opts[0] ?? "");
 
 export default function ChainBuilder({ catalog, categories, materials }: Props) {
   const [store, setStore] = useState<ChainStore>(emptyStore);
   const [loaded, setLoaded] = useState<Loaded>({});
   const [pick, setPick] = useState("");
   const [wireError, setWireError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [draft, setDraft] = useState({ fromNode: "", fromPort: "", toNode: "", toPort: "" });
   const inflight = useRef(new Map<string, Promise<LoadedThing>>());
 
@@ -86,14 +93,22 @@ export default function ChainBuilder({ catalog, categories, materials }: Props) 
       const p = Promise.all([
         artifactModules[`../generated/things/${slug}.compiled.json`]!(),
         fnsModules[`../generated/things/${slug}.fns.ts`]!(),
-      ]).then(([a, f]) => {
-        const lt: LoadedThing = {
-          artifact: (a as { default: CompiledThing }).default,
-          fns: (f as { fns: Record<string, Fn> }).fns,
-        };
-        setLoaded((prev) => ({ ...prev, [slug]: lt }));
-        return lt;
-      });
+      ])
+        .then(([a, f]) => {
+          const lt: LoadedThing = {
+            artifact: (a as { default: CompiledThing }).default,
+            fns: (f as { fns: Record<string, Fn> }).fns,
+          };
+          setLoaded((prev) => ({ ...prev, [slug]: lt }));
+          return lt;
+        })
+        .catch((e) => {
+          // never cache a REJECTED promise under the slug — a transient import
+          // failure would otherwise wedge that THING until reload. Drop it so the
+          // next add retries.
+          inflight.current.delete(slug);
+          throw e;
+        });
       inflight.current.set(slug, p);
       return p;
     },
@@ -102,10 +117,17 @@ export default function ChainBuilder({ catalog, categories, materials }: Props) 
 
   const handleAdd = useCallback(async () => {
     if (!pick || store.nodes.length >= MAX_NODES) return;
-    const [slug, config] = pick.split("::");
-    if (!slug || !config) return;
-    const lt = await ensureLoaded(slug);
-    setStore((s) => addNode(s, slug, config, lt.artifact, materials));
+    const sep = pick.indexOf("::"); // slug is [a-z0-9-]+, so the first "::" splits
+    if (sep < 0) return;
+    const slug = pick.slice(0, sep);
+    const config = pick.slice(sep + 2);
+    try {
+      const lt = await ensureLoaded(slug);
+      setStore((s) => addNode(s, slug, config, lt.artifact, materials));
+      setLoadError(null);
+    } catch {
+      setLoadError(`Could not load "${slug}" — check your connection and try again.`);
+    }
   }, [pick, store.nodes.length, ensureLoaded, materials]);
 
   const { result, ready, error } = useMemo(
@@ -129,14 +151,14 @@ export default function ChainBuilder({ catalog, categories, materials }: Props) 
     const lt = n && loaded[n.slug];
     return lt && n ? nodePorts(lt.artifact, n.config) : { inputs: {}, outputs: {} };
   };
-  const fromNode = nodeIds.includes(draft.fromNode) ? draft.fromNode : (nodeIds[0] ?? "");
+  const fromNode = effective(nodeIds, draft.fromNode);
   const fromPorts = Object.keys(portsOf(fromNode).outputs);
-  const fromPort = fromPorts.includes(draft.fromPort) ? draft.fromPort : (fromPorts[0] ?? "");
+  const fromPort = effective(fromPorts, draft.fromPort);
   const toNodes = nodeIds.filter((id) => id !== fromNode);
-  const toNode = toNodes.includes(draft.toNode) ? draft.toNode : (toNodes[0] ?? "");
+  const toNode = effective(toNodes, draft.toNode);
   const toBound = boundInputsOf(store, toNode);
   const toPorts = Object.keys(portsOf(toNode).inputs).filter((p) => !toBound.has(p));
-  const toPort = toPorts.includes(draft.toPort) ? draft.toPort : (toPorts[0] ?? "");
+  const toPort = effective(toPorts, draft.toPort);
 
   const handleConnect = useCallback(() => {
     if (!fromNode || !fromPort || !toNode || !toPort) return;
@@ -197,6 +219,12 @@ export default function ChainBuilder({ catalog, categories, materials }: Props) 
       {store.nodes.length >= MAX_NODES ? (
         <p class="cb-hint" role="note">
           Node limit reached — remove a node to add another (v1 caps chains at {MAX_NODES}).
+        </p>
+      ) : null}
+
+      {loadError ? (
+        <p class="validity-msg validity-invalid" data-testid="load-error" role="alert">
+          {loadError}
         </p>
       ) : null}
 
@@ -398,7 +426,7 @@ function NodeBody({ id, artifact, config, store, materials, record, state, setSt
   const cfg = configOf(artifact, config);
   const bound = boundInputsOf(store, id);
   const freeInputs = cfg.inputs.filter((s) => !bound.has(s));
-  const targets = cfg.plan.flatMap((p) => (p.type === "table" ? p.targets : [p.target]));
+  const targets = planTargets(cfg.plan);
   const res = record?.result;
   const knobs = store.knobs[id] ?? {};
   const units = store.displayUnits[id] ?? {};
@@ -406,7 +434,11 @@ function NodeBody({ id, artifact, config, store, materials, record, state, setSt
   return (
     <div class="cb-node-body">
       {hasMaterial(artifact) ? (
+        // slot={id} gives each node's picker a UNIQUE testid/aria-label
+        // (material-select-<id> / "<id> material") — the MaterialPicker analogue
+        // of KnobPanel's idPrefix, so a multi-material chain has no duplicates.
         <MaterialPicker
+          slot={id}
           materials={qualifyingMaterials(artifact, materials)}
           selectedId={store.materials[id] ?? ""}
           binding={mergedBinding(artifact)}

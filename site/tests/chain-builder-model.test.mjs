@@ -24,6 +24,7 @@ import {
   qualifyingMaterials,
   removeBinding,
   removeNode,
+  setDisplayUnit,
   setKnob,
   setMaterial,
   tryConnect,
@@ -153,17 +154,19 @@ test("node cap is enforced at MAX_NODES", () => {
   assert.equal(same, s); // unchanged store, no 7th node
 });
 
-test("removeNode prunes the node, its wires, and its per-node state", () => {
+test("removeNode prunes the node, its wires, and ALL its per-node state", () => {
   let s = emptyStore();
   s = addNode(s, "src", "c", srcThing(), MATERIALS);
-  s = addNode(s, "sink", "c", sinkThing(true), MATERIALS);
-  const c = tryConnect(s, loadedOf(), { node: "n1", port: "T" }, { node: "n2", port: "T" });
-  assert.ok(c.ok);
-  s = c.store;
-  s = removeNode(s, "n1");
-  assert.deepEqual(s.nodes.map((n) => n.id), ["n2"]);
+  s = addNode(s, "sink", "c", sinkThing(true), MATERIALS); // n2 carries a material slot
+  s = setDisplayUnit(s, "n2", "P", "kW");
+  s = tryConnect(s, loadedOf(), { node: "n1", port: "T" }, { node: "n2", port: "T" }).store;
+  assert.equal(s.materials.n2, "steel");
+  s = removeNode(s, "n2");
+  assert.deepEqual(s.nodes.map((n) => n.id), ["n1"]);
   assert.equal(s.bindings.length, 0); // the dangling wire is gone
-  assert.equal(s.knobs.n1, undefined);
+  assert.equal(s.knobs.n2, undefined);
+  assert.equal(s.materials.n2, undefined); // (drop `materials` pruning → this fails)
+  assert.equal(s.displayUnits.n2, undefined); // (drop `displayUnits` pruning → this fails)
 });
 
 test("nextInstanceId reuses the lowest free slot after a removal", () => {
@@ -290,14 +293,23 @@ test("an upstream refusal withholds the wire and marks the sink refused-upstream
 
 test("nodeUiState maps every engine status to a distinct display state", () => {
   // build a NodeEvalRecord with sensible defaults, overriding status/result parts
-  const rec = ({ status = "evaluated", invalid = false, messages = [] } = {}) => ({
+  const rec = ({ status = "evaluated", invalid = false, invalidVars = [], messages = [] } = {}) => ({
     instanceId: "n", status, refusedBy: [],
-    result: { values: {}, messages, invalid, invalidVars: [] },
+    result: { values: {}, messages, invalid, invalidVars },
   });
   assert.equal(nodeUiState(undefined), "loading");
   assert.equal(nodeUiState(rec()), "ok");
   assert.equal(nodeUiState(rec({ messages: [{ severity: "warn", message: "w" }] })), "warn");
   assert.equal(nodeUiState(rec({ invalid: true })), "refused");
+  // SCOPED refusal: invalidVars set, invalid=false, an invalid-severity message.
+  // Must NOT read as "ok"/"warn" — invariant 5 applies to the state chip too.
+  // (This is exactly the case the pre-fix nodeUiState mislabeled "ok".)
+  assert.equal(
+    nodeUiState(rec({ invalidVars: ["P_cr"], messages: [{ severity: "invalid", message: "scoped" }] })),
+    "partial",
+  );
+  // a global invalid still wins over invalidVars
+  assert.equal(nodeUiState(rec({ invalid: true, invalidVars: ["x"] })), "refused");
   // upstream/incomplete status wins even if the node's own eval looks clean
   assert.equal(nodeUiState(rec({ status: "refused-by-upstream" })), "refused-upstream");
   assert.equal(nodeUiState(rec({ status: "incomplete" })), "incomplete");

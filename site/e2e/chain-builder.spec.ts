@@ -147,6 +147,58 @@ test("an upstream refusal withholds the downstream node's readouts", async ({ pa
   ).toBe("—"); // no plausible wrong number crossed the wire (invariant 5)
 });
 
+test("an already-wired input is not offered as a wire target (UI fan-in guard)", async ({ page }) => {
+  await page.goto("chain-builder/");
+  await addNode(page, "planetary-gearset::ring-fixed"); // n1
+  await addNode(page, "torsion-shaft::torque-in"); // n2
+  await ready(page);
+
+  // before wiring, T is an available target on n2
+  await page.getByTestId("wire-to-node").selectOption("n2");
+  await expect(page.getByTestId("wire-to-port").locator('option[value="T"]')).toHaveCount(1);
+
+  // wire n1.T_out → n2.T; T must now be GONE from n2's target options (not just
+  // rejected on Connect — the dropdown itself prevents the fan-in)
+  await connect(page, ["n1", "T_out"], ["n2", "T"]);
+  await page.getByTestId("wire-to-node").selectOption("n2");
+  await expect(page.getByTestId("wire-to-port").locator('option[value="T"]')).toHaveCount(0);
+});
+
+test("removing a node prunes its wires and the survivors stay wireable", async ({ page }) => {
+  await page.goto("chain-builder/");
+  await addNode(page, "planetary-gearset::ring-fixed"); // n1
+  await addNode(page, "disk-clutch::analyze"); // n2 (middle node, removed below)
+  await addNode(page, "torsion-shaft::torque-in"); // n3
+  await ready(page);
+  await connect(page, ["n2", "T_up"], ["n3", "T"]);
+  await expect(page.getByTestId("wire-row")).toHaveCount(1);
+
+  await page.getByTestId("remove-n2").press("Enter"); // keyboard-activated remove
+  await expect(page.getByTestId("node-n2")).toHaveCount(0);
+  await expect(page.getByTestId("wire-row")).toHaveCount(0); // the dangling wire is pruned
+  await ready(page);
+
+  // the draft selects didn't strand on the removed node — wiring still works
+  await connect(page, ["n1", "omega_c"], ["n3", "omega"]);
+  await expect(page.getByTestId("wire-row")).toHaveCount(1);
+});
+
+test("a scoped refusal reads as 'some outputs refused', never as evaluated", async ({ page }) => {
+  await page.goto("chain-builder/");
+  // Euler/Johnson hand-off: at any slenderness ≠ λ_T exactly one model is
+  // scope-refused, so a standalone euler-column node sits in the scoped state.
+  await addNode(page, "euler-column::pinned-pinned");
+  await ready(page);
+
+  await expect(page.getByTestId("node-n1")).toHaveAttribute("data-node-state", "partial");
+  await expect(page.getByTestId("node-n1")).toContainText(/some outputs refused/i);
+
+  // some readouts withheld ("—") while others stand — the honest per-variable picture
+  const texts = await page.getByTestId("node-n1").locator("[data-output] output").allInnerTexts();
+  expect(texts.some((t) => t.trim() === "—")).toBe(true);
+  expect(texts.some((t) => t.trim() !== "—")).toBe(true);
+});
+
 test("axe: no serious/critical violations on a built chain", async ({ page }) => {
   await page.goto("chain-builder/");
   await addNode(page, "planetary-gearset::ring-fixed");

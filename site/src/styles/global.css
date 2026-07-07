@@ -556,8 +556,8 @@ a { color: var(--accent); }
 .cb-node { border: 1px solid var(--line); border-left: 4px solid var(--line); border-radius: 8px; padding: 0.75rem 1rem; background: var(--paper); }
 .cb-node-ok { border-left-color: var(--accent); }
 .cb-node-warn { border-left-color: var(--warn-ink); }
-.cb-node-refused, .cb-node-refused-upstream { border-left-color: var(--invalid-ink); }
-.cb-node-incomplete { border-left-color: var(--muted); }
+.cb-node-refused, .cb-node-refused-upstream, .cb-node-partial { border-left-color: var(--invalid-ink); }
+.cb-node-incomplete, .cb-node-loading { border-left-color: var(--muted); }
 .cb-node-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 0.4rem 0.6rem; }
 .cb-node-head h3 { margin: 0; font-size: 1rem; flex: 1 1 auto; }
 .cb-node-id { color: var(--muted); font-weight: 400; font-size: 0.8rem; font-variant-numeric: tabular-nums; }
@@ -566,9 +566,11 @@ a { color: var(--accent); }
 
 /* state chips — factual, not gamified */
 .cb-state { font-size: 0.72rem; border-radius: 999px; padding: 0.05rem 0.5rem; white-space: nowrap; }
+/* .cb-state-ok reuses the "legal green" already established by .chain-ok above
+   (the palette has no success token); keep the two in step. */
 .cb-state-ok { background: #dcfce7; color: #14532d; }
 .cb-state-warn { background: var(--warn-bg); color: var(--warn-ink); }
-.cb-state-refused, .cb-state-refused-upstream { background: var(--invalid-bg); color: var(--invalid-ink); }
+.cb-state-refused, .cb-state-refused-upstream, .cb-state-partial { background: var(--invalid-bg); color: var(--invalid-ink); }
 .cb-state-incomplete, .cb-state-loading { background: var(--surface); color: var(--muted); border: 1px solid var(--line); }
 
 @media (prefers-color-scheme: dark) {

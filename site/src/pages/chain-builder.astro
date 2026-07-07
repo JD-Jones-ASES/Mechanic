@@ -12,6 +12,7 @@
  */
 import { getCollection, getEntry } from "astro:content";
 import ChainBuilder from "../components/ChainBuilder";
+import { portOf } from "../engines/chain-eval";
 import { connectionLegal } from "../engines/units";
 import { CATEGORIES, spineOrdered } from "../lib/catalog";
 import Base from "../layouts/Base.astro";
@@ -57,16 +58,12 @@ const gear = (await getEntry("compiled", "planetary-gearset"))!.data;
 const shaft = (await getEntry("compiled", "torsion-shaft"))!.data;
 const flywheel = (await getEntry("compiled", "flywheel-disk"))!.data;
 const column = (await getEntry("compiled", "euler-column"))!.data;
-type Compiled = typeof gear;
-const port = (a: Compiled, s: string) => ({
-  dim: a.variables[s]!.dim,
-  quantity_kind: a.variables[s]!.quantity_kind,
-});
+// same Port constructor the runtime planner uses (invariant 4, one definition)
 const checks = [
-  { from: "planetary T_out — torque", to: "shaft T — torque", res: connectionLegal(port(gear, "T_out"), port(shaft, "T")) },
-  { from: "planetary ω_c — angular velocity", to: "flywheel ω — angular velocity", res: connectionLegal(port(gear, "omega_c"), port(flywheel, "omega")) },
-  { from: "planetary ω_c — angular velocity", to: "shaft T — torque", res: connectionLegal(port(gear, "omega_c"), port(shaft, "T")) },
-  { from: "planetary N_r — tooth count", to: "column K — end-fixity ratio", res: connectionLegal(port(gear, "N_r"), port(column, "K")) },
+  { from: "planetary T_out — torque", to: "shaft T — torque", res: connectionLegal(portOf(gear, "T_out"), portOf(shaft, "T")) },
+  { from: "planetary ω_c — angular velocity", to: "flywheel ω — angular velocity", res: connectionLegal(portOf(gear, "omega_c"), portOf(flywheel, "omega")) },
+  { from: "planetary ω_c — angular velocity", to: "shaft T — torque", res: connectionLegal(portOf(gear, "omega_c"), portOf(shaft, "T")) },
+  { from: "planetary N_r — tooth count", to: "column K — end-fixity ratio", res: connectionLegal(portOf(gear, "N_r"), portOf(column, "K")) },
 ];
 ---
 
