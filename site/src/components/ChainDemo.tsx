@@ -1,13 +1,17 @@
 /**
  * The v1 chaining demo (one page, fixed wiring — the full chaining UI is out
  * of scope): a ring-fixed planetary's output shaft IS a shaft in torsion.
- * The bindings go through the real ChainGraph type-checker at runtime, the
- * evaluation order comes from its planner, and every number on both sides is
- * a verified compiled function (invariant 4: no math in the widget).
+ * Orchestration lives in the headless `chain-eval` engine (S21): this component
+ * only resolves the shaft's material to SI values (the UI layer's job), hands
+ * the two nodes + bindings to `evaluateChain`, and renders its records. The
+ * bindings go through the real ChainGraph type-checker inside the engine, the
+ * evaluation order comes from its planner, refusals propagate per the engine's
+ * decided rule table, and every number is a verified compiled function
+ * (invariant 4: no math in the widget).
  */
 import { useEffect, useMemo, useState } from "preact/hooks";
-import { ChainGraph, type Binding } from "../engines/chain";
-import { RelationEngine } from "../engines/relation";
+import type { Binding } from "../engines/chain";
+import { evaluateChain, planTargets } from "../engines/chain-eval";
 import type { CompiledThing, Fn, VarRecord } from "../engines/types";
 import { KnobPanel } from "./KnobPanel";
 import { MaterialPicker, pickProperty, type MaterialRow } from "./MaterialPicker";
@@ -15,13 +19,6 @@ import { Readouts } from "./Readouts";
 import { ValidityBanner } from "./ValidityBanner";
 
 const fnsModules = import.meta.glob("../generated/things/*.fns.ts");
-
-// eval/solve1d steps fill one `target`; a table step fills several `targets`.
-// Flatten to the variables a plan produces (mirrors ThingWidget) — a bare
-// `.map(p => p.target)` would inject `undefined` for a table step.
-function planTargets(plan: CompiledThing["configurations"][number]["plan"]): string[] {
-  return plan.flatMap((p) => (p.type === "table" ? p.targets : [p.target]));
-}
 
 const GEAR_CFG = "ring-fixed";
 const SHAFT_CFG = "torque-in";
@@ -34,20 +31,6 @@ interface Props {
   gear: CompiledThing;
   shaft: CompiledThing;
   materials: MaterialRow[];
-}
-
-function ports(artifact: CompiledThing, cfgId: string) {
-  const cfg = artifact.configurations.find((c) => c.id === cfgId)!;
-  const port = (s: string) => ({
-    dim: artifact.variables[s]!.dim,
-    quantity_kind: artifact.variables[s]!.quantity_kind,
-  });
-  return {
-    inputs: Object.fromEntries(cfg.inputs.map((s) => [s, port(s)])),
-    outputs: Object.fromEntries(
-      planTargets(cfg.plan).map((t) => [t, port(t)] as const),
-    ),
-  };
 }
 
 export default function ChainDemo({ gear, shaft, materials }: Props) {
@@ -63,21 +46,9 @@ export default function ChainDemo({ gear, shaft, materials }: Props) {
     ).then((pairs) => setFns(Object.fromEntries(pairs)));
   }, [gear.thing, shaft.thing]);
 
-  // the real type-checker wires the demo: if an artifact ever changes shape so
-  // this wiring stops being legal, the page fails loudly instead of computing
-  const { order, bindings } = useMemo(() => {
-    const g = new ChainGraph();
-    g.addNode({ id: gear.thing, ...ports(gear, GEAR_CFG) });
-    g.addNode({ id: shaft.thing, ...ports(shaft, SHAFT_CFG) });
-    const results = BINDINGS.map((b) => ({ b, res: g.connect(b) }));
-    const bad = results.find((r) => !r.res.ok);
-    if (bad) throw new Error(`chain demo wiring rejected: ${bad.res.reason}`);
-    return { order: g.evaluationOrder(), bindings: results.map((r) => r.b) };
-  }, [gear, shaft]);
-
   const gearCfg = gear.configurations.find((c) => c.id === GEAR_CFG)!;
   const shaftCfg = shaft.configurations.find((c) => c.id === SHAFT_CFG)!;
-  const shaftFree = shaftCfg.inputs.filter((s) => !bindings.some((b) => b.to.port === s));
+  const shaftFree = shaftCfg.inputs.filter((s) => !BINDINGS.some((b) => b.to.port === s));
 
   const [gearKnobs, setGearKnobs] = useState<VarRecord>(() =>
     Object.fromEntries(gearCfg.inputs.map((s) => [s, gear.variables[s]!.default])),
@@ -90,43 +61,33 @@ export default function ChainDemo({ gear, shaft, materials }: Props) {
 
   const result = useMemo(() => {
     if (!fns) return null;
-    const engines: Record<string, RelationEngine> = {
-      [gear.thing]: new RelationEngine(gear, fns[gear.thing]!),
-      [shaft.thing]: new RelationEngine(shaft, fns[shaft.thing]!),
-    };
+    // Resolve the shaft's single material slot to SI values HERE (the UI layer
+    // owns MaterialRow -> VarRecord); the engine stays headless (S21 boundary).
+    // The demo wires a single-material THING (one `default` binding slot);
+    // multi-slot node support is deferred (S17 THINGs are excluded from chaining,
+    // not supported). It does not yet honor R7 `material_defaults` either — the
+    // picker lands on the qualifying list's first entry; wiring landing materials
+    // through a chain is later chain-builder work.
     const mat = materials.find((m) => m.id === materialId);
-    const matVals: VarRecord = {};
-    // the chain demo wires a single-material THING (the torsion shaft, one
-    // `default` binding slot); multi-slot node support is deferred to Phase 4 (S17
-    // out of scope — a multi-slot THING is excluded from chaining, not supported).
-    // NB: this demo does not yet honor R7 `material_defaults` (its picker lands on
-    // the qualifying list's first entry, MaterialPicker's default). Inert today —
-    // no chained THING declares defaults — but wiring landing materials through a
-    // chain is chain-builder work (S21+).
     const shaftBinds = shaft.material_binding?.default ?? {};
+    const materialValues: VarRecord = {};
     if (mat) {
       for (const [sym, key] of Object.entries(shaftBinds)) {
         const p = pickProperty(mat, key);
-        if (p) matVals[sym] = p.value_si;
+        if (p) materialValues[sym] = p.value_si;
       }
     }
-    const envs: Record<string, ReturnType<RelationEngine["evaluate"]>> = {};
-    for (const id of order) {
-      const bound: VarRecord = {};
-      for (const b of bindings) {
-        if (b.to.node !== id) continue;
-        const v = envs[b.from.node]?.values[b.from.port];
-        if (v !== undefined) bound[b.to.port] = v;
-      }
-      const inputs =
-        id === gear.thing ? { ...gearKnobs } : { ...shaftKnobs, ...matVals, ...bound };
-      envs[id] = engines[id]!.evaluate(id === gear.thing ? GEAR_CFG : SHAFT_CFG, inputs);
-    }
-    return envs;
-  }, [fns, order, bindings, gear, shaft, gearKnobs, shaftKnobs, materials, materialId]);
+    return evaluateChain(
+      [
+        { instanceId: gear.thing, artifact: gear, configId: GEAR_CFG, fns: fns[gear.thing]!, knobs: gearKnobs },
+        { instanceId: shaft.thing, artifact: shaft, configId: SHAFT_CFG, fns: fns[shaft.thing]!, knobs: shaftKnobs, materialValues },
+      ],
+      BINDINGS,
+    );
+  }, [fns, gear, shaft, gearKnobs, shaftKnobs, materials, materialId]);
 
-  const gearRes = result?.[gear.thing];
-  const shaftRes = result?.[shaft.thing];
+  const gearRes = result?.nodes[gear.thing]?.result;
+  const shaftRes = result?.nodes[shaft.thing]?.result;
   const unitChange = (s: string, u: string) => setDisplayUnits((d) => ({ ...d, [s]: u }));
 
   return (
@@ -157,7 +118,7 @@ export default function ChainDemo({ gear, shaft, materials }: Props) {
         </div>
 
         <div class="chain-wires" aria-label="Port bindings between the two widgets">
-          {bindings.map((b) => (
+          {BINDINGS.map((b) => (
             <p class="chain-wire" key={b.to.port}>
               <code>{b.from.port}</code> <span aria-hidden="true">→</span> <code>{b.to.port}</code>
               <span class="chain-ok">type-checked</span>
