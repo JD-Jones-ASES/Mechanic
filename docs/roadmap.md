@@ -12,8 +12,10 @@ review — the site says so on `/verification/`).
 **Rough definition of done:** 30–50 THINGs covering the undergraduate spine (statics → mechanics
 of materials → machine design → dynamics), a chain-builder that turns the catalog into a
 type-checked system simulator, ~30 provenance-clean materials with Ashby merit-index tooling,
-and the verification page as the public trust story. Explicitly never: accounts, analytics,
-comments, servers (the static-site constraint is permanent).
+and the verification page as the public trust story. (v1.0.0 = initial development complete at
+37 THINGs and 13 materials; the remaining materials-depth bar rides the Future paths below.)
+Explicitly never: accounts, analytics, comments, servers (the static-site constraint is
+permanent).
 
 ## Phase 1 — Platform consolidation ✅ complete (2026-06-10, PR #4)
 

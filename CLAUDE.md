@@ -77,9 +77,10 @@ in CI.
 | `site/` | `pnpm exec playwright test` | e2e + axe vs the BUILT dist — build first; locally use `--workers=2` |
 | `pipeline/` | `uv run pytest -q` | math layer: compile/verify/emit + per-THING physics cross-checks |
 
-Pins (do not float): Node 24.x, pnpm 11.5.2 (`packageManager` field), SymPy 1.14.0 (`uv.lock`
-committed). A cold build ≈ 3–4 minutes — four-bar branch verification dominates; **slow, not
-hung** — and warm rebuilds take seconds. Editing pipeline source (anything under
+First run on a fresh machine: `pnpm exec playwright install chromium` (from `site/`) before the
+e2e suite. Pins (do not float): Node 24.x, pnpm 11.5.2 (`packageManager` field), SymPy 1.14.0
+(`uv.lock` committed). A cold build ≈ 3–4 minutes — four-bar branch verification dominates;
+**slow, not hung** — and warm rebuilds take seconds. Editing pipeline source (anything under
 `pipeline/src/`) re-fingerprints every THING: budget one cold build.
 
 ## Hard-won traps (each of these has bitten a real session)
@@ -135,8 +136,8 @@ the queue. **Never lower a gate to make it pass. Never merge a partial THING.** 
 `docs/architecture.md` — pipeline + the compiled-artifact schema (single source of truth).
 `docs/authoring-things.md` — how to write a THING (the checklist of author mistakes is earned).
 `docs/data-provenance.md` — citation tiers + the legal frame. `docs/decisions/` — ADRs; read before
-re-litigating a choice (ADR-0007 = the verification model; ADR-0008 = solver scope; ADR-0010 =
-portal IA). `docs/roadmap.md` — the phased history and the owner-commissioned future paths.
+re-litigating a choice (ADR-0007 = the verification model; ADR-0008 = the solveLinear/solveND
+split; ADR-0010 = portal IA). `docs/roadmap.md` — the phased history and the owner-commissioned future paths.
 `docs/sessions/` — session protocol, queue, briefs, log, phase reports, and the owner runbook.
 `reports/phase-<n>.md` under `docs/sessions/reports/` — the 10-minute owner summaries, including
 two QC audits (both found zero wrong emitted numbers).

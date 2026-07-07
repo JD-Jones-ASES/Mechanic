@@ -12,7 +12,7 @@ date-released: 2026-07-07
 url: "https://jd-jones-ases.github.io/Mechanic/"
 repository-code: "https://github.com/JD-Jones-ASES/Mechanic"
 license: MIT
-notes: >-
+abstract: >-
   Source code is MIT; prose, derivations, and the curated materials dataset are
   CC BY 4.0 (see LICENSE-content.md). The project is AI-authored end to end under
   owner-designed verification systems (docs/decisions/ADR-0007); the live
