@@ -221,6 +221,12 @@ materials:
       E_2: youngs_modulus
       sigma_y_2: yield_strength
       rho_2: density
+  # R7 landing materials (QC2): the bar lands on a steel core + aluminium sleeve —
+  # the pedagogical pair where the stiffer core dominates the A·E load share.
+  # Compile validates each id publishes every property its slot binds.
+  defaults:
+    core: steel-a36
+    sleeve: al-6061-t6
 
 relations:
   # --- the coupled system: axial equilibrium + equal-elongation compatibility ---

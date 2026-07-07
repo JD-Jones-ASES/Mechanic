@@ -157,6 +157,12 @@ const things = defineCollection({
           z.record(identifier, z.string()),
           z.record(identifier, z.record(identifier, z.string())),
         ]),
+        // per-slot landing material (R7, ADR-0010 §6): slot -> material id the
+        // widget selects on load. compile.py validates the id exists AND
+        // publishes every property the slot binds (a non-qualifying id is a
+        // build error, never a silent fallback); a slot absent here keeps the
+        // staggered-alphabetical default. Values are material slugs (hyphenated).
+        defaults: z.record(identifier, slug).optional(),
       })
       .optional(),
     tables: z.array(tableSchema).default([]),
@@ -334,6 +340,11 @@ const compiled = defineCollection({
     // single-binding THINGs carry one `default` slot (compile.py normalizes a flat
     // authored map to it). null when the THING binds no materials.
     material_binding: z.record(identifier, z.record(identifier, z.string())).nullable(),
+    // per-slot landing material (R7): slot -> material id, passed through from the
+    // authored `materials.defaults` (compile.py validates existence + slot
+    // qualification). null when the THING declares no landing materials; a slot
+    // omitted here keeps the widget's staggered-alphabetical default.
+    material_defaults: z.record(identifier, slug).nullable(),
     // tabulated-data provenance (ADR-0009) for the /verification/ audit surface
     tables: z
       .array(

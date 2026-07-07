@@ -95,6 +95,19 @@ def load_material(path: Path) -> dict:
     return raw
 
 
+def material_property_coverage(materials_dir: Path) -> dict[str, set[str]]:
+    """``{material_id: {published property keys}}`` — the qualification basis for
+    a material slot. A material qualifies for a slot iff it publishes every
+    property that slot binds; this mirrors the site's per-slot filter
+    (``things/[slug].astro``: ``keys.every(k => m.properties.some(p => p.key === k))``).
+    Reuses ``load_material`` so the coverage a build validates against is exactly
+    what ingestion emits. Consumed by the compiler's R7 default-material check."""
+    return {
+        m["id"]: {p["key"] for p in m["properties"]}
+        for m in (load_material(p) for p in sorted(materials_dir.glob("*.yaml")))
+    }
+
+
 def ingest(materials_dir: Path, out_db: Path, out_json: Path) -> int:
     mats = [load_material(p) for p in sorted(materials_dir.glob("*.yaml"))]
     if not mats:
