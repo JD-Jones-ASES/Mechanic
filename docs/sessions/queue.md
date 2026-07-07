@@ -2,7 +2,7 @@
 
 Read `docs/sessions/protocol.md` first; it defines every status and transition used here.
 
-**Active phase: 3**
+**Active phase: 3 — AWAITING OWNER**
 
 ## Phase gate rulings
 
@@ -89,7 +89,7 @@ deferred). Briefs are DRAFT: the Phase 2 closing session verifies them against m
 | S17 | multi-material binding slots + composite-bar                     | +1       | DONE | #36 | 2026-07-06 · phase3/multi-material-slots | [S17](briefs/S17-multi-material-composite-bar.md) |
 | S18 | CTE material column + thermal-assembly                           | +1       | DONE | #37 | 2026-07-06 · phase3/thermal-cte | [S18](briefs/S18-thermal-assembly-cte.md) |
 | S19 | bolted-joint-gasket (separation = global refusal)                | +1       | DONE | #38 | 2026-07-06 · thing/bolted-joint-gasket | [S19](briefs/S19-bolted-joint-gasket.md) |
-| S20 | Phase 3 close: optional three-parallel-rods + reconciliation + report | +0/1 | IN_PROGRESS | —  | 2026-07-06 · docs/phase3-close | [S20](briefs/S20-phase3-close.md) |
+| S20 | Phase 3 close: optional three-parallel-rods + reconciliation + report | +0/1 | DONE | #39 | 2026-07-06 · docs/phase3-close | [S20](briefs/S20-phase3-close.md) |
 
 ## Phase 4 — Chaining as the product
 
