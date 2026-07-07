@@ -13,9 +13,17 @@ interface Props {
   displayUnits: Record<string, string>;
   onChange: (symbol: string, siValue: number) => void;
   onUnitChange: (symbol: string, unit: string) => void;
+  /**
+   * Prefix for the generated control `id`s (and their `<label for>`). Defaults to
+   * "" — so a single-widget page keeps `knob-<sym>` exactly as before. The
+   * chain-builder renders many nodes at once (a THING can even appear twice), so
+   * it passes a per-instance prefix (`n1-`) to keep every `id` unique — duplicate
+   * ids would break label association and trip axe (ADR-0006).
+   */
+  idPrefix?: string;
 }
 
-export function KnobPanel({ inputs, variables, values, displayUnits, onChange, onUnitChange }: Props) {
+export function KnobPanel({ inputs, variables, values, displayUnits, onChange, onUnitChange, idPrefix = "" }: Props) {
   return (
     <fieldset class="knobs">
       <legend>Inputs</legend>
@@ -25,7 +33,7 @@ export function KnobPanel({ inputs, variables, values, displayUnits, onChange, o
         const display = toDisplay(values[sym] ?? v.default, unit);
         const [lo, hi] = v.bounds ?? [0, 100];
         const step = v.integer ? 1 : (hi - lo) / 200;
-        const id = `knob-${sym}`;
+        const id = `knob-${idPrefix}${sym}`;
         return (
           <div class="knob" key={sym}>
             <label for={id}>
