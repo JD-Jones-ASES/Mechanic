@@ -9,7 +9,7 @@
  */
 import { expect, test, type Page } from "@playwright/test";
 
-// The 36 slugs in ADR-0010 spine order: category (MoM → MD → Mechanisms), then
+// The 37 slugs in ADR-0010 spine order: category (MoM → MD → Mechanisms), then
 // topic in the ADR's listed order, then alphabetical by title within a topic.
 const SPINE_ORDER = [
   // Mechanics of Materials — Axial, Thermal & Impact
@@ -31,7 +31,7 @@ const SPINE_ORDER = [
   // Machine Design — Joints, Springs & Clutches
   "disk-clutch", "bolted-joint-gasket", "helical-spring",
   // Mechanisms, Dynamics & Vibration (no topic)
-  "flywheel-disk", "fourbar-linkage", "slider-crank", "torsional-oscillator",
+  "dc-motor", "flywheel-disk", "fourbar-linkage", "slider-crank", "torsional-oscillator",
 ];
 
 const TOPIC_HEADS = [
@@ -47,7 +47,7 @@ async function cardSlugs(page: Page): Promise<string[]> {
 }
 
 for (const surface of ["", "things/"]) {
-  test(`catalog on /${surface} renders all 36 THINGs once, in spine order`, async ({ page }) => {
+  test(`catalog on /${surface} renders all 37 THINGs once, in spine order`, async ({ page }) => {
     await page.goto(surface);
 
     // category sections in spine order
@@ -60,7 +60,7 @@ for (const surface of ["", "things/"]) {
     // between the home and /things/ renders — same shared component)
     const slugs = await cardSlugs(page);
     expect(slugs).toEqual(SPINE_ORDER);
-    expect(new Set(slugs).size).toBe(36);
+    expect(new Set(slugs).size).toBe(37);
 
     // topic subheads present, in order (mechanisms-dynamics has none)
     const topics = await page

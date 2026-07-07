@@ -29,33 +29,39 @@ async function decodeClean(page: Page) {
 
 // The three frozen fragments — identical to the astro page's literals.
 const EX_HEADLINE =
-  "#v1=eyJub2RlcyI6W3siaWQiOiJuMSIsInNsdWciOiJwbGFuZXRhcnktZ2VhcnNldCIsImNvbmZpZyI6InJpbmctZml4ZWQifSx7ImlkIjoibjIiLCJzbHVnIjoidG9yc2lvbi1zaGFmdCIsImNvbmZpZyI6InRvcnF1ZS1pbiJ9LHsiaWQiOiJuMyIsInNsdWciOiJmbHl3aGVlbC1kaXNrIiwiY29uZmlnIjoic3BlZWQtaW4ifV0sImJpbmRpbmdzIjpbeyJmcm9tIjp7Im5vZGUiOiJuMSIsInBvcnQiOiJUX291dCJ9LCJ0byI6eyJub2RlIjoibjIiLCJwb3J0IjoiVCJ9fSx7ImZyb20iOnsibm9kZSI6Im4xIiwicG9ydCI6Im9tZWdhX2MifSwidG8iOnsibm9kZSI6Im4yIiwicG9ydCI6Im9tZWdhIn19LHsiZnJvbSI6eyJub2RlIjoibjEiLCJwb3J0IjoiVF9vdXQifSwidG8iOnsibm9kZSI6Im4zIiwicG9ydCI6IlRfZCJ9fV0sImtub2JzIjp7fSwibWF0ZXJpYWxzIjp7Im4zIjoic3RlZWwtMTA0NSJ9LCJkaXNwbGF5VW5pdHMiOnt9fQ";
+  "#v1=eyJub2RlcyI6W3siaWQiOiJuMSIsInNsdWciOiJkYy1tb3RvciIsImNvbmZpZyI6InNwZWVkLWluIn0seyJpZCI6Im4yIiwic2x1ZyI6InBsYW5ldGFyeS1nZWFyc2V0IiwiY29uZmlnIjoicmluZy1maXhlZCJ9LHsiaWQiOiJuMyIsInNsdWciOiJ0b3JzaW9uLXNoYWZ0IiwiY29uZmlnIjoidG9ycXVlLWluIn0seyJpZCI6Im40Iiwic2x1ZyI6ImZseXdoZWVsLWRpc2siLCJjb25maWciOiJzcGVlZC1pbiJ9XSwiYmluZGluZ3MiOlt7ImZyb20iOnsibm9kZSI6Im4xIiwicG9ydCI6IlQifSwidG8iOnsibm9kZSI6Im4yIiwicG9ydCI6IlRfcyJ9fSx7ImZyb20iOnsibm9kZSI6Im4xIiwicG9ydCI6Im9tZWdhX291dCJ9LCJ0byI6eyJub2RlIjoibjIiLCJwb3J0Ijoib21lZ2FfcyJ9fSx7ImZyb20iOnsibm9kZSI6Im4yIiwicG9ydCI6IlRfb3V0In0sInRvIjp7Im5vZGUiOiJuMyIsInBvcnQiOiJUIn19LHsiZnJvbSI6eyJub2RlIjoibjIiLCJwb3J0Ijoib21lZ2FfYyJ9LCJ0byI6eyJub2RlIjoibjMiLCJwb3J0Ijoib21lZ2EifX0seyJmcm9tIjp7Im5vZGUiOiJuMiIsInBvcnQiOiJUX291dCJ9LCJ0byI6eyJub2RlIjoibjQiLCJwb3J0IjoiVF9kIn19XSwia25vYnMiOnt9LCJtYXRlcmlhbHMiOnsibjQiOiJzdGVlbC0xMDQ1In0sImRpc3BsYXlVbml0cyI6e319";
 const EX_BELT =
   "#v1=eyJub2RlcyI6W3siaWQiOiJuMSIsInNsdWciOiJiZWx0LWRyaXZlIiwiY29uZmlnIjoiYW5hbHl6ZSJ9LHsiaWQiOiJuMiIsInNsdWciOiJ0b3JzaW9uLXNoYWZ0IiwiY29uZmlnIjoicG93ZXItaW4ifV0sImJpbmRpbmdzIjpbeyJmcm9tIjp7Im5vZGUiOiJuMSIsInBvcnQiOiJQX3QifSwidG8iOnsibm9kZSI6Im4yIiwicG9ydCI6IlBfdyJ9fV0sImtub2JzIjp7fSwibWF0ZXJpYWxzIjp7fSwiZGlzcGxheVVuaXRzIjp7fX0";
 const EX_INDETERMINATE =
   "#v1=eyJub2RlcyI6W3siaWQiOiJuMSIsInNsdWciOiJwbGFuZXRhcnktZ2VhcnNldCIsImNvbmZpZyI6InJpbmctZml4ZWQifSx7ImlkIjoibjIiLCJzbHVnIjoiZml4ZWQtZml4ZWQtdG9yc2lvbi1zaGFmdCIsImNvbmZpZyI6ImFuYWx5emUifV0sImJpbmRpbmdzIjpbeyJmcm9tIjp7Im5vZGUiOiJuMSIsInBvcnQiOiJUX291dCJ9LCJ0byI6eyJub2RlIjoibjIiLCJwb3J0IjoiVCJ9fV0sImtub2JzIjp7fSwibWF0ZXJpYWxzIjp7fSwiZGlzcGxheVVuaXRzIjp7fX0";
 
-test("HEADLINE example: spin-up time and shaft stress from one delivered torque; power conserved through 3 nodes", async ({ page }) => {
+test("HEADLINE example: a real motor drives the gearbox; spin-up time and shaft stress from one delivered torque; power conserved through 4 nodes", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(String(e)));
   await page.goto(`chain-builder/${EX_HEADLINE}`);
 
-  await expect(page.getByTestId("node-count")).toHaveText("3 / 6 nodes");
+  await expect(page.getByTestId("node-count")).toHaveText("4 / 6 nodes");
   await decodeClean(page);
-  await expect(page.getByTestId("wire-row")).toHaveCount(3); // T_out→T, ω_c→ω, T_out→T_d
+  // motor T→T_s, motor ω_out→ω_s, T_out→T (shaft), ω_c→ω (shaft), T_out→T_d (flywheel)
+  await expect(page.getByTestId("wire-row")).toHaveCount(5);
 
-  // planetary ring-fixed defaults (N_s=24, N_p=18 ⇒ N_r=60, ratio 1+N_r/N_s = 3.5):
-  //   T_out = 3.5 × 100 = 350 N·m,  ω_c = ω_s·N_s/(N_s+N_r) = 10·24/84 = 2.857 rad/s
-  expect(await readNum(page, "n1", "T_out")).toBeCloseTo(350, 1);
+  // dc-motor speed-in defaults (T_stall=200, ω₀=300, ω=150): the peak-power point —
+  //   T = 200·(1−150/300) = 100 N·m,  P = 100·150 = 15 kW = P_max = 200·300/4
+  expect(await readNum(page, "n1", "T")).toBeCloseTo(100, 1);
+  expect(await readNum(page, "n1", "P")).toBeCloseTo(15, 2); // kW
+  // planetary ring-fixed (N_s=24, N_p=18 ⇒ N_r=60, ratio 1+N_r/N_s = 3.5), sun torque
+  // AND sun speed now BOUND to the motor (T_s=100, ω_s=150):
+  //   T_out = 3.5 × 100 = 350 N·m,  ω_c = ω_s·N_s/(N_s+N_r) = 150·24/84 = 42.857 rad/s
+  expect(await readNum(page, "n2", "T_out")).toBeCloseTo(350, 1);
   // shaft (d = 40 mm) carries the BOUND torque and the BOUND carrier speed:
   //   τ = 16·350/(π·0.04³) = 27.85 MPa
-  //   P_w = T·ω = 350 × 2.857 = 1000 W = 1 kW — EXACTLY the sun input T_s·ω_s = 100×10.
-  //   Power survives the wiring: conservation pinned across planetary → shaft (3-node chain).
-  expect(await readNum(page, "n2", "tau")).toBeCloseTo(27.85, 1);
-  expect(await readNum(page, "n2", "P_w")).toBeCloseTo(1, 2);
+  //   P_w = T·ω = 350 × 42.857 = 15 000 W = 15 kW — EXACTLY the motor's output P.
+  //   Power survives the wiring: conservation pinned across motor → planetary → shaft.
+  expect(await readNum(page, "n3", "tau")).toBeCloseTo(27.85, 1);
+  expect(await readNum(page, "n3", "P_w")).toBeCloseTo(15, 2);
   // flywheel (steel-1045 ρ=7870, R=0.15, t=25 mm, ω=300) driven by the same T_out=350:
   //   I_z = ρπR⁴t/2 = 0.156459 kg·m²,  t_spin = I_z·ω/T_d = 0.156459·300/350 = 0.1341 s
-  expect(await readNum(page, "n3", "t_spin")).toBeCloseTo(0.1341, 2);
+  expect(await readNum(page, "n4", "t_spin")).toBeCloseTo(0.1341, 2);
   expect(errors).toEqual([]);
 });
 
@@ -111,9 +117,9 @@ test("the example cards render with their frozen URLs and load the chain in-page
 
   // clicking an example while already on the page reloads and rebuilds the chain
   await links.first().click();
-  await expect(page.getByTestId("node-count")).toHaveText("3 / 6 nodes");
+  await expect(page.getByTestId("node-count")).toHaveText("4 / 6 nodes");
   await ready(page);
-  expect(await readNum(page, "n3", "t_spin")).toBeCloseTo(0.1341, 2);
+  expect(await readNum(page, "n4", "t_spin")).toBeCloseTo(0.1341, 2);
 });
 
 test("flywheel spin-up: t_spin reads on the THING page, and T_d ≤ 0 scopes only t_spin off", async ({ page }) => {

@@ -27,6 +27,7 @@ import { CompositeBarSim } from "./sims/CompositeBarSim";
 import { ThermalAssemblySim } from "./sims/ThermalAssemblySim";
 import { CurvedBeamSim } from "./sims/CurvedBeamSim";
 import { CylinderSim } from "./sims/CylinderSim";
+import { DcMotorSim } from "./sims/DcMotorSim";
 import { DiskBoreSim } from "./sims/DiskBoreSim";
 import { EccentricColumnSim } from "./sims/EccentricColumnSim";
 import { FixedFixedBeamSim } from "./sims/FixedFixedBeamSim";
@@ -98,6 +99,7 @@ const SIMS: Record<
   "composite-bar": CompositeBarSim,
   "thermal-assembly": ThermalAssemblySim,
   "bolted-joint-gasket": BoltedJointSim,
+  "dc-motor": DcMotorSim,
 };
 
 interface Props {

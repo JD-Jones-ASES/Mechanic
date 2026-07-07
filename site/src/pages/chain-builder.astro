@@ -59,7 +59,7 @@ const materials = (await getCollection("materials")).map((m) => m.data);
 // in site/e2e/chain-examples.spec.ts. Editing a fragment by hand is forbidden;
 // regenerate it from a ChainStore through encodeChain(). ---
 const EX_HEADLINE =
-  "#v1=eyJub2RlcyI6W3siaWQiOiJuMSIsInNsdWciOiJwbGFuZXRhcnktZ2VhcnNldCIsImNvbmZpZyI6InJpbmctZml4ZWQifSx7ImlkIjoibjIiLCJzbHVnIjoidG9yc2lvbi1zaGFmdCIsImNvbmZpZyI6InRvcnF1ZS1pbiJ9LHsiaWQiOiJuMyIsInNsdWciOiJmbHl3aGVlbC1kaXNrIiwiY29uZmlnIjoic3BlZWQtaW4ifV0sImJpbmRpbmdzIjpbeyJmcm9tIjp7Im5vZGUiOiJuMSIsInBvcnQiOiJUX291dCJ9LCJ0byI6eyJub2RlIjoibjIiLCJwb3J0IjoiVCJ9fSx7ImZyb20iOnsibm9kZSI6Im4xIiwicG9ydCI6Im9tZWdhX2MifSwidG8iOnsibm9kZSI6Im4yIiwicG9ydCI6Im9tZWdhIn19LHsiZnJvbSI6eyJub2RlIjoibjEiLCJwb3J0IjoiVF9vdXQifSwidG8iOnsibm9kZSI6Im4zIiwicG9ydCI6IlRfZCJ9fV0sImtub2JzIjp7fSwibWF0ZXJpYWxzIjp7Im4zIjoic3RlZWwtMTA0NSJ9LCJkaXNwbGF5VW5pdHMiOnt9fQ";
+  "#v1=eyJub2RlcyI6W3siaWQiOiJuMSIsInNsdWciOiJkYy1tb3RvciIsImNvbmZpZyI6InNwZWVkLWluIn0seyJpZCI6Im4yIiwic2x1ZyI6InBsYW5ldGFyeS1nZWFyc2V0IiwiY29uZmlnIjoicmluZy1maXhlZCJ9LHsiaWQiOiJuMyIsInNsdWciOiJ0b3JzaW9uLXNoYWZ0IiwiY29uZmlnIjoidG9ycXVlLWluIn0seyJpZCI6Im40Iiwic2x1ZyI6ImZseXdoZWVsLWRpc2siLCJjb25maWciOiJzcGVlZC1pbiJ9XSwiYmluZGluZ3MiOlt7ImZyb20iOnsibm9kZSI6Im4xIiwicG9ydCI6IlQifSwidG8iOnsibm9kZSI6Im4yIiwicG9ydCI6IlRfcyJ9fSx7ImZyb20iOnsibm9kZSI6Im4xIiwicG9ydCI6Im9tZWdhX291dCJ9LCJ0byI6eyJub2RlIjoibjIiLCJwb3J0Ijoib21lZ2FfcyJ9fSx7ImZyb20iOnsibm9kZSI6Im4yIiwicG9ydCI6IlRfb3V0In0sInRvIjp7Im5vZGUiOiJuMyIsInBvcnQiOiJUIn19LHsiZnJvbSI6eyJub2RlIjoibjIiLCJwb3J0Ijoib21lZ2FfYyJ9LCJ0byI6eyJub2RlIjoibjMiLCJwb3J0Ijoib21lZ2EifX0seyJmcm9tIjp7Im5vZGUiOiJuMiIsInBvcnQiOiJUX291dCJ9LCJ0byI6eyJub2RlIjoibjQiLCJwb3J0IjoiVF9kIn19XSwia25vYnMiOnt9LCJtYXRlcmlhbHMiOnsibjQiOiJzdGVlbC0xMDQ1In0sImRpc3BsYXlVbml0cyI6e319";
 const EX_BELT =
   "#v1=eyJub2RlcyI6W3siaWQiOiJuMSIsInNsdWciOiJiZWx0LWRyaXZlIiwiY29uZmlnIjoiYW5hbHl6ZSJ9LHsiaWQiOiJuMiIsInNsdWciOiJ0b3JzaW9uLXNoYWZ0IiwiY29uZmlnIjoicG93ZXItaW4ifV0sImJpbmRpbmdzIjpbeyJmcm9tIjp7Im5vZGUiOiJuMSIsInBvcnQiOiJQX3QifSwidG8iOnsibm9kZSI6Im4yIiwicG9ydCI6IlBfdyJ9fV0sImtub2JzIjp7fSwibWF0ZXJpYWxzIjp7fSwiZGlzcGxheVVuaXRzIjp7fX0";
 const EX_INDETERMINATE =
@@ -71,8 +71,10 @@ const gear = (await getEntry("compiled", "planetary-gearset"))!.data;
 const shaft = (await getEntry("compiled", "torsion-shaft"))!.data;
 const flywheel = (await getEntry("compiled", "flywheel-disk"))!.data;
 const column = (await getEntry("compiled", "euler-column"))!.data;
+const motor = (await getEntry("compiled", "dc-motor"))!.data;
 // same Port constructor the runtime planner uses (invariant 4, one definition)
 const checks = [
+  { from: "motor T — torque", to: "planetary T_s — torque", res: connectionLegal(portOf(motor, "T"), portOf(gear, "T_s")) },
   { from: "planetary T_out — torque", to: "shaft T — torque", res: connectionLegal(portOf(gear, "T_out"), portOf(shaft, "T")) },
   { from: "planetary ω_c — angular velocity", to: "flywheel ω — angular velocity", res: connectionLegal(portOf(gear, "omega_c"), portOf(flywheel, "omega")) },
   { from: "planetary ω_c — angular velocity", to: "shaft T — torque", res: connectionLegal(portOf(gear, "omega_c"), portOf(shaft, "T")) },
@@ -113,12 +115,14 @@ const checks = [
       <li class="cb-example">
         <h3>Spin-up time vs. shaft stress</h3>
         <p>
-          The headline. A motor — the sun-torque knob <code>T_s</code> stands in for one — drives a
-          ring-fixed <strong>planetary reduction</strong>, whose 3.5:1 ratio turns 100 N·m into
+          The headline. A <strong>permanent-magnet DC motor</strong>, running at its peak-power
+          point (100 N·m at 150 rad/s — <strong>15 kW</strong>), drives a ring-fixed
+          <strong>planetary reduction</strong> with its torque <em>and</em> shaft speed wired
+          across; the 3.5:1 ratio turns the motor's 100 N·m into
           <strong>T_out = 350 N·m</strong> delivered to the load. That one torque does two jobs at
-          once. Wired into a <strong>driveshaft</strong> (with the carrier speed wired across too, so
-          the shaft carries the full <strong>1 kW</strong> the motor put in — power survives the
-          wiring), it winds the shaft to <strong>τ = 27.9 MPa</strong>. Wired into a steel
+          once. Wired into a <strong>driveshaft</strong> (with the carrier speed wired across too,
+          so the shaft carries the full <strong>15 kW</strong> the motor put in — power survives
+          the wiring), it winds the shaft to <strong>τ = 27.9 MPa</strong>. Wired into a steel
           <strong>flywheel</strong>, the same torque spins it up from rest to 300 rad/s in
           <strong>t_spin = 0.13 s</strong>. Now crank the gear ratio up (drop the sun teeth
           <code>N_s</code>): the flywheel spins up faster <em>and</em> the shaft winds tighter.

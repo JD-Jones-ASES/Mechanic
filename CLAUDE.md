@@ -108,9 +108,7 @@ Nonlinear/cyclic solving (`solveND`, ADR-0008 part (b) — PROPOSED, unbuilt; ce
 (S22 pick/wire/evaluate up to six nodes; S23 shareable `#v1=` chain URLs with graceful decode-on-load
 degradation; S24 per-readout provenance trails + assumptions panel; S25 three curated example chains
 with frozen `#v1=` URLs — cyclic/multi-branch chaining and a drag-and-drop canvas stay out) ·
-a minimal motor THING as a first-class torque source (deferred to an owner decision at the Phase 4
-close; the spin-up example drives the chain with the planetary's existing `T_s` knob) · Materials
-Project integration · fluids & time-integration dynamics engines ·
+Materials Project integration · fluids & time-integration dynamics engines ·
 Pyodide sandbox · integer tooth-count synthesis · eccentric-column solve-for-P (transcendental) ·
 coupler-curve inverse · custom domain · analytics (none, stated policy) · accounts/comments (static site).
 
@@ -136,5 +134,6 @@ Python pipeline first; `uv run pytest` in `pipeline/` for math-layer tests. A co
 minutes — four-bar branch verification dominates; it is slow, not hung — but unchanged THINGs are
 cache-reused, so warm rebuilds take seconds plus the astro step. The repo is public and the site deploys
 from CI on every push to main — there is no review step between merge and the public site:
-https://jd-jones-ases.github.io/Mechanic/ (catalog state: 36 THINGs; the live `/verification/` page is
-the public statement of what is and isn't machine-proven).
+https://jd-jones-ases.github.io/Mechanic/ (catalog state: 37 THINGs — S26 added dc-motor and wired
+it into the headline chain example; the live `/verification/` page is the public statement of what
+is and isn't machine-proven).

@@ -1,0 +1,45 @@
+Almost everything else in this catalog is a *load* — shafts that get wound, beams that get bent,
+flywheels that get spun. This page is the thing that does the driving. A permanent-magnet DC
+motor at a fixed supply voltage has the simplest personality in machine design: its entire
+steady-state behavior is **one straight line** in the torque–speed plane,
+
+$$T = T_{stall}\left(1 - \frac{\omega}{\omega_0}\right) \qquad P = T\,\omega \qquad P_{max} = \frac{T_{stall}\,\omega_0}{4}$$
+
+Three things to notice, one per formula:
+
+- **Two numbers are the whole datasheet.** The line runs from the *stall torque* $T_{stall}$
+  (shaft locked, all the supply's current, none of its back-EMF) to the *no-load speed*
+  $\omega_0$ (back-EMF eats the whole supply; no current left to make torque). Measure those
+  two corners and every operating point in between is pinned — the derivation below builds the
+  line from one loop of circuit, and the two knobs you are handed are exactly what a
+  manufacturer quotes.
+- **Power peaks in the middle.** $P = T\omega$ is zero at *both* ends of the line — torque
+  without motion at stall, motion without torque at no-load — so the deliverable power is a
+  parabola, and completing the square (no calculus required) puts its vertex at exactly half
+  the no-load speed, delivering half the stall torque. The most power this motor can ever
+  produce at this voltage is a quarter of the corner product, $T_{stall}\,\omega_0/4$. Motors
+  are speed machines, not torque machines — which is why they so rarely arrive without a
+  gearbox attached.
+- **The straight line is the permanent magnet's privilege.** Constant flux is what makes torque
+  proportional to current and back-EMF proportional to speed. Wind the field from the armature
+  supply instead and the character changes: a shunt-wound machine tracks a line only over part
+  of its range, and a series-wound machine has a drooping curve with *no theoretical no-load
+  speed at all* — unloaded, it runs away. This page is the constant-flux, fixed-voltage case,
+  and says so.
+
+The two configurations run the same line in opposite directions. *Pick a speed* hands you the
+torque and power at that point. *The load picks the torque* is how a motor actually lives — the
+machine it drives demands a torque, and the line answers with the speed the motor settles at.
+Ask for more than $T_{stall}$ and the widget refuses rather than report the fiction of a
+backwards-spinning "operating point": a stalled motor delivers its stall torque and no more.
+Drive the speed knob *past* $\omega_0$ and the delivered torque and power go negative with a
+warning — the machine is braking its load and generating, a real regime, but no longer motoring.
+
+This THING exists to head a chain. In the [chain builder](../../chain-builder/)'s headline
+example the motor's delivered torque $T$ and shaft speed $\omega_{out}$ wire into a
+[planetary gearset](../planetary-gearset/)'s sun, the gearbox multiplies the torque at the
+expense of speed, and the output simultaneously winds a [driveshaft](../torsion-shaft/) and
+spins up a [flywheel](../flywheel-disk/) — with the gear ratio trading spin-up time against
+shaft stress while the power $P$ you put in survives the wiring end to end. The gearbox is the
+impedance matcher between what a motor is good at (speed) and what loads usually want (torque);
+the chain lets you feel that bargain with numbers that keep their citations.

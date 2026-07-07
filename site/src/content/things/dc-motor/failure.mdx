@@ -1,0 +1,38 @@
+The straight line is honest about *where* a PM DC motor can operate, and silent about *for how
+long*. Real motor failures are mostly about heat, and the line's most tempting corners are
+exactly the ones the thermal reality forbids.
+
+- **The stall corner is a place you may only visit.** At $\omega = 0$ the back-EMF is zero, so
+  the full supply voltage drives the maximum current through the armature resistance — all of it
+  becoming $I^2R$ heat, none of it becoming mechanical power, with no rotation to move cooling
+  air. A motor can be stalled against a load momentarily, but a full-current stall held for more
+  than a short time overheats the windings; sustained operation lives well inside the line, not
+  on its edge. Real datasheets draw this on the curve: a *continuous* region the motor can hold
+  indefinitely and an *intermittent* region it may only pulse into (duty-cycle ratings are
+  standardized — NEMA's continuous/intermittent classes, IEC 60034-1's S1–S8).
+
+- **Peak power costs half the heat budget.** The maximum-output point at $\omega_0/2$ is also
+  the point where the machine converts electrical power at roughly 50% efficiency — it sheds
+  about as much heat as it delivers work (the same load-matching arithmetic that gives
+  $P_{max}$ gives the efficiency). Only small motors, with their generous surface-to-volume
+  ratio, can afford to live near the peak; larger machines run far up the speed end of the
+  line, where current — and heat — is low.
+
+- **Demagnetization: the curve that never comes back.** The "permanent" in permanent magnet is
+  conditional. Overcurrent spikes and overtemperature can partially demagnetize the field
+  (modern Nd-Fe-B magnets have a high energy product but a modest Curie point) — and since
+  both intercepts of the line scale with the flux, a demagnetized motor keeps its no-load
+  speed behavior but delivers permanently less torque everywhere. The line doesn't bend when
+  this happens; it quietly moves, and stays moved.
+
+- **Brushes and the commutator wear out.** A brushed machine carries its full armature current
+  through sliding graphite contacts that reverse the current in each coil hundreds of times per
+  revolution. They spark, they generate electrical noise, and they wear — a few thousand hours
+  is a typical service interval — which is the main reason brushless machines have displaced
+  brushed ones wherever electronics are affordable.
+
+- **What the ideal line leaves out.** Brush voltage drop and armature reaction sag the real
+  curve slightly below the ideal one; friction and windage set the true no-load speed a little
+  under $V/k$; winding inductance means the line describes steady state, not the current spike
+  at every start and reversal. The model here is the constant-flux, fixed-voltage, steady-state
+  idealization — the right first model, and the one every drive datasheet is drawn against.

@@ -28,6 +28,7 @@ PHYSICS_TESTS = {
     "composite-bar": "test_composite_physics.py",
     "compound-cylinder": "test_shrinkfit_physics.py",
     "curved-beam": "test_curved_beam_physics.py",
+    "dc-motor": "test_motor_physics.py",
     "disk-clutch": "test_clutch_physics.py",
     "eccentric-column": "test_eccentric_physics.py",
     "euler-column": "test_column_physics.py",

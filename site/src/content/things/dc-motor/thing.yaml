@@ -1,0 +1,299 @@
+id: dc-motor
+title: DC Motor (Permanent Magnet)
+summary: >-
+  The machine that turns current into torque — and its whole personality is one straight line.
+  At fixed voltage a PM DC motor trades speed for torque along T = T_stall(1 − ω/ω₀): two
+  datasheet numbers pin every operating point, and the peak power hides at half the no-load speed.
+facets: [torque-power, kinematics]
+category: mechanisms-dynamics
+
+variables:
+  - symbol: T_stall
+    name: Stall torque
+    latex: T_{stall}
+    unit: N*m
+    quantity_kind: torque
+    default: 200
+    bounds: [5, 2000]
+    positive: true
+    display_units: ["N*m"]
+  - symbol: omega_0
+    name: No-load speed
+    latex: '\omega_0'
+    unit: rad/s
+    quantity_kind: angular_velocity
+    default: 300
+    bounds: [10, 3000]
+    positive: true
+    display_units: [rad/s, rpm]
+  - symbol: omega
+    name: Operating speed
+    latex: '\omega'
+    unit: rad/s
+    quantity_kind: angular_velocity
+    default: 150
+    # NOT positive, and the upper bound exceeds omega_0's: the knob must be able to
+    # pass the no-load speed so the braking-regime warn is reachable, and in the
+    # torque-in configuration the solved speed goes NEGATIVE for T > T_stall — which
+    # is exactly what the omega >= 0 refusal below catches (a positive assumption
+    # would collapse that Relational to True at parse).
+    bounds: [0, 3500]
+    display_units: [rad/s, rpm]
+  - symbol: T
+    name: Delivered torque
+    latex: T
+    unit: N*m
+    quantity_kind: torque
+    default: 100
+    # NOT positive: past the no-load speed the delivered torque goes negative
+    # (braking/generating) — a reachable, honest regime, flagged by the warn below.
+    bounds: [-500, 2500]
+    display_units: ["N*m"]
+  - symbol: P
+    name: Shaft power
+    latex: P
+    unit: W
+    quantity_kind: power
+    default: 15000
+    bounds: [-2.0e6, 2.0e6]
+    role: derived
+    display_units: [kW, W]
+  - symbol: P_max
+    name: Peak available power
+    latex: P_{max}
+    unit: W
+    quantity_kind: power
+    default: 15000
+    bounds: [0.1, 2.0e6]
+    positive: true
+    role: derived
+    display_units: [kW, W]
+  - symbol: omega_p
+    name: Peak-power speed
+    latex: '\omega_p'
+    unit: rad/s
+    quantity_kind: angular_velocity
+    default: 150
+    bounds: [1, 2000]
+    positive: true
+    role: derived
+    display_units: [rad/s, rpm]
+  - symbol: omega_out
+    name: Delivered shaft speed
+    latex: '\omega_{out}'
+    unit: rad/s
+    quantity_kind: angular_velocity
+    default: 150
+    bounds: [-2000, 3500]
+    role: derived
+    display_units: [rad/s, rpm]
+
+relations:
+  - id: torque-speed-line
+    group: torque-power
+    latex: 'T = T_{stall}\left(1 - \frac{\omega}{\omega_0}\right)'
+    residual: T*omega_0 - T_stall*(omega_0 - omega)
+    assumptions:
+      - permanent-magnet (constant-flux) brushed DC machine at a FIXED supply voltage — with the
+        field constant, torque is proportional to current and back-EMF to speed, so the
+        torque–speed characteristic is a straight line from stall to no-load
+      - steady state — electrical (winding inductance) and mechanical (rotor inertia) transients
+        have died out; the point (ω, T) sits ON the line, not near it
+      - constant armature resistance; brush voltage drop, armature reaction, and rotational
+        losses neglected (real no-load speed is set by friction, slightly below V/k)
+    citation: hughes
+    validity:
+      - condition: omega <= omega_0
+        severity: warn
+        message: >-
+          Past the no-load speed the machine is being driven faster than its back-EMF allows for
+          this supply voltage: current reverses, delivered torque and power go NEGATIVE, and the
+          "motor" is braking its load and generating. The line still describes it — but it is no
+          longer motoring.
+        citation: hughes
+      - condition: omega >= 0
+        severity: invalid
+        message: >-
+          No operating point exists: the demanded torque exceeds the stall torque, and the only
+          "solution" on the extended line has the shaft turning backwards — the load back-driving
+          a stalled motor. A PM DC motor at this voltage cannot deliver more than T_stall, so the
+          evaluation refuses rather than report a fictitious speed.
+        citation: hughes
+  - id: shaft-power
+    group: torque-power
+    latex: 'P = T\,\omega'
+    residual: P - T*omega
+    assumptions:
+      - steady rotation — torque and speed constant at the operating point
+    citation: shigley
+  - id: peak-power
+    group: torque-power
+    latex: 'P_{max} = \frac{T_{stall}\,\omega_0}{4}'
+    residual: 4*P_max - T_stall*omega_0
+    assumptions:
+      - the largest mechanical power ANY point on the line can deliver — attained at half the
+        no-load speed, where the motor gives exactly half its stall torque
+    citation: hughes
+  - id: peak-power-speed
+    group: torque-power
+    latex: '\omega_p = \frac{\omega_0}{2}'
+    residual: 2*omega_p - omega_0
+    assumptions:
+      - the vertex of the power parabola P(ω) = T_stall·ω(1 − ω/ω₀) — machine-proven by
+        completing the square in the derivation below
+    citation: mit-motors
+  - id: rigid-coupling
+    group: kinematics
+    latex: '\omega_{out} = \omega'
+    residual: omega_out - omega
+    assumptions:
+      - rigid output shaft and coupling — whatever the motor drives turns at rotor speed and
+        receives the delivered torque T (no slip, no compliance, no gearbox inside the case)
+    citation: norton-dom
+
+configurations:
+  - id: speed-in
+    label: Pick a speed on the curve — torque, power, and peak capability out
+    constraints: {}
+    inputs: [T_stall, omega_0, omega]
+    solutions:
+      T: T_stall*(1 - omega/omega_0)
+      omega_out: omega
+      P: T*omega
+      P_max: T_stall*omega_0/4
+      omega_p: omega_0/2
+  - id: torque-in
+    label: The load picks the torque — the same line answers with the speed
+    constraints: {}
+    inputs: [T_stall, omega_0, T]
+    solutions:
+      omega: omega_0*(1 - T/T_stall)
+      omega_out: omega
+      P: T*omega
+      P_max: T_stall*omega_0/4
+      omega_p: omega_0/2
+
+derivation:
+  verifies_configuration: speed-in
+  locals:
+    - symbol: V_s
+      unit: V
+      positive: true
+      bounds: [1, 1000]
+    - symbol: k_m
+      unit: V*s
+      positive: true
+      bounds: [0.001, 100]
+    - symbol: R_a
+      unit: ohm
+      positive: true
+      bounds: [0.01, 100]
+    - symbol: I_a
+      unit: A
+      define: (V_s - k_m*omega)/R_a
+  steps:
+    - expr: Eq(I_a, (V_s - k_m*omega)/R_a)
+      prose: >-
+        The modeling step — one loop of circuit. A DC supply V_s pushes current through the
+        armature resistance R_a against the back-EMF k_m·ω that the spinning rotor generates
+        (a motor is also a generator, always). Kirchhoff's voltage law gives the armature
+        current: whatever voltage the back-EMF doesn't cancel, the resistance converts to
+        current. At stall (ω = 0) ALL of V_s drives current; at ω = V_s/k_m none is left.
+      rule: 'circuit model: KVL with back-EMF'
+      check: definition
+    - expr: Eq(T, k_m*I_a)
+      prose: >-
+        The electromechanical coupling: torque is proportional to armature current, and — in SI
+        units — the torque constant (N·m per ampere) is numerically THE SAME k_m as the back-EMF
+        constant (volt-seconds per radian). One constant couples the electrical and mechanical
+        sides in both directions; this is where the machine physics enters, by citation.
+      rule: 'torque constant = back-EMF constant (SI)'
+      check: definition
+    - expr: Eq(k_m*I_a, (k_m*V_s/R_a)*(1 - omega*k_m/V_s))
+      prose: >-
+        Eliminate the current. Substituting the loop equation into T = k_m·I_a and factoring out
+        the stall value: torque falls LINEARLY with speed, from k_m·V_s/R_a at ω = 0 to zero at
+        ω = V_s/k_m. The straight line is not an approximation of this model — it IS this model.
+      rule: eliminate I_a — the line, in circuit constants
+    - expr: Eq(T, T_stall*(1 - omega/omega_0))
+      prose: >-
+        Name the intercepts. The two corners of the line are exactly what a datasheet quotes:
+        stall torque T_stall = k_m·V_s/R_a (all the supply's current, none of its back-EMF) and
+        no-load speed ω₀ = V_s/k_m (back-EMF eats the whole supply, no current left to make
+        torque). Measure those two numbers and the entire behavior at this voltage is known —
+        the THING's knobs are the datasheet.
+      rule: name the datasheet intercepts
+    - expr: Eq(P, T_stall*omega*(1 - omega/omega_0))
+      prose: >-
+        Mechanical power is torque times speed, P = Tω — zero at BOTH ends of the line (at stall
+        there is torque but no motion; at no-load, motion but no torque), so the power a motor
+        can deliver must peak somewhere between.
+      rule: P = Tω along the line
+    - expr: Eq(P, P_max - (T_stall/omega_0)*(omega - omega_p)**2)
+      prose: >-
+        Complete the square. The power parabola in vertex form: P peaks at ω_p = ω₀/2 — half the
+        no-load speed, where the motor delivers half its stall torque — and every rad/s away
+        from that point costs (T_stall/ω₀) · (distance)² of power, symmetrically on either side.
+        No calculus required: the vertex IS the maximum.
+      rule: complete the square — vertex form
+    - expr: Eq(P_max, T_stall*omega_0/4)
+      prose: >-
+        Read off the vertex: the most mechanical power this motor can EVER deliver at this
+        voltage is one quarter of stall torque times no-load speed. This is the number that
+        sizes a drivetrain — and note the price of collecting it: peak power lives at half
+        speed and half stall torque, deep in the high-current half of the line.
+      rule: peak available power
+
+sim:
+  engine: statics-cascade
+  config:
+    draw: dc-motor
+
+sources:
+  - id: hughes
+    citation: >-
+      Hughes, A., & Drury, B., Electric Motors and Drives: Fundamentals, Types and
+      Applications, 5th ed., Newnes/Elsevier, 2019 (ISBN 978-0-08-102615-1) — ch. 3 "D.C.
+      Motors": §3.3 motional e.m.f. and equivalent circuit (T = kI, E = kω, with k_t = k_e = k
+      in SI); §3.4.1 no-load speed ω₀ = V/k under the stated constant-flux assumption; §3.4.3
+      "Behaviour when loaded", eq. (3.10) — the straight torque–speed line; §3.4.6 "Maximum
+      output power" — peak mechanical power at half the no-load speed.
+    verification: >-
+      Section and equation numbers (3.5–3.10) pinned against the 5th-edition indexed full text
+      (Internet Archive), 2026-07-07 — the straight-line statement, the k_t = k_e = k identity,
+      and the half-no-load-speed peak-power statement each read in situ. The line and the peak
+      are independently re-derived from the circuit model (SymPy) in
+      pipeline/tests/test_motor_physics.py; the book does not name a T_stall symbol — the stall
+      intercept kV/R follows from eq. (3.10) at ω = 0, stated honestly here rather than
+      attributed as a labeled formula.
+  - id: norton-dom
+    citation: >-
+      Norton, R. L., Design of Machinery, 6th ed., McGraw-Hill, 2020 — §2.19 "Motors and
+      Drivers", permanent-magnet DC motors: the speed–torque curve from stall torque at zero
+      speed to zero torque at no-load speed; the contrast with shunt-, series-, and
+      compound-wound curve shapes; the warning that motors cannot tolerate a full-current
+      zero-speed stall for more than minutes without overheating.
+    verification: >-
+      §2.19 content confirmed against a 6th-edition text excerpt (PMDC subsection and the
+      stall-overheating sentence read directly), 2026-07-07. In-book copyright page prints
+      2018 while the publisher lists the 6th edition as ©2020 — cited by edition, not year
+      alone, for that reason.
+  - id: mit-motors
+    citation: >-
+      MIT 2.007 (Design and Manufacturing I) motor tutorial, "D.C. Motor Torque/Speed Curve",
+      MIT Center for Innovation in Product Development, 1999 — §3.1–3.2: the linear
+      torque–speed equations and the explicit statement that maximum output power occurs at
+      half the stall torque and half the no-load speed.
+    url: http://lancet.mit.edu/motors/motors3.html
+    verification: >-
+      Live page fetched and the equations plus the half-speed/half-torque maximum-power
+      statement read directly, 2026-07-07. A legacy static course page — used as the freely
+      accessible corroboration of the peak-power result, with Hughes & Drury §3.4.6 as the
+      textbook anchor.
+  - id: shigley
+    citation: >-
+      Budynas, R. G., & Nisbett, J. K., Shigley's Mechanical Engineering Design, 10th ed.,
+      McGraw-Hill, 2015 — §3-12 (power transmission, P = Tω).
+    verification: >-
+      Same section pinned previously for torsion-shaft (§3-12 power transmission), 2026-06-10;
+      reused here for the identical relation.
