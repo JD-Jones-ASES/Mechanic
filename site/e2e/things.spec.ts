@@ -256,6 +256,25 @@ test("fixed-fixed shaft: overload past shear yield warns, never a silent wrong n
  *   → THE slots+solveLinear moment: the stiffer steel core carries 2/3 of the load
  *     and, against a spec-min yield, is the FIRST to yield despite being "stronger".
  */
+test("composite bar: LANDS on the R7 steel core + aluminium sleeve with no selector touched", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/composite-bar/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  // R7 default_material: NO selectOption — the widget must LAND on the declared pair
+  // (not the staggered-alphabetical fallback), covering the default-init path that
+  // had zero e2e coverage (QC audit finding 2).
+  await expect(page.getByTestId("material-select-core")).toHaveValue("steel-a36");
+  await expect(page.getByTestId("material-select-sleeve")).toHaveValue("al-6061-t6");
+
+  // landing readout hand-derived from the defaults (P=100 kN, A_1=4 cm², A_2=6 cm²,
+  // E_steel=199.948 GPa, E_al=68.258 GPa): the material-driven load share is
+  //   f_1 = A_1·E_1/(A_1·E_1 + A_2·E_2) = (4·199.948)/(4·199.948 + 6·68.258)
+  //       = 799.79/1209.34 = 0.6613 (the stiff steel core takes ~66%)
+  expect(await readOutput(page, "f_1")).toBeCloseTo(0.6613, 3);
+  expect(errors).toEqual([]);
+});
+
 test("composite bar: two materials, load splits by stiffness A·E; the stiffer core carries — and yields — first", async ({ page }) => {
   const errors = collectConsoleErrors(page);
   await page.goto("things/composite-bar/");
@@ -338,6 +357,23 @@ test("composite bar: a member past its own yield warns, never a silent wrong num
  * σ_1 = F/A_1 ≈ 118.8 MPa, σ_2 = F/A_2 ≈ 79.2 MPa. The slimmer segment (A_1<A_2)
  * carries the higher stress. ΔT = 0 must recover the unstressed state EXACTLY.
  */
+test("thermal assembly: LANDS on the R7 steel + aluminium segments with no selector touched", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/thermal-assembly/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  // R7 default_material: NO selectOption — land on the declared pair (QC finding 2)
+  await expect(page.getByTestId("material-select-left")).toHaveValue("steel-a36");
+  await expect(page.getByTestId("material-select-right")).toHaveValue("al-6061-t6");
+
+  // landing stress hand-derived from the defaults (ΔT=50 K, L_1=L_2=0.3 m,
+  // A_1=4 cm², A_2=6 cm², steel E=199.95 GPa α=11.7e-6/K, al E=68.26 GPa α=23.4e-6/K):
+  //   F = (α_1L_1+α_2L_2)ΔT / (L_1/A_1E_1 + L_2/A_2E_2) ≈ 47.53 kN
+  //   σ_1 = F/A_1 = 47.53e3/4e-4 ≈ 118.8 MPa (slimmer left segment)
+  expect(await readOutput(page, "sigma_1")).toBeCloseTo(118.84, 1);
+  expect(errors).toEqual([]);
+});
+
 test("thermal assembly: the coupled thermal force and stresses; ΔT=0 recovers the unstressed state exactly", async ({ page }) => {
   const errors = collectConsoleErrors(page);
   await page.goto("things/thermal-assembly/");
