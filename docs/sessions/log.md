@@ -1745,3 +1745,54 @@ Append-only; one structured entry per session, newest LAST. The entry template i
 - Notes-for-next: next QUEUED row is unchanged — **D2 (THING-page wayfinding)**. This closes D1
   Notes-for-next item (a). The `.pagefind-ui__result-link` selector is Pagefind Default UI's result
   anchor — reuse it for any future search assertion.
+
+## D2 — THING-page wayfinding + cross-linking + visual polish — 2026-07-07 — PR #46 — MERGED
+- Shipped: every THING page now carries build-time static wayfinding (ADR-0010 §4) — a per-THING
+  **verification badge** (own audit counts → `/verification/#<slug>`), a **related-THINGs** row (topic →
+  category → shared-facet, category-accented cards), a **"chains with"** block (legal output→input wires
+  computed by the engine's own `connectionLegal`, grouped by target THING, capped at 8 with an honest
+  "+k more"), **prev/next** spine navigation, and static **material chips** → `/materials/` rows. Additive
+  anchors: `id={slug}` on `/verification/` blocks, `id={id}` on `/materials/` rows. New libs
+  `lib/catalog.ts` (spine taxonomy + ordering, now the SINGLE owner) and `lib/wayfinding.ts`
+  (related/chains/neighbors, memoised once/build). No THING added — catalog stays 36; no new island, no
+  client JS, no pipeline change, no new dependency.
+- Gates: pytest N/A (pipeline untouched); unit 38 (unchanged — engines only gained an exported `portOf`);
+  pnpm build clean WARM (~10 s, no yaml re-fingerprint; 43 pages, katex/mdx/parity/units + pagefind green);
+  e2e 113 → **120** (+7 `wayfinding.spec.ts`; all pre-existing specs byte-identical to main) — the honesty
+  pin is the quantity-KIND discriminator (ball-bearing-life `x_R→euler-column.K` ratio→ratio present vs
+  `L10→euler-column.K` count→ratio, IDENTICAL zero dimension, absent; `L10→spur-gear-pair.N_p` count→count
+  present); visual pass (built dist, `/Mechanic/`): badge → verification block, related row, chains-with
+  chips + "+7 more" on planetary, prev/next across the MoM→MD boundary (pressure-vessel ↔ belt-drive),
+  material chips resolve, dark+light+mobile 375px zero h-overflow, console clean; review: **6 fresh-context
+  passes** (3 angle + 3 code-review finders) — ZERO product correctness bugs; 1 MAJOR test-honesty issue
+  fixed + consensus cleanups applied, 2 findings rebutted.
+- Golden: N/A — design/feature session, no emitted numbers (per-THING gate items 2–4 N/A, protocol §3).
+  Regression net is the 120-spec e2e.
+- Citations pinned: N/A — no new citation/material/relation.
+- Deviations from brief: (1) Fixed a **pre-existing** mobile `.config-select` horizontal overflow (≤40rem)
+  via a CSS-only media query (mirrors the existing `.material-picker` cap) — spotted in the §5 visual pass,
+  in scope for ADR-0010 §5's polish track, and directly D1-precedented (D1 fixed a pre-existing mobile nav
+  overflow the same way). No D2 element overflowed. (2) Added `data-pagefind-ignore` to the wayfinding
+  cross-reference blocks (related/chains/prev-next) AND the badge — they repeat OTHER THINGs' titles /
+  identical boilerplate, which would reintroduce the listing-noise PFN removed; the THING page stays indexed
+  for its own content. Everything else per brief.
+- New capabilities future briefs may rely on: `lib/wayfinding.ts` `buildWayfinding(things, compiled)` (memoised
+  related/chains/neighbors maps) — S22/S24 can reuse the "chains with" computation; `lib/catalog.ts`
+  `spineGroups`/`spineOrdered`/`categoryBySlug`/`accentVarFor` (the ONE spine-order owner — import, never
+  re-declare); `lib/stats.ts` `thingAudit`/`isModeling`/`isIdentity` (the per-THING audit + step-kind
+  predicates, shared with `/verification/`); `chain-eval.ts` `portOf(artifact, sym)` (the shared Port
+  constructor). `/verification/#<slug>` and `/materials/#<id>` are now stable deep-link anchors.
+- Notes-for-next (next QUEUED row = **S22, /chain-builder/ MVP**): (a) "Chains with" is the intended
+  discovery surface for S22 — it lists, per THING, the legal target THINGs + exact `fromPort→toPort` pairs
+  (`data-wire="from|toThing|toPort"` attributes on the built pages); it is THING-granularity (union of ports
+  over ALL configs), so a listed pair is legal in SOME config pairing, not necessarily simultaneously — S22's
+  real chain instantiates one config per node. (b) The "chains with" links are plain `/things/<slug>/` in v1;
+  the ADR-0010 §4 upgrade to PREFILLED chain-builder URLs is a cheap post-S23 follow-up (decided at S25 or
+  post-phase) — wire it once S23's URL encoding exists. (c) `buildWayfinding`'s memo is a build-singleton
+  keyed on NOTHING (assumes the whole-catalog contract); fine for `astro build`, but any new caller passing a
+  subset gets the full-catalog result, and `astro dev` won't invalidate it on a content edit (dev-only). (d)
+  RELATED_CAP=6: the largest topic (beams-plates, 7 THINGs) has exactly 6 same-topic siblings, so tier-1 is
+  never truncated TODAY — if a topic grows past 7, revisit whether to disclose the related cap like chains
+  does. (e) DISPLAY_CAP=8 chain targets, spine-ordered; the planetary e2e assumes torsion-shaft stays within
+  the cap (~3rd) — adding earlier-spine torque/speed-input THINGs could push it out. (f) catalog still 36 — no
+  CLAUDE.md/README count change.
