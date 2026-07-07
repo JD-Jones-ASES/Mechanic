@@ -150,7 +150,14 @@ const ICONS: Record<string, string> = {
 };
 ---
 
-<div class="catalog">
+<!-- data-pagefind-ignore: keep the catalog LISTING out of the search index. This
+     component renders inside <main data-pagefind-body> on home and /things/, so
+     without this every THING title+summary would be indexed a second and third
+     time on the two aggregator pages — making them noise hits for almost any
+     catalog term. Each THING stays fully findable via its own page's
+     data-pagefind-body; the home hero and /things/ intro (outside this div) stay
+     indexed. Same pattern as chain-demo.astro / things/[slug].astro. -->
+<div class="catalog" data-pagefind-ignore>
   {
     render.map(({ cat, groups }) => (
       <section class="cat-section" style={`--cat-accent: var(${cat.accentVar})`} data-category={cat.slug} aria-labelledby={`cat-${cat.slug}`}>

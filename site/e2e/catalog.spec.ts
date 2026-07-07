@@ -70,7 +70,7 @@ for (const surface of ["", "things/"]) {
   });
 }
 
-test("catalog search returns a known THING (Pagefind UI, built dist)", async ({ page }) => {
+test("catalog search returns a known THING and excludes the listing pages (Pagefind UI, built dist)", async ({ page }) => {
   await page.goto("");
   // the search UI is wired on the catalog page and its script loaded
   expect(await page.locator("script[src*='pagefind']").count()).toBeGreaterThan(0);
@@ -81,6 +81,16 @@ test("catalog search returns a known THING (Pagefind UI, built dist)", async ({ 
   // Pagefind loads its index async + debounces; a result link to the THING appears
   const hit = page.locator(".catalog-search a[href*='/things/planetary-gearset/']");
   await expect(hit.first()).toBeVisible({ timeout: 15_000 });
+
+  // the catalog LISTING pages (home `/`, `/things/`) are data-pagefind-ignore'd on
+  // their grids, so a THING term no longer returns them as noise — their indexed
+  // content (hero / intro) doesn't carry the term. THING pages stay findable.
+  const pathnames = await page
+    .locator(".catalog-search .pagefind-ui__result-link")
+    .evaluateAll((as) => as.map((a) => new URL((a as HTMLAnchorElement).href).pathname));
+  expect(pathnames.length).toBeGreaterThan(0); // results actually rendered
+  expect(pathnames).not.toContain("/Mechanic/"); // home listing gone from results
+  expect(pathnames).not.toContain("/Mechanic/things/"); // catalog listing gone too
 });
 
 test("THING pages carry no catalog search script — page weight unchanged", async ({ page }) => {
