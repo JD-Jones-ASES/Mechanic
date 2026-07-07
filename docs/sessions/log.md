@@ -1796,3 +1796,57 @@ Append-only; one structured entry per session, newest LAST. The entry template i
   does. (e) DISPLAY_CAP=8 chain targets, spine-ordered; the planetary e2e assumes torsion-shaft stays within
   the cap (~3rd) — adding earlier-spine torque/speed-input THINGs could push it out. (f) catalog still 36 — no
   CLAUDE.md/README count change.
+
+## S22 — /chain-builder/ MVP (native controls, no drag-and-drop) — 2026-07-07 — PR #47 — MERGED
+- Shipped: `/chain-builder/` is live — an interactive builder that adds up to six node instances from the
+  catalog (every THING/config with `branches===null`; only fourbar-linkage excluded), wires output→input
+  ports through native `<select>` rows validated by the REAL ChainGraph, and renders each node in planner
+  `evaluationOrder()` with the full per-THING UI (per-instance KnobPanel on unbound inputs, MaterialPicker,
+  Readouts, ValidityBanner). Refusals propagate per S21's rule table; four programmatically-exposed node
+  states (`data-node-state`): local `refused`, scoped `partial`, `refused-upstream` (S21's withheld text),
+  `incomplete`. New files: `components/ChainBuilder.tsx` (island) + `components/chain-builder-model.ts`
+  (pure, unit-tested store: mutations, tryConnect, buildSpecs, nodeUiState — the S23 serialization contract)
+  + `components/material-data.ts` (pure pickProperty/resolveBinding/MaterialRow split out of MaterialPicker
+  so the headless model reuses the canonical lookups) + `pages/chain-builder.astro` (slim catalog index as
+  props; a build-time legality table of real connectionLegal verdicts). Additive shared-component changes
+  (default behavior byte-identical): `KnobPanel` optional `idPrefix`; `MaterialPicker` `slot` used per node;
+  `chain-eval` exports `ports` (so the UI's wire-legality check and the engine's eval graph share ONE
+  port-map definition). Home hero now links the builder (was reachable only by URL). Engine + pipeline
+  UNCHANGED (no new capability — only the additive `ports` export). Catalog unchanged at 36 THINGs.
+- Gates: unit 38 → 54 (+16 `chain-builder-model.test.mjs`: store mutations, the three wire rejections +
+  fan-in, cycle, material cascade, refusal propagation, every nodeUiState branch incl. scoped); pnpm build
+  clean WARM (only site TS/astro/css + engine export; pipeline cache-warm; 44 pages, katex/mdx/parity/units
+  + pagefind green); e2e 120 → 130 (+9 `chain-builder.spec.ts` + 1 a11y `/chain-builder/`) — ALL prior specs
+  byte-identical, `git diff main -- e2e/chain-demo.spec.ts` EMPTY; page-weight: eager static-import closure
+  18 kB gz (budget 60), NO fns/artifact chunk eager (lazy import.meta.glob); visual pass (built dist,
+  /Mechanic/chain-builder/): 3-node conservation chain shows T_out=350 N·m / P_w=1 kW (input power
+  conserved) / τ=27.852 MPa, material switch moves shaft SF 5.82→4.95, disk-clutch driven r_i≥r_o → clutch
+  `refused` + shaft `refused-upstream` with every readout "—" (invariant 5 on screen), euler-column scoped
+  `partial` (Euler stands / Johnson blanks), nodes re-order on wiring, dark + mobile-375 (zero h-overflow
+  after a picker-select width fix), console clean; review: 5 fresh-context agents (3 angle + 2 code-review
+  sweeps) — ZERO product correctness bugs; findings all fixed or dispositioned (below).
+- Golden: N/A per protocol §3 (feature session; per-THING gate items 2–4 N/A). The conservation golden is
+  hand-derived in the e2e header from planetary+shaft verified relations (ratio 3.5 → T_out 350, P=Tω=1 kW =
+  input T_s·ω_s) and independently re-derived by review angle A.
+- Citations pinned: N/A — no new citation/material/relation.
+- Deviations from brief: (1) Home-hero link to `/chain-builder/` added — the page was otherwise dead-linked
+  (chain-demo is linked from home + THING pages; the builder was reachable only by URL). In-scope restrained
+  polish, D1/D2 precedent. (2) Multi-slot material THINGs (composite-bar, thermal-assembly) are INCLUDED per
+  the branches===null scope rule but collapse their slots to a SINGLE material per node (the S23 store shape
+  is `materials:{nodeId:materialId}` — one id per node); a uniform-material evaluation, verified never a
+  wrong number (angle B re-derived both determinants nonzero at E₁=E₂), forgoing the two-material contrast
+  the THING page shows. (3) Added a distinct `partial` node state beyond the brief's three — a review-found
+  MAJOR: the brief's three states missed the SCOPED refusal (invalidVars set, invalid=false), which would
+  else read as green "evaluated". Everything else per brief.
+- New capabilities future briefs may rely on: `chain-builder-model.ts` pure store API (emptyStore/addNode/
+  removeNode/tryConnect/buildSpecs/evaluateStore/nodeUiState) — the store shape IS the S23 contract;
+  `material-data.ts` canonical pickProperty/resolveBinding/MaterialRow; KnobPanel `idPrefix`; chain-eval
+  `ports` is now exported.
+- Notes-for-next (next QUEUED = S23, URL serialization): (a) the serializable store is EXACTLY
+  `{nodes,bindings,knobs,materials,displayUnits}` in chain-builder-model.ts — S23 encodes this; already plain
+  JSON (no Maps/functions). (b) knobs carry EVERY input (bound ones stay stored so un-wiring restores the
+  value) — serialize all. (c) artifacts + fns lazy-load per slug via import.meta.glob; a deserialized store
+  must re-trigger loads (ChainBuilder's `ensureLoaded` pattern; it now clears a rejected promise so a retry
+  works). (d) instance ids are n1..n6, lowest-free reused on removal. (e) material is ONE id per node (see
+  deviation 2) — S23 need not encode per-slot. (f) the picker option value is `slug::configId` split on the
+  FIRST "::" (slug is `[a-z0-9-]+`). (g) catalog still 36 — no CLAUDE.md/README count change.
