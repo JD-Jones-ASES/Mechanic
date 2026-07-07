@@ -116,7 +116,7 @@ S25 remains the phase-closing row (protocol §8).
 
 | ID  | Session                                                        | Status | PR | Date | Brief |
 |-----|----------------------------------------------------------------|--------|----|------|-------|
-| QC2 | Phase-3 QC fixes + per-slot default_material (R7)              | QUEUED | —  | —    | [QC2](briefs/QC2-phase3-qc-fixes.md) |
+| QC2 | Phase-3 QC fixes + per-slot default_material (R7)              | IN_PROGRESS | —  | 2026-07-07 · phase4/qc2-fixes | [QC2](briefs/QC2-phase3-qc-fixes.md) |
 | S21 | chain-eval engine extraction + refusal/provenance propagation  | QUEUED | —  | —    | [S21](briefs/S21-chain-eval-engine.md) |
 | D1  | Portal IA: category taxonomy + home/catalog redesign + search  | QUEUED | —  | —    | [D1](briefs/D1-portal-ia-catalog.md) |
 | D2  | THING-page wayfinding + cross-linking + visual polish          | QUEUED | —  | —    | [D2](briefs/D2-thing-wayfinding.md) |
