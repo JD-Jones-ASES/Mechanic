@@ -340,6 +340,15 @@ a { color: var(--accent); }
 .ta-seg-right { fill: #8b5cf6; opacity: 0.7; }
 .ta-yield { fill: #dc2626; opacity: 0.8; }
 .ta-blocked { fill: #f59e0b; opacity: 0.4; }
+/* bolted joint with gasket (BoltedJointSim): the bolt in accent (blue), the two
+   clamped members in violet, and the soft gasket layer in amber — the same palette
+   as composite-bar/thermal-assembly. The bolt turns red past its proof strength (a
+   WARN cue). The force-share bars reuse .fw-bar-track/.fw-bar-mark; the schematic
+   reuses .sim-outline/.load-arrow. */
+.bj-bolt { fill: var(--accent); opacity: 0.8; }
+.bj-member { fill: #8b5cf6; opacity: 0.65; }
+.bj-gasket { fill: #f59e0b; opacity: 0.6; }
+.bj-bolt-warn { fill: #dc2626; opacity: 0.85; }
 /* helical spring */
 .spring-coil { fill: none; stroke: var(--accent); stroke-linecap: round; stroke-linejoin: round; }
 .spring-coil-hot { fill: none; stroke: #dc2626; stroke-linecap: round; stroke-linejoin: round; }

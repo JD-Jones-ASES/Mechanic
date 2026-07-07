@@ -21,6 +21,7 @@ PHYSICS_TESTS = {
     "ball-bearing-life": "test_bearing_physics.py",
     "beam-shear-flow": "test_shear_flow_physics.py",
     "belt-drive": "test_belt_physics.py",
+    "bolted-joint-gasket": "test_boltedjoint_physics.py",
     "cantilever-beam": "test_beam_physics.py",
     "circular-plate": "test_plate_physics.py",
     "combined-shaft": "test_combined_physics.py",

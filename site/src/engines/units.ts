@@ -30,8 +30,11 @@ export const DISPLAY_FACTORS: Record<string, { factor: number; label: string }> 
   "N/m": { factor: 1, label: "N/m" },
   "N/mm": { factor: 1e3, label: "N/mm" }, // 1 N/mm = 1000 N/m — the metric spring-rate idiom
   "kN/m": { factor: 1e3, label: "kN/m" },
+  "MN/m": { factor: 1e6, label: "MN/m" }, // 1 MN/m = 1e6 N/m — bolt/member joint stiffnesses run ~1e8–1e9 N/m
+  "GN/m": { factor: 1e9, label: "GN/m" }, // 1 GN/m = 1e9 N/m — the readable "1.2 GN/m" idiom for a bolted joint
   "m/s": { factor: 1, label: "m/s" },
   "m/s^2": { factor: 1, label: "m/s²" }, // acceleration; g = 9.80665 m/s² is the first cited constant
+  "mm^2": { factor: 1e-6, label: "mm²" }, // bolt tensile stress areas are quoted in mm² (M16 ≈ 157 mm²)
   "cm^2": { factor: 1e-4, label: "cm²" },
   Pa: { factor: 1, label: "Pa" },
   kPa: { factor: 1e3, label: "kPa" }, // was missing while pressure-vessel offered it: 1000× wrong-as-labeled (caught by check-units.mjs on its first run)

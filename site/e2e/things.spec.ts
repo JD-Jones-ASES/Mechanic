@@ -413,6 +413,72 @@ test("thermal assembly: a large temperature rise past yield warns, never a silen
   await expect(page.locator(".validity")).toContainText(/yield/i);
 });
 
+/**
+ * Bolted joint with gasket (S19 — solveLinear 2×2, GLOBAL separation refusal).
+ * Defaults F_i = 25 kN, P = 10 kN, k_b = k_m = 1 GN/m, A_t = 100 mm², S_p = 600 MPa:
+ *   C = k_b/(k_b+k_m) = 0.5;  F_b = F_i + C·P = 30 kN;  F_m = F_i − (1−C)·P = 20 kN
+ *   P₀ = F_i/(1−C) = 50 kN;  σ_b = F_b/A_t = 300 MPa;  n_p = S_p·A_t/F_b = 2.0
+ */
+test("bolted joint: the external load splits by stiffness — the bolt takes C·P, the members shed the rest", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/bolted-joint-gasket/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  // no material picker: the stiffnesses are DIRECT inputs (E never enters), so a
+  // token material dropdown would be dishonest — there isn't one
+  await expect(page.getByTestId("material-select")).toHaveCount(0);
+
+  const C = await readOutput(page, "C");
+  const Fb = await readOutput(page, "F_b"); // kN
+  const Fm = await readOutput(page, "F_m"); // kN
+  const P0 = await readOutput(page, "P0"); // kN
+  const sb = await readOutput(page, "sigma_b"); // MPa
+  const np = await readOutput(page, "n_p");
+  expect(C).toBeCloseTo(0.5, 4);
+  expect(Fb).toBeCloseTo(30, 3); // F_i + C·P = 25 + 5
+  expect(Fm).toBeCloseTo(20, 3); // F_i − (1−C)·P = 25 − 5
+  expect(Fb - Fm).toBeCloseTo(10, 3); // equilibrium: the difference IS the external load P
+  expect(P0).toBeCloseTo(50, 3);
+  expect(sb).toBeCloseTo(300, 1);
+  expect(np).toBeCloseTo(2.0, 2);
+  // the sim draws a real load-share figure (not the refusal)
+  await expect(page.locator(".sim figcaption")).toContainText(/splits by stiffness/i);
+  expect(errors).toEqual([]);
+});
+
+test("bolted joint: cranking the external load past the separation load refuses everything (global)", async ({ page }) => {
+  await page.goto("things/bolted-joint-gasket/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+  // default separation load P₀ = 50 kN; drive P past it → F_m ≤ 0 (members slack)
+  await page.locator("#knob-P").fill("60"); // 60 kN > P₀ = 50 kN
+  // GLOBAL invalid: the separation banner fires...
+  await expect(page.locator(".validity-invalid").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/separat/i);
+  // ...and because it is UNSCOPED, EVERY readout is withheld (not just one)...
+  await expect(page.locator('[data-output="F_b"] output')).toHaveText("—");
+  await expect(page.locator('[data-output="F_m"] output')).toHaveText("—");
+  await expect(page.locator('[data-output="C"] output')).toHaveText("—");
+  await expect(page.locator('[data-output="P0"] output')).toHaveText("—");
+  await expect(page.locator('[data-output="sigma_b"] output')).toHaveText("—");
+  await expect(page.locator('[data-output="n_p"] output')).toHaveText("—"); // all six derived readouts
+  // ...and the sim shows the shared refusal figure, not a confident joint
+  await expect(page.locator(".sim figcaption")).toContainText(/no honest load-share/i);
+});
+
+test("bolted joint: a bolt driven past its proof strength warns, and the joint is still clamped", async ({ page }) => {
+  await page.goto("things/bolted-joint-gasket/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+  // raise the preload, then load it: F_i=40 kN, P=44 kN → F_b=62 kN, σ_b=620 MPa
+  // (past the 600 MPa proof) while F_m = 18 kN > 0 (NOT separated) — a warn, not a refusal
+  await page.locator("#knob-F_i").fill("40");
+  await page.locator("#knob-P").fill("44");
+  await expect(page.locator(".validity-warn").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/proof/i);
+  // the page still stands (warn, not refusal): the readouts are live, not blanked
+  expect(await readOutput(page, "sigma_b")).toBeGreaterThanOrEqual(600);
+  expect(await readOutput(page, "F_m")).toBeGreaterThan(0); // still clamped
+});
+
 test("derivations and equations render as KaTeX with MathML", async ({ page }) => {
   await page.goto("things/planetary-gearset/");
   expect(await page.locator(".katex").count()).toBeGreaterThan(5);
@@ -602,7 +668,7 @@ test("verification page discloses authorship and the audit surface", async ({ pa
   await expect(page.getByText(/built end to end by an AI/i).first()).toBeVisible();
   await expect(page.getByText(/No human reviews the content/i).first()).toBeVisible();
   // every THING appears with its audit block (count is a deliberate change detector)
-  expect(await page.locator("section.relation-block").count()).toBe(35); // +thermal-assembly (S18)
+  expect(await page.locator("section.relation-block").count()).toBe(36); // +bolted-joint-gasket (S19)
   await expect(page.getByText(/Where physics enters/i).first()).toBeVisible();
   expect(errors).toEqual([]);
 });

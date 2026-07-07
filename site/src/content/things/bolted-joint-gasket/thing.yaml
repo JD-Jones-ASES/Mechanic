@@ -1,0 +1,305 @@
+id: bolted-joint-gasket
+title: Bolted Joint with Gasket (External Tensile Load)
+summary: >-
+  A preloaded bolt clamping a gasketed joint, then pulled by an external tensile load. The bolt and
+  the members act as two springs in parallel, so the external load does NOT all go to the bolt — it
+  splits by stiffness. The build solves the coupled bolt/member force system exactly and refuses the
+  moment the members go slack.
+facets: [stress]
+
+# Sign convention (fixed for this whole THING): F_i is the assembly preload (tension in the bolt,
+# equal compression in the members, before any external load). P is an external tensile load pulling
+# the members apart. F_b is the total bolt tension (always > 0). F_m is the residual clamping force in
+# the members, taken POSITIVE in compression: it starts at F_i and FALLS as P grows. Separation is
+# F_m <= 0 — the members have gone slack and the joint is held by the bolt alone; the linear
+# load-sharing model is void there, so the whole evaluation is refused (global invalid).
+
+variables:
+  - symbol: F_i
+    name: Preload
+    latex: F_i
+    unit: N
+    quantity_kind: force
+    default: 25000
+    bounds: [1000, 60000]
+    positive: true
+    display_units: [kN, N]
+  - symbol: P
+    name: External tensile load
+    latex: P
+    unit: N
+    quantity_kind: force
+    default: 10000
+    bounds: [0, 100000]
+    positive: true
+    display_units: [kN, N]
+  - symbol: k_b
+    name: Bolt stiffness
+    latex: k_b
+    unit: N/m
+    quantity_kind: stiffness
+    default: 1.0e9
+    bounds: [1.0e8, 5.0e9]
+    positive: true
+    display_units: ["GN/m", "MN/m"]
+  - symbol: k_m
+    name: Member + gasket stiffness
+    latex: k_m
+    unit: N/m
+    quantity_kind: stiffness
+    default: 1.0e9
+    bounds: [1.0e8, 5.0e9]
+    positive: true
+    display_units: ["GN/m", "MN/m"]
+  - symbol: A_t
+    name: Tensile stress area
+    latex: A_t
+    unit: m**2
+    quantity_kind: area
+    default: 1.0e-4
+    bounds: [1.0e-5, 1.0e-3]
+    positive: true
+    display_units: ["mm^2", "cm^2"]
+  - symbol: S_p
+    name: Proof strength
+    latex: S_p
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 600.0e6
+    bounds: [200.0e6, 1200.0e6]
+    positive: true
+    display_units: [MPa]
+  # --- the coupled bolt/member forces, solved as ONE linear group (ADR-0008) ---
+  - symbol: F_b
+    name: Bolt force
+    latex: F_b
+    unit: N
+    quantity_kind: force
+    default: 30000
+    bounds: [0, 2.0e7]
+    positive: true
+    role: derived
+    display_units: [kN, N]
+  - symbol: F_m
+    name: Member clamping force
+    latex: F_m
+    unit: N
+    quantity_kind: force
+    # SIGNED: F_m starts at F_i and falls; F_m <= 0 is separation (refused). No
+    # positive: assumption, and bounds spanning negative, so `F_m > 0` stays a
+    # Relational at parse (a positive assumption would simplify it to True and the
+    # compiler would reject the envelope — the mode>0 / signed-stress trap).
+    default: 20000
+    bounds: [-2.0e7, 2.0e7]
+    role: derived
+    display_units: [kN, N]
+  # --- downstream readouts (ordinary closed forms) ---
+  - symbol: C
+    name: Joint stiffness constant
+    latex: C
+    unit: '1'
+    quantity_kind: ratio
+    default: 0.5
+    bounds: [0, 1]
+    positive: true
+    role: derived
+  - symbol: P0
+    name: Separation load
+    latex: P_0
+    unit: N
+    quantity_kind: force
+    default: 50000
+    bounds: [0, 2.0e7]
+    positive: true
+    role: derived
+    display_units: [kN, N]
+  - symbol: sigma_b
+    name: Bolt stress
+    latex: '\sigma_b'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 3.0e8
+    bounds: [0, 5.0e9]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: n_p
+    name: Proof safety factor
+    latex: n_p
+    unit: '1'
+    quantity_kind: safety_factor
+    default: 2.0
+    bounds: [0, 100]
+    positive: true
+    role: derived
+
+relations:
+  # --- the coupled system: force equilibrium + deflection compatibility ---
+  - id: equilibrium
+    group: stress
+    latex: 'F_b - F_m = P'
+    residual: F_b - F_m - P
+    assumptions:
+      - >-
+        vertical equilibrium of the clamped members: the external tensile load P is the difference
+        between the bolt tension F_b and the residual member clamping force F_m (compression positive)
+    citation: shigley
+  - id: compatibility
+    group: stress
+    latex: '\frac{F_b - F_i}{k_b} = \frac{F_i - F_m}{k_m}'
+    residual: (F_b - F_i)/k_b - (F_i - F_m)/k_m
+    assumptions:
+      - >-
+        while the bolt head stays in contact with the members, both deform together: the EXTRA bolt
+        stretch beyond preload, (F_b − F_i)/k_b, equals the members' elastic recovery, (F_i − F_m)/k_m
+      - linear elastic springs, bolt and members loaded within their elastic range
+    citation: shigley
+  # --- downstream: stiffness constant, separation load, stress, margin ---
+  - id: stiffness-constant
+    group: stress
+    latex: 'C = \frac{k_b}{k_b + k_m}'
+    residual: C*(k_b + k_m) - k_b
+    assumptions:
+      - >-
+        the bolt and the members are two springs in PARALLEL sharing the external load; C is the
+        fraction the bolt takes. A soft gasket lowers k_m, which raises C — the bolt then absorbs more
+        of every external load
+    citation: shigley
+  - id: separation-load
+    group: stress
+    latex: 'P_0 = \frac{F_i}{1 - C}'
+    residual: P0*(1 - C) - F_i
+    assumptions:
+      - >-
+        the external load at which the residual clamping force reaches zero: set F_m = F_i − (1−C)P to
+        zero and solve for P. Above P_0 the members are slack and the joint has separated
+    citation: shigley
+    validity:
+      - condition: F_m > 0
+        severity: invalid
+        message: >-
+          The external load has passed the separation load P₀ — the residual clamping force has
+          reached zero and the members are slack. Past separation the bolt carries the entire external
+          load and the linear stiffness split is meaningless, so every number here is refused.
+        citation: shigley
+  - id: bolt-stress
+    group: stress
+    latex: '\sigma_b = \frac{F_b}{A_t}'
+    residual: sigma_b*A_t - F_b
+    assumptions:
+      - >-
+        nominal tensile stress on the bolt's tensile-stress area A_t (the effective area through the
+        threads); stress concentration at the thread root is not modeled
+    citation: shigley
+    validity:
+      - condition: sigma_b < S_p
+        severity: warn
+        message: >-
+          Bolt stress has reached the proof strength S_p — the bolt is loaded past the point where the
+          preload is guaranteed to survive. The linear load-sharing math still holds (hence a warning,
+          not a refusal), but the joint is no longer in its designed-for range.
+        citation: shigley
+  - id: proof-margin
+    group: stress
+    latex: 'n_p = \frac{S_p\,A_t}{F_b}'
+    residual: n_p*F_b - S_p*A_t
+    assumptions:
+      - >-
+        static margin against the bolt reaching its proof strength under the maximum bolt force F_b
+        (external load fully applied), not a fatigue margin
+    citation: shigley
+
+configurations:
+  - id: analyze
+    label: Preload, external load and stiffnesses in — bolt/member forces, separation load and margin out
+    constraints: {}
+    inputs: [F_i, P, k_b, k_m, A_t, S_p]
+    # {F_b, F_m} are a coupled 2×2 linear system — one equilibrium equation and one
+    # compatibility equation, no evaluation order — solved EXACTLY at build time
+    # (ADR-0008, certify_linear_group) and desugared into verified closed forms.
+    # det(A) = 1/k_b + 1/k_m never cancels (unlike the propped cantilever), so the
+    # emitted determinant guard k_b + k_m ≠ 0 is what certifies non-singularity.
+    solve_linear:
+      - targets: [F_b, F_m]
+        relations: [equilibrium, compatibility]
+    solutions:
+      C: k_b/(k_b + k_m)
+      P0: F_i/(1 - C)
+      sigma_b: F_b/A_t
+      n_p: S_p*A_t/F_b
+
+derivation:
+  verifies_configuration: analyze
+  steps:
+    - expr: Eq(F_b - F_m, P)
+      prose: >-
+        Free-body the clamped members. Before the external load, the bolt pulls them together with the
+        preload F_i and they push back with an equal F_i. Apply an external tensile load P pulling the
+        members apart: the bolt tension rises to F_b and the members' clamping force drops to F_m, and
+        equilibrium requires their difference to be exactly P. One equation, two unknowns — the joint
+        is statically indeterminate.
+      rule: 'statics: ΣF = 0 on the members'
+      check: definition
+    - expr: Eq((F_b - F_i)/k_b, (F_i - F_m)/k_m)
+      prose: >-
+        The missing equation is compatibility. As long as the bolt head and the members stay in
+        contact they move together, so the EXTRA stretch the bolt picks up beyond preload,
+        (F_b − F_i)/k_b, must equal the amount the compressed members spring back, (F_i − F_m)/k_m.
+        The bolt and the members are two springs in parallel.
+      rule: 'compatibility: equal incremental deflection at the interface'
+      check: definition
+    - expr: Eq(C, k_b/(k_b + k_m))
+      prose: >-
+        Define the joint stiffness constant C = k_b/(k_b + k_m): the bolt's share of any external load,
+        the way two parallel springs split a force. This is the whole story of the gasket — a soft
+        gasket lowers k_m, which drives C UP, so the bolt is forced to absorb a larger fraction of P.
+      rule: parallel-spring load split
+    - expr: Eq(F_b, F_i + C*P)
+      prose: >-
+        Solve the two equations together. The bolt tension is the preload plus only its share of the
+        external load: F_b = F_i + C·P. Because C is a fraction, the bolt sees far less than the full
+        P — that is exactly what preloading buys you. The build does not solve these one at a time; it
+        certifies the 2×2 system is linear in {F_b, F_m} and solves it exactly, both at once.
+      rule: exact linear solve of the coupled system
+    - expr: Eq(F_m, F_i - (1 - C)*P)
+      prose: >-
+        The members lose the rest: F_m = F_i − (1 − C)·P. The residual clamping force starts at the
+        full preload and falls as P grows. This falling number is what a bolted joint is really about —
+        keep it comfortably above zero and the joint stays tight.
+      rule: back-substitution for the member force
+    - expr: Eq(P0, F_i/(1 - C))
+      prose: >-
+        Set F_m = 0 and solve for the load that opens the joint: P₀ = F_i/(1 − C). At P₀ the members
+        go slack, the bolt inherits the entire external load, and the linear split stops being true —
+        which is why the model refuses every state past separation rather than drawing a false picture.
+      rule: separation condition F_m = 0
+
+sim:
+  engine: statics-cascade
+  config:
+    draw: bolted-joint-gasket
+
+sources:
+  - id: shigley
+    citation: >-
+      Budynas, R. G., & Nisbett, J. K., Shigley's Mechanical Engineering Design, 10th ed., McGraw-Hill,
+      2015 — ch. 8 (Screws, Fasteners, and the Design of Nonpermanent Joints): §8-4 the joint constant
+      C = k_b/(k_b + k_m); §8-5 bolt and member forces F_b = F_i + CP, F_m = F_i − (1 − C)P and the
+      separation condition; Table 8-11 metric property classes (proof strength).
+    url: https://www.mheducation.com/highered/product/shigley-s-mechanical-engineering-design-budynas-nisbett/M9780073398204.html
+    verification: >-
+      Topic-level citation, not page-pinned (the textbook PDF is not web-accessible for a page-exact
+      quote, the same limit as the sibling beam/joint THINGs). The governing results were
+      web-corroborated 2026-07-06 AND re-derived from first principles in
+      pipeline/tests/test_boltedjoint_physics.py (spring load-sharing: bolt and members as parallel
+      springs sharing an equal incremental deflection). The joint constant C = k_b/(k_b + k_m) as the
+      bolt's share of the external load, and the split F_b = F_i + CP / F_m = F_i − (1 − C)P, are
+      confirmed by MechaniCalc's "Bolted Joint Analysis" reference and the University of Portland ME
+      fastener notes (faculty.up.edu/lulay). Proof strength: ISO 898-1 assigns property class 8.8 a
+      proof stress of 600 MPa for 16 mm < d ≤ 72 mm (and 580 MPa for d ≤ 16 mm); Shigley Table 8-11
+      tabulates Class 8.8 (M16–M36) at S_p = 600 MPa — the default used here. Proof strength is a
+      DIRECT knob (bolt property classes are spec grades, not seeded materials); tensile stress area is
+      a separate knob (M16 ≈ 157 mm², M20 ≈ 245 mm² per ISO 898-1, web-corroborated via
+      eurocodeapplied.com). SIGN NOTE: Shigley writes the member force as F_m = (1 − C)P − F_i
+      (compression negative); this THING takes clamping POSITIVE (F_m = F_i − (1 − C)P), so separation
+      is F_m ≤ 0.

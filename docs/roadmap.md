@@ -84,7 +84,10 @@ In dependency order:
    consumer where the load share is material-DEPENDENT, catalog → 34). S18 ✅ shipped (CTE material
    column + `temperature_difference`/`thermal_expansion_coefficient` kinds — the first nonzero Θ slot —
    + thermal-assembly, a two-segment bar clamped between rigid walls whose thermal force is a
-   material-DEPENDENT solveLinear solve, catalog → 35); S19–S20 in progress.
+   material-DEPENDENT solveLinear solve, catalog → 35). S19 ✅ shipped (bolted-joint-gasket — a
+   preloaded gasketed joint under external tensile load; a 2×2 solveLinear for the bolt/member force
+   split by stiffness, with separation F_m ≤ 0 as a GLOBAL refusal and no material axis by design
+   since the stiffnesses are direct inputs, catalog → 36); S20 (Phase 3 close) in progress.
 
 ## Phase 4 — Chaining as the product
 

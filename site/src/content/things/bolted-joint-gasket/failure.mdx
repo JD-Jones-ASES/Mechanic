@@ -1,0 +1,46 @@
+The widget's safety factor $n_p$ guards one thing — the bolt reaching its **proof strength** under the
+maximum static load. Real bolted joints rarely die that way. The interesting failures are the ones the
+static picture cannot see, and for a preloaded joint the first of them is the real killer.
+
+- **Fatigue at the thread root — and why $C$ decides it.** Most external loads *fluctuate*: pressure
+  cycles, road inputs, thermal breathing. If $P$ swings between $P_{min}$ and $P_{max}$, the bolt force
+  swings with it — but only by its *share*. The alternating bolt stress is
+
+  $$ \sigma_a = \frac{C\,(P_{max} - P_{min})}{2\,A_t} $$
+
+  and there it is: the fatigue amplitude scales with the joint constant $C$. A **stiff** joint (hard
+  gasket, high $k_m$, small $C$) barely feels a fluctuating load; a **soft-gasketed** joint (high $C$)
+  hands the bolt a large alternating stress and fatigues it quickly. This is the deep reason preload
+  and gasket choice are fatigue decisions: a high preload keeps the joint from separating so the
+  spring split stays valid, and a stiff member path keeps $C$ — and therefore $\sigma_a$ — small.
+  Fatigue strength sits far below static yield and concentrates at the first engaged thread root, a
+  sharp notch this page's nominal $\sigma_b = F_b/A_t$ deliberately does not resolve. The endurance
+  limit that turns $\sigma_a$ into a life is a material property this catalog will carry in a later
+  phase; until then, read $C$ as the knob that decides whether this joint has a fatigue problem at all.
+
+- **Separation and leakage.** The one hard refusal on this page. When $P$ reaches
+  $P_0 = F_i/(1-C)$ the members go slack; for a gasketed joint the seal has usually opened *before*
+  that, as soon as the clamping pressure on the gasket drops below the line pressure it is holding. A
+  joint that separates under load also slams shut when the load releases — impact the static model
+  knows nothing about, and a fast route to fatigue at the seating faces.
+
+- **Preload loss — the number that quietly drifts down.** Everything here assumes $F_i$ is the preload
+  that is actually *there*, but preload leaks away with time. Soft gaskets **creep** and relax under
+  sustained compression; the seating faces **embed** as micro-asperities flatten in the first load
+  cycles; thermal cycling ratchets it. Every lost newton of preload lowers $P_0$ and raises the risk of
+  separation and leakage. This is why gasketed joints are re-torqued, and why a *stiffer* joint (which
+  loses a smaller *fraction* of its preload for a given embedment) is the more forgiving one.
+
+- **Self-loosening under vibration.** Transverse vibration can walk a nut loose (the Junker mechanism)
+  entirely independently of tension fatigue — the thread slips in tiny increments and preload bleeds to
+  zero. Prevailing-torque nuts, thread lockers, and correct preload fight it; the static analysis here
+  cannot represent it.
+
+- **Overtightening.** Push past $S_p$ during assembly — the region the proof warning marks — and the
+  bolt yields, so it no longer returns the preload you dialed in; push further and the threads strip or
+  the bolt necks. The proof strength is a ceiling on assembly, not just on service.
+
+- **The thread root and the material.** The nominal stress on $A_t$ omits the stress concentration at
+  the thread root (rolled threads help by cold-working it), and high-strength bolts in the wrong
+  environment are prone to **hydrogen embrittlement** and stress-corrosion cracking — brittle failures
+  with no warning that a yield-based margin does not anticipate.
