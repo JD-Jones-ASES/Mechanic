@@ -195,6 +195,13 @@ test("floats round-trip bit-faithfully (shortest JSON repr)", () => {
   }
 });
 
+test("negative zero normalizes to +0 (the one non-bit-faithful value; JSON has no -0)", () => {
+  let s = addNode(emptyStore(), "gear", "c1", gear, MATERIALS);
+  s = setKnob(s, "n1", "w", -0);
+  const back = decodeChain(encodeChain(s, CTX), CTX).store.knobs.n1.w;
+  assert.ok(Object.is(back, 0), "-0 comes back as exactly +0 (no relation distinguishes them)");
+});
+
 /* ---------------- degradation: nodes ---------------- */
 
 test("an unknown slug drops the node AND its wires; the remainder loads", () => {

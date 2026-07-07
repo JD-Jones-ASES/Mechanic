@@ -119,3 +119,23 @@ test("a #v2= link refuses the whole chain with a newer-version message", async (
   await expect(page.getByTestId("decode-error")).toContainText(/newer version/i);
   await expect(page.getByTestId("node-count")).toHaveText("0 / 6 nodes"); // empty builder
 });
+
+test("a shared link whose every node is gone shows the drop banner, not a blank builder", async ({ page }) => {
+  // a single node whose slug no longer exists → decode drops it → the store is
+  // empty, but the drop MUST still be named (invariant 5 — a blank builder with
+  // no banner would be a silent different chain)
+  const gone = frag({
+    nodes: [{ id: "n1", slug: "ghost-thing", config: "any" }],
+    bindings: [],
+    knobs: {},
+    materials: {},
+    displayUnits: {},
+  });
+  await page.goto(`chain-builder/${gone}`);
+  await expect(page.getByTestId("node-count")).toHaveText("0 / 6 nodes"); // nothing survived
+  const banner = page.getByTestId("degraded");
+  await expect(banner).toBeVisible();
+  await expect(banner).toContainText("ghost-thing");
+  await expect(banner).toContainText(/no longer in the catalog/i);
+  await expect(page.getByTestId("decode-error")).toHaveCount(0); // degraded, not refused
+});

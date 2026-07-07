@@ -10,10 +10,22 @@
  * The `#v1=` prefix ALONE carries the format version — there is NO inner
  * `version` field. SI floats serialize via `JSON.stringify`, which emits the
  * shortest string that round-trips the IEEE-754 double exactly, so decode
- * reproduces every value bit-for-bit. Knobs equal to the variable's `default`
- * (exact SI equality) are OMITTED; the decoder refills defaults. A compact
- * grammar was REJECTED (more code, more bug surface; the fragment length budget
- * is generous).
+ * reproduces every value bit-for-bit (the one exception — negative zero — has no
+ * physical meaning and normalizes to +0, since JSON has no -0). Knobs equal to
+ * the variable's `default` (exact SI equality) are OMITTED; the decoder refills
+ * defaults. A compact grammar was REJECTED (more code, more bug surface; the
+ * fragment length budget is generous).
+ *
+ * KNOWN LIMITATION (owner-accepted, inherent to the DECIDED omit-defaults rule;
+ * flagged for owner in the S23 log): a knob left at its default is omitted and
+ * refilled from the LIVE catalog, so if a variable's authored `default` changes
+ * between the catalog that MADE a link and the one OPENING it, that knob shifts
+ * to the new default with NO banner — the one catalog-rot axis degradation cannot
+ * name (slug, config, port, material, and unit all are). A refilled default is
+ * still a valid, verified current input, so no WRONG number is emitted — only a
+ * possibly-different chain. Closing it would require storing defaults or a
+ * catalog fingerprint (the brief rejected an inner version field / compact
+ * grammar), so it is an owner disposition, not a session redesign.
  *
  * DEGRADATION (DECIDED — the module's validity model). A shared link is decoded
  * against the CURRENT catalog artifacts, and every one of its slugs / config ids
@@ -352,7 +364,7 @@ export function decodeChain(fragment: string, ctx: ChainUrlContext): DecodeResul
       dropped.push({ code: "binding", message: `Dropped the wire ${wireStr(b)}: it references a node not in this chain.` });
       continue;
     }
-    const key = `${b.to.node} ${b.to.port}`;
+    const key = JSON.stringify([b.to.node, b.to.port]);
     if (boundInputs.has(key)) {
       dropped.push({ code: "binding", message: `Dropped a duplicate wire into ${b.to.node}.${b.to.port}.` });
       continue;

@@ -156,8 +156,9 @@ export default function ChainBuilder({ catalog, categories, materials }: Props) 
   // mount, encode on change — deliberately NO hashchange listener, so our own
   // replaceState never re-triggers a decode). Read the fragment, lazy-load only
   // the THINGs it names, then decode against the LIVE catalog. Degradation is the
-  // normal path; a newer FORMAT refuses the whole link. The `bootstrapped` guard
-  // makes this exactly-once even though deps are listed for closure freshness.
+  // normal path; a newer FORMAT refuses the whole link. Empty deps + the
+  // `bootstrapped` guard make this a true run-once; it reads mount-time
+  // catalog/materials/ensureLoaded/store, which is exactly a one-shot decode.
   useEffect(() => {
     if (bootstrapped.current) return;
     bootstrapped.current = true;
@@ -172,13 +173,22 @@ export default function ChainBuilder({ catalog, categories, materials }: Props) 
         setDropped(decoded.dropped);
         baselineRef.current = decoded.store;
       } else {
+        // every node degraded away (e.g. a renamed slug): the store is empty but
+        // its drops MUST still surface — a blank builder with no banner would be
+        // exactly the forbidden silent-different-chain (invariant 5).
+        setDropped(decoded.dropped);
         baselineRef.current = store;
       }
       setHydrated(true);
     };
-    const slugs = previewSlugs(frag);
+    // Load only slugs the catalog actually has: an unknown slug has no lazy
+    // module (its `import.meta.glob` entry is undefined) and would THROW on load,
+    // crashing the mount instead of degrading. decodeChain drops it as "no longer
+    // in the catalog", so an all-unknown link still lands on the empty-path below.
+    const known = new Set(catalog.map((c) => c.slug));
+    const slugs = previewSlugs(frag).filter((s) => known.has(s));
     if (slugs.length === 0) {
-      finish({}); // empty / foreign / newer-version / malformed — decode reports which
+      finish({}); // empty / foreign / version / malformed — or every node's slug is unknown
       return;
     }
     Promise.allSettled(slugs.map((s) => ensureLoaded(s))).then((settled) => {
@@ -188,18 +198,22 @@ export default function ChainBuilder({ catalog, categories, materials }: Props) 
       });
       finish(arts);
     });
-  }, [catalog, materials, ensureLoaded, store]);
+  }, []); // run-once mount decode (also guarded by `bootstrapped`); reads mount-time values by design
 
   // Keep the URL fragment in sync with the store, but ONLY after the mount-decode
   // (so the incoming fragment is read before we ever overwrite it). replaceState —
   // not `location.hash =` — so there is no history spam and no scroll jump.
   useEffect(() => {
     if (!hydrated) return;
+    // An empty builder that is empty BECAUSE a shared link refused or fully
+    // degraded keeps its incoming fragment (so a reload re-shows the notice and
+    // the link stays copyable); only sync the URL for a user-driven state.
+    if (store.nodes.length === 0 && (decodeError || dropped.length > 0)) return;
     const url = new URL(window.location.href);
     url.hash = store.nodes.length > 0 ? encodeChain(store, { artifacts: artifactsBySlug }) : "";
     window.history.replaceState(window.history.state, "", url.href);
     setUrlTooLong(url.href.length > URL_BUDGET);
-  }, [store, hydrated, artifactsBySlug]);
+  }, [store, hydrated, artifactsBySlug, decodeError, dropped]);
 
   // Retire the load-time notices once the user edits away from the decoded chain —
   // they described the incoming link, not the chain now being built.

@@ -587,6 +587,9 @@ a { color: var(--accent); }
 @media (prefers-color-scheme: dark) {
   .cb-add, .cb-connect { color: #0b1220; }
   .cb-share-copy:hover, .cb-share-copy:focus-visible { color: #0b1220; }
+  /* --warn-ink (dark brown) is a light-mode ink; as text-on-paper it fails AA in
+     dark mode, so lift it to amber (mirrors .edu-banner's dark override) */
+  .cb-share-warn { color: #fbbf24; }
   .cb-state-ok { background: #14532d; color: #bbf7d0; }
 }
 
