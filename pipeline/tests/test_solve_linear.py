@@ -180,6 +180,18 @@ def test_downstream_solution_contradicts_relation_fails(things_dir, tmp_path):
         compile_all(things_dir, tmp_path / "generated")
 
 
+def test_solve_linear_target_also_in_solutions_fails(things_dir, tmp_path):
+    # R_B is solved by the solve_linear group; ALSO authoring it in `solutions`
+    # (even with the correct 3wL/8 form) let resolve_solutions overwrite the
+    # certified closed form with the manual one, silently dropping the certificate
+    # (Phase-3 QC audit finding 1). Now refused loudly, naming the colliding target.
+    _write(things_dir, PROPPED_YAML.replace(
+        "      I: b*h**3/12", "      I: b*h**3/12\n      R_B: 3*w*L/8",
+    ))
+    with pytest.raises(BuildError, match="also solved by a solve_linear group"):
+        compile_all(things_dir, tmp_path / "generated")
+
+
 # --- two dedicated minimal fixtures for the determinant-sample and op-cap paths ---
 
 # det = n − 2 with n an integer knob on [1, 3]: the coefficient matrix is

@@ -516,11 +516,26 @@ class ThingCompiler:
                     seen_targets.append(tsym)
                     targets_needed.discard(tsym)
 
+            # solve_linear targets are now in seen_targets; snapshot them so the
+            # solutions loop below can REFUSE a target authored in both paths. A
+            # collision would let resolve_solutions silently overwrite the certified
+            # closed form with the manual one (verify.py `resolved[target] = …`),
+            # dropping the certificate without an error — so it is a loud build
+            # failure, not a latent seam (Phase-3 QC audit finding 1).
+            linear_group_targets = set(seen_targets)
+
             for target_name, sol in solutions_raw.items():
                 tc = f"{c}, solution for '{target_name}'"
                 if target_name not in self.table:
                     raise BuildError(f"{tc}: unknown target")
                 target = self.table[target_name]
+                if target in linear_group_targets:
+                    raise BuildError(
+                        f"{tc}: target is also solved by a solve_linear group in this "
+                        f"configuration — a certified linear-group solve must not be "
+                        f"overridden by an authored `solutions` entry (the certificate "
+                        f"would be silently lost). Remove it from one of the two paths."
+                    )
                 if target in inputs or target in constraints or self.specs[target].role in ("material", "constant"):
                     raise BuildError(f"{tc}: target is an input/constraint/material/constant variable")
                 if isinstance(sol, dict) and "solve1d" in sol:
