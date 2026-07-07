@@ -143,7 +143,22 @@ const things = defineCollection({
     summary: z.string(),
     facets: z.array(z.string()).min(1),
     variables: z.array(variableSchema).min(1),
-    materials: z.object({ binds: z.record(identifier, z.string()) }).optional(),
+    // material binding — either the flat map {symbol: property_key} or named
+    // slots {slot: {symbol: property_key}} so one THING binds two independent
+    // materials (S17, composite-bar). The union disambiguates by value TYPE: a
+    // flat map's values are strings, a slot map's values are records. This schema
+    // only VALIDATES the authored shape — nothing in the site reads this field.
+    // The single normalization point is compile.py, which folds a flat map into a
+    // lone `default` slot and emits the slot-keyed `material_binding` the UI
+    // consumes; so both shapes are accepted here without a transform.
+    materials: z
+      .object({
+        binds: z.union([
+          z.record(identifier, z.string()),
+          z.record(identifier, z.record(identifier, z.string())),
+        ]),
+      })
+      .optional(),
     tables: z.array(tableSchema).default([]),
     relations: z.array(relationSchema).min(1),
     configurations: z.array(configurationSchema).min(1),
@@ -315,7 +330,10 @@ const compiled = defineCollection({
         check: z.enum(["identity", "definition"]),
       }),
     ),
-    material_binding: z.record(identifier, z.string()).nullable(),
+    // slot-keyed material binding (S17): slot -> {symbol: property_key}. Legacy
+    // single-binding THINGs carry one `default` slot (compile.py normalizes a flat
+    // authored map to it). null when the THING binds no materials.
+    material_binding: z.record(identifier, z.record(identifier, z.string())).nullable(),
     // tabulated-data provenance (ADR-0009) for the /verification/ audit surface
     tables: z
       .array(

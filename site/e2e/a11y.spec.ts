@@ -13,6 +13,7 @@ for (const path of [
   "things/propped-cantilever/", // S15: a new sim component (ProppedCantileverSim)
   "things/fixed-fixed-beam/", // S16: new sim component (FixedFixedBeamSim)
   "things/fixed-fixed-torsion-shaft/", // S16: new sim component (FixedFixedShaftSim)
+  "things/composite-bar/", // S17: TWO labelled material selects (core + sleeve) + new sim (CompositeBarSim)
   "materials/",
   "verification/",
   "",

@@ -76,6 +76,55 @@ def _require(d: dict, key: str, context: str):
     return d[key]
 
 
+def _normalize_material_binds(raw_binds, context: str) -> tuple[dict, dict]:
+    """Fold authored `materials.binds` into the slot-keyed shape the artifact
+    carries (S17). The author writes EITHER a flat map ``{symbol: property_key}``
+    OR named slots ``{slot: {symbol: property_key}}`` so one THING can bind two
+    independent materials (composite-bar's core + sleeve). This is the ONE place
+    either shape is normalized — everything downstream (this compiler and the
+    whole site) sees slot-keyed binding, with legacy THINGs carrying a lone
+    ``default`` slot whose DOM/label the UI keeps byte-identical.
+
+    Returns ``(binding, flat)``: the slot-keyed ``{slot: {sym: prop}}`` for
+    emission, and a flat ``{sym: prop}`` lookup (bound symbols are globally
+    unique across slots — invariant 3) for load_variables' per-variable checks.
+    """
+    import re
+
+    if not raw_binds:
+        return {}, {}
+    if not isinstance(raw_binds, dict):
+        raise BuildError(f"{context}: materials.binds must be a mapping")
+    values = list(raw_binds.values())
+    if all(isinstance(v, str) for v in values):
+        binding = {"default": dict(raw_binds)}          # flat -> lone default slot
+    elif all(isinstance(v, dict) for v in values):
+        binding = {slot: dict(inner) for slot, inner in raw_binds.items()}
+    else:
+        raise BuildError(
+            f"{context}: materials.binds mixes a flat map with named slots — author "
+            f"either {{symbol: property_key}} OR {{slot: {{symbol: property_key}}}}, not both"
+        )
+    flat: dict[str, str] = {}
+    for slot, inner in binding.items():
+        if not re.match(IDENT_RE, slot):
+            raise BuildError(f"{context}: material slot name '{slot}' is not a valid identifier")
+        if not inner:
+            raise BuildError(f"{context}: material slot '{slot}' binds no symbols")
+        for sym, prop in inner.items():
+            if not isinstance(prop, str):
+                raise BuildError(
+                    f"{context}: materials.binds['{slot}']['{sym}'] must be a property-key string"
+                )
+            if sym in flat:
+                raise BuildError(
+                    f"{context}: symbol '{sym}' is bound in more than one material slot — "
+                    f"bound symbols must be globally unique (invariant 3)"
+                )
+            flat[sym] = prop
+    return binding, flat
+
+
 class ThingCompiler:
     def __init__(self, thing_dir: Path):
         self.dir = thing_dir
@@ -97,7 +146,11 @@ class ThingCompiler:
         import re
 
         out: dict[str, dict] = {}
-        material_binds = (self.raw.get("materials") or {}).get("binds", {})
+        # material_binding is slot-keyed {slot: {sym: prop}} (S17); material_binds
+        # is the flat {sym: prop} lookup the per-variable checks below use.
+        material_binding, material_binds = _normalize_material_binds(
+            (self.raw.get("materials") or {}).get("binds", {}), self.ctx
+        )
         sources = {s["id"] for s in self.raw.get("sources", [])}
         for v in _require(self.raw, "variables", self.ctx):
             sym_name = _require(v, "symbol", f"{self.ctx} variable")
@@ -173,7 +226,7 @@ class ThingCompiler:
             if self.specs[self.table[var_sym]].role != "material":
                 raise BuildError(f"{self.ctx}: bound variable '{var_sym}' must have role: material")
         self.artifact["variables"] = out
-        self.artifact["material_binding"] = material_binds or None
+        self.artifact["material_binding"] = material_binding or None
 
     # ---------- relations ----------
     def load_relations(self) -> None:

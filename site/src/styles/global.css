@@ -324,6 +324,13 @@ a { color: var(--accent); }
 .fw-bar-fill { fill: var(--accent); }
 .fw-bar-over { fill: #dc2626; }
 .fw-bar-mark { stroke: var(--ink); stroke-dasharray: 3 3; }
+/* composite bar (CompositeBarSim): the two members drawn in distinct fills so
+   the cross-section, elevation columns and load-share bar all read core-vs-sleeve
+   at a glance; either turns red past its OWN first yield. Reuses .sim-outline,
+   .beam-wall (plates), .propped-hatch (ground), .fw-bar-track/.fw-bar-mark. */
+.composite-core { fill: var(--accent); opacity: 0.75; }
+.composite-sleeve { fill: #8b5cf6; opacity: 0.7; }
+.composite-yield { fill: #dc2626; opacity: 0.8; }
 /* helical spring */
 .spring-coil { fill: none; stroke: var(--accent); stroke-linecap: round; stroke-linejoin: round; }
 .spring-coil-hot { fill: none; stroke: #dc2626; stroke-linecap: round; stroke-linejoin: round; }

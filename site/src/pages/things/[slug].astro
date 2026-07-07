@@ -26,15 +26,26 @@ const failureEntry = await getEntry("prose", `${slug}/failure`);
 const Overview = overviewEntry ? (await render(overviewEntry)).Content : null;
 const Failure = failureEntry ? (await render(failureEntry)).Content : null;
 
-const needsMaterials = compiled.data.material_binding != null;
-// only offer materials with published values for every bound property —
-// a missing G must read as "no data", never as a silently wrong number
-const boundKeys = Object.values(compiled.data.material_binding ?? {});
+const binding = compiled.data.material_binding;
+const needsMaterials = binding != null;
 const allMaterials = needsMaterials ? (await getCollection("materials")).map((m) => m.data) : [];
-const materials = allMaterials.filter((m) =>
-  boundKeys.every((k) => m.properties.some((p) => p.key === k)),
+// per-slot filtering (S17): each slot offers only materials whose cited sources
+// publish every property THAT slot binds — a missing value must read as "no
+// data", never a silently wrong number. This mirrors the single-binding filter,
+// once per slot. materials is slot -> qualifying list (one `default` slot for a
+// legacy single-binding THING).
+const hasKeys = (m: (typeof allMaterials)[number], keys: string[]) =>
+  keys.every((k) => m.properties.some((p) => p.key === k));
+const materials = Object.fromEntries(
+  Object.entries(binding ?? {}).map(([slot, binds]) => [
+    slot,
+    allMaterials.filter((m) => hasKeys(m, Object.values(binds))),
+  ]),
 );
-const materialsExcluded = allMaterials.length - materials.length;
+// page-level note: DB materials this THING cannot fully use (missing at least
+// one bound property across any slot — the union of all bound keys).
+const allKeys = [...new Set(Object.values(binding ?? {}).flatMap((b) => Object.values(b)))];
+const materialsExcluded = allMaterials.filter((m) => !hasKeys(m, allKeys)).length;
 
 const tex = (s: string) => katex.renderToString(s, { displayMode: true, throwOnError: true });
 const a = compiled.data;

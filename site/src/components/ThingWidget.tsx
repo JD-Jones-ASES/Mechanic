@@ -22,6 +22,7 @@ import { CircularPlateSim } from "./sims/CircularPlateSim";
 import { ClutchSim } from "./sims/ClutchSim";
 import { ColumnSim } from "./sims/ColumnSim";
 import { CombinedShaftSim } from "./sims/CombinedShaftSim";
+import { CompositeBarSim } from "./sims/CompositeBarSim";
 import { CurvedBeamSim } from "./sims/CurvedBeamSim";
 import { CylinderSim } from "./sims/CylinderSim";
 import { DiskBoreSim } from "./sims/DiskBoreSim";
@@ -92,11 +93,15 @@ const SIMS: Record<
   "propped-cantilever": ProppedCantileverSim,
   "fixed-fixed-torsion-shaft": FixedFixedShaftSim,
   "fixed-fixed-beam": FixedFixedBeamSim,
+  "composite-bar": CompositeBarSim,
 };
 
 interface Props {
   artifact: CompiledThing;
-  materials: MaterialRow[];
+  // per-slot qualifying materials (S17): slot key -> materials whose cited
+  // sources publish every property that slot binds. A single-binding THING has
+  // one `default` slot; the thing page does the per-slot filtering.
+  materials: Record<string, MaterialRow[]>;
   sim: { engine: string; config: Record<string, unknown> } | null;
 }
 
@@ -116,7 +121,19 @@ export default function ThingWidget({ artifact, materials, sim }: Props) {
   };
   const [knobs, setKnobs] = useState<VarRecord>(() => defaultsFor(cfgId));
   const [displayUnits, setDisplayUnits] = useState<Record<string, string>>({});
-  const [materialId, setMaterialId] = useState(materials[0]?.id ?? "");
+  // one selected material id per binding slot (S17). Each slot defaults to a
+  // DISTINCT qualifying material by position (slot 0 -> its list[0], slot 1 ->
+  // its list[1], … clamped) so a two-material THING lands on two different
+  // materials and its load share reads as material-driven, not just geometric.
+  // A single-slot THING is unaffected: slot 0 -> list[0], exactly today's default.
+  const [materialIds, setMaterialIds] = useState<Record<string, string>>(() =>
+    Object.fromEntries(
+      Object.keys(artifact.material_binding ?? {}).map((slot, i) => {
+        const list = materials[slot] ?? [];
+        return [slot, list[Math.min(i, list.length - 1)]?.id ?? ""];
+      }),
+    ),
+  );
   const [branch, setBranch] = useState<string | undefined>(undefined);
   const activeBranch = cfg.branches ? (branch ?? cfg.branches.labels[0]) : undefined;
 
@@ -128,15 +145,19 @@ export default function ThingWidget({ artifact, materials, sim }: Props) {
 
   const materialValues = useMemo((): VarRecord => {
     if (!artifact.material_binding) return {};
-    const m = materials.find((x) => x.id === materialId);
-    if (!m) return {};
     const out: VarRecord = {};
-    for (const [sym, key] of Object.entries(artifact.material_binding)) {
-      const p = pickProperty(m, key);
-      if (p) out[sym] = p.value_si;
+    // each slot fans out ONLY its own bound symbols (invariant 3's cascade, per
+    // slot) — swapping the sleeve never touches a core-bound symbol
+    for (const [slot, binds] of Object.entries(artifact.material_binding)) {
+      const m = (materials[slot] ?? []).find((x) => x.id === materialIds[slot]);
+      if (!m) continue;
+      for (const [sym, key] of Object.entries(binds)) {
+        const p = pickProperty(m, key);
+        if (p) out[sym] = p.value_si;
+      }
     }
     return out;
-  }, [artifact.material_binding, materials, materialId]);
+  }, [artifact.material_binding, materials, materialIds]);
 
   // role: constant variables — cited fixed values injected into every
   // evaluation (never knobs, never material-bound; g is the first). Their value
@@ -197,14 +218,20 @@ export default function ThingWidget({ artifact, materials, sim }: Props) {
         </label>
       ) : null}
 
-      {artifact.material_binding && materials.length ? (
-        <MaterialPicker
-          materials={materials}
-          selectedId={materialId}
-          binding={artifact.material_binding}
-          onSelect={setMaterialId}
-        />
-      ) : null}
+      {artifact.material_binding
+        ? Object.entries(artifact.material_binding).map(([slot, binds]) =>
+            (materials[slot]?.length ?? 0) > 0 ? (
+              <MaterialPicker
+                key={slot}
+                slot={slot}
+                materials={materials[slot]!}
+                selectedId={materialIds[slot] ?? ""}
+                binding={binds}
+                onSelect={(id) => setMaterialIds((prev) => ({ ...prev, [slot]: id }))}
+              />
+            ) : null,
+          )
+        : null}
 
       {constants.length ? (
         <ConstantsPanel constants={constants} sources={artifact.sources} />

@@ -1,0 +1,44 @@
+The widget guards first yield of **each member separately** — $\mathrm{SF}_1 = \sigma_{y1}/\sigma_1$
+for the core and $\mathrm{SF}_2 = \sigma_{y2}/\sigma_2$ for the sleeve — and warns the moment either
+one exceeds its yield stress. Which member gets there first is the most interesting failure story
+this THING tells, and it is not obvious:
+
+- **The stiffer member often yields first — even if it is the "stronger" one.** Two effects stack.
+  The member with the greater axial stiffness $A_iE_i$ (area × modulus) carries the larger *share* of
+  the load, **and** the stiffer *material* carries the higher *stress* at any given strain
+  ($\sigma_i \propto E_i$, independent of area). A member that is both — high modulus and ample area —
+  is doubly loaded.
+  Whether it actually yields first depends on the race between its stress and its **own** yield
+  strength. Put an A36 steel core in a 6061-T6 aluminium sleeve of larger area: the steel takes about
+  two-thirds of the load and runs near $165$ MPa against a $\sim 248$ MPa yield, while the aluminium
+  sits near $56$ MPa against a $\sim 276$ MPa yield. The **steel yields first** ($\mathrm{SF}\approx
+  1.5$ vs $\approx 4.9$) — the stiff member is also, here, the comparatively weak one. A stiff core is
+  not automatically the safe core; check its margin, not your intuition.
+
+- **Past first yield, the elastic share is a lie.** Every number on this page assumes both members
+  are linear-elastic. Once one yields, it can no longer take *more* load as the assembly stretches
+  further — the still-elastic member picks up the slack and the load redistributes toward it, exactly
+  the redistribution a plastic analysis captures and these formulas cannot. The `σ > σ_y` warning
+  marks where the linear load-share stops telling the truth.
+
+- **Loss of the bond — the assumption under everything.** The whole solution rests on the two members
+  straining *together*. If the interface debonds or slips (a failed shrink fit, a sheared key, a
+  crushed adhesive layer), the equal-elongation compatibility is gone: each member is then on its own,
+  and the one that was leaning on its partner can be suddenly overloaded. Bond shear is a separate
+  limit state this axial model does not see.
+
+- **Buckling, if the load is compressive.** In compression a slender member can buckle out of the
+  assembly long before it yields — especially a thin sleeve around a short core, or a core that
+  debonds and is no longer braced by the sleeve. That is a stability failure governed by geometry and
+  $E$ (see the [Euler column](../euler-column/)), not by the axial stress shown here.
+
+- **Thermal mismatch — a load case with no external load.** Two bonded materials with different
+  thermal expansion coefficients cannot expand freely: heat the assembly and the one that *wants* to
+  grow more is put into compression by its partner, the other into tension, with **zero** applied
+  $P$. A composite bar can therefore be pre-stressed — or crack — just by changing temperature. That
+  coupling is its own THING; this page holds temperature fixed.
+
+- **Brittle members and fatigue.** A brittle core (gray cast iron, a ceramic, concrete in tension)
+  has no yield plateau — rate it against ultimate strength with a generous factor, not the yield-based
+  margin here. And under cyclic load the interface and the stiffer member see the largest stress
+  ranges; fatigue and interfacial fretting sit far below static yield and are outside this model.

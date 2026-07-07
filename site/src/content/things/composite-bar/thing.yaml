@@ -1,0 +1,419 @@
+id: composite-bar
+title: Composite Bar (Core + Sleeve)
+summary: >-
+  A solid core inside a concentric sleeve, bonded between rigid end plates and pushed by a centric
+  axial load. The two materials must stretch together, so the load splits in proportion to each
+  member's axial stiffness A·E — and the build solves that coupled 2×2 share exactly. Swap the
+  sleeve's metal and watch the load migrate to the stiffer member.
+facets: [stress, mass-cost]
+
+# Sign convention (fixed for this whole THING): the bar carries a compressive OR tensile centric
+# axial load P > 0 shared by the two members; P_1, P_2 are the (positive) internal axial forces in
+# core and sleeve; both members have the SAME free length L and stretch by the SAME elongation δ
+# (rigid end plates, perfectly bonded, no slip). σ_i = P_i/A_i is the member axial stress
+# (magnitude); SF_i = σ_y_i/σ_i is the margin to first yield of that member.
+
+variables:
+  - symbol: P
+    name: Axial load
+    latex: P
+    unit: N
+    quantity_kind: force
+    default: 100000
+    bounds: [0, 1.0e6]
+    positive: true
+    display_units: [kN, N]
+  - symbol: L
+    name: Bar length
+    latex: L
+    unit: m
+    quantity_kind: length
+    default: 0.5
+    bounds: [0.05, 3.0]
+    positive: true
+    display_units: [mm, m]
+  - symbol: A_1
+    name: Core area
+    latex: A_1
+    unit: m**2
+    quantity_kind: area
+    default: 4.0e-4
+    bounds: [1.0e-5, 1.0e-2]
+    positive: true
+    display_units: ["cm^2", "m**2"]
+  - symbol: A_2
+    name: Sleeve area
+    latex: A_2
+    unit: m**2
+    quantity_kind: area
+    default: 6.0e-4
+    bounds: [1.0e-5, 1.0e-2]
+    positive: true
+    display_units: ["cm^2", "m**2"]
+  # --- core material (slot `core`) ---
+  - symbol: E_1
+    name: Core Young's modulus
+    latex: E_1
+    unit: Pa
+    quantity_kind: elastic_modulus
+    default: 200.0e9
+    bounds: [1.0e9, 400.0e9]
+    positive: true
+    role: material
+    display_units: [GPa, Pa]
+  - symbol: sigma_y_1
+    name: Core yield strength
+    latex: '\sigma_{y1}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 250.0e6
+    bounds: [10.0e6, 2.0e9]
+    positive: true
+    role: material
+    display_units: [MPa, Pa]
+  - symbol: rho_1
+    name: Core density
+    latex: '\rho_1'
+    unit: kg/m**3
+    quantity_kind: density
+    default: 7850
+    bounds: [400, 12000]
+    positive: true
+    role: material
+    display_units: ["kg/m^3"]
+  # --- sleeve material (slot `sleeve`) ---
+  - symbol: E_2
+    name: Sleeve Young's modulus
+    latex: E_2
+    unit: Pa
+    quantity_kind: elastic_modulus
+    default: 69.0e9
+    bounds: [1.0e9, 400.0e9]
+    positive: true
+    role: material
+    display_units: [GPa, Pa]
+  - symbol: sigma_y_2
+    name: Sleeve yield strength
+    latex: '\sigma_{y2}'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 276.0e6
+    bounds: [10.0e6, 2.0e9]
+    positive: true
+    role: material
+    display_units: [MPa, Pa]
+  - symbol: rho_2
+    name: Sleeve density
+    latex: '\rho_2'
+    unit: kg/m**3
+    quantity_kind: density
+    default: 2700
+    bounds: [400, 12000]
+    positive: true
+    role: material
+    display_units: ["kg/m^3"]
+  # --- the two coupled member loads, solved as ONE linear group (ADR-0008) ---
+  - symbol: P_1
+    name: Core load
+    latex: P_1
+    unit: N
+    quantity_kind: force
+    default: 65897.858
+    bounds: [0, 1.0e6]
+    positive: true
+    role: derived
+    display_units: [kN, N]
+  - symbol: P_2
+    name: Sleeve load
+    latex: P_2
+    unit: N
+    quantity_kind: force
+    default: 34102.142
+    bounds: [0, 1.0e6]
+    positive: true
+    role: derived
+    display_units: [kN, N]
+  # --- downstream readouts (ordinary closed forms that read the member loads) ---
+  - symbol: sigma_1
+    name: Core stress
+    latex: '\sigma_1'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 1.6474465e8
+    bounds: [0, 5.0e9]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: sigma_2
+    name: Sleeve stress
+    latex: '\sigma_2'
+    unit: Pa
+    quantity_kind: pressure_stress
+    default: 5.6836903e7
+    bounds: [0, 5.0e9]
+    positive: true
+    role: derived
+    display_units: [MPa, Pa]
+  - symbol: f_1
+    name: Core load fraction
+    latex: f_1
+    unit: '1'
+    quantity_kind: ratio
+    default: 0.65897858
+    bounds: [0, 1]
+    positive: true
+    role: derived
+  - symbol: f_2
+    name: Sleeve load fraction
+    latex: f_2
+    unit: '1'
+    quantity_kind: ratio
+    default: 0.34102142
+    bounds: [0, 1]
+    positive: true
+    role: derived
+  - symbol: delta
+    name: Elongation
+    latex: '\delta'
+    unit: m
+    quantity_kind: length
+    default: 4.1186161e-4
+    bounds: [0, 2]
+    positive: true
+    role: derived
+    display_units: [mm, m]
+  - symbol: SF_1
+    name: Core safety factor (yield)
+    latex: '\mathrm{SF}_1'
+    unit: '1'
+    quantity_kind: safety_factor
+    default: 1.5175000
+    bounds: [0, 100]
+    positive: true
+    role: derived
+  - symbol: SF_2
+    name: Sleeve safety factor (yield)
+    latex: '\mathrm{SF}_2'
+    unit: '1'
+    quantity_kind: safety_factor
+    default: 4.8560000
+    bounds: [0, 100]
+    positive: true
+    role: derived
+  - symbol: m
+    name: Assembly mass
+    latex: m
+    unit: kg
+    quantity_kind: mass
+    default: 2.38
+    bounds: [0, 5000]
+    positive: true
+    role: derived
+    display_units: [kg]
+
+materials:
+  binds:
+    core:
+      E_1: youngs_modulus
+      sigma_y_1: yield_strength
+      rho_1: density
+    sleeve:
+      E_2: youngs_modulus
+      sigma_y_2: yield_strength
+      rho_2: density
+
+relations:
+  # --- the coupled system: axial equilibrium + equal-elongation compatibility ---
+  - id: equilibrium
+    group: stress
+    latex: 'P_1 + P_2 = P'
+    residual: P_1 + P_2 - P
+    assumptions:
+      - axial equilibrium of the assembly; the applied load P is shared by the two members
+      - centric load through the section centroid, so both members are uniformly stressed (no bending)
+    citation: gere
+  - id: compatibility
+    group: stress
+    latex: '\frac{P_1 L}{A_1 E_1} = \frac{P_2 L}{A_2 E_2}'
+    residual: P_1*L/(A_1*E_1) - P_2*L/(A_2*E_2)
+    assumptions:
+      - >-
+        rigid end plates and a perfect bond force the two members to stretch by the SAME elongation
+        δ = P_i L /(A_i E_i); equating the two elongations is the compatibility condition
+      - equal free lengths L, linear-elastic members (Hooke's law), no slip at the interface
+    citation: gere
+  # --- member stresses ---
+  - id: stress-core
+    group: stress
+    latex: '\sigma_1 = \frac{P_1}{A_1}'
+    residual: sigma_1*A_1 - P_1
+    assumptions:
+      - uniform axial stress over the core section (centric load)
+    citation: gere
+    validity:
+      - condition: sigma_1 < sigma_y_1
+        severity: warn
+        message: >-
+          The CORE has yielded — its axial stress σ_1 exceeds the core's yield strength. Past first
+          yield the members no longer share load linearly, so the elastic load-share formula (and
+          every number here) stops being the truth.
+        citation: gere
+  - id: stress-sleeve
+    group: stress
+    latex: '\sigma_2 = \frac{P_2}{A_2}'
+    residual: sigma_2*A_2 - P_2
+    assumptions:
+      - uniform axial stress over the sleeve section (centric load)
+    citation: gere
+    validity:
+      - condition: sigma_2 < sigma_y_2
+        severity: warn
+        message: >-
+          The SLEEVE has yielded — its axial stress σ_2 exceeds the sleeve's yield strength. Past
+          first yield the members no longer share load linearly, so the elastic load-share formula
+          (and every number here) stops being the truth.
+        citation: gere
+  # --- load fractions ---
+  - id: frac-core
+    group: stress
+    latex: 'f_1 = \frac{P_1}{P}'
+    residual: f_1*P - P_1
+    assumptions:
+      - fraction of the applied load carried by the core
+    citation: gere
+  - id: frac-sleeve
+    group: stress
+    latex: 'f_2 = \frac{P_2}{P}'
+    residual: f_2*P - P_2
+    assumptions:
+      - fraction of the applied load carried by the sleeve (f_1 + f_2 = 1 by equilibrium)
+    citation: gere
+  # --- shared elongation (springs in parallel) ---
+  - id: elongation
+    group: stress
+    latex: '\delta = \frac{P L}{A_1 E_1 + A_2 E_2}'
+    residual: delta*(A_1*E_1 + A_2*E_2) - P*L
+    assumptions:
+      - >-
+        the two members act as springs in parallel: the assembly axial stiffness is
+        A_1 E_1 /L + A_2 E_2 /L, and δ = P divided by that stiffness
+      - linear elastic, small strains
+    citation: gere
+  # --- margins to first yield, per member ---
+  - id: sf-core
+    group: stress
+    latex: '\mathrm{SF}_1 = \frac{\sigma_{y1}}{\sigma_1}'
+    residual: SF_1*sigma_1 - sigma_y_1
+    assumptions:
+      - margin against first yield of the core, not against plastic collapse of the assembly
+    citation: gere
+  - id: sf-sleeve
+    group: stress
+    latex: '\mathrm{SF}_2 = \frac{\sigma_{y2}}{\sigma_2}'
+    residual: SF_2*sigma_2 - sigma_y_2
+    assumptions:
+      - margin against first yield of the sleeve, not against plastic collapse of the assembly
+    citation: gere
+  # --- assembly mass ---
+  - id: mass
+    group: mass-cost
+    latex: 'm = (\rho_1 A_1 + \rho_2 A_2)\,L'
+    residual: m - (rho_1*A_1 + rho_2*A_2)*L
+    assumptions:
+      - prismatic members, uniform densities; stiffness and density are independent axes
+    citation: gere
+
+configurations:
+  - id: analyze
+    label: Load and section areas in — the load share, stresses, elongation and margins out
+    constraints: {}
+    inputs: [P, L, A_1, A_2]
+    # the two member loads {P_1, P_2} are a coupled 2×2 linear system (one equilibrium
+    # equation + one equal-elongation compatibility equation) with no evaluation order —
+    # solved EXACTLY at build time (ADR-0008, certify_linear_group), then desugared into
+    # ordinary verified closed forms. Unlike the propped cantilever, the stiffness does NOT
+    # cancel: E_1, E_2 stay in the coefficients (materials are legal group coefficients),
+    # so the determinant carries the stiffness distribution and the reactions are
+    # material-DEPENDENT — the whole point of a two-material member.
+    solve_linear:
+      - targets: [P_1, P_2]
+        relations: [equilibrium, compatibility]
+    solutions:
+      sigma_1: P_1/A_1
+      sigma_2: P_2/A_2
+      f_1: P_1/P
+      f_2: P_2/P
+      delta: P*L/(A_1*E_1 + A_2*E_2)
+      SF_1: sigma_y_1/sigma_1
+      SF_2: sigma_y_2/sigma_2
+      m: (rho_1*A_1 + rho_2*A_2)*L
+
+derivation:
+  verifies_configuration: analyze
+  steps:
+    - expr: Eq(P_1 + P_2, P)
+      prose: >-
+        Axial equilibrium of the assembly: the core and the sleeve together carry the applied load P.
+        One equation, two unknown member loads (P_1, P_2) — the bar is statically indeterminate, so
+        equilibrium alone cannot say how the load splits.
+      rule: 'statics: ΣF_axial = 0'
+      check: definition
+    - expr: Eq(P_1*L/(A_1*E_1), P_2*L/(A_2*E_2))
+      prose: >-
+        The missing equation is compatibility. The rigid end plates hold the two members to the SAME
+        elongation δ, and for a linear-elastic bar δ = P_i L /(A_i E_i). Equating the core's and the
+        sleeve's elongations gives the second equation — this is where the moduli enter.
+      rule: 'compatibility: equal elongation (rigid plates)'
+      check: definition
+    - expr: Eq(P_1, P*A_1*E_1/(A_1*E_1 + A_2*E_2))
+      prose: >-
+        Solve the coupled pair exactly: each member takes load in proportion to its axial stiffness
+        A_i E_i. The stiffer, larger member grabs the bigger share (P_2 follows the same way with
+        A_2 E_2 on top). The build certifies the 2×2 system is linear in {P_1, P_2} and solves it in
+        one step — no blind solve(), and the stiffness sum A_1E_1 + A_2E_2 in the denominator is the
+        determinant that must stay non-zero.
+      rule: exact linear solve of the coupled system
+    - expr: Eq(sigma_1/sigma_2, E_1/E_2)
+      prose: >-
+        The punchline. Because the two members share one strain ε = δ/L, Hooke's law σ_i = E_i ε puts
+        the member stresses in the ratio of their moduli — independent of area. The stiffer material
+        always carries the higher stress, so a stiff core in a compliant sleeve concentrates stress in
+        the core even though both stretch identically.
+      rule: 'Hooke: equal strain ⇒ σ ∝ E'
+    - expr: Eq(delta, P*L/(A_1*E_1 + A_2*E_2))
+      prose: >-
+        The shared elongation: the members act as springs in parallel, so the assembly stiffness is
+        A_1E_1/L + A_2E_2/L and δ = P divided by it. Swap the sleeve for a more compliant metal and δ
+        grows while the load simply redistributes toward the core — stiffness, strength and mass are
+        independent axes of the same swap.
+      rule: springs in parallel
+sim:
+  engine: statics-cascade
+  config:
+    draw: composite-bar
+
+sources:
+  - id: gere
+    citation: >-
+      Gere, J. M., & Goodno, B. J., Mechanics of Materials, 9th ed., Cengage, 2018 — ch. 2
+      (Axially Loaded Members): statically indeterminate bars, the flexibility/compatibility method,
+      and members sharing load in proportion to axial stiffness A·E.
+    verification: >-
+      Topic-level citation, not section-pinned (the textbook PDF is not web-accessible for a
+      page-exact quote, the same limit as the sibling axial/beam THINGs). The governing result —
+      two parallel members under a rigid cap share load in proportion to their axial stiffness
+      A_i E_i, giving P_i = P·A_iE_i /(A_1E_1 + A_2E_2) and equal-strain stresses σ_i ∝ E_i — was
+      web-corroborated 2026-07-06 (engineering statics references for two-material / bolt-and-tube
+      "members in parallel" all give the stiffness-proportional share and δ = PL/ΣAE) AND re-derived
+      from first principles in pipeline/tests/test_composite_physics.py (springs in parallel:
+      k_i = A_iE_i/L, share = k_i/Σk).
+  - id: hibbeler
+    citation: >-
+      Hibbeler, R. C., Mechanics of Materials, 10th ed., Pearson, 2017 — ch. 4 (Axial Load):
+      statically indeterminate axially loaded members solved by the compatibility (equal
+      displacement) method.
+    verification: >-
+      Topic-level cross-check citation for the equilibrium + compatibility setup. Not section-pinned;
+      the equilibrium equation is elementary statics and the equal-elongation compatibility is
+      re-derived from the rigid-plate constraint in the physics test. Hibbeler ch. 4 is the standard
+      cross-reference for the indeterminate axial-member method used here, consistent with Gere ch. 2.
