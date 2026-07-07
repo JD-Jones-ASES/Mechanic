@@ -182,12 +182,15 @@ const totals = catalogTotals(compiled);
         poisoned outputs. Every withheld readout blanks to “—”; none shows a fabricated number.
       </li>
       <li>
-        <strong>Conservation survives the wiring.</strong> In the reference chain (a ring-fixed
-        planetary reduction driving a torsion shaft) the gearbox multiplies torque by 3.5× and
-        divides speed by the same factor, so the shaft's transmitted power <em>P = Tω</em> equals
-        the gearbox's input power exactly: T<sub>out</sub> = 350&nbsp;N·m, τ = 27.852&nbsp;MPa, and
-        P = 1&nbsp;kW = the 100&nbsp;N·m × 10&nbsp;rad/s put in. Those are hand-derived numbers a
-        browser test checks against the built site on every deploy — a verified fact, not a claim.
+        <strong>Conservation survives the wiring.</strong> In the fixed reference chain on the
+        <a href={withBase("chain-demo/")}>chaining demo</a> (a ring-fixed planetary reduction
+        driving a torsion shaft) the gearbox multiplies torque by 3.5× and divides speed by the
+        same factor, so the shaft's transmitted power <em>P = Tω</em> equals the gearbox's input
+        power exactly: T<sub>out</sub> = 350&nbsp;N·m, τ = 27.852&nbsp;MPa, and P = 1&nbsp;kW =
+        the 100&nbsp;N·m × 10&nbsp;rad/s put in — and the motor-driven headline example on the
+        <a href={withBase("chain-builder/")}>chain builder</a> pins the same conservation at
+        15&nbsp;kW across four nodes. Those are hand-derived numbers a browser test checks
+        against the built site on every deploy — a verified fact, not a claim.
       </li>
     </ul>
     <p>

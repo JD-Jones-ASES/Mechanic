@@ -7,12 +7,12 @@ A browsable, citation-backed database of mechanical and physical THINGS — gear
 springs, belts, pressure vessels, linkages — for engineering undergraduates. Every THING ships
 its governing equations **with machine-verified derivations**, an interactive simulation,
 material selection with visible provenance, and a how-it-fails note. The
-[catalog](https://jd-jones-ases.github.io/Mechanic/things/) currently holds 36 THINGs spanning
+[catalog](https://jd-jones-ases.github.io/Mechanic/things/) currently holds 37 THINGs spanning
 statics, mechanics of materials, machine design, and dynamics, plus an interactive
 [chain builder](https://jd-jones-ases.github.io/Mechanic/chain-builder/) that wires verified THINGs
 into a system through type-checked port bindings — it opens with curated example chains (shareable
-`#v1=` URLs), including a planetary gearbox spinning up a flywheel where the gear ratio trades
-spin-up time against shaft stress.
+`#v1=` URLs), including a DC motor driving a planetary gearbox that spins up a flywheel, where the
+gear ratio trades spin-up time against shaft stress.
 
 Pure static site (GitHub Pages). No server, no accounts, no analytics. All math is verified and
 compiled at build time by SymPy; the browser only evaluates generated, pre-proven functions.

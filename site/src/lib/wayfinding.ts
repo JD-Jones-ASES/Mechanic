@@ -10,7 +10,7 @@
  * All of it is a pure function of the compiled artifacts + authored taxonomy, so
  * it lives here (not in per-page frontmatter) and is computed ONCE per build:
  * `buildWayfinding` memoises, so the O(N²·ports) chain scan runs a single time
- * for all 36 pages, not once per page (D2 brief trap).
+ * for every THING page, not once per page (D2 brief trap).
  *
  * Reuse, not re-implementation (invariant 4): the legality verdict is the very
  * `connectionLegal` the runtime planner and the chaining demo use; this module

@@ -51,10 +51,11 @@ writing — a mapping line that contradicts the shipped physics is a deviation t
 | `machine-design` — Machine Design | Gears & Drives | spur-gear-pair, planetary-gearset, belt-drive, power-screw |
 | | Shafts & Bearings | stepped-shaft-fillet, shaft-critical-speed, ball-bearing-life |
 | | Joints, Springs & Clutches | bolted-joint-gasket, helical-spring, disk-clutch |
-| `mechanisms-dynamics` — Mechanisms, Dynamics & Vibration | *(none)* | fourbar-linkage, slider-crank, flywheel-disk, torsional-oscillator |
+| `mechanisms-dynamics` — Mechanisms, Dynamics & Vibration | *(none)* | fourbar-linkage, slider-crank, flywheel-disk, torsional-oscillator, dc-motor *(added S26, 2026-07-07)* |
 
-22 + 10 + 4 = 36. Ordering within a topic: alphabetical by title (no rank field — nothing to
-maintain, nothing to rot).
+22 + 10 + 5 = 37 (originally 22 + 10 + 4 = 36 at the D1 ruling; dc-motor joined the
+mechanisms-dynamics bucket in S26). Ordering within a topic: alphabetical by title (no rank
+field — nothing to maintain, nothing to rot).
 
 ### 2. Home = the structured catalog (D1)
 

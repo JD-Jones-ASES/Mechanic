@@ -26,6 +26,9 @@ UNIT_NAMESPACE: dict[str, object] = {
     "K": u.kelvin, "mol": u.mole, "cd": u.candela,
     "N": u.newton, "Pa": u.pascal, "J": u.joule, "W": u.watt, "Hz": u.hertz,
     "rad": u.radian, "deg": u.degree,
+    # electrical (first used by dc-motor's derivation locals — the circuit model;
+    # exercises the I slot of the 7-vector)
+    "V": u.volt, "ohm": u.ohm,
     # common multiples used in authored content
     "mm": u.millimeter, "cm": u.centimeter, "km": u.kilometer,
     "um": u.micro * u.meter,  # micrometer (µm); CTE is often published as µm/(m·K)

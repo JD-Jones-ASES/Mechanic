@@ -74,7 +74,7 @@ test("prev/next walks the spine, including across a category boundary", async ({
   await page.goto("things/composite-bar/"); // spine index 0
   await expect(page.locator(".thing-nav-prev")).toHaveCount(0);
   await expect(page.locator(".thing-nav-next")).toHaveCount(1);
-  await page.goto("things/torsional-oscillator/"); // spine index 35 (last)
+  await page.goto("things/torsional-oscillator/"); // spine index 36 (last; dc-motor joined at 32 in S26)
   await expect(page.locator(".thing-nav-next")).toHaveCount(0);
   await expect(page.locator(".thing-nav-prev")).toHaveCount(1);
 });

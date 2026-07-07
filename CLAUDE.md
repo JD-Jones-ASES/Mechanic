@@ -108,9 +108,7 @@ Nonlinear/cyclic solving (`solveND`, ADR-0008 part (b) — PROPOSED, unbuilt; ce
 (S22 pick/wire/evaluate up to six nodes; S23 shareable `#v1=` chain URLs with graceful decode-on-load
 degradation; S24 per-readout provenance trails + assumptions panel; S25 three curated example chains
 with frozen `#v1=` URLs — cyclic/multi-branch chaining and a drag-and-drop canvas stay out) ·
-a minimal motor THING as a first-class torque source (deferred to an owner decision at the Phase 4
-close; the spin-up example drives the chain with the planetary's existing `T_s` knob) · Materials
-Project integration · fluids & time-integration dynamics engines ·
+Materials Project integration · fluids & time-integration dynamics engines ·
 Pyodide sandbox · integer tooth-count synthesis · eccentric-column solve-for-P (transcendental) ·
 coupler-curve inverse · custom domain · analytics (none, stated policy) · accounts/comments (static site).
 
@@ -127,14 +125,16 @@ statically-indeterminate/coupled THINGs (catalog 30 → 36; report `reports/phas
 Phase 4 approved JD 2026-07-06 and closed 2026-07-07 — chaining as the product + portal design
 (ADR-0010): the `/chain-builder/` (pick/wire/evaluate, shareable `#v1=` URLs, per-readout provenance
 trails, three curated example chains) + the course-spine portal (category taxonomy, Pagefind search,
-THING-page wayfinding); catalog stays 36; report `reports/phase-4.md`; header AWAITING OWNER for the
-Phase 5 ruling. The Phase-3 QC audit found zero wrong emitted numbers, findings in
-`docs/sessions/reports/phase-3-qc-audit.md`).
+THING-page wayfinding); report `reports/phase-4.md`. The Phase-3 QC audit found zero wrong emitted
+numbers, findings in `docs/sessions/reports/phase-3-qc-audit.md`. Release ruling 2026-07-07: there
+is NO Phase 5 — the release pair S26 (dc-motor, catalog → 37) + V1 (v1.0.0 docs/tag) closes initial
+development; future work is owner-commissioned paths, not scheduled phases).
 `docs/sessions/` — session protocol, queue, briefs, log, and the owner runbook; the queue is the
 single source of truth for what to work on next. Build: `pnpm build` in `site/` runs the
 Python pipeline first; `uv run pytest` in `pipeline/` for math-layer tests. A cold build takes ≈ 3–4
 minutes — four-bar branch verification dominates; it is slow, not hung — but unchanged THINGs are
 cache-reused, so warm rebuilds take seconds plus the astro step. The repo is public and the site deploys
 from CI on every push to main — there is no review step between merge and the public site:
-https://jd-jones-ases.github.io/Mechanic/ (catalog state: 36 THINGs; the live `/verification/` page is
-the public statement of what is and isn't machine-proven).
+https://jd-jones-ases.github.io/Mechanic/ (catalog state: 37 THINGs — S26 added dc-motor and wired
+it into the headline chain example; the live `/verification/` page is the public statement of what
+is and isn't machine-proven).

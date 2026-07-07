@@ -704,7 +704,7 @@ test("verification page discloses authorship and the audit surface", async ({ pa
   await expect(page.getByText(/built end to end by an AI/i).first()).toBeVisible();
   await expect(page.getByText(/No human reviews the content/i).first()).toBeVisible();
   // every THING appears with its audit block (count is a deliberate change detector)
-  expect(await page.locator("section.relation-block").count()).toBe(36); // +bolted-joint-gasket (S19)
+  expect(await page.locator("section.relation-block").count()).toBe(37); // +dc-motor (S26)
   await expect(page.getByText(/Where physics enters/i).first()).toBeVisible();
   expect(errors).toEqual([]);
 });
@@ -2105,4 +2105,63 @@ test("shaft critical speed: the resonance guard now covers the Dunkerley end of 
   await expect(page.locator(".validity-warn").first()).toBeVisible();
   await expect(page.locator(".validity")).toContainText(/Dunkerley/);
   await expect(page.locator(".validity")).not.toContainText("the resonance band");
+});
+
+/* dc-motor (S26, THING 37) — hand-derivable goldens at the declared defaults
+ * (T_stall = 200 N·m, ω₀ = 300 rad/s, ω = 150 rad/s):
+ *   T = 200·(1 − 150/300) = 100 N·m;  P = 100·150 = 15 kW
+ *   P_max = 200·300/4 = 15 kW (the default point IS the peak);  ω_p = 150 rad/s
+ */
+test("dc motor: the default operating point sits exactly at peak power", async ({ page }) => {
+  const errors = collectConsoleErrors(page);
+  await page.goto("things/dc-motor/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+
+  // no material picker: the torque–speed line IS the spec (two datasheet numbers);
+  // a token material dropdown would be dishonest — there isn't one
+  await expect(page.getByTestId("material-select")).toHaveCount(0);
+
+  expect(await readOutput(page, "T")).toBeCloseTo(100, 3);
+  expect(await readOutput(page, "P")).toBeCloseTo(15, 3); // kW
+  expect(await readOutput(page, "P_max")).toBeCloseTo(15, 3); // kW
+  expect(await readOutput(page, "omega_p")).toBeCloseTo(150, 2);
+  expect(await readOutput(page, "omega_out")).toBeCloseTo(150, 2);
+  // the sim draws the real torque–speed line, not the refusal
+  await expect(page.locator(".sim figcaption")).toContainText(/Delivering/);
+  expect(errors).toEqual([]);
+});
+
+test("dc motor: torque-in — the load picks the torque and the line answers with the speed", async ({ page }) => {
+  await page.goto("things/dc-motor/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+  await page.getByTestId("config-select").selectOption("torque-in");
+  // T = 100 (default): ω = 300·(1 − 100/200) = 150 rad/s — the same point, read backwards
+  expect(await readOutput(page, "omega")).toBeCloseTo(150, 2);
+  expect(await readOutput(page, "P")).toBeCloseTo(15, 3); // kW
+});
+
+test("dc motor: demanding more than stall torque refuses everything (no motoring point)", async ({ page }) => {
+  await page.goto("things/dc-motor/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+  await page.getByTestId("config-select").selectOption("torque-in");
+  // T = 250 > T_stall = 200: the solved speed would be negative — refused, GLOBAL
+  await page.locator("#knob-T").fill("250");
+  await expect(page.locator(".validity-invalid").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/stall/i);
+  await expect(page.locator('[data-output="omega"] output')).toHaveText("—");
+  await expect(page.locator('[data-output="P"] output')).toHaveText("—");
+  await expect(page.locator('[data-output="P_max"] output')).toHaveText("—");
+  // the sim shows the shared refusal figure, not a confident motor
+  await expect(page.locator(".sim figcaption")).toContainText(/no point on the torque/i);
+});
+
+test("dc motor: past no-load speed the machine brakes — a warn, torque and power negative", async ({ page }) => {
+  await page.goto("things/dc-motor/");
+  await expect(page.getByTestId("thing-widget")).toHaveAttribute("data-ready", "true");
+  // ω = 360 > ω₀ = 300: T = 200·(1 − 360/300) = −40 N·m, P = −40·360 = −14.4 kW
+  await page.locator("#knob-omega").fill("360");
+  await expect(page.locator(".validity-warn").first()).toBeVisible();
+  await expect(page.locator(".validity")).toContainText(/no-load/i);
+  expect(await readOutput(page, "T")).toBeCloseTo(-40, 2);
+  expect(await readOutput(page, "P")).toBeCloseTo(-14.4, 2); // kW
 });

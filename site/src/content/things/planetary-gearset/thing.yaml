@@ -15,7 +15,10 @@ variables:
     unit: rad/s
     quantity_kind: angular_velocity
     default: 10
-    bounds: [-50, 50]
+    # widened from ±50 (S26): the motor-driven headline chain wires the dc-motor's
+    # 150 rad/s operating speed into this port, and a curated example should not
+    # drive a THING outside its own authored range
+    bounds: [-300, 300]
     display_units: [rad/s, rpm]
   - symbol: omega_r
     name: Ring speed
