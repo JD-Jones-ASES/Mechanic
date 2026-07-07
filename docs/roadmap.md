@@ -131,20 +131,31 @@ spine, per-THING verification badges **(shipped 2026-07-07, PR #46)**. Restraine
 (tokens/system fonts/dark-mode/native controls stay; no webfonts, no frameworks). D1/D2 deliberately
 precede S22 so the chain-builder ships into the final shell.
 
-## Release — v1.0.0 (owner ruling 2026-07-07: there is no Phase 5)
+## Release — v1.0.0 ✅ complete (owner ruling 2026-07-07: there is no Phase 5)
 
-Initial development concludes with the release pair (queue rulings R10–R12): **S26** ✅ shipped
-2026-07-07 — the minimal motor THING (`dc-motor`, PM DC linear torque–speed line, catalog 36 → 37)
-closing the phase-4 report's decision 1, wired into the headline chain example as a real torque
-source (motor → planetary → shaft + flywheel, torque AND shaft speed bound, power conserved end to
-end) — and **V1** — docs reshaped for public release, the human-POV site pass, repo polish, and the
-`v1.0.0` tag + GitHub Release. The section below is retained as a *future path*, not a scheduled
-phase.
+Initial development concluded with the release pair (queue rulings R10–R12): **S26** ✅ shipped
+2026-07-07 (PR #51) — the minimal motor THING (`dc-motor`, PM DC linear torque–speed line, catalog
+36 → 37) closing the phase-4 report's decision 1, wired into the headline chain example as a real
+torque source (motor → planetary → shaft + flywheel, torque AND shaft speed bound, power conserved
+end to end) — and **V1** ✅ shipped 2026-07-07 — docs reshaped for public release (CLAUDE.md as the
+agent entry point, README as the human one), the human-POV site pass, repo polish, and the
+`v1.0.0` tag + GitHub Release.
 
-## Phase 5 — Materials depth
+## Future paths (owner-commissioned; no standing queue)
 
-Grow `data/materials/` under the same Feist/provenance rules. Each new property *column* unlocks
-THING capabilities: ultimate strength (already seeded) → burst margins; endurance limits →
-fatigue facets; fracture toughness → leak-before-burst. Add composites (the flywheel overview
-already names CFRP), and close the Ashby loop with merit-index overlays (σ_y/ρ, E/ρ) tied to the
-THINGs that generate them.
+None of these is scheduled. Each reopens through the session system: an owner ruling line in
+`docs/sessions/queue.md`, briefs commissioned, and the full gates of `docs/sessions/protocol.md`.
+
+- **Materials depth** (the former Phase 5 sketch): grow `data/materials/` under the same
+  Feist/provenance rules. Each new property *column* unlocks THING capabilities: ultimate strength
+  (already seeded) → burst margins; endurance limits → fatigue facets; fracture toughness →
+  leak-before-burst. Add composites (the flywheel overview already names CFRP), and close the
+  Ashby loop with merit-index overlays (σ_y/ρ, E/ρ) tied to the THINGs that generate them.
+- **Catalog breadth**: more THINGs along the spine (band-brake remains the pre-authorized shed
+  item from Phase 2; the S14 brief still exists), fluids, time-integration dynamics.
+- **Nonlinear/cyclic solving** (`solveND`, ADR-0008 part (b) — PROPOSED, unbuilt): reopens when a
+  THING demands it and the owner signs the ADR.
+- **Chain-builder UX**: type-compatible-only wire dropdowns (flagged in the S24 log and the
+  phase-4 report, decision 3), drag-and-drop canvas, cyclic/multi-branch chaining.
+- **Carried limitations, accepted**: cross-version default drift in shared chain URLs (S23,
+  owner-accepted); multi-slot THINGs collapse to one material in the chain builder (S22 note).

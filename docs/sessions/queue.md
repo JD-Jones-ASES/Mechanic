@@ -2,7 +2,8 @@
 
 Read `docs/sessions/protocol.md` first; it defines every status and transition used here.
 
-**Active phase: R — v1.0.0 release (final)**
+**Active phase: — (v1.0.0 released 2026-07-07; queue dormant — nothing may be claimed without a
+new owner ruling line, per protocol §8)**
 
 ## Phase gate rulings
 
@@ -152,4 +153,4 @@ a future session must not claim anything here without a new owner ruling line.
 | ID  | Session                                                        | Status | PR | Date | Brief |
 |-----|----------------------------------------------------------------|--------|----|------|-------|
 | S26 | dc-motor THING (linear torque–speed) + motor into the headline chain | DONE | #51 | 2026-07-07 · thing/dc-motor | [S26](briefs/S26-dc-motor.md) |
-| V1  | v1.0.0 release: docs rewrite + human-POV pass + repo polish + tag | QUEUED | | | [V1](briefs/V1-release.md) |
+| V1  | v1.0.0 release: docs rewrite + human-POV pass + repo polish + tag | IN_PROGRESS | | 2026-07-07 · docs/v1-release | [V1](briefs/V1-release.md) |
