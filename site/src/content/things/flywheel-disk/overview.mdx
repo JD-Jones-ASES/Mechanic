@@ -29,3 +29,19 @@ and the widget finds the speed that stores it — then tells you what that speed
 and margin. Watch $\omega_y$, the yield-onset speed: it is the model's own ceiling, and it
 corresponds to a fixed **rim speed** $\omega_y R = \sqrt{8\sigma_y/((3+\nu)\rho)}$, another pure
 material number.
+
+**How long does charging take?** Spinning the disk up from rest with a constant drive torque $T_d$
+takes time, and angular impulse–momentum sets the clock — the torque's angular impulse $T_d\,t$ must
+supply the angular momentum $I_z\,\omega$ the flywheel carries at speed:
+
+$$t_{spin} = \frac{I_z\,\omega}{T_d}$$
+
+More torque spins it up faster; more inertia — a bigger or *denser* disk — or a higher target speed
+draws it out (swap in a lighter alloy and $t_{spin}$ falls with the inertia, invariant 3 again). This
+is the number the [chain builder](../../chain-builder/)'s headline example holds in tension with shaft
+stress: the gear ratio ahead of the flywheel sets $T_d$, so cranking the ratio up shortens $t_{spin}$
+while winding the driveshaft that carries $T_d$ correspondingly tighter — storing energy quickly is
+not free. A negative $T_d$ brakes rather than accelerates, so the widget withholds $t_{spin}$ while the
+energy, stress, and margin readouts still stand — the spin-up time is the only thing that depends on how
+the disk is driven. (At exactly $T_d = 0$ the formula divides by zero, and the whole readout set
+refuses.)

@@ -8,9 +8,11 @@ springs, belts, pressure vessels, linkages — for engineering undergraduates. E
 its governing equations **with machine-verified derivations**, an interactive simulation,
 material selection with visible provenance, and a how-it-fails note. The
 [catalog](https://jd-jones-ases.github.io/Mechanic/things/) currently holds 36 THINGs spanning
-statics, mechanics of materials, machine design, and dynamics, plus a
-[chaining demo](https://jd-jones-ases.github.io/Mechanic/chain-demo/) that wires a gearbox into a
-shaft through type-checked port bindings.
+statics, mechanics of materials, machine design, and dynamics, plus an interactive
+[chain builder](https://jd-jones-ases.github.io/Mechanic/chain-builder/) that wires verified THINGs
+into a system through type-checked port bindings — it opens with curated example chains (shareable
+`#v1=` URLs), including a planetary gearbox spinning up a flywheel where the gear ratio trades
+spin-up time against shaft stress.
 
 Pure static site (GitHub Pages). No server, no accounts, no analytics. All math is verified and
 compiled at build time by SymPy; the browser only evaluates generated, pre-proven functions.

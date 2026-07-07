@@ -134,6 +134,29 @@ variables:
     # rad/s first so the readout is directly comparable to the ω knob beside
     # it (the margin story); rpm one click away, and the sim caption shows it
     display_units: [rad/s, rpm]
+  # --- spin-up: how long a constant drive torque takes to reach ω (S25) ---
+  - symbol: T_d
+    name: Drive torque (spin-up)
+    latex: T_d
+    unit: N*m
+    quantity_kind: torque
+    default: 50
+    # a FREE input, deliberately NOT positive: the T_d > 0 refusal below must stay
+    # a reachable Relational (a positive assumption collapses it to True at parse),
+    # and the knob must be able to reach ≤ 0 to trip it. Negative = braking torque.
+    bounds: [-100, 2000]
+    display_units: ["N*m"]
+  - symbol: t_spin
+    name: Spin-up time (from rest to ω)
+    latex: t_{spin}
+    unit: s
+    quantity_kind: time
+    default: 0.936
+    # NOT positive: for T_d ≤ 0 the solved form goes non-positive/non-finite, which
+    # is exactly the region the scoped refusal withholds; bounds are display-only.
+    bounds: [0, 100]
+    role: derived
+    display_units: [s, ms]
 
 materials:
   binds:
@@ -208,12 +231,35 @@ relations:
     assumptions:
       - the spin speed at which the centre first reaches yield — the elastic model's own ceiling
     citation: timoshenko
+  - id: spin-up
+    group: energy-storage
+    latex: 't_{spin} = \frac{I_z\,\omega}{T_d}'
+    residual: t_spin*T_d - I_z*omega
+    assumptions:
+      - a constant drive torque T_d accelerates the disk from rest (ω = 0) up to the spin speed ω
+      - >-
+        angular impulse–momentum about the spin axis: the angular impulse ∫T dt equals the change in
+        angular momentum I_z·Δω, so a constant T_d gives T_d·t = I_z·ω and t = I_z·ω / T_d
+      - the drive torque alone sets the time — bearing drag, windage, and the disk's own stress field
+        do not enter it (an idealization; real spin-up against losses takes longer)
+    citation: hibbeler-dyn
+    validity:
+      - condition: T_d > 0
+        severity: invalid
+        scope: [t_spin]
+        message: >-
+          A non-positive drive torque never brings the disk up to speed, so the spin-up time is
+          withheld. For a NEGATIVE (braking) torque only the spin-up time goes — the flywheel's
+          stored energy, stress, and yield margin do not depend on how it is driven, so those
+          readouts still stand. At EXACTLY zero torque the spin-up formula divides by T_d = 0, an
+          undefined value, and the whole evaluation refuses.
+        citation: hibbeler-dyn
 
 configurations:
   - id: speed-in
     label: Geometry and speed in — energy, stress, margin out
     constraints: {}
-    inputs: [R, t, omega]
+    inputs: [R, t, omega, T_d]
     solutions:
       m_disk: rho*pi*R**2*t
       I_z: m_disk*R**2/2
@@ -222,10 +268,11 @@ configurations:
       sigma_max: (3+nu)*rho*omega**2*R**2/8
       SF: sigma_y/sigma_max
       omega_y: sqrt(8*sigma_y/((3+nu)*rho))/R
+      t_spin: I_z*omega/T_d
   - id: energy-in
     label: Target energy in — the speed that stores it, and what it costs in stress
     constraints: {}
-    inputs: [E_k, R, t]
+    inputs: [E_k, R, t, T_d]
     solutions:
       m_disk: rho*pi*R**2*t
       I_z: m_disk*R**2/2
@@ -234,6 +281,7 @@ configurations:
       sigma_max: (3+nu)*rho*omega**2*R**2/8
       SF: sigma_y/sigma_max
       omega_y: sqrt(8*sigma_y/((3+nu)*rho))/R
+      t_spin: I_z*omega/T_d
 
 derivation:
   verifies_configuration: speed-in
@@ -309,6 +357,16 @@ derivation:
         ω_y R = √(8σ_y/((3+ν)ρ)) — a material constant with units of m/s. A big slow disk and a
         small fast one hit the same wall. Spin speed in rpm is negotiable; rim speed is not.
       rule: yield-onset rim speed
+    - expr: Eq(t_spin, I_z*omega/T_d)
+      prose: >-
+        How long to get there. A constant drive torque T_d delivers angular impulse T_d·t; angular
+        impulse–momentum sets that equal to the change in angular momentum I_z·ω when the disk is
+        spun up from rest, so t = I_z·ω / T_d. More inertia or a higher target speed costs time;
+        more torque buys it back. This is the lever a drivetrain pulls: the gear ratio ahead of the
+        flywheel sets T_d, so cranking the ratio up spins the disk up faster — while winding the
+        shaft that delivers T_d correspondingly tighter. Storing energy quickly is not free, and
+        the chain-builder's headline example lets you feel that trade.
+      rule: angular impulse–momentum, constant torque from rest
 sim:
   engine: statics-cascade
   config:
@@ -328,11 +386,17 @@ sources:
   - id: hibbeler-dyn
     citation: >-
       Hibbeler, R. C., Engineering Mechanics: Dynamics, 14th ed., Pearson, 2016 — §17.1 (mass
-      moments of inertia; the uniform solid disk I = mR²/2) and ch. 18 (planar kinetics, work
-      and energy: E = ½Iω² for rotation about a fixed axis).
+      moments of inertia; the uniform solid disk I = mR²/2), ch. 18 (planar kinetics, work
+      and energy: E = ½Iω² for rotation about a fixed axis), and ch. 19 (planar kinetics,
+      impulse and momentum: the principle of angular impulse and momentum,
+      I_O·ω₁ + Σ∫M_O dt = I_O·ω₂, §19.1–19.2) — the basis for the constant-torque spin-up time
+      T_d·t = I_z·ω.
     verification: >-
-      §17.1 and chapter-18 titles confirmed against published 14th-edition chapter listings,
-      2026-06-10; the disk inertia integral is re-run in the test pipeline.
+      §17.1 and the chapter-18/19 titles confirmed against published 14th-edition chapter listings,
+      2026-07-07 (ch. 19 = "Planar Kinetics of a Rigid Body: Impulse and Momentum"; §19.1 linear and
+      angular momentum, §19.2 principle of impulse and momentum). The disk inertia integral is re-run
+      and the spin-up time t = I_z·ω / T_d is independently re-derived from I·dω/dt = T (SymPy dsolve,
+      from rest) in pipeline/tests/test_flywheel_spinup_physics.py.
   - id: shigley
     citation: >-
       Budynas, R. G., & Nisbett, J. K., Shigley's Mechanical Engineering Design, 10th ed.,

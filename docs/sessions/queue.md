@@ -2,7 +2,7 @@
 
 Read `docs/sessions/protocol.md` first; it defines every status and transition used here.
 
-**Active phase: 4**
+**Active phase: 4 — AWAITING OWNER**
 
 ## Phase gate rulings
 
@@ -123,4 +123,4 @@ S25 remains the phase-closing row (protocol §8).
 | S22 | /chain-builder/ MVP (native controls, no drag-and-drop)        | DONE | #47 | 2026-07-07 · phase4/chain-builder-mvp | [S22](briefs/S22-chain-builder-mvp.md) |
 | S23 | URL serialization of chains (versioned fragment encoding)      | DONE | #48 | 2026-07-07 · phase4/chain-url-serialization | [S23](briefs/S23-chain-url-serialization.md) |
 | S24 | citation/provenance flow through chains + /verification/ section | DONE | #49 | 2026-07-07 · phase4/chain-provenance | [S24](briefs/S24-chain-provenance.md) |
-| S25 | curated example chains + spin-up story + Phase 4 close         | IN_PROGRESS | —  | 2026-07-07 · phase4/chain-examples-close | [S25](briefs/S25-chain-examples-close.md) |
+| S25 | curated example chains + spin-up story + Phase 4 close         | DONE | #50 | 2026-07-07 · phase4/chain-examples-close | [S25](briefs/S25-chain-examples-close.md) |
